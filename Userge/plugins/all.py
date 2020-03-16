@@ -1,12 +1,11 @@
-from Userge import userge, logging, CMD_HELP
-
-log = logging.getLogger(__name__)
-
-
-from pyrogram import Filters, Message
+from pyrogram import Message
 from . import get_all_plugins
+from Userge import userge
 
-@userge.on_message(Filters.command("all", ".") & Filters.me)
+log = userge.getLogger(__name__)
+
+
+@userge.on_message(userge.cmd("all"))
 async def getplugins(_, message: Message):
     all_plugins = await get_all_plugins()
     out_str = ""
@@ -15,6 +14,7 @@ async def getplugins(_, message: Message):
     await message.edit(out_str)
 
 
-CMD_HELP.update({
-    "all": "to get all plugins"
-})
+userge.add_help(
+    command="all",
+    about="to get all plugins"
+)

@@ -1,18 +1,18 @@
-from Userge import userge, logging, CMD_HELP
+from pyrogram import Message
+from Userge import userge
 
-log = logging.getLogger(__name__)
-
-from pyrogram import Filters, Message
+log = userge.getLogger(__name__)
 
 
-@userge.on_message(Filters.command("help", ".") & Filters.me)
+@userge.on_message(userge.cmd("help"))
 async def helpme(_, message: Message):
     out_str = ""
-    for cmd in CMD_HELP:
-        out_str += f".{cmd} : {CMD_HELP[cmd]}\n"
+    for cmd in userge.get_help():
+        out_str += f".{cmd} : {userge.get_help(cmd)}\n"
     await message.edit(out_str)
 
 
-CMD_HELP.update({
-    "help": "to know how to use this"
-})
+userge.add_help(
+    command="help",
+    about="to know how to use this"
+)

@@ -1,5 +1,5 @@
 from pymongo import MongoClient
-from .utils import Config
+from .utils import Config, logging
 
 
 class Database:

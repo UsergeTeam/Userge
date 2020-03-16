@@ -1,13 +1,11 @@
-from Userge import userge, logging, CMD_HELP
-
-log = logging.getLogger(__name__)
-
-
-from pyrogram import Filters, Message
+from pyrogram import Message
 from datetime import datetime
+from Userge import userge
+
+log = userge.getLogger(__name__)
 
 
-@userge.on_message(Filters.command("ping", ".") & Filters.me)
+@userge.on_message(userge.cmd("ping"))
 async def pingme(_, message: Message):
     start = datetime.now()
     await message.edit('`Pong!`')
@@ -16,6 +14,7 @@ async def pingme(_, message: Message):
     await message.edit(f"**Pong!**\n`{ms} ms`")
 
 
-CMD_HELP.update({
-    "ping": "check server speed :)"
-})
+userge.add_help(
+    command="ping",
+    about="check server speed :)"
+)
