@@ -8,3 +8,4 @@ logging.basicConfig(
 )
 
 log = logging.getLogger(__name__)
+userge = None  # userge is the client name
