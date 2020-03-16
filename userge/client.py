@@ -7,11 +7,13 @@ logging.getLogger("pyrogram").setLevel(logging.WARNING)
 class Userge(Client):
 
     HELP_DICT = {}
+    USERGE_MAIN_STRING = "<<<!  #####  ___{}___  #####  !>>>"
+    USERGE_SUB_STRING = "<<<!  {}  !>>>"
 
     def __init__(self):
         self.log = logging.getLogger(__name__)
 
-        self.log.info("setting configs...")
+        self.log.info(self.USERGE_MAIN_STRING.format("Setting Userge Configs"))
 
         super().__init__(
             Config.HU_STRING_SESSION,
@@ -21,21 +23,27 @@ class Userge(Client):
         )
 
     def getLogger(self, name: str):
-        self.log.info(f"creating new logger => {name}")
+        self.log.info(self.USERGE_SUB_STRING.format(f"Creating Logger => {name}"))
         return logging.getLogger(name)
 
     def on_cmd(self, command: str):
-        self.log.info(f"setting new command => {command}")
 
         def decorator(func):
+
+            self.log.info(self.USERGE_SUB_STRING.format(f"Loading => [ async def {func.__name__}(client, message) ] On .{command} Command"))
             dec = self.on_message(Filters.regex(pattern=f"^.{command}") & Filters.me)
             return dec(func)
 
         return decorator
 
     def add_help(self, command: str, about: str):
-        self.log.info(f"help dict updated {command} : {about}")
+        self.log.info(self.USERGE_SUB_STRING.format(f"Help Dict Updating => [ {command} : {about} ]"))
         self.HELP_DICT.update({command: about})
 
     def get_help(self, key: str = None) -> dict:
         return self.HELP_DICT[key] if key else self.HELP_DICT
+
+    def begin(self):
+        self.log.info(self.USERGE_MAIN_STRING.format("Starting Userge"))
+        self.run()
+        self.log.info(self.USERGE_MAIN_STRING.format("Exiting Userge"))
