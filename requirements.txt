@@ -1,3 +1,4 @@
 python-dotenv
 tgcrypto
 https://github.com/pyrogram/pyrogram/archive/asyncio.zip
+pymongo
