@@ -1,4 +1,4 @@
-from Userge import userge, logging
+from Userge import userge, logging, CMD_HELP
 
 log = logging.getLogger(__name__)
 
@@ -14,3 +14,8 @@ async def pingme(_, message: Message):
     end = datetime.now()
     ms = (end - start).microseconds / 1000
     await message.edit(f"**Pong!**\n`{ms} ms`")
+
+
+CMD_HELP.update({
+    "ping": "check server speed :)"
+})
