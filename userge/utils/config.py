@@ -23,3 +23,5 @@ class Config:
     HU_STRING_SESSION = os.environ.get("HU_STRING_SESSION", None)
 
     DB_URI = os.environ.get("DATABASE_URL", None)
+
+    MAX_MESSAGE_LENGTH = 4096

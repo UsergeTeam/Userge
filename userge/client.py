@@ -28,7 +28,7 @@ class Userge(Client):
         self.log.info(f"setting new command => {command}")
 
         def decorator(func):
-            dec = self.on_message(Filters.command(command, ".") & Filters.me)
+            dec = self.on_message(Filters.regex(pattern=f"^.{command}") & Filters.me)
             return dec(func)
 
         return decorator

@@ -10,7 +10,7 @@ async def getplugins(_, message: Message):
     all_plugins = await get_all_plugins()
     out_str = ""
     for plugin in all_plugins:
-        out_str += f"{plugin}.py\n"
+        out_str += f"**{plugin}**\n"
     await message.edit(out_str)
 
 

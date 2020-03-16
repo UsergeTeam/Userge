@@ -8,7 +8,7 @@ log = userge.getLogger(__name__)
 async def helpme(_, message: Message):
     out_str = ""
     for cmd in userge.get_help():
-        out_str += f".{cmd} : {userge.get_help(cmd)}\n"
+        out_str += f"**.{cmd}** : __{userge.get_help(cmd)}__\n"
     await message.edit(out_str)
 
 

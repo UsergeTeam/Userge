@@ -1,4 +1,4 @@
-from .utils import logging
+from .utils import Config, logging
 
 log = logging.getLogger(__name__)
 
