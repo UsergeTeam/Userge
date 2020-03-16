@@ -1,11 +1,8 @@
-import logging
-
-
-logging.basicConfig(
-    level=logging.INFO,
-    format='[%(asctime)s - %(levelname)s] - %(name)s - %(message)s',
-    datefmt='%d-%b-%y %H:%M:%S'
-)
+from .utils import logging
 
 log = logging.getLogger(__name__)
-userge = None  # userge is the client name
+
+
+from .client import Userge
+
+userge = Userge()  # userge is the client name
