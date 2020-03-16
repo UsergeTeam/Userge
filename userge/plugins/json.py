@@ -1,12 +1,11 @@
 import os
-from pyrogram import Message
 from userge import userge
 
 log = userge.getLogger(__name__)
 
 
-@userge.on_cmd("json")
-async def jsonify(_, message: Message):
+@userge.on_cmd("json", about="replied msg to json")
+async def jsonify(_, message: userge.MSG):
     the_real_message = None
     reply_to_id =  None
 
@@ -31,9 +30,3 @@ async def jsonify(_, message: Message):
         )
         os.remove("json.text")
         await message.delete()
-
-
-userge.add_help(
-    command="json",
-    about="replied msg to json"
-)

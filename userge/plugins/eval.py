@@ -2,14 +2,13 @@ import io
 import os
 import sys
 import traceback
-from pyrogram import Message
 from userge import userge, Config
 
 log = userge.getLogger(__name__)
 
 
-@userge.on_cmd("eval")
-async def eval_(_, message: Message):
+@userge.on_cmd("eval", about="run eval")
+async def eval_(_, message: userge.MSG):
     await message.edit("Processing ...")
     cmd = message.text.split(" ", maxsplit=1)[1]
     reply_to_id = message.message_id
@@ -70,9 +69,3 @@ async def aexec(code, userge, message):
         ''.join(f'\n {l}' for l in code.split('\n'))
     )
     return await locals()['__aexec'](userge, message)
-
-
-userge.add_help(
-    command="eval",
-    about="run eval"
-)

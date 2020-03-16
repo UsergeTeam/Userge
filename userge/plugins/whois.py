@@ -1,12 +1,11 @@
 import os
-from pyrogram import Message
 from userge import userge
 
 log = userge.getLogger(__name__)
 
 
-@userge.on_cmd("whois")
-async def who_is(_, message: Message):
+@userge.on_cmd("whois", about="to get user details")
+async def who_is(_, message: userge.MSG):
     from_user = None
     if " " in message.text:
         recvd_command, user_id = message.text.split(" ")
@@ -40,9 +39,3 @@ async def who_is(_, message: Message):
         )
         os.remove(local_user_photo)
         await message.delete()
-
-
-userge.add_help(
-    command="whois",
-    about="to get user details"
-)

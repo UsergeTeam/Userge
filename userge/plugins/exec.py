@@ -1,14 +1,12 @@
 import asyncio
 import os
-import time
-from pyrogram import Message
 from userge import userge, Config
 
 log = userge.getLogger(__name__)
 
 
-@userge.on_cmd("exec")
-async def exec_(_, message: Message):
+@userge.on_cmd("exec", about="run exec")
+async def exec_(_, message: userge.MSG):
     cmd = message.text.split(" ", maxsplit=1)[1]
     reply_to_id = message.message_id
 
@@ -50,9 +48,3 @@ async def exec_(_, message: Message):
 
     else:
         await message.edit(OUTPUT)
-
-
-userge.add_help(
-    command="exec",
-    about="run exec"
-)
