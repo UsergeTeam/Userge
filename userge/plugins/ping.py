@@ -1,11 +1,11 @@
 from pyrogram import Message
 from datetime import datetime
-from Userge import userge
+from userge import userge
 
 log = userge.getLogger(__name__)
 
 
-@userge.on_message(userge.cmd("ping"))
+@userge.on_cmd("ping")
 async def pingme(_, message: Message):
     start = datetime.now()
     await message.edit('`Pong!`')

@@ -1,10 +1,10 @@
 from pyrogram import Message
-from Userge import userge
+from userge import userge
 
 log = userge.getLogger(__name__)
 
 
-@userge.on_message(userge.cmd("help"))
+@userge.on_cmd("help")
 async def helpme(_, message: Message):
     out_str = ""
     for cmd in userge.get_help():

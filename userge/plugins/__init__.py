@@ -1,4 +1,4 @@
-from Userge import logging
+from userge import logging
 
 log = logging.getLogger(__name__)
 

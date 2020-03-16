@@ -1,11 +1,11 @@
 from pyrogram import Message
 from . import get_all_plugins
-from Userge import userge
+from userge import userge
 
 log = userge.getLogger(__name__)
 
 
-@userge.on_message(userge.cmd("all"))
+@userge.on_cmd("all")
 async def getplugins(_, message: Message):
     all_plugins = await get_all_plugins()
     out_str = ""
