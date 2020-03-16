@@ -5,9 +5,7 @@ logging.getLogger("pyrogram").setLevel(logging.WARNING)
 
 
 class Userge(Client):
-
     HELP_DICT = {}
-    LOG = logging
 
     def __init__(self):
         self.log = logging.getLogger(__name__)
@@ -16,12 +14,12 @@ class Userge(Client):
             Config.HU_STRING_SESSION,
             api_id=Config.API_ID,
             api_hash=Config.API_HASH,
-            plugins = dict(root="Userge/plugins")
+            plugins=dict(root="Userge/plugins")
         )
 
     def getLogger(self, name: str):
         self.log.info(f"creating new logger => {name}")
-        return self.LOG.getLogger(name)
+        return logging.getLogger(name)
 
     def cmd(self, command: str):
         self.log.info(f"setting new command => {command}")
