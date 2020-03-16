@@ -6,11 +6,9 @@ log = logging.getLogger(__name__)
 
 config_file = "config.env"
 
-if not os.path.isfile(config_file):
-    log.error(f"{config_file} Not Found!")
-    quit(1)
-
-load_dotenv(config_file)
+if os.path.isfile(config_file):
+    log.info(f"{config_file} Found and loading ...")
+    load_dotenv(config_file)
 
 if os.environ.get("_____REMOVE_____THIS_____LINE_____", None):
     log.error("Please remove the line mentioned in the first hashtag from the config.env file")
@@ -18,7 +16,6 @@ if os.environ.get("_____REMOVE_____THIS_____LINE_____", None):
 
 
 class Config:
-
     API_ID = int(os.environ.get("API_ID", 12345))
 
     API_HASH = os.environ.get("API_HASH", None)
