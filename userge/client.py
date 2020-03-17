@@ -9,9 +9,10 @@ PyroFunc = Callable[[Client, Message], Any]
 
 class Userge(Client):
 
-    HELP_DICT: Dict[str, str] = {}
+    HELP_DICT: Dict[str, str]
     USERGE_MAIN_STRING = "<<<!  #####  ___{}___  #####  !>>>"
     USERGE_SUB_STRING = "<<<!  {}  !>>>"
+    MSG: Message
 
     def __init__(self) -> None:
         self.log = logging.getLogger(__name__)
@@ -22,7 +23,7 @@ class Userge(Client):
             Config.HU_STRING_SESSION,
             api_id=Config.API_ID,
             api_hash=Config.API_HASH,
-            plugins = dict(root="userge/plugins")
+            plugins=dict(root="userge/plugins")
         )
 
     def getLogger(self, name: str) -> 'logging':

@@ -6,7 +6,6 @@ log = userge.getLogger(__name__)
 
 @userge.on_cmd("whois", about="to get user details")
 async def who_is(_, message):
-    from_user = None
     if " " in message.text:
         _, user_id = message.text.split(" ")
         try:
