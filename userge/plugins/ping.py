@@ -4,7 +4,7 @@ from userge import userge
 log = userge.getLogger(__name__)
 
 
-@userge.on_cmd("ping", about="check server speed :)")
+@userge.on_cmd("ping", about="check how long it takes to ping your userbot")
 async def pingme(_, message: userge.MSG):
     start = datetime.now()
     await message.edit('`Pong!`')
