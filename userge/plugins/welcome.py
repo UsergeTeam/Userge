@@ -3,11 +3,11 @@ from userge.db import Database
 
 log = userge.getLogger(__name__)
 
-welcome_db = Database("welcome")
-left_db = Database("left")
+welcome_table = Database.create_table("welcome")
+left_table = Database.create_table("left")
 
-welcome_list = welcome_db.filter({'on': True}, {'_id': 1})
-left_list = left_db.filter({'on': True}, {'_id': 1})
+welcome_list = welcome_table.find_all({'on': True}, {'_id': 1})
+left_list = left_table.find_all({'on': True}, {'_id': 1})
 
 welcome_chats = Filters.chat([])
 left_chats = Filters.chat([])
@@ -20,7 +20,7 @@ for i in left_list:
 
 
 @userge.on_cmd("setwelcome", about="Creates a welcome message in current chat :)")
-async def setwel(_, message: userge.MSG):
+async def setwel(_, message):
     if message.chat.type in ["private", "bot", "channel"]:
         await message.edit('Are you high XO\nSet welcome in a group chat')
         return
@@ -32,17 +32,17 @@ async def setwel(_, message: userge.MSG):
     else:
         new_entry = {'_id': message.chat.id, 'data': welcome_string, 'on': True}
 
-        if welcome_db.findone('_id', message.chat.id):
-            welcome_db.update({'_id': message.chat.id}, new_entry, 'set')
+        if welcome_table.find_one('_id', message.chat.id):
+            welcome_table.update_one({'_id': message.chat.id}, new_entry)
         else:
-            welcome_db.addnew(new_entry)
+            welcome_table.insert_one(new_entry)
 
         welcome_chats.add(message.chat.id)
         await message.edit(f"Welcome message has been set for the \n`{message.chat.title}`")
 
 
 @userge.on_cmd("setleft", about="Creates a left message in current chat :)")
-async def setleft(_, message: userge.MSG):
+async def setleft(_, message):
     if message.chat.type in ["private", "bot", "channel"]:
         await message.edit('Are you high XO\nSet left in a group chat')
         return
@@ -54,42 +54,42 @@ async def setleft(_, message: userge.MSG):
     else:
         new_entry = {'_id': message.chat.id, 'data': left_string, 'on': True}
 
-        if left_db.findone('_id', message.chat.id):
-            left_db.update({'_id': message.chat.id}, new_entry, 'set')
+        if left_table.find_one('_id', message.chat.id):
+            left_table.update_one({'_id': message.chat.id}, new_entry)
         else:
-            left_db.addnew(new_entry)
+            left_table.insert_one(new_entry)
 
         left_chats.add(message.chat.id)
         await message.edit(f"Left message has been set for the \n`{message.chat.title}`")
 
 
 @userge.on_cmd("nowelcome", about="Disables welcome message in the current chat :)")
-async def nowel(_, message: userge.MSG):
+async def nowel(_, message):
     try:
         welcome_chats.remove(message.chat.id)
     except KeyError as e:
         await message.edit(e)
     else:
-        welcome_db.update({'_id': message.chat.id}, {'on': False}, 'set')
+        welcome_table.update_one({'_id': message.chat.id}, {'on': False})
         await message.edit("Disabled Successfully !")
 
 
 @userge.on_cmd("noleft", about="Disables left message in the current chat :)")
-async def noleft(_, message: userge.MSG):
+async def noleft(_, message):
     try:
         left_chats.remove(message.chat.id)
     except KeyError as e:
         await message.edit(e)
     else:
-        left_db.update({'_id': message.chat.id}, {'on': False}, 'set')
+        left_table.update_one({'_id': message.chat.id}, {'on': False})
         await message.edit("Disabled Successfully !")
 
 
 @userge.on_cmd("dowelcome", about="Turns on welcome message in the current chat :)")
-async def dowel(_, message: userge.MSG):
-    if welcome_db.findone('_id', message.chat.id):
+async def dowel(_, message):
+    if welcome_table.find_one('_id', message.chat.id):
         welcome_chats.add(message.chat.id)
-        welcome_db.update({'_id': message.chat.id}, {'on': True}, 'set')
+        welcome_table.update_one({'_id': message.chat.id}, {'on': True})
         await message.edit('I will welcome new members XD')
 
     else:
@@ -97,10 +97,10 @@ async def dowel(_, message: userge.MSG):
 
 
 @userge.on_cmd("doleft", about="Turns on left message in the current chat :)")
-async def doleft(_, message: userge.MSG):
-    if left_db.findone('_id', message.chat.id):
+async def doleft(_, message):
+    if left_table.find_one('_id', message.chat.id):
         left_chats.add(message.chat.id)
-        left_db.update({'_id': message.chat.id}, {'on': True}, 'set')
+        left_table.update_one({'_id': message.chat.id}, {'on': True})
         await message.edit('I will inform left members XD')
 
     else:
@@ -108,8 +108,8 @@ async def doleft(_, message: userge.MSG):
 
 
 @userge.on_new_member(welcome_chats)
-async def saywel(_, message: userge.MSG):
-    welcome_message = welcome_db.findone('_id', message.chat.id)['data']
+async def saywel(_, message):
+    welcome_message = welcome_table.find_one('_id', message.chat.id)['data']
 
     user = message.from_user
     fname = user.first_name if user.first_name else ''
@@ -130,8 +130,8 @@ async def saywel(_, message: userge.MSG):
 
 
 @userge.on_left_member(left_chats)
-async def sayleft(_, message: userge.MSG):
-    left_message = left_db.findone('_id', message.chat.id)['data']
+async def sayleft(_, message):
+    left_message = left_table.find_one('_id', message.chat.id)['data']
 
     user = message.from_user
     fname = user.first_name if user.first_name else ''
@@ -152,9 +152,9 @@ async def sayleft(_, message: userge.MSG):
 
 
 @userge.on_cmd("listwelcome", about="Shows the activated chats for welcome")
-async def lswel(_, message: userge.MSG):
+async def lswel(_, message):
     liststr = ""
-    welcome_list = welcome_db.filter({'on': True}, {'_id': 1, 'data': 1})
+    welcome_list = welcome_table.find_all({'on': True}, {'_id': 1, 'data': 1})
 
     for j in welcome_list:
         liststr += f"**{(await userge.get_chat(j.get('_id'))).title}**\n"
@@ -164,9 +164,9 @@ async def lswel(_, message: userge.MSG):
 
 
 @userge.on_cmd("listleft", about="Shows the activated chats for left")
-async def lsleft(_, message: userge.MSG):
+async def lsleft(_, message):
     liststr = ""
-    left_list = left_db.filter({'on': True}, {'_id': 1, 'data': 1})
+    left_list = left_table.find_all({'on': True}, {'_id': 1, 'data': 1})
 
     for j in left_list:
         liststr += f"**{(await userge.get_chat(j.get('_id'))).title}**\n"

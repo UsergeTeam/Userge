@@ -65,3 +65,13 @@ async def getplugins(_, message):
     for plugin in all_plugins:
         out_str += f"**{plugin}**\n"
     await message.edit(out_str)
+
+
+@userge.on_cmd("del", about="to delete replied msg")
+async def del_msg(_, message):
+    msg_ids = [message.message_id]
+
+    if message.reply_to_message:
+        msg_ids.append(message.reply_to_message.message_id)
+
+    await userge.delete_messages(message.chat.id, msg_ids)

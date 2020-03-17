@@ -3,6 +3,7 @@ import os
 import sys
 import asyncio
 import traceback
+from getpass import getuser
 from userge import userge, Config
 
 log = userge.getLogger(__name__)
@@ -140,12 +141,6 @@ async def term_(_, message):
 
     if message.reply_to_message:
         reply_to_id = message.reply_to_message.message_id
-    
-    try:
-        from os import geteuid
-        uid = geteuid()
-    except ImportError:
-        uid = "This ain't it chief!"
 
     if cmd in ("config.env"):
         await message.edit("`That's a dangerous operation! Not Permitted!`")
@@ -174,11 +169,13 @@ async def term_(_, message):
         await message.delete()
 
     else:
+        try:
+            from os import geteuid
+            uid = geteuid()
+        except ImportError:
+            uid = 1
 
-        curruser = message.from_user.username \
-            or message.from_user.first_name \
-                or message.from_user.last_name \
-                    or message.from_user.id
+        curruser = getuser()
 
         if uid == 0:
             await message.edit("`" f"{curruser}:~# {cmd}" f"\n{OUTPUT}" "`")

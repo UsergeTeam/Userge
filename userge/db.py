@@ -1,33 +1,45 @@
 from pymongo import MongoClient
+from typing import Dict, Any
 from .utils import Config, logging
+
+mgclient = MongoClient(Config.DB_URI)
 
 
 class Database:
+    def __init__(self, tablename: str) -> None:
+        self.db = mgclient[tablename]
 
-    def __init__(self, tablename):
-        client = MongoClient(Config.DB_URI)
-        self.db = client[tablename]
+    @classmethod
+    def create_table(cls, tablename: str) -> 'Database':
+        return cls(tablename)
 
-    def addnew(self, dictionary):
-        result = self.db.reviews.insert_one(dictionary)
-        return result
+    def insert_one(self, dict_: Dict[str, Any]) -> object:
+        return self.db.reviews.insert_one(dict_)
 
-    def findone(self, key, value: object) -> object:
+    def update_one(
+        self,
+        existingentry: Dict[str, Any],
+        new_dictionary_entry: Dict[str, Any],
+    ) -> object:
+
+        return self.db.reviews.update_one(
+            existingentry,
+            {'$set': new_dictionary_entry}
+        )
+
+    def delete_one(self, dict_: Dict[str, Any]) -> object:
+        return self.db.reviews.delete_one(dict_)
+
+    def find_one(self, key: str, value: Any) -> object:
         return self.db.reviews.find_one({key: value})
 
-    def update(self, existingentry, new_dictionary_entry, set_unset):
-        if set_unset is 'set':
-            x = '$set'
-        else:
-            x = '$unset'
-        result = self.db.reviews.update_one(existingentry, {x: new_dictionary_entry})
-        return result
+    def find_all(
+        self,
+        query: Dict[str, Any],
+        output: Dict[str, Any]
+    ) -> object:
 
-    def delall(self):
-        self.db.reviews.drop()
-
-    def filter(self, query: dict, output: dict):
         return self.db.reviews.find(query, output)
 
-    def never_used(self, output: dict):
-        return self.filter({"times_used": {'exists': False}}, output)
+    def delete_table(self) -> None:
+        self.db.reviews.drop()
