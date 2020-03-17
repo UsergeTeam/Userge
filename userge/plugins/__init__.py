@@ -1,12 +1,12 @@
+import glob
+from typing import List
+from os.path import dirname, basename, isfile
 from userge import logging
 
 log = logging.getLogger(__name__)
 
 
-async def get_all_plugins():
-    from os.path import dirname, basename, isfile
-    import glob
-
+async def get_all_plugins() -> List[str]:
     plugins = sorted(
         [
             basename(f)[:-3] for f in glob.glob(dirname(__file__) + "/*.py")

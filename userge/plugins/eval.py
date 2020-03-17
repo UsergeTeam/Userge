@@ -8,7 +8,7 @@ log = userge.getLogger(__name__)
 
 
 @userge.on_cmd("eval", about="run eval")
-async def eval_(_, message: userge.MSG):
+async def eval_(_, message):
     await message.edit("Processing ...")
     cmd = message.text.split(" ", maxsplit=1)[1]
     reply_to_id = message.message_id

@@ -5,7 +5,7 @@ log = userge.getLogger(__name__)
 
 
 @userge.on_cmd("json", about="replied msg to json")
-async def jsonify(_, message: userge.MSG):
+async def jsonify(_, message):
     the_real_message = None
     reply_to_id =  None
 

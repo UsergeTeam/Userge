@@ -6,7 +6,7 @@ log = userge.getLogger(__name__)
 
 
 @userge.on_cmd("exec", about="run exec")
-async def exec_(_, message: userge.MSG):
+async def exec_(_, message):
     cmd = message.text.split(" ", maxsplit=1)[1]
     reply_to_id = message.message_id
 

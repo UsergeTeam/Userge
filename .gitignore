@@ -132,3 +132,4 @@ dmypy.json
 #configfile
 config.ini
 config.env
+.vscode/settings.json

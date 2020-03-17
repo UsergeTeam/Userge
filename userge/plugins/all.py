@@ -5,7 +5,7 @@ log = userge.getLogger(__name__)
 
 
 @userge.on_cmd("all", about="to get all plugins")
-async def getplugins(_, message: userge.MSG):
+async def getplugins(_, message):
     all_plugins = await get_all_plugins()
     out_str = ""
     for plugin in all_plugins:
