@@ -134,3 +134,4 @@ config.ini
 config.env
 .vscode/settings.json
 *.session
+rn

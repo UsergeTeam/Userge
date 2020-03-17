@@ -61,14 +61,19 @@ async def dowel(_, message: userge.MSG):
 async def saywel(_, message: userge.MSG):
     welcome_message = welcome_db.findone('_id', message.chat.id)['data']
 
+    user = message.from_user
+    fname = user.first_name if user.first_name else ''
+    lname = user.last_name if user.last_name else ''
+    fullname = fname + ' ' + lname
+    username = user.username if user.username else ''
+
     kwargs = {
-        'fname': message.from_user.first_name,
-        'lname': message.from_user.last_name,
-        'fullname': message.from_user.first_name + message.from_user.last_name,
-        'uname': message.from_user.username,
-        'chat': message.chat.title,
-        'mention': f'<a href="tg://user?id={message.from_user.id}">\
-            {message.from_user.username or message.from_user.first_name + message.from_user.last_name}</a>',
+        'fname': fname,
+        'lname': lname,
+        'fullname': fullname,
+        'uname': username,
+        'chat': message.chat.title if message.chat.title else "this group",
+        'mention': f'<a href="tg://user?id={user.id}">{username or fullname or "user"}</a>',
     }
 
     await message.reply(welcome_message.format(**kwargs))
