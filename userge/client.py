@@ -52,11 +52,11 @@ class Userge(Client):
 
         return decorator
 
-    def on_left_member(self, welcome_chats: Filters.chat) -> Callable[[PyroFunc], Any]:
+    def on_left_member(self, left_chats: Filters.chat) -> Callable[[PyroFunc], Any]:
 
         def decorator(func: PyroFunc) -> Any:
-            self.log.info(self.USERGE_SUB_STRING.format(f"Loading => [ async def {func.__name__}(client, message) ] On Left Member in {welcome_chats}"))
-            dec = self.on_message(Filters.left_chat_member & welcome_chats)
+            self.log.info(self.USERGE_SUB_STRING.format(f"Loading => [ async def {func.__name__}(client, message) ] On Left Member in {left_chats}"))
+            dec = self.on_message(Filters.left_chat_member & left_chats)
 
             return dec(func)
 
@@ -67,7 +67,12 @@ class Userge(Client):
         self.HELP_DICT.update({command: about})
 
     def get_help(self, key: str = "") -> Union[str, Dict[str, str]]:
-        return self.HELP_DICT[key] if key else self.HELP_DICT
+        if key and key in self.HELP_DICT:
+            return self.HELP_DICT[key]
+        elif key:
+            return None
+        else:
+            return self.HELP_DICT
 
     def begin(self) -> None:
         self.log.info(self.USERGE_MAIN_STRING.format("Starting Userge"))
