@@ -52,6 +52,16 @@ class Userge(Client):
 
         return decorator
 
+    def on_left_member(self, welcome_chats: Filters.chat) -> Callable[[PyroFunc], Any]:
+
+        def decorator(func: PyroFunc) -> Any:
+            self.log.info(self.USERGE_SUB_STRING.format(f"Loading => [ async def {func.__name__}(client, message) ] On Left Member in {welcome_chats}"))
+            dec = self.on_message(Filters.left_chat_member & welcome_chats)
+
+            return dec(func)
+
+        return decorator
+
     def __add_help(self, command: str, about: str) -> None:
         self.log.info(self.USERGE_SUB_STRING.format(f"Updating Help Dict => [ {command} : {about} ]"))
         self.HELP_DICT.update({command: about})
