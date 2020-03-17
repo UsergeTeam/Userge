@@ -52,11 +52,11 @@ class Userge(Client):
 
         return decorator
 
-    def on_left_member(self, left_chats: Filters.chat) -> Callable[[PyroFunc], Any]:
+    def on_left_member(self, leaving_chats: Filters.chat) -> Callable[[PyroFunc], Any]:
 
         def decorator(func: PyroFunc) -> Any:
-            self.log.info(self.USERGE_SUB_STRING.format(f"Loading => [ async def {func.__name__}(client, message) ] On Left Member in {left_chats}"))
-            dec = self.on_message(Filters.left_chat_member & left_chats)
+            self.log.info(self.USERGE_SUB_STRING.format(f"Loading => [ async def {func.__name__}(client, message) ] On Left Member in {leaving_chats}"))
+            dec = self.on_message(Filters.left_chat_member & leaving_chats)
 
             return dec(func)
 

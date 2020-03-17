@@ -21,9 +21,18 @@ async def who_is(_, message):
         return
     if from_user is not None:
         message_out_str = ""
-        message_out_str += f"ID: `{from_user.id}`\n"
-        message_out_str += f"First Name: <a href='tg://user?id={from_user.id}'>{from_user.first_name}</a>\n"
-        message_out_str += f"Last Name: {from_user.last_name}"
+        message_out_str += f"<strong>USER INFO:</strong> \n"
+        message_out_str += f"\n"
+        message_out_str += f"<strong>First Name:</strong> {from_user.first_name}\n"
+        message_out_str += f"<strong>Last Name:</strong> {from_user.last_name}\n"
+        message_out_str += f"<strong>Username:</strong> @{from_user.username}\n"
+        message_out_str += f"<strong>Data Centre ID:</strong> {from_user.dc_id}\n"
+        message_out_str += f"<strong>Is Bot:</strong> {from_user.is_bot}\n"
+        message_out_str += f"<strong>Is Restricted:</strong> {from_user.is_scam}\n"
+        message_out_str += f"<strong>Is Verified by Telegram:</strong> {from_user.is_verified}\n"
+        message_out_str += f"<strong>User ID:</strong> <code>{from_user.id}</code>\n"
+        message_out_str += f"\n"
+        message_out_str += f"<strong>Permanent Link To Profile:</strong> <a href='tg://user?id={from_user.id}'>{from_user.first_name}</a>"
         chat_photo = from_user.photo
         local_user_photo = await userge.download_media(
             message=chat_photo.big_file_id
