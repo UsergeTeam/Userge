@@ -12,6 +12,7 @@ log = userge.getLogger(__name__)
 @userge.on_cmd("eval", about="run eval")
 async def eval_(_, message):
     await message.edit("Processing ...")
+
     try:
         cmd = message.text.split(" ", maxsplit=1)[1]
     except:
@@ -19,15 +20,22 @@ async def eval_(_, message):
         return
 
     reply_to_id = message.message_id
-
     if message.reply_to_message:
         reply_to_id = message.reply_to_message.message_id
 
     old_stderr = sys.stderr
     old_stdout = sys.stdout
+
     redirected_output = sys.stdout = io.StringIO()
     redirected_error = sys.stderr = io.StringIO()
+
     stdout, stderr, exc = None, None, None
+
+    async def aexec(code, userge, message):
+        exec(
+            "async def __aexec(userge, message):\n " + '\n '.join(line for line in code.split('\n'))
+        )
+        return await locals()['__aexec'](userge, message)
 
     try:
         await aexec(cmd, userge, message)
@@ -36,20 +44,25 @@ async def eval_(_, message):
 
     stdout = redirected_output.getvalue()
     stderr = redirected_error.getvalue()
+
     sys.stdout = old_stdout
     sys.stderr = old_stderr
 
     evaluation = ""
+
     if exc:
         evaluation = exc
+
     elif stderr:
         evaluation = stderr
+
     elif stdout:
         evaluation = stdout
+
     else:
         evaluation = "Success"
 
-    final_output = "**EVAL**: ```{}```\n\n**OUTPUT**:\n```{}``` \n".format(cmd, evaluation.strip())
+    final_output = "**EVAL**:\n```{}```\n\n**OUTPUT**:\n```{}```".format(cmd, evaluation.strip())
 
     if len(final_output) > Config.MAX_MESSAGE_LENGTH:
         with open("eval.text", "w+", encoding="utf8") as out_file:
@@ -70,16 +83,10 @@ async def eval_(_, message):
         await message.edit(final_output)
 
 
-async def aexec(code, userge, message):
-    exec(
-        f'async def __aexec(userge, message): ' +
-        ''.join(f'\n {l}' for l in code.split('\n'))
-    )
-    return await locals()['__aexec'](userge, message)
-
-
 @userge.on_cmd("exec", about="run exec")
 async def exec_(_, message):
+    await message.edit("Processing ...")
+
     try:
         cmd = message.text.split(" ", maxsplit=1)[1]
     except:
@@ -87,7 +94,6 @@ async def exec_(_, message):
         return
 
     reply_to_id = message.message_id
-
     if message.reply_to_message:
         reply_to_id = message.reply_to_message.message_id
 
@@ -98,16 +104,12 @@ async def exec_(_, message):
     )
     stdout, stderr = await process.communicate()
 
-    e = stderr.decode() or "No Error"
-    o = stdout.decode()
+    err = stderr.decode() or "no error"
+    out = stdout.decode() or "no output"
 
-    if o:
-        _o = o.split("\n")
-        o = "`\n".join(_o)
-    else:
-        o = "**Tip**: \n`If you want to see the results of your code, I suggest printing them to stdout.`"
+    out = "\n".join(out.split("\n"))
 
-    OUTPUT = f"**QUERY:**\n__Command:__\n`{cmd}` \n__PID:__\n`{process.pid}`\n\n**stderr:** \n`{e}`\n**Output:**\n{o}"
+    OUTPUT = f"**EXEC**:\n\n__Command:__\n`{cmd}`\n__PID:__\n`{process.pid}`\n\n**stderr:**\n`{err}`\n\n**stdout:**\n``{out}``"
 
     if len(OUTPUT) > Config.MAX_MESSAGE_LENGTH:
         with open("exec.text", "w+", encoding="utf8") as out_file:
@@ -131,6 +133,7 @@ async def exec_(_, message):
 @userge.on_cmd("term", about="run terminal")
 async def term_(_, message):
     await message.edit("Processing ...")
+
     try:
         cmd = message.text.split(" ", maxsplit=1)[1]
     except:
@@ -138,11 +141,10 @@ async def term_(_, message):
         return
 
     reply_to_id = message.message_id
-
     if message.reply_to_message:
         reply_to_id = message.reply_to_message.message_id
 
-    if cmd in ("config.env"):
+    if "config.env" in cmd:
         await message.edit("`That's a dangerous operation! Not Permitted!`")
         return
 
@@ -151,6 +153,7 @@ async def term_(_, message):
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE)
     stdout, stderr = await process.communicate()
+
     OUTPUT = str(stdout.decode().strip()) + str(stderr.decode().strip())
 
     if len(OUTPUT) > Config.MAX_MESSAGE_LENGTH:

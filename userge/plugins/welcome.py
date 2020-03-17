@@ -107,9 +107,8 @@ async def doleft(_, message):
         await message.edit('Please set the left message with `.setleft`')
 
 
-@userge.on_new_member(welcome_chats)
-async def saywel(_, message):
-    welcome_message = welcome_table.find_one('_id', message.chat.id)['data']
+async def get_template(table, message):
+    message_str = table.find_one('_id', message.chat.id)['data']
 
     user = message.from_user
     fname = user.first_name if user.first_name else ''
@@ -126,29 +125,19 @@ async def saywel(_, message):
         'mention': f'<a href="tg://user?id={user.id}">{username or fullname or "user"}</a>',
     }
 
-    await message.reply(welcome_message.format(**kwargs))
+    return message_str.format(**kwargs)
+
+
+@userge.on_new_member(welcome_chats)
+async def saywel(_, message):
+    welcome_message = await get_template(welcome_table, message)
+    await message.reply(welcome_message)
 
 
 @userge.on_left_member(left_chats)
 async def sayleft(_, message):
-    left_message = left_table.find_one('_id', message.chat.id)['data']
-
-    user = message.from_user
-    fname = user.first_name if user.first_name else ''
-    lname = user.last_name if user.last_name else ''
-    fullname = fname + ' ' + lname
-    username = user.username if user.username else ''
-
-    kwargs = {
-        'fname': fname,
-        'lname': lname,
-        'fullname': fullname,
-        'uname': username,
-        'chat': message.chat.title if message.chat.title else "this group",
-        'mention': f'<a href="tg://user?id={user.id}">{username or fullname or "user"}</a>',
-    }
-
-    await message.reply(left_message.format(**kwargs))
+    left_message = await get_template(left_table, message)
+    await message.reply(left_message)
 
 
 @userge.on_cmd("listwelcome", about="Shows the activated chats for welcome")
