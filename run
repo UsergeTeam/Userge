@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python3 -m Userge
+python3 -m userge
