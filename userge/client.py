@@ -70,7 +70,7 @@ class Userge(Client):
         if key and key in self.HELP_DICT:
             return self.HELP_DICT[key]
         elif key:
-            return None
+            return ''
         else:
             return self.HELP_DICT
 
