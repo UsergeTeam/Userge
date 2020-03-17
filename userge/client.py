@@ -5,7 +5,6 @@ logging.getLogger("pyrogram").setLevel(logging.WARNING)
 
 
 class Userge(Client):
-
     HELP_DICT = {}
     USERGE_MAIN_STRING = "<<<!  #####  ___{}___  #####  !>>>"
     USERGE_SUB_STRING = "<<<!  {}  !>>>"
@@ -20,7 +19,7 @@ class Userge(Client):
             Config.HU_STRING_SESSION,
             api_id=Config.API_ID,
             api_hash=Config.API_HASH,
-            plugins = dict(root="userge/plugins")
+            plugins=dict(root="userge/plugins")
         )
 
     def getLogger(self, name: str):
@@ -28,11 +27,11 @@ class Userge(Client):
         return logging.getLogger(name)
 
     def on_cmd(self, command: str, about: str):
-
         self.__add_help(command, about)
 
         def decorator(func):
-            self.log.info(self.USERGE_SUB_STRING.format(f"Loading => [ async def {func.__name__}(client, message) ] On .{command} Command"))
+            self.log.info(self.USERGE_SUB_STRING.format(
+                f"Loading => [ async def {func.__name__}(client, message) ] On .{command} Command"))
             dec = self.on_message(Filters.regex(pattern=f"^.{command}") & Filters.me)
 
             return dec(func)
