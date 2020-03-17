@@ -1,5 +1,5 @@
 from .utils import Config, logging
-from .client import Userge
+from .client import Userge, Filters
 
 log = logging.getLogger(__name__)
 

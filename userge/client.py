@@ -9,10 +9,10 @@ PyroFunc = Callable[[Client, Message], Any]
 
 class Userge(Client):
 
-    HELP_DICT: Dict[str, str]
+    HELP_DICT: Dict[str, str] = {}
     USERGE_MAIN_STRING = "<<<!  #####  ___{}___  #####  !>>>"
     USERGE_SUB_STRING = "<<<!  {}  !>>>"
-    MSG: Message
+    MSG = Message
 
     def __init__(self) -> None:
         self.log = logging.getLogger(__name__)
@@ -37,6 +37,16 @@ class Userge(Client):
         def decorator(func: PyroFunc) -> Any:
             self.log.info(self.USERGE_SUB_STRING.format(f"Loading => [ async def {func.__name__}(client, message) ] On .{command} Command"))
             dec = self.on_message(Filters.regex(pattern=f"^.{command}") & Filters.me)
+
+            return dec(func)
+
+        return decorator
+
+    def on_new_member(self, welcome_chats: Filters.chat) -> Callable[[PyroFunc], Any]:
+
+        def decorator(func: PyroFunc) -> Any:
+            self.log.info(self.USERGE_SUB_STRING.format(f"Loading => [ async def {func.__name__}(client, message) ] On New Member in {welcome_chats}"))
+            dec = self.on_message(Filters.new_chat_members & welcome_chats)
 
             return dec(func)
 

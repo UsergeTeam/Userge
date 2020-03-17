@@ -1,30 +1,36 @@
-from userge import userge
+from userge import userge, Filters
 from userge.db import Database
-from pyrogram import Filters
 
 log = userge.getLogger(__name__)
+
+welcome_db = Database("welcome")
+
+welcome_list = welcome_db.filter({'on': True}, {'_id': 1})
+
 welcome_chats = Filters.chat([])
-welcome__list = Database("welcome").filter({'on': True}, {'_id': 1})
-for i in welcome__list:
+
+for i in welcome_list:
     welcome_chats.add(i.get('_id'))
 
 
 @userge.on_cmd("setwelcome", about="Creates a welcome message in current chat :)")
 async def setwel(_, message: userge.MSG):
-    welcome_db = Database("welcome")
     if message.chat.type in ["private", "bot", "channel"]:
         await message.edit('Are you high XO\nSet welcome in a group chat')
         return
+
     try:
         welcome_string = message.text.split(" ", maxsplit=1)[1]
     except IndexError:
         await message.edit("wrong syntax\n`.setwelcome <welcome message>`")
     else:
         new_entry = {'_id': message.chat.id, 'data': welcome_string, 'on': True}
+
         if welcome_db.findone('_id', message.chat.id):
             welcome_db.update({'_id': message.chat.id}, new_entry, 'set')
         else:
             welcome_db.addnew(new_entry)
+
         welcome_chats.add(message.chat.id)
         await message.edit(f"Welcome message has been set for the \n`{message.chat.title}`")
 
@@ -36,46 +42,45 @@ async def nowel(_, message: userge.MSG):
     except KeyError as e:
         await message.edit(e)
     else:
-        welcome_db = Database("welcome")
         welcome_db.update({'_id': message.chat.id}, {'on': False}, 'set')
         await message.edit("Dissabled Successfully !")
 
 
 @userge.on_cmd("dowelcome", about="Turns on welcome message in the current chat :)")
 async def dowel(_, message: userge.MSG):
-    welcome_db = Database("welcome")
     if welcome_db.findone('_id', message.chat.id):
         welcome_chats.add(message.chat.id)
         welcome_db.update({'_id': message.chat.id}, {'on': True}, 'set')
         await message.edit('I will welcome new members XD')
+
     else:
         await message.edit('Please set the welcome message with `.setwelcome`')
 
 
-@userge.on_message(Filters.new_chat_members & welcome_chats)
+@userge.on_new_member(welcome_chats)
 async def saywel(_, message: userge.MSG):
-    welcome_db = Database("welcome")
     welcome_message = welcome_db.findone('_id', message.chat.id)['data']
 
-    user = message.from_user
-    fname = user.first_name
-    lname = user.last_name
-    uname = user.username
-    chat = message.chat.title
+    kwargs = {
+        'fname': message.from_user.first_name,
+        'lname': message.from_user.last_name,
+        'fullname': message.from_user.first_name + message.from_user.last_name,
+        'uname': message.from_user.username,
+        'chat': message.chat.title,
+        'mention': f'<a href="tg://user?id={message.from_user.id}">\
+            {message.from_user.username or message.from_user.first_name + message.from_user.last_name}</a>',
+    }
 
-    mention = f'<a href="tg://user?id={user.id}">{uname or fname}</a>'
-    await message.reply(welcome_message.format(chat=chat, fname=fname, lname=lname, uname=uname, mention=mention))
+    await message.reply(welcome_message.format(**kwargs))
 
 
 @userge.on_cmd("listwelcome", about="Shows the activated chats for welcome")
 async def lswel(_, message: userge.MSG):
-    liststr = ''
-    welcome_list = Database("welcome").filter({'on': True}, {'_id': 1, 'data': 1})
+    liststr = ""
+    welcome_list = welcome_db.filter({'on': True}, {'_id': 1, 'data': 1})
+
     for j in welcome_list:
-        chatid = j.get('_id')
-        chatname = (await userge.get_chat(chatid)).title
-        welcome_msg = j.get("data")
-        print(chatname, welcome_msg)
-        # liststr.join(f'>--{chatname}--\n')
-    # liststr = liststr if liststr != '' else '`NO WELCOMES STARTED`'
-    # await message.edit(liststr)
+        liststr += f"**{(await userge.get_chat(j.get('_id'))).title}**\n"
+        liststr += f"`{j.get('data')}`\n\n"
+
+    await message.edit(liststr or '`NO WELCOMES STARTED`')
