@@ -88,7 +88,7 @@ async def del_msg(_, message):
     await userge.delete_messages(message.chat.id, msg_ids)
 
 @userge.on_cmd("get_id", about="to get id")
-async def getids(client, message):
+async def getids(_, message):
       if message.reply_to_message:
          chat = message.reply_to_message.from_user.id
          file_id = None
