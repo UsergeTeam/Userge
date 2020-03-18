@@ -15,6 +15,7 @@ async def eval_(_, message):
 
     try:
         cmd = message.text.split(" ", maxsplit=1)[1]
+
     except:
         await message.edit("__No Command Found!__")
         return
@@ -39,6 +40,7 @@ async def eval_(_, message):
 
     try:
         await aexec(cmd, userge, message)
+        
     except Exception:
         exc = traceback.format_exc()
 
@@ -89,6 +91,7 @@ async def exec_(_, message):
 
     try:
         cmd = message.text.split(" ", maxsplit=1)[1]
+
     except:
         await message.edit("__No Command Found!__")
         return
@@ -136,6 +139,7 @@ async def term_(_, message):
 
     try:
         cmd = message.text.split(" ", maxsplit=1)[1]
+
     except:
         await message.edit("__No Command Found!__")
         return
@@ -175,6 +179,7 @@ async def term_(_, message):
         try:
             from os import geteuid
             uid = geteuid()
+
         except ImportError:
             uid = 1
 
@@ -182,5 +187,6 @@ async def term_(_, message):
 
         if uid == 0:
             await message.edit("`" f"{curruser}:~# {cmd}" f"\n{OUTPUT}" "`")
+            
         else:
             await message.edit("`" f"{curruser}:~$ {cmd}" f"\n{OUTPUT}" "`")
