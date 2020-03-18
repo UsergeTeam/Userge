@@ -16,7 +16,7 @@ async def eval_(_, message):
     try:
         cmd = message.text.split(" ", maxsplit=1)[1]
 
-    except:
+    except IndexError:
         await message.edit("__No Command Found!__")
         return
 
@@ -49,8 +49,6 @@ async def eval_(_, message):
 
     sys.stdout = old_stdout
     sys.stderr = old_stderr
-
-    evaluation = ""
 
     if exc:
         evaluation = exc
@@ -92,7 +90,7 @@ async def exec_(_, message):
     try:
         cmd = message.text.split(" ", maxsplit=1)[1]
 
-    except:
+    except IndexError:
         await message.edit("__No Command Found!__")
         return
 
@@ -112,7 +110,7 @@ async def exec_(_, message):
 
     out = "\n".join(out.split("\n"))
 
-    OUTPUT = f"**EXEC**:\n\n__Command:__\n`{cmd}`\n__PID:__\n`{process.pid}`\n\n**stderr:**\n`{err}`\n\n**stdout:**\n``{out}``"
+    OUTPUT = f"**EXEC**:\n\n__Command:__\n`{cmd}`\n__PID:__\n`{process.pid}`\n\n**stderr:**\n`{err}`\n\n**stdout:**\n``{out}`` "
 
     if len(OUTPUT) > Config.MAX_MESSAGE_LENGTH:
         with open("exec.text", "w+", encoding="utf8") as out_file:
@@ -140,7 +138,7 @@ async def term_(_, message):
     try:
         cmd = message.text.split(" ", maxsplit=1)[1]
 
-    except:
+    except IndexError:
         await message.edit("__No Command Found!__")
         return
 

@@ -45,7 +45,6 @@ async def purge_(_, message):
             revoke=True
         )
         purged_messages_count += len(list_of_messages_to_delete)
-        list_of_messages_to_delete = []
         end_t = datetime.now()
         time_taken_s = (end_t - start_t).seconds
         await message.edit(

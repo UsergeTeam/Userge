@@ -25,8 +25,8 @@ async def helpme(_, message):
     try:
         cmd = message.text.split(" ", maxsplit=1)[1]
 
-    except:
-        out_str += "**which command you want ?**\n\n"
+    except IndexError:
+        out_str += "**which command you want ?**\n`.help <command name>`\n\n"
 
         for cmd in sorted(userge.get_help()):
             out_str += f"**.{cmd}**\n"
@@ -40,9 +40,6 @@ async def helpme(_, message):
 
 @userge.on_cmd("json", about="replied msg to json")
 async def jsonify(_, message):
-    the_real_message = None
-    reply_to_id =  None
-
     if message.reply_to_message:
         reply_to_id = message.reply_to_message.message_id
         the_real_message = message.reply_to_message
@@ -77,7 +74,7 @@ async def getplugins(_, message):
 
     for plugin in all_plugins:
         out_str += f"**{plugin}**\n"
-        
+
     await message.edit(out_str)
 
 

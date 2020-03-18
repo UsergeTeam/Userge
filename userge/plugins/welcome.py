@@ -21,7 +21,6 @@ for i in left_list:
 
 
 def raw_set(name, table, chats):
-
     def decorator(func):
 
         @functools.wraps(func)
@@ -55,7 +54,6 @@ def raw_set(name, table, chats):
 
 
 def raw_on(name, table, chats):
-
     def decorator(func):
 
         @functools.wraps(func)
@@ -77,7 +75,6 @@ def raw_on(name, table, chats):
 
 
 def raw_do(name, table, chats):
-
     def decorator(func):
 
         @functools.wraps(func)
@@ -98,12 +95,9 @@ def raw_do(name, table, chats):
 
 
 def raw_say(table):
-
     def decorator(func):
-
         @functools.wraps(func)
         async def wrapper(_, message):
-
             message_str = table.find_one('_id', message.chat.id)['data']
 
             user = message.from_user
@@ -129,12 +123,9 @@ def raw_say(table):
 
 
 def raw_ls(name, table):
-
     def decorator(func):
-
         @functools.wraps(func)
         async def wrapper(_, message):
-            
             liststr = ""
             list_ = table.find_all({'on': True}, {'_id': 1, 'data': 1})
 
@@ -151,58 +142,59 @@ def raw_ls(name, table):
 
 @userge.on_cmd("setwelcome", about="Creates a welcome message in current chat :)")
 @raw_set('Welcome', welcome_table, welcome_chats)
-async def setwel(_, message):
+async def setwel(_, __):
     pass
 
 
 @userge.on_cmd("setleft", about="Creates a left message in current chat :)")
 @raw_set('Left', left_table, left_chats)
-async def setleft(_, message):
+async def setleft(_, __):
     pass
 
 
 @userge.on_cmd("nowelcome", about="Disables welcome message in the current chat :)")
 @raw_on('Welcome', welcome_table, welcome_chats)
-async def nowel(_, message):
+async def nowel(_, __):
     pass
 
 
 @userge.on_cmd("noleft", about="Disables left message in the current chat :)")
 @raw_on('Left', left_table, left_chats)
-async def noleft(_, message):
+async def noleft():
     pass
 
 
 @userge.on_cmd("dowelcome", about="Turns on welcome message in the current chat :)")
 @raw_do('Welcome', welcome_table, welcome_chats)
-async def dowel(_, message):
+async def dowel(_, __):
     pass
 
 
 @userge.on_cmd("doleft", about="Turns on left message in the current chat :)")
 @raw_do('Left', left_table, left_chats)
-async def doleft(_, message):
+async def doleft(_, __):
     pass
 
 
 @userge.on_new_member(welcome_chats)
 @raw_say(welcome_table)
-async def saywel(_, message):
+async def saywel(_, __):
     pass
+
 
 @userge.on_left_member(left_chats)
 @raw_say(left_table)
-async def sayleft(_, message):
+async def sayleft(_, __):
     pass
 
 
 @userge.on_cmd("listwelcome", about="Shows the activated chats for welcome")
 @raw_ls('Welcome', welcome_table)
-async def lswel(_, message):
+async def lswel(_, __):
     pass
 
 
 @userge.on_cmd("listleft", about="Shows the activated chats for left")
 @raw_ls('Left', left_table)
-async def lsleft(_, message):
+async def lsleft(_, __):
     pass
