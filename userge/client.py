@@ -57,7 +57,7 @@ class Userge(Client):
 
         return self.__build_decorator(
             log=f"On .{command} Command",
-            filters=Filters.regex(pattern=f"^.{command}") & Filters.me,
+            filters=Filters.regex(pattern=f"^.{command}(?: (.+))?") & Filters.me,
             group=group
         )
 

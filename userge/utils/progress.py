@@ -48,5 +48,5 @@ async def progress(current, total, client, message_id, chat_id, start, status):
                 )
             )
 
-        except Exception as e:
+        except Exception:
             pass

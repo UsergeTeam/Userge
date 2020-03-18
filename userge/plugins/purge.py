@@ -9,11 +9,10 @@ LOG = userge.getLogger(__name__)
 async def purge_(_, message):
     if message.reply_to_message:
         start_t = datetime.now()
-        recvd_commands = message.text.split(" ")
+        user_id = message.matches[0].group(1)
         from_user = None
 
-        if len(recvd_commands) > 1:
-            user_id = recvd_commands[1]
+        if user_id:
             from_user = await userge.get_users(user_id)
 
         start_message = message.reply_to_message.message_id

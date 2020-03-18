@@ -126,11 +126,9 @@ async def term_(_, message):
 
 async def init_func(message):
     await message.edit("Processing ...")
+    cmd = message.matches[0].group(1)
 
-    try:
-        cmd = message.text.split(" ", maxsplit=1)[1]
-
-    except IndexError:
+    if cmd is None:
         await message.edit("__No Command Found!__")
         return None
 

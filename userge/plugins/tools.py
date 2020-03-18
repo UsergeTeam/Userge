@@ -1,7 +1,9 @@
 import os
+import urbandict
 from datetime import datetime
 from . import get_all_plugins
-from userge import userge
+from urllib.error import HTTPError
+from userge import userge, Config
 
 
 @userge.on_cmd("ping", about="check how long it takes to ping your userbot")
@@ -18,12 +20,10 @@ async def pingme(_, message):
 
 @userge.on_cmd("help", about="to know how to use this")
 async def helpme(_, message):
+    cmd = message.matches[0].group(1)
     out_str = ""
 
-    try:
-        cmd = message.text.split(" ", maxsplit=1)[1]
-
-    except IndexError:
+    if cmd is None:
         out_str += "**which command you want ?**\n`.help command_name`\n\n"
 
         for cmd in sorted(userge.get_help()):
@@ -125,9 +125,9 @@ async def getids(_, message):
 @userge.on_cmd("admins", about="to mention admins")
 async def mentionadmins(client, message):
     mentions = "🛡 **Admin List** 🛡\n"
-    input_str = message.text[8:]
+    input_str = message.matches[0].group(1)
 
-    if not input_str:
+    if input_str is None:
         input_str = message.chat.id
 
     try:
@@ -143,3 +143,52 @@ async def mentionadmins(client, message):
 
     await message.reply(mentions)
     await message.delete()
+
+
+@userge.on_cmd("ub", about="Searches Urban Dictionary for the query")
+async def urban_dict(_, message):
+    await message.edit("Processing...")
+    query = message.matches[0].group(1)
+
+    if query is None:
+        await message.edit(f"use `.ub query`")
+        return
+
+    try:
+        mean = urbandict.define(query)
+
+    except HTTPError:
+        await message.edit(f"Sorry, couldn't find any results for: `{query}``")
+        return
+
+    meanlen = len(mean[0]["def"]) + len(mean[0]["example"])
+
+    if meanlen == 0:
+        await message.edit(f"No result found for **{query}**")
+        return
+
+    OUTPUT = f"**Query:** `{query}`\n\n**Meaning:** __{mean[0]['def']}__\n\n**Example:**\n__{mean[0]['example']}__"
+
+    if len(OUTPUT) >= Config.MAX_MESSAGE_LENGTH:
+        with open("output.txt", "w+", encoding="utf8") as out_file:
+            out_file.write(str(OUTPUT))
+
+        reply_to_id = message.reply_to_message.message_id \
+            if message.reply_to_message \
+                else message.message_id
+
+        await userge.send_document(
+            chat_id=message.chat.id,
+            document="output.txt",
+            caption=query,
+            disable_notification=True,
+            reply_to_message_id=reply_to_id
+        )
+
+        if os.path.exists("output.txt"):
+            os.remove("output.txt")
+
+        await message.delete()
+
+    else:
+        await message.edit(OUTPUT)

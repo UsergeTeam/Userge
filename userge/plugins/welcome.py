@@ -28,10 +28,9 @@ def raw_set(name, table, chats):
                 await message.edit(f'Are you high XO\nSet {name} in a group chat')
                 return
 
-            try:
-                string = message.text.split(" ", maxsplit=1)[1]
+            string = message.matches[0].group(1)
 
-            except IndexError:
+            if string is None:
                 await message.edit(f"wrong syntax\n`.set{name.lower()} <{name.lower()} message>`")
 
             else:
@@ -51,7 +50,7 @@ def raw_set(name, table, chats):
     return decorator
 
 
-def raw_on(name, table, chats):
+def raw_no(name, table, chats):
     def decorator(func):
 
         @functools.wraps(func)
@@ -151,12 +150,12 @@ def setleft(): pass
 
 
 @userge.on_cmd("nowelcome", about="Disables welcome message in the current chat :)")
-@raw_on('Welcome', WELCOME_TABLE, WELCOME_CHATS)
+@raw_no('Welcome', WELCOME_TABLE, WELCOME_CHATS)
 def nowel(): pass
 
 
 @userge.on_cmd("noleft", about="Disables left message in the current chat :)")
-@raw_on('Left', LEFT_TABLE, LEFT_CHATS)
+@raw_no('Left', LEFT_TABLE, LEFT_CHATS)
 def noleft(): pass
 
 
