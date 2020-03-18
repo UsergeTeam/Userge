@@ -10,32 +10,34 @@ async def who_is(_, message):
         try:
             user_id = int(user_id)
             from_user = await userge.get_users(user_id)
+            from_chat = await userge.get_chat(user_id)
 
         except Exception as e:
             await message.edit(str(e))
             return
 
     elif message.reply_to_message:
-        from_user = message.reply_to_message.from_user
+        from_user = await userge.get_users(message.reply_to_message.from_user.id)
+        from_chat = await userge.get_chat(message.reply_to_message.from_user.id)
 
     else:
         await message.edit("no valid user_id / message specified")
         return
 
-    if from_user is not None:
+    if from_user or from_chat is not None:
         message_out_str = ""
 
-        message_out_str += f"<strong>USER INFO:</strong> \n"
-        message_out_str += f"\n"
-        message_out_str += f"<strong>First Name:</strong> {from_user.first_name}\n"
-        message_out_str += f"<strong>Last Name:</strong> {from_user.last_name}\n"
+        message_out_str += f"<strong>USER INFO:</strong>\n\n"
+        message_out_str += f"<strong>First Name:</strong> <code>{from_user.first_name}</code>\n"
+        message_out_str += f"<strong>Last Name:</strong> <code>{from_user.last_name}</code>\n"
         message_out_str += f"<strong>Username:</strong> @{from_user.username}\n"
-        message_out_str += f"<strong>Data Centre ID:</strong> {from_user.dc_id}\n"
-        message_out_str += f"<strong>Is Bot:</strong> {from_user.is_bot}\n"
-        message_out_str += f"<strong>Is Restricted:</strong> {from_user.is_scam}\n"
-        message_out_str += f"<strong>Is Verified by Telegram:</strong> {from_user.is_verified}\n"
-        message_out_str += f"<strong>User ID:</strong> <code>{from_user.id}</code>\n"
-        message_out_str += f"\n"
+        message_out_str += f"<strong>Data Centre ID:</strong> <code>{from_user.dc_id}</code>\n"
+        message_out_str += f"<strong>Is Bot:</strong> <code>{from_user.is_bot}</code>\n"
+        message_out_str += f"<strong>Is Restricted:</strong> <code>{from_user.is_scam}</code>\n"
+        message_out_str += f"<strong>Is Verified by Telegram:</strong> <code>{from_user.is_verified}</code>\n"
+        message_out_str += f"<strong>User ID:</strong> <code>{from_user.id}</code>\n\n"
+        message_out_str += f"<strong>Bio:</strong> <code>{from_chat.description}</code>\n\n"
+        message_out_str += f"<strong>Last Seen:</strong> <code>{from_user.status}</code>\n"
         message_out_str += f"<strong>Permanent Link To Profile:</strong> <a href='tg://user?id={from_user.id}'>{from_user.first_name}</a>"
 
         chat_photo = from_user.photo
