@@ -86,3 +86,47 @@ async def del_msg(_, message):
         msg_ids.append(message.reply_to_message.message_id)
 
     await userge.delete_messages(message.chat.id, msg_ids)
+
+@userge.on_cmd("get_id", about="to get id")
+async def getids(client, message):
+      if message.reply_to_message:
+         chat = message.reply_to_message.from_user.id
+         file_id = None
+         if message.reply_to_message.media:
+            if message.reply_to_message.audio:
+               file_id = message.reply_to_message.audio.file_id
+            elif message.reply_to_message.document:
+               file_id = message.reply_to_message.document.file_id
+            elif message.reply_to_message.photo:
+               file_id = message.reply_to_message.photo.file_id
+            elif message.reply_to_message.sticker:
+               file_id = message.reply_to_message.sticker.file_id
+            elif message.reply_to_message.voice:
+               file_id = message.reply_to_message.voice.file_id
+            elif message.reply_to_message.video_note:
+               file_id = message.reply_to_message.video_note.file_id
+            elif message.reply_to_message.video:
+               file_id = message.reply_to_message.video.file_id
+         if file_id is not None:
+             await message.edit("Current Chat ID: `{}`\nFrom User ID: `{}`\n📄 File ID: `{}`".format(str(message.chat.id), str(chat), file_id))
+         else:
+             await message.edit("Current Chat ID: `{}`\nFrom User ID: `{}`".format(str(message.chat.id), str(chat)))
+      else:
+           await message.edit("💁 Current Chat ID: `{}`".format(str(message.chat.id)))
+      
+@userge.on_cmd("men_admin", about="to mention admins")
+async def mentionadmins(client, message):
+      mentions = "🛡 Admin List: \n"
+      input_str = message.text[11:]
+      if not input_str:
+         input_str = message.chat.id
+      try:
+         async for x in client.iter_chat_members(chat_id=input_str, filter="administrators"):
+               if x.status == "creator":
+                   mentions += "\n 👑 [{}](tg://user?id={}) `{}`".format(x.user.first_name, x.user.id, x.user.id)
+               if x.status == "administrator":
+                   mentions += "\n ⚜ [{}](tg://user?id={}) `{}`".format(x.user.first_name, x.user.id, x.user.id)
+      except Exception as e:
+             mentions += " " + str(e) + "\n"
+      await message.reply(mentions)
+      await message.delete()
