@@ -1,12 +1,17 @@
+import time
 from userge import userge
 from pathlib import Path
 from pyrogram import Message
 from pyrogram.errors.exceptions import FloodWait
-import time
-from userge.utils.upload_helper import take_screen_shot, extractMetadata, createParser
-from userge.utils.progress import progress
 
-logger = userge.getLogger(__name__)
+from userge.utils import (
+    progress,
+    take_screen_shot,
+    extractMetadata,
+    createParser
+)
+
+LOGGER = userge.getLogger(__name__)
 
 
 @userge.on_cmd("upload", about="upload files to telegram")
@@ -33,7 +38,7 @@ async def explorer(path: Path, message: Message):
             await explorer(i, message)
 
 
-async def upload(path: Path, chat_id):
+async def upload(path: Path, chat_id: int):
 
     message = await userge.send_message(chat_id, "`Starting ...`")
     message_id = message.message_id
@@ -42,7 +47,7 @@ async def upload(path: Path, chat_id):
         await message.edit('<i>File Size Too Large(' + str(round(int(size) / (1024 * 1024), 0)) + 'MB)</i> \U0001f61e')
         return
 
-    logger.info(path.name)
+    LOGGER.info(path.name)
     metadata = extractMetadata(createParser(str(path)))
     duration = 0
     width = 0
@@ -127,7 +132,7 @@ async def upload(path: Path, chat_id):
                 text='<i>Uploaded Successfully</i> \U0001f618'
             )
     except Exception as e:
-        logger.exception("Exception occurred")
+        LOGGER.exception("Exception occurred")
         await userge.edit_message_text(
             chat_id=chat_id,
             message_id=message_id,

@@ -1,8 +1,6 @@
 import os
 from userge import userge
 
-log = userge.getLogger(__name__)
-
 
 @userge.on_cmd("whois", about="to get user details")
 async def who_is(_, message):
@@ -18,7 +16,7 @@ async def who_is(_, message):
             return
 
     elif message.reply_to_message:
-        from_user = await userge.get_users(message.reply_to_message.from_user.id)
+        from_user = message.reply_to_message.from_user
 
     else:
         await message.edit("no valid user_id / message specified")

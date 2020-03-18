@@ -1,11 +1,11 @@
 from pymongo import MongoClient
 from pymongo.cursor import Cursor
-from typing import Dict, Any
+from typing import Dict, Union
 from .utils import Config, logging
 
-log = logging.getLogger(__name__)
+MGCLIENT = MongoClient(Config.DB_URI)
 
-mgclient = MongoClient(Config.DB_URI)
+MONGODICT = Dict[str, Union[int, str, bool]]
 
 
 class Database:
@@ -14,8 +14,13 @@ class Database:
         tablename: str
     ) -> None:
 
+        self.log = logging.getLogger(__name__)
         self.name = tablename
-        self.db = mgclient[tablename]
+        self.db = MGCLIENT[tablename]
+
+        self.log.info(
+            f"Creating Table => {tablename}"
+        )
 
     @classmethod
     def create_table(
@@ -23,18 +28,14 @@ class Database:
         tablename: str
     ) -> 'Database':
 
-        log.info(
-            f"Creating Table => {tablename}"
-        )
-
         return cls(tablename)
 
     def insert_one(
         self,
-        dict_: Dict[str, Any]
+        dict_: MONGODICT
     ) -> Cursor:
 
-        log.info(
+        self.log.info(
             f"{self.name} :: Inserting {dict_}"
         )
 
@@ -42,11 +43,11 @@ class Database:
 
     def update_one(
         self,
-        existingentry: Dict[str, Any],
-        new_dictionary_entry: Dict[str, Any],
+        existingentry: MONGODICT,
+        new_dictionary_entry: MONGODICT,
     ) -> Cursor:
 
-        log.info(
+        self.log.info(
             f"{self.name} :: Updating {existingentry} To {new_dictionary_entry}"
         )
 
@@ -57,10 +58,10 @@ class Database:
 
     def delete_one(
         self,
-        dict_: Dict[str, Any]
+        dict_: MONGODICT
     ) -> Cursor:
 
-        log.info(
+        self.log.info(
             f"{self.name} :: Deleting {dict_}"
         )
 
@@ -69,32 +70,44 @@ class Database:
     def find_one(
         self,
         key: str,
-        value: Any
+        value: Union[int, str, bool]
     ) -> Cursor:
 
         dict_ = {key: value}
 
-        log.info(
+        self.log.info(
             f"{self.name} :: Finding One {dict_}"
         )
-    
-        return self.db.reviews.find_one(dict_)
+
+        ret_val = list(self.db.reviews.find_one(dict_))
+
+        self.log.info(
+            f"{self.name} :: Found {ret_val} For {dict_}"
+        )
+
+        return ret_val[0] if ret_val else None
 
     def find_all(
         self,
-        query: Dict[str, Any],
-        output: Dict[str, Any]
+        query: MONGODICT,
+        output: MONGODICT
     ) -> Cursor:
 
-        log.info(
+        self.log.info(
             f"{self.name} :: Finding All For {query}, Requesting {output}"
         )
 
-        return self.db.reviews.find(query, output)
+        ret_val = list(self.db.reviews.find(query, output))
+
+        self.log.info(
+            f"{self.name} :: Found {ret_val} For {query}, Requesting {output}"
+        )
+
+        return ret_val
 
     def delete_table(self) -> None:
 
-        log.info(
+        self.log.info(
             f"WARNING! :: Droping {self.name}"
         )
 

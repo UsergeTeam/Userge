@@ -12,20 +12,20 @@ from .utils import Config, logging
 
 logging.getLogger("pyrogram").setLevel(logging.WARNING)
 
-PyroFunc = Callable[[Client, Message], Any]
+PYROFUNC = Callable[[Client, Message], Any]
 
 
 class Userge(Client):
 
-    HELP_DICT: Dict[str, str] = {}
-    USERGE_MAIN_STRING = "<<<!  #####  ___{}___  #####  !>>>"
-    USERGE_SUB_STRING = "<<<!  {}  !>>>"
+    __HELP_DICT: Dict[str, str] = {}
+    __USERGE_MAIN_STRING = "<<<!  #####  ___{}___  #####  !>>>"
+    __USERGE_SUB_STRING = "<<<!  {}  !>>>"
 
     def __init__(self) -> None:
         self.log = logging.getLogger(__name__)
 
         self.log.info(
-            self.USERGE_MAIN_STRING.format("Setting Userge Configs")
+            self.__USERGE_MAIN_STRING.format("Setting Userge Configs")
         )
 
         super().__init__(
@@ -41,7 +41,7 @@ class Userge(Client):
     ) -> logging.Logger:
 
         self.log.info(
-            self.USERGE_SUB_STRING.format(f"Creating Logger => {name}")
+            self.__USERGE_SUB_STRING.format(f"Creating Logger => {name}")
         )
 
         return logging.getLogger(name)
@@ -51,7 +51,7 @@ class Userge(Client):
         command: str,
         about: str,
         group: int = 0
-    ) -> Callable[[PyroFunc], PyroFunc]:
+    ) -> Callable[[PYROFUNC], PYROFUNC]:
 
         self.__add_help(command, about)
 
@@ -65,7 +65,7 @@ class Userge(Client):
         self,
         welcome_chats: Filters.chat,
         group: int = 0
-    ) -> Callable[[PyroFunc], PyroFunc]:
+    ) -> Callable[[PYROFUNC], PYROFUNC]:
 
         return self.__build_decorator(
             log=f"On New Member in {welcome_chats}",
@@ -77,7 +77,7 @@ class Userge(Client):
         self,
         leaving_chats: Filters.chat,
         group: int = 0
-    ) -> Callable[[PyroFunc], PyroFunc]:
+    ) -> Callable[[PYROFUNC], PYROFUNC]:
 
         return self.__build_decorator(
             log=f"On Left Member in {leaving_chats}",
@@ -90,14 +90,14 @@ class Userge(Client):
         key: str = ''
     ) -> Union[str, Dict[str, str]]:
 
-        if key and key in self.HELP_DICT:
-            return self.HELP_DICT[key]
+        if key and key in self.__HELP_DICT:
+            return self.__HELP_DICT[key]
 
         elif key:
             return ''
 
         else:
-            return self.HELP_DICT
+            return self.__HELP_DICT
 
     def __add_help(
         self,
@@ -106,22 +106,22 @@ class Userge(Client):
     ) -> None:
 
         self.log.info(
-            self.USERGE_SUB_STRING.format(f"Updating Help Dict => [ {command} : {about} ]")
+            self.__USERGE_SUB_STRING.format(f"Updating Help Dict => [ {command} : {about} ]")
         )
 
-        self.HELP_DICT.update({command: about})
+        self.__HELP_DICT.update({command: about})
 
     def __build_decorator(
         self,
         log: str,
         filters: Filters,
         group: int
-    ) -> Callable[[PyroFunc], PyroFunc]:
+    ) -> Callable[[PYROFUNC], PYROFUNC]:
 
-        def decorator(func: PyroFunc) -> PyroFunc:
+        def decorator(func: PYROFUNC) -> PYROFUNC:
 
             self.log.info(
-                self.USERGE_SUB_STRING.format(f"Loading => [ async def {func.__name__}(client, message) ] `{log}`")
+                self.__USERGE_SUB_STRING.format(f"Loading => [ async def {func.__name__}(client, message) ] `{log}`")
             )
 
             self.add_handler(MessageHandler(func, filters), group)
@@ -133,11 +133,11 @@ class Userge(Client):
     def begin(self) -> None:
 
         self.log.info(
-            self.USERGE_MAIN_STRING.format("Starting Userge")
+            self.__USERGE_MAIN_STRING.format("Starting Userge")
         )
 
         self.run()
 
         self.log.info(
-            self.USERGE_MAIN_STRING.format("Exiting Userge")
+            self.__USERGE_MAIN_STRING.format("Exiting Userge")
         )

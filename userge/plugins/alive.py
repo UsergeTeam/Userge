@@ -1,18 +1,21 @@
 from userge import userge
 from pyrogram.errors.exceptions import FileIdInvalid
-log = userge.getLogger(__name__)
+
 LOGO_STICKER_ID = None
 
 
 @userge.on_cmd("alive", about="This command is just for fun XD")
 async def alive(_, message):
     await message.delete()
+
     try:
         if LOGO_STICKER_ID:
             await sendit(LOGO_STICKER_ID, message)
+
         else:
             await refresh_id()
             await sendit(LOGO_STICKER_ID, message)
+            
     except FileIdInvalid:
         await refresh_id()
         await sendit(LOGO_STICKER_ID, message)
