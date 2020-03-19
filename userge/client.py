@@ -69,9 +69,6 @@ class Userge(Client):
 
         self.__add_help(command_name, about)
 
-        found = [i for i in '()[]+*.\\|?:' if i in command]
-        pattern = command if found else f"^.{command}(?: (.+))?"
-
         return self.__build_decorator(
             log=f"On .{command_name} Command",
             filters=Filters.regex(pattern=pattern) & Filters.me,
