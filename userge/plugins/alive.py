@@ -4,7 +4,7 @@ from pyrogram.errors.exceptions import FileIdInvalid
 LOGO_STICKER_ID = None
 
 
-@userge.on_cmd("alive", about="This command is just for fun XD")
+@userge.on_cmd("alive", about="__This command is just for fun XD__")
 async def alive(_, message):
     await message.delete()
 

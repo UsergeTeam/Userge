@@ -6,3 +6,7 @@ dnspython
 hachoir
 Pillow
 urbandict
+googletrans
+search-engine-parser
+wikipedia
+speedtest-cli

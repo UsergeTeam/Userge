@@ -18,59 +18,69 @@ for i in LEFT_LIST:
 
 
 @userge.on_cmd("setwelcome",
-    about="""Creates a welcome message in current chat :)
+    about="""__Creates a welcome message in current chat :)__
 
-Available options:
-`{fname}` : add first name
-`{lname}` : add last name
-`{fullname}` : add full name
-`{uname}` : username
-`{chat}` : chat name
-`{mention}` : mention user""")
+**Available options:**
+
+    `{fname}` : __add first name__
+    `{lname}` : __add last name__
+    `{fullname}` : __add full name__
+    `{uname}` : __username__
+    `{chat}` : __chat name__
+    `{mention}` : __mention user__
+    
+**Example:**
+
+    `.setwelcome Hi {mention}, Welcome to {chat} chat`""")
 async def setwel(_, msg):
     await raw_set(msg, 'Welcome', WELCOME_TABLE, WELCOME_CHATS)
 
 
 @userge.on_cmd("setleft",
-    about="""Creates a left message in current chat :)
+    about="""__Creates a left message in current chat :)__
 
-Available options:
-`{fname}` : add first name
-`{lname}` : add last name
-`{fullname}` : add full name
-`{uname}` : username
-`{chat}` : chat name
-`{mention}` : mention user""")
+**Available options:**
+
+    `{fname}` : __add first name__
+    `{lname}` : __add last name__
+    `{fullname}` : __add full name__
+    `{uname}` : __username__
+    `{chat}` : __chat name__
+    `{mention}` : __mention user__
+    
+**Example:**
+
+    `.setleft {fullname}, Why you left :(`""")
 async def setleft(_, msg):
     await raw_set(msg, 'Left', LEFT_TABLE, LEFT_CHATS)
 
 
-@userge.on_cmd("nowelcome", about="Disables welcome message in the current chat :)")
+@userge.on_cmd("nowelcome", about="__Disables and removes welcome message in the current chat :)__")
 async def nowel(_, msg):
     await raw_no(msg, 'Welcome', WELCOME_TABLE, WELCOME_CHATS)
 
 
-@userge.on_cmd("noleft", about="Disables left message in the current chat :)")
+@userge.on_cmd("noleft", about="__Disables and removes left message in the current chat :)__")
 async def noleft(_, msg):
     await raw_no(msg, 'Left', LEFT_TABLE, LEFT_CHATS)
 
 
-@userge.on_cmd("dowelcome", about="Turns on welcome message in the current chat :)")
+@userge.on_cmd("dowelcome", about="__Turns on welcome message in the current chat :)__")
 async def dowel(_, msg):
     await raw_do(msg, 'Welcome', WELCOME_TABLE, WELCOME_CHATS)
 
 
-@userge.on_cmd("doleft", about="Turns on left message in the current chat :)")
+@userge.on_cmd("doleft", about="__Turns on left message in the current chat :)__")
 async def doleft(_, msg):
     await raw_do(msg, 'Left', LEFT_TABLE, LEFT_CHATS)
 
 
-@userge.on_cmd("listwelcome", about="Shows the activated chats for welcome")
+@userge.on_cmd("listwelcome", about="__Shows the activated chats for welcome__")
 async def lswel(_, msg):
     await raw_ls(msg, 'Welcome', WELCOME_TABLE)
 
 
-@userge.on_cmd("listleft", about="Shows the activated chats for left")
+@userge.on_cmd("listleft", about="__Shows the activated chats for left__")
 async def lsleft(_, msg):
     await raw_ls(msg, 'Left', LEFT_TABLE)
 

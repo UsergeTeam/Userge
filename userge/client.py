@@ -5,7 +5,7 @@ from pyrogram import (
 
 from typing import (
     Dict, Union, Any,
-    Callable
+    Tuple, List, Callable
 )
 
 import os
@@ -56,9 +56,12 @@ class Userge(Client):
 
         self.__add_help(command, about)
 
+        found = [i for i in '()[]+*.\\|?:' if i in command]
+        pattern = command if found else f"^.{command}(?: (.+))?"
+
         return self.__build_decorator(
             log=f"On .{command} Command",
-            filters=Filters.regex(pattern=f"^.{command}(?: (.+))?") & Filters.me,
+            filters=Filters.regex(pattern=pattern) & Filters.me,
             group=group
         )
 
@@ -118,6 +121,29 @@ class Userge(Client):
 
         if delete_message:
             await message.delete()
+
+    @staticmethod
+    async def split_flags(
+        message: Message,
+        prefix: str = '-',
+        remove_pre: bool = True
+    ) -> Tuple[str, List[str]]:
+
+        input_str = message.matches[0].group(1) or ''
+
+        text = []
+        flags = []
+
+        for i in input_str.strip().split():
+            if i.startswith(prefix):
+                flags.append(i.strip(prefix) if remove_pre else i)
+
+            else:
+                text.append(i)
+
+        text = ' '.join(text)
+
+        return text, flags
 
     def get_help(
         self,

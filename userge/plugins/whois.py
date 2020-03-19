@@ -2,7 +2,16 @@ import os
 from userge import userge
 
 
-@userge.on_cmd("whois", about="to get user details")
+@userge.on_cmd("whois",
+    about="""__use this to get any user details__
+
+**Usage:**
+
+--just reply to any user message or add user_id or username--
+
+**Example:**
+
+    `.whois [user_id | username]`""")
 async def who_is(_, message):
 
     await message.edit("`Collecting Whois Info.. Hang on!`")
@@ -53,7 +62,6 @@ async def who_is(_, message):
                 photo=local_user_photo,
                 caption=message_out_str,
                 parse_mode="html",
-                # ttl_seconds=,
                 disable_notification=True
             )
             

@@ -5,15 +5,33 @@ from userge import userge
 LOG = userge.getLogger(__name__)
 
 
-@userge.on_cmd("purge", about="to purge messages from user")
+@userge.on_cmd("purge",
+    about="""__purge messages from user__
+    
+**Usage:**
+
+reply `.purge` to the start message to purge
+    use `.purge [user_id | user_name]` to purge messages from that user
+    or use `-u` flag to get user_id from replied message
+
+**Example:**
+
+    `.purge`
+    `.purge -u`
+    `.purge [user_id | user_name]`""")
 async def purge_(_, message):
     if message.reply_to_message:
         start_t = datetime.now()
-        user_id = message.matches[0].group(1)
-        from_user = None
+        user_id, flags = await userge.split_flags(message, '-', False)
 
-        if user_id:
+        if '-u' in flags:
+            from_user = message.reply_to_message.from_user
+
+        elif user_id:
             from_user = await userge.get_users(user_id)
+
+        else:
+            from_user = None
 
         start_message = message.reply_to_message.message_id
         end_message = message.message_id

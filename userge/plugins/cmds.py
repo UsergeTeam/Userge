@@ -7,7 +7,16 @@ from getpass import getuser
 from userge import userge, Config
 
 
-@userge.on_cmd("eval", about="run eval")
+@userge.on_cmd("eval",
+    about="""__run python code line | lines__
+
+**Usage:**
+
+    `.eval [code lines]
+    
+**Example:**
+
+    `.eval print('Userge')`""")
 async def eval_(_, message):
     cmd = await init_func(message)
 
@@ -52,7 +61,8 @@ async def eval_(_, message):
     else:
         evaluation = "Success"
 
-    OUTPUT = "**EVAL**:\n```{}```\n\n**OUTPUT**:\n```{}```".format(cmd, evaluation.strip())
+    OUTPUT = "**EVAL**:\n```{}```\n\n\
+**OUTPUT**:\n```{}```".format(cmd, evaluation.strip())
 
     if len(OUTPUT) > Config.MAX_MESSAGE_LENGTH:
         await userge.send_output_as_file(
@@ -66,7 +76,16 @@ async def eval_(_, message):
         await message.edit(OUTPUT)
 
 
-@userge.on_cmd("exec", about="run exec")
+@userge.on_cmd("exec",
+    about="""__run shell commands__
+
+**Usage:**
+
+    `.exec [commands]
+    
+**Example:**
+
+    `.exec echo "Userge"`""")
 async def exec_(_, message):
     cmd = await init_func(message)
 
@@ -85,7 +104,9 @@ async def exec_(_, message):
 
     out = "\n".join(out.split("\n"))
 
-    OUTPUT = f"**EXEC**:\n\n__Command:__\n`{cmd}`\n__PID:__\n`{process.pid}`\n\n**stderr:**\n`{err}`\n\n**stdout:**\n``{out}`` "
+    OUTPUT = f"**EXEC**:\n\n\
+__Command:__\n`{cmd}`\n__PID:__\n`{process.pid}`\n\n\
+**stderr:**\n`{err}`\n\n**stdout:**\n``{out}`` "
 
     if len(OUTPUT) > Config.MAX_MESSAGE_LENGTH:
         await userge.send_output_as_file(
@@ -99,7 +120,16 @@ async def exec_(_, message):
         await message.edit(OUTPUT)
 
 
-@userge.on_cmd("term", about="run terminal")
+@userge.on_cmd("term",
+    about="""__run terminal commands__
+
+**Usage:**
+
+    `.term [commands]
+    
+**Example:**
+
+    `.term echo "Userge"`""")
 async def term_(_, message):
     cmd = await init_func(message)
 
@@ -133,10 +163,10 @@ async def term_(_, message):
         curruser = getuser()
 
         if uid == 0:
-            await message.edit("`" f"{curruser}:~# {cmd}" f"\n{OUTPUT}" "`")
+            await message.edit(f"`{curruser}:~# {cmd}\n{OUTPUT}`")
             
         else:
-            await message.edit("`" f"{curruser}:~$ {cmd}" f"\n{OUTPUT}" "`")
+            await message.edit(f"`{curruser}:~$ {cmd}\n{OUTPUT}`")
 
 
 async def init_func(message):
