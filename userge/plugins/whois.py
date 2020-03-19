@@ -8,7 +8,7 @@ async def who_is(_, message):
         _, user_id = message.text.split(" ")
 
         try:
-            user_id = int(user_id)
+            user_id = (user_id)
             from_user = await userge.get_users(user_id)
             from_chat = await userge.get_chat(user_id)
 
