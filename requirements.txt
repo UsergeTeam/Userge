@@ -10,3 +10,6 @@ googletrans
 search-engine-parser
 wikipedia
 speedtest-cli
+emoji
+wget
+nest_asyncio

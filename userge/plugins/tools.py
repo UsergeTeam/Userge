@@ -1,11 +1,17 @@
 import os
+import wget
 import urbandict
+import speedtest
+import asyncio
 from json import dumps
 from datetime import datetime
 from . import get_all_plugins
+from emoji import get_emoji_regexp
 from urllib.error import HTTPError
 from googletrans import Translator, LANGUAGES
+from search_engine_parser import GoogleSearch
 from userge import userge, Config
+from userge.utils import humanbytes
 
 
 @userge.on_cmd("ping", about="__check how long it takes to ping your userbot__")
@@ -128,43 +134,30 @@ async def getids(_, message):
     about="""__View or mention admins in chat__
 
 **Available Flags:**
-`--m` : __mention all admins__
-`--mc` : __only mention creator__
-`--id` : __show ids__
+`-m` : __mention all admins__
+`-mc` : __only mention creator__
+`-id` : __show ids__
 
 **Usage:**
 
     `.admins [any flag] [chatid]`""")
-async def mentionadmins(client, message):
+async def mentionadmins(_, message):
     mentions = "🛡 **Admin List** 🛡\n"
-    chat_id, flags = await userge.split_flags(message, '--', False)
+    chat_id, flags = await userge.filter_flags(message)
 
-    men_admins = '--m' in flags
-    men_creator = '--mc' in flags
-    show_id = '--id' in flags
+    men_admins = '-m' in flags
+    men_creator = '-mc' in flags
+    show_id = '-id' in flags
 
     if not chat_id:
         chat_id = message.chat.id
 
     try:
-        async for x in client.iter_chat_members(chat_id=chat_id, filter="administrators"):
+        async for x in userge.iter_chat_members(chat_id=chat_id, filter="administrators"):
             status = x.status
-            first_name = x.user.first_name or ''
-            last_name = x.user.last_name or ''
-            username = x.user.username or None
             u_id = x.user.id
-
-            if first_name and last_name:
-                full_name = first_name + ' ' + last_name
-
-            elif first_name:
-                full_name = first_name
-
-            elif last_name:
-                full_name = last_name
-
-            else:
-                full_name = "user"
+            username = x.user.username or None
+            full_name = (await userge.get_user_dict(u_id))['flname']
 
             if status == "creator":
                 if men_admins or men_creator:
@@ -267,7 +260,7 @@ __{dumps(LANGUAGES, indent=4, sort_keys=True)}__
 async def translateme(_, message):
     translator = Translator()
 
-    text, flags = await userge.split_flags(message, '-')
+    text, flags = await userge.filter_flags(message, del_pre=True)
     replied = False
 
     if message.reply_to_message:
@@ -283,10 +276,12 @@ async def translateme(_, message):
         return
 
     if len(flags) == 2:
-        src, dest = flags
+        src, dest = list(flags)
 
     else:
-        src, dest = 'auto', flags[0]
+        src, dest = 'auto', list(flags)[0]
+
+    text = get_emoji_regexp().sub(u'', text)
 
     await message.edit("Translating...")
 
@@ -312,3 +307,124 @@ async def translateme(_, message):
 
     else:
         await message.edit(OUTPUT)
+
+
+@userge.on_cmd("speedtest", about="__test your server speed__")
+async def speedtst(_, message):
+    await message.edit("`Running speed test . . .`")
+
+    test = speedtest.Speedtest()
+    test.get_best_server()
+
+    await message.edit("`Running download test . . .`")
+    test.download()
+
+    await message.edit("`Running upload test . . .`")
+    test.upload()
+
+    test.results.share()
+    result = test.results.dict()
+
+    path = wget.download(result['share'])
+
+    OUTPUT = f"""**--Started at {result['timestamp']}--
+
+Client:
+
+ISP: `{result['client']['isp']}`
+Country: `{result['client']['country']}`
+
+Server:
+
+Name: `{result['server']['name']}`
+Country: `{result['server']['country']}, {result['server']['cc']}`
+Sponsor: `{result['server']['sponsor']}`
+Latency: `{result['server']['latency']}`
+
+Ping: `{result['ping']}`
+Sent: `{await humanbytes(result['bytes_sent'])}`
+Received: `{await humanbytes(result['bytes_received'])}`
+Download: `{await humanbytes(result['download'])}/s`
+Upload: `{await humanbytes(result['upload'])}/s`**"""
+
+    await userge.send_photo(
+        chat_id=message.chat.id,
+        photo=path,
+        caption=OUTPUT
+    )
+
+    os.remove(path)
+    await message.delete()
+
+
+@userge.on_cmd("sd (\\d+) (.+)",
+    about="""__make self-destructable messages__
+
+**Usage:**
+
+    `.sd [time in seconds] [text]`""")
+async def selfdestruct(_, message):
+    seconds = int(message.matches[0].group(1))
+    text = str(message.matches[0].group(2))
+
+    await message.edit(text)
+
+    await asyncio.sleep(seconds)
+    await message.delete()
+
+
+@userge.on_cmd("google",
+    about="""__do a Google search__
+
+**Available Flags:**
+
+    `-p` : __page of results to return__
+    `-l` : __limit the number of returned results (defaults to 5)__
+    
+**Usage:**
+
+    `.google [flags] [query | reply to msg]`
+    
+**Example:**
+
+    `.google -p4 -l10 github-userge`""")
+async def gsearch(_, message):
+    query, flags = await userge.filter_flags(message)
+
+    page = int(flags.get('-p', 1))
+    limit = int(flags.get('-l', 5))
+
+    if message.reply_to_message:
+        query = message.reply_to_message.text
+
+    if not query:
+        await message.edit("Give a query or reply to a message to google!")
+        return
+
+    gsearch = GoogleSearch()
+    gresults = gsearch.search(query, page)
+
+    OUTPUT = ""
+
+    for i in range(limit):
+        try:
+            title = gresults["titles"][i]
+            link = gresults["links"][i]
+            desc = gresults["descriptions"][i]
+            OUTPUT += f"[{title}]({link})\n"
+            OUTPUT += f"`{desc}`\n\n"
+
+        except IndexError:
+            break
+
+    OUTPUT = f"**Search Query:**\n`{query}`\n\n**Results:**\n{OUTPUT}"
+
+    if len(OUTPUT) >= Config.MAX_MESSAGE_LENGTH:
+        await userge.send_output_as_file(
+            output=OUTPUT,
+            message=message,
+            caption=query
+        )
+
+    else:
+        await message.edit(OUTPUT, disable_web_page_preview=True)

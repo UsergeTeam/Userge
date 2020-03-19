@@ -24,7 +24,7 @@ for i in LEFT_LIST:
 
     `{fname}` : __add first name__
     `{lname}` : __add last name__
-    `{fullname}` : __add full name__
+    `{flname}` : __add full name__
     `{uname}` : __username__
     `{chat}` : __chat name__
     `{mention}` : __mention user__
@@ -43,14 +43,14 @@ async def setwel(_, msg):
 
     `{fname}` : __add first name__
     `{lname}` : __add last name__
-    `{fullname}` : __add full name__
+    `{flname}` : __add full name__
     `{uname}` : __username__
     `{chat}` : __chat name__
     `{mention}` : __mention user__
     
 **Example:**
 
-    `.setleft {fullname}, Why you left :(`""")
+    `.setleft {flname}, Why you left :(`""")
 async def setleft(_, msg):
     await raw_set(msg, 'Left', LEFT_TABLE, LEFT_CHATS)
 
@@ -156,29 +156,12 @@ async def raw_say(message, name, table):
     message_str = table.find_one('_id', message.chat.id)['data']
 
     user = message.new_chat_members[0] if name == "Welcome" else message.left_chat_member
-    fname = user.first_name or ''
-    lname = user.last_name or ''
-    username = user.username or ''
-
-    if fname and lname:
-        full_name = fname + ' ' + lname
-
-    elif fname:
-        full_name = fname
-
-    elif lname:
-        full_name = lname
-
-    else:
-        full_name = "user"
+    user_dict = await userge.get_user_dict(user.id)
 
     kwargs = {
-        'fname': fname,
-        'lname': lname,
-        'fullname': full_name,
-        'uname': username,
+        **user_dict,
         'chat': message.chat.title if message.chat.title else "this group",
-        'mention': f'<a href="tg://user?id={user.id}">{username or full_name}</a>',
+        'mention': f"<a href='tg://user?id={user.id}'>{user_dict['uname'] or user_dict['flname']}</a>",
     }
 
     await message.reply(message_str.format(**kwargs))

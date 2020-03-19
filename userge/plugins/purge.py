@@ -22,7 +22,7 @@ reply `.purge` to the start message to purge
 async def purge_(_, message):
     if message.reply_to_message:
         start_t = datetime.now()
-        user_id, flags = await userge.split_flags(message, '-', False)
+        user_id, flags = await userge.filter_flags(message)
 
         if '-u' in flags:
             from_user = message.reply_to_message.from_user

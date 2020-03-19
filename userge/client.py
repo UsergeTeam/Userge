@@ -9,6 +9,8 @@ from typing import (
 )
 
 import os
+import re
+import nest_asyncio
 from .utils import Config, logging
 
 logging.getLogger("pyrogram").setLevel(logging.WARNING)
@@ -54,13 +56,24 @@ class Userge(Client):
         group: int = 0
     ) -> Callable[[PYROFUNC], PYROFUNC]:
 
-        self.__add_help(command, about)
+        found = [i for i in '()[]+*.\\|?:' if i in command]
+
+        if found:
+            match = re.search(r"([\w_]+)", command)
+            command_name = match.groups()[0]
+            pattern = command
+
+        else:
+            command_name = command
+            pattern = f"^.{command}(?: (.+))?"
+
+        self.__add_help(command_name, about)
 
         found = [i for i in '()[]+*.\\|?:' if i in command]
         pattern = command if found else f"^.{command}(?: (.+))?"
 
         return self.__build_decorator(
-            log=f"On .{command} Command",
+            log=f"On .{command_name} Command",
             filters=Filters.regex(pattern=pattern) & Filters.me,
             group=group
         )
@@ -122,28 +135,65 @@ class Userge(Client):
         if delete_message:
             await message.delete()
 
-    @staticmethod
-    async def split_flags(
+    async def filter_flags(
+        self,
         message: Message,
         prefix: str = '-',
-        remove_pre: bool = True
-    ) -> Tuple[str, List[str]]:
+        del_pre: bool = False
+    ) -> Tuple[str, Dict[str, str]]:
 
         input_str = message.matches[0].group(1) or ''
 
         text = []
-        flags = []
+        flags = {}
 
         for i in input_str.strip().split():
-            if i.startswith(prefix):
-                flags.append(i.strip(prefix) if remove_pre else i)
+            match = re.match(f"({prefix}[a-z]+)([0-9]+)?", i)
+
+            if match:
+                items = match.groups()
+                flags[items[0].lstrip(prefix) if del_pre else items[0]] = items[1] or ''
 
             else:
                 text.append(i)
 
         text = ' '.join(text)
 
+        self.log.info(
+            self.__USERGE_SUB_STRING.format(f"Filtered Input String => [ {text}, {flags} ]")
+        )
+
         return text, flags
+
+    async def get_user_dict(
+        self,
+        user_id: int
+    ) -> Dict[str, str]:
+
+        user_obj = await self.get_users(user_id)
+
+        fname = user_obj.first_name or ''
+        lname = user_obj.last_name or ''
+        username = user_obj.username or ''
+
+        if fname and lname:
+            full_name = fname + ' ' + lname
+
+        elif fname:
+            full_name = fname
+
+        elif lname:
+            full_name = lname
+
+        else:
+            full_name = "user"
+
+        return {
+            'fname': fname,
+            'lname': lname,
+            'flname': full_name,
+            'uname': username
+        }
 
     def get_help(
         self,
@@ -195,6 +245,8 @@ class Userge(Client):
         self.log.info(
             self.__USERGE_MAIN_STRING.format("Starting Userge")
         )
+
+        nest_asyncio.apply()
 
         self.run()
 

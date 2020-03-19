@@ -79,7 +79,7 @@ class Database:
             f"{self.name} :: Finding One {dict_}"
         )
 
-        ret_val = dict(self.db.reviews.find_one(dict_))
+        ret_val = dict(self.db.reviews.find_one(dict_) or {})
 
         self.log.info(
             f"{self.name} :: Found {ret_val} For {dict_}"
@@ -97,7 +97,7 @@ class Database:
             f"{self.name} :: Finding All For {query}, Requesting {output}"
         )
 
-        ret_val = list(self.db.reviews.find(query, output))
+        ret_val = list(self.db.reviews.find(query, output) or [])
 
         self.log.info(
             f"{self.name} :: Found {ret_val} For {query}, Requesting {output}"
