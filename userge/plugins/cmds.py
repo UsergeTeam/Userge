@@ -55,7 +55,12 @@ async def eval_(_, message):
     OUTPUT = "**EVAL**:\n```{}```\n\n**OUTPUT**:\n```{}```".format(cmd, evaluation.strip())
 
     if len(OUTPUT) > Config.MAX_MESSAGE_LENGTH:
-        await send_as_file("eval.txt", OUTPUT, message, cmd)
+        await userge.send_output_as_file(
+            output=OUTPUT,
+            message=message,
+            filename="eval.txt",
+            caption=cmd
+        )
 
     else:
         await message.edit(OUTPUT)
@@ -83,7 +88,12 @@ async def exec_(_, message):
     OUTPUT = f"**EXEC**:\n\n__Command:__\n`{cmd}`\n__PID:__\n`{process.pid}`\n\n**stderr:**\n`{err}`\n\n**stdout:**\n``{out}`` "
 
     if len(OUTPUT) > Config.MAX_MESSAGE_LENGTH:
-        await send_as_file("exec.txt", OUTPUT, message, cmd)
+        await userge.send_output_as_file(
+            output=OUTPUT,
+            message=message,
+            filename="exec.txt",
+            caption=cmd
+        )
 
     else:
         await message.edit(OUTPUT)
@@ -105,7 +115,12 @@ async def term_(_, message):
     OUTPUT = str(stdout.decode().strip()) + str(stderr.decode().strip())
 
     if len(OUTPUT) > Config.MAX_MESSAGE_LENGTH:
-        await send_as_file("term.txt", OUTPUT, message, cmd)
+        await userge.send_output_as_file(
+            output=OUTPUT,
+            message=message,
+            filename="term.txt",
+            caption=cmd
+        )
 
     else:
         try:
@@ -137,23 +152,3 @@ async def init_func(message):
         return None
 
     return cmd
-
-
-async def send_as_file(name, OUTPUT, message, cmd):
-    with open(name, "w+", encoding="utf8") as out_file:
-        out_file.write(str(OUTPUT))
-
-    reply_to_id = message.reply_to_message.message_id \
-        if message.reply_to_message \
-            else message.message_id
-
-    await userge.send_document(
-        chat_id=message.chat.id,
-        document=name,
-        caption=cmd,
-        disable_notification=True,
-        reply_to_message_id=reply_to_id
-    )
-
-    os.remove(name)
-    await message.delete()

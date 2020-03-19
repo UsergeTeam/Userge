@@ -1,4 +1,3 @@
-import functools
 from userge import userge, Filters
 from userge.db import Database
 
@@ -18,172 +17,158 @@ for i in LEFT_LIST:
     LEFT_CHATS.add(i.get('_id'))
 
 
-def raw_set(name, table, chats):
-    def decorator(func):
+@userge.on_cmd("setwelcome",
+    about="""Creates a welcome message in current chat :)
 
-        @functools.wraps(func)
-        async def wrapper(_, message):
-
-            if message.chat.type in ["private", "bot", "channel"]:
-                await message.edit(f'Are you high XO\nSet {name} in a group chat')
-                return
-
-            string = message.matches[0].group(1)
-
-            if string is None:
-                await message.edit(f"wrong syntax\n`.set{name.lower()} <{name.lower()} message>`")
-
-            else:
-                new_entry = {'_id': message.chat.id, 'data': string, 'on': True}
-
-                if table.find_one('_id', message.chat.id):
-                    table.update_one({'_id': message.chat.id}, new_entry)
-
-                else:
-                    table.insert_one(new_entry)
-
-                chats.add(message.chat.id)
-                await message.edit(f"{name} message has been set for the \n`{message.chat.title}`")
-
-        return wrapper
-
-    return decorator
+Available options:
+`{fname}` : add first name
+`{lname}` : add last name
+`{fullname}` : add full name
+`{uname}` : username
+`{chat}` : chat name
+`{mention}` : mention user""")
+async def setwel(_, msg):
+    await raw_set(msg, 'Welcome', WELCOME_TABLE, WELCOME_CHATS)
 
 
-def raw_no(name, table, chats):
-    def decorator(func):
+@userge.on_cmd("setleft",
+    about="""Creates a left message in current chat :)
 
-        @functools.wraps(func)
-        async def wrapper(_, message):
-
-            try:
-                chats.remove(message.chat.id)
-
-            except KeyError:
-                await message.edit(f"First Set {name} Message!")
-
-            else:
-                table.update_one({'_id': message.chat.id}, {'on': False})
-                await message.edit(f"{name} Disabled Successfully !")
-
-        return wrapper
-
-    return decorator
-
-
-def raw_do(name, table, chats):
-    def decorator(func):
-
-        @functools.wraps(func)
-        async def wrapper(_, message):
-
-            if table.find_one('_id', message.chat.id):
-                chats.add(message.chat.id)
-                table.update_one({'_id': message.chat.id}, {'on': True})
-
-                await message.edit(f'I will {name} new members XD')
-
-            else:
-                await message.edit(f'Please set the {name} message with `.set{name.lower()}`')
-
-        return wrapper
-
-    return decorator
-
-
-def raw_say(table):
-    def decorator(func):
-
-        @functools.wraps(func)
-        async def wrapper(_, message):
-            message_str = table.find_one('_id', message.chat.id)['data']
-
-            user = message.from_user
-            fname = user.first_name if user.first_name else ''
-            lname = user.last_name if user.last_name else ''
-            fullname = fname + ' ' + lname
-            username = user.username if user.username else ''
-
-            kwargs = {
-                'fname': fname,
-                'lname': lname,
-                'fullname': fullname,
-                'uname': username,
-                'chat': message.chat.title if message.chat.title else "this group",
-                'mention': f'<a href="tg://user?id={user.id}">{username or fullname or "user"}</a>',
-            }
-
-            await message.reply(message_str.format(**kwargs))
-
-        return wrapper
-
-    return decorator
-
-
-def raw_ls(name, table):
-    def decorator(func):
-
-        @functools.wraps(func)
-        async def wrapper(_, message):
-            liststr = ""
-            list_ = table.find_all({'on': True}, {'_id': 1, 'data': 1})
-
-            for j in list_:
-                liststr += f"**{(await userge.get_chat(j.get('_id'))).title}**\n"
-                liststr += f"`{j.get('data')}`\n\n"
-
-            await message.edit(liststr or f'`NO {name.upper()}S STARTED`')
-
-        return wrapper
-
-    return decorator
-
-
-@userge.on_cmd("setwelcome", about="Creates a welcome message in current chat :)")
-@raw_set('Welcome', WELCOME_TABLE, WELCOME_CHATS)
-def setwel(): pass
-
-
-@userge.on_cmd("setleft", about="Creates a left message in current chat :)")
-@raw_set('Left', LEFT_TABLE, LEFT_CHATS)
-def setleft(): pass
+Available options:
+`{fname}` : add first name
+`{lname}` : add last name
+`{fullname}` : add full name
+`{uname}` : username
+`{chat}` : chat name
+`{mention}` : mention user""")
+async def setleft(_, msg):
+    await raw_set(msg, 'Left', LEFT_TABLE, LEFT_CHATS)
 
 
 @userge.on_cmd("nowelcome", about="Disables welcome message in the current chat :)")
-@raw_no('Welcome', WELCOME_TABLE, WELCOME_CHATS)
-def nowel(): pass
+async def nowel(_, msg):
+    await raw_no(msg, 'Welcome', WELCOME_TABLE, WELCOME_CHATS)
 
 
 @userge.on_cmd("noleft", about="Disables left message in the current chat :)")
-@raw_no('Left', LEFT_TABLE, LEFT_CHATS)
-def noleft(): pass
+async def noleft(_, msg):
+    await raw_no(msg, 'Left', LEFT_TABLE, LEFT_CHATS)
 
 
 @userge.on_cmd("dowelcome", about="Turns on welcome message in the current chat :)")
-@raw_do('Welcome', WELCOME_TABLE, WELCOME_CHATS)
-def dowel(): pass
+async def dowel(_, msg):
+    await raw_do(msg, 'Welcome', WELCOME_TABLE, WELCOME_CHATS)
 
 
 @userge.on_cmd("doleft", about="Turns on left message in the current chat :)")
-@raw_do('Left', LEFT_TABLE, LEFT_CHATS)
-def doleft(): pass
+async def doleft(_, msg):
+    await raw_do(msg, 'Left', LEFT_TABLE, LEFT_CHATS)
 
 
 @userge.on_cmd("listwelcome", about="Shows the activated chats for welcome")
-@raw_ls('Welcome', WELCOME_TABLE)
-def lswel(): pass
+async def lswel(_, msg):
+    await raw_ls(msg, 'Welcome', WELCOME_TABLE)
 
 
 @userge.on_cmd("listleft", about="Shows the activated chats for left")
-@raw_ls('Left', LEFT_TABLE)
-def lsleft(): pass
+async def lsleft(_, msg):
+    await raw_ls(msg, 'Left', LEFT_TABLE)
 
 
 @userge.on_new_member(WELCOME_CHATS)
-@raw_say(WELCOME_TABLE)
-def saywel(): pass
+async def saywel(_, msg):
+    await raw_say(msg, 'Welcome', WELCOME_TABLE)
 
 
 @userge.on_left_member(LEFT_CHATS)
-@raw_say(LEFT_TABLE)
-def sayleft(): pass
+async def sayleft(_, msg):
+    await raw_say(msg, 'Left', LEFT_TABLE)
+
+
+async def raw_set(message, name, table, chats):
+    if message.chat.type in ["private", "bot", "channel"]:
+        await message.edit(f'Are you high XO\nSet {name} in a group chat')
+        return
+
+    string = message.matches[0].group(1)
+
+    if string is None:
+        await message.edit(f"wrong syntax\n`.set{name.lower()} <{name.lower()} message>`")
+
+    else:
+        new_entry = {'_id': message.chat.id, 'data': string, 'on': True}
+
+        if table.find_one('_id', message.chat.id):
+            table.update_one({'_id': message.chat.id}, new_entry)
+
+        else:
+            table.insert_one(new_entry)
+
+        chats.add(message.chat.id)
+        await message.edit(f"{name} message has been set for the \n`{message.chat.title}`")
+
+
+async def raw_no(message, name, table, chats):
+    try:
+        chats.remove(message.chat.id)
+
+    except KeyError:
+        await message.edit(f"First Set {name} Message!")
+
+    else:
+        table.update_one({'_id': message.chat.id}, {'on': False})
+        await message.edit(f"{name} Disabled Successfully !")
+
+
+async def raw_do(message, name, table, chats):
+    if table.find_one('_id', message.chat.id):
+        chats.add(message.chat.id)
+        table.update_one({'_id': message.chat.id}, {'on': True})
+
+        await message.edit(f'I will {name} new members XD')
+
+    else:
+        await message.edit(f'Please set the {name} message with `.set{name.lower()}`')
+
+
+async def raw_ls(message, name, table):
+    liststr = ""
+    list_ = table.find_all({'on': True}, {'_id': 1, 'data': 1})
+
+    for j in list_:
+        liststr += f"**{(await userge.get_chat(j.get('_id'))).title}**\n"
+        liststr += f"`{j.get('data')}`\n\n"
+
+    await message.edit(liststr or f'`NO {name.upper()}S STARTED`')
+
+
+async def raw_say(message, name, table):
+    message_str = table.find_one('_id', message.chat.id)['data']
+
+    user = message.new_chat_members[0] if name == "Welcome" else message.left_chat_member
+    fname = user.first_name or ''
+    lname = user.last_name or ''
+    username = user.username or ''
+
+    if fname and lname:
+        full_name = fname + ' ' + lname
+
+    elif fname:
+        full_name = fname
+
+    elif lname:
+        full_name = lname
+
+    else:
+        full_name = "user"
+
+    kwargs = {
+        'fname': fname,
+        'lname': lname,
+        'fullname': full_name,
+        'uname': username,
+        'chat': message.chat.title if message.chat.title else "this group",
+        'mention': f'<a href="tg://user?id={user.id}">{username or full_name}</a>',
+    }
+
+    await message.reply(message_str.format(**kwargs))

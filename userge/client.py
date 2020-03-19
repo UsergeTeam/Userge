@@ -8,6 +8,7 @@ from typing import (
     Callable
 )
 
+import os
 from .utils import Config, logging
 
 logging.getLogger("pyrogram").setLevel(logging.WARNING)
@@ -84,6 +85,39 @@ class Userge(Client):
             filters=Filters.left_chat_member & leaving_chats,
             group=group
         )
+
+    async def send_output_as_file(
+        self,
+        output: str,
+        message: Message,
+        filename: str = "output.txt",
+        caption: str = '',
+        delete_message: bool = True
+    ) -> None:
+
+        with open(filename, "w+", encoding="utf8") as out_file:
+            out_file.write(output)
+
+        reply_to_id = message.reply_to_message.message_id \
+            if message.reply_to_message \
+                else message.message_id
+
+        self.log.info(
+            self.__USERGE_SUB_STRING.format(f"Uploading {filename} To Telegram")
+        )
+
+        await self.send_document(
+            chat_id=message.chat.id,
+            document=filename,
+            caption=caption,
+            disable_notification=True,
+            reply_to_message_id=reply_to_id
+        )
+
+        os.remove(filename)
+
+        if delete_message:
+            await message.delete()
 
     def get_help(
         self,

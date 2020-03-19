@@ -31,37 +31,27 @@ async def helpme(_, message):
 
     else:
         out = userge.get_help(cmd)
-        out_str += f"**.{cmd}**\n\n__{out}__" if out else "__command not found!__"
+        out_str += f"**.{cmd}**\n\n{out}" if out else "__command not found!__"
 
     await message.edit(out_str)
 
 
 @userge.on_cmd("json", about="replied msg to json")
 async def jsonify(_, message):
-    if message.reply_to_message:
-        reply_to_id = message.reply_to_message.message_id
-        the_real_message = message.reply_to_message
+    the_real_message = str(message.reply_to_message) \
+        if message.reply_to_message \
+            else str(message)
 
-    else:
-        the_real_message = message
-        reply_to_id = message.message_id
-
-    try:
-        await message.edit(the_real_message)
-
-    except Exception as e:
-        with open("json.txt", "w+", encoding="utf8") as out_file:
-            out_file.write(str(the_real_message))
-        await userge.send_document(
-            chat_id=message.chat.id,
-            document="json.txt",
-            caption=str(e),
-            disable_notification=True,
-            reply_to_message_id=reply_to_id
+    if len(the_real_message) > Config.MAX_MESSAGE_LENGTH:
+        await userge.send_output_as_file(
+            output=the_real_message,
+            message=message,
+            filename="json.txt",
+            caption="Too Large"
         )
 
-        os.remove("json.txt")
-        await message.delete()
+    else:
+        await message.edit(the_real_message)
 
 
 @userge.on_cmd("all", about="to get all plugins")
@@ -122,26 +112,76 @@ async def getids(_, message):
     await message.edit(out_str)
 
 
-@userge.on_cmd("admins", about="to mention admins")
+@userge.on_cmd("admins",
+    about="""view or mention admins in chat
+
+Available Flags:
+`--m` : mention all admins
+`--mc` : only mention creator
+`--id` : show ids""")
 async def mentionadmins(client, message):
     mentions = "🛡 **Admin List** 🛡\n"
-    input_str = message.matches[0].group(1)
+    chat_id = [i for i in (message.matches[0].group(1) or '').split() if '--' not in i]
+    chat_id = chat_id[0] if chat_id else None
+    input_str = message.matches[0].group(0) or ''
 
-    if input_str is None:
-        input_str = message.chat.id
+    men_admins = '--m' in input_str
+    men_creator = '--mc' in input_str
+    show_id = '--id' in input_str
+
+    if chat_id is None:
+        chat_id = message.chat.id
 
     try:
-        async for x in client.iter_chat_members(chat_id=input_str, filter="administrators"):
-            if x.status == "creator":
-                mentions += "\n 👑 [{}](tg://user?id={}) `{}`".format(x.user.first_name, x.user.id, x.user.id)
+        async for x in client.iter_chat_members(chat_id=chat_id, filter="administrators"):
+            status = x.status
+            first_name = x.user.first_name or ''
+            last_name = x.user.last_name or ''
+            username = x.user.username or None
+            u_id = x.user.id
 
-            if x.status == "administrator":
-                mentions += "\n ⚜ [{}](tg://user?id={}) `{}`".format(x.user.first_name, x.user.id, x.user.id)
+            if first_name and last_name:
+                full_name = first_name + ' ' + last_name
+
+            elif first_name:
+                full_name = first_name
+
+            elif last_name:
+                full_name = last_name
+
+            else:
+                full_name = "user"
+
+            if status == "creator":
+                if men_admins or men_creator:
+                    mentions += f"\n 👑 [{full_name}](tg://user?id={u_id})"
+
+                elif username:
+                    mentions += f"\n 👑 [{full_name}](https://t.me/{username})"
+
+                else:
+                    mentions += f"\n 👑 {full_name}"
+
+                if show_id:
+                    mentions += f" `{u_id}`"
+
+            elif status == "administrator":
+                if men_admins:
+                    mentions += f"\n ⚜ [{full_name}](tg://user?id={u_id})"
+
+                elif username:
+                    mentions += f"\n ⚜ [{full_name}](https://t.me/{username})"
+
+                else:
+                    mentions += f"\n ⚜ {full_name}"
+
+                if show_id:
+                    mentions += f" `{u_id}`"
 
     except Exception as e:
-            mentions += " " + str(e) + "\n"
+        mentions += " " + str(e) + "\n"
 
-    await message.reply(mentions)
+    await message.reply(mentions, disable_web_page_preview=True)
     await message.delete()
 
 
@@ -170,25 +210,11 @@ async def urban_dict(_, message):
     OUTPUT = f"**Query:** `{query}`\n\n**Meaning:** __{mean[0]['def']}__\n\n**Example:**\n__{mean[0]['example']}__"
 
     if len(OUTPUT) >= Config.MAX_MESSAGE_LENGTH:
-        with open("output.txt", "w+", encoding="utf8") as out_file:
-            out_file.write(str(OUTPUT))
-
-        reply_to_id = message.reply_to_message.message_id \
-            if message.reply_to_message \
-                else message.message_id
-
-        await userge.send_document(
-            chat_id=message.chat.id,
-            document="output.txt",
-            caption=query,
-            disable_notification=True,
-            reply_to_message_id=reply_to_id
+        await userge.send_output_as_file(
+            output=OUTPUT,
+            message=message,
+            caption=query
         )
-
-        if os.path.exists("output.txt"):
-            os.remove("output.txt")
-
-        await message.delete()
 
     else:
         await message.edit(OUTPUT)

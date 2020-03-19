@@ -40,12 +40,11 @@ async def who_is(_, message):
         message_out_str += f"<strong>Last Seen:</strong> <code>{from_user.status}</code>\n"
         message_out_str += f"<strong>Permanent Link To Profile:</strong> <a href='tg://user?id={from_user.id}'>{from_user.first_name}</a>"
 
-        chat_photo = from_user.photo
-
-        if chat_photo:
+        if from_user.photo:
             local_user_photo = await userge.download_media(
-                message=chat_photo.big_file_id
+                message=from_user.photo.big_file_id
             )
+
             await message.reply_photo(
                 photo=local_user_photo,
                 quote=True,
@@ -54,6 +53,7 @@ async def who_is(_, message):
                 # ttl_seconds=,
                 disable_notification=True
             )
+            
             os.remove(local_user_photo)
             await message.delete()
 

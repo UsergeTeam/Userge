@@ -79,13 +79,13 @@ class Database:
             f"{self.name} :: Finding One {dict_}"
         )
 
-        ret_val = list(self.db.reviews.find_one(dict_))
+        ret_val = dict(self.db.reviews.find_one(dict_))
 
         self.log.info(
             f"{self.name} :: Found {ret_val} For {dict_}"
         )
 
-        return ret_val[0] if ret_val else None
+        return ret_val
 
     def find_all(
         self,
