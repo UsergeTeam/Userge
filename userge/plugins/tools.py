@@ -2,6 +2,7 @@ import os
 import wget
 import urbandict
 import speedtest
+import wikipedia
 import asyncio
 from json import dumps
 from datetime import datetime
@@ -42,6 +43,23 @@ async def helpme(_, message):
         out_str += f"`.{cmd.lstrip('.')}`\n\n{out}" if out else "__command not found!__"
 
     await message.edit(out_str)
+
+
+@userge.on_cmd("s", about="__to search commands in **USERGE**__")
+async def search(_, message):
+    cmd = message.matches[0].group(1)
+
+    if cmd is None:
+        await message.edit("Enter any keyword to search in commands")
+        return
+
+    found = '\n.'.join([i for i in sorted(userge.get_help()) if cmd.lstrip('.') in i])
+
+    if found:
+        await message.edit(f"**--I found these commands:--**\n\n`.{found}`")
+
+    else:
+        await message.edit("__command not found!__")
 
 
 @userge.on_cmd("json",
@@ -397,6 +415,8 @@ async def selfdestruct(_, message):
 
     `.google -p4 -l10 github-userge`""")
 async def gsearch(_, message):
+    await message.edit("Processing ...")
+
     query, flags = await userge.filter_flags(message)
 
     page = int(flags.get('-p', 1))
@@ -409,9 +429,8 @@ async def gsearch(_, message):
         await message.edit("Give a query or reply to a message to google!")
         return
 
-    gsearch = GoogleSearch()
-
     try:
+        gsearch = GoogleSearch()
         gresults = gsearch.search(query, page)
 
     except Exception as e:
@@ -431,7 +450,66 @@ async def gsearch(_, message):
         except IndexError:
             break
 
-    OUTPUT = f"**Search Query:**\n`{query}`\n\n**Results:**\n{OUTPUT}"
+    OUTPUT = f"**Google Search:**\n`{query}`\n\n**Results:**\n{OUTPUT}"
+
+    if len(OUTPUT) >= Config.MAX_MESSAGE_LENGTH:
+        await userge.send_output_as_file(
+            output=OUTPUT,
+            message=message,
+            caption=query
+        )
+
+    else:
+        await message.edit(OUTPUT, disable_web_page_preview=True)
+
+
+@userge.on_cmd("wiki",
+    about="""__do a Wikipedia search__
+
+**Available Flags:**
+
+    `-l` : __limit the number of returned results (defaults to 5)__
+
+**Usage:**
+
+    `.wiki [flags] [query | reply to msg]`
+    
+**Example:**
+
+    `.wiki -l5 userge`""")
+async def wiki_pedia(_, message):
+    await message.edit("Processing ...")
+
+    query, flags = await userge.filter_flags(message)
+
+    limit = int(flags.get('-l', 5))
+
+    if message.reply_to_message:
+        query = message.reply_to_message.text
+
+    if not query:
+        await message.edit("Give a query or reply to a message to wikipedia!")
+        return
+
+    try:
+        wikipedia.set_lang("en")
+        results = wikipedia.search(query)
+
+    except Exception as e:
+        await message.edit(str(e))
+        return
+
+    OUTPUT = ""
+
+    for i, s in enumerate(results, start=1):
+        page = wikipedia.page(s)
+        url = page.url
+        OUTPUT += f"🌏 [{s}]({url})\n"
+
+        if i == limit:
+            break
+
+    OUTPUT = f"**Wikipedia Search:**\n`{query}`\n\n**Results:**\n{OUTPUT}"
 
     if len(OUTPUT) >= Config.MAX_MESSAGE_LENGTH:
         await userge.send_output_as_file(

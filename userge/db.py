@@ -1,115 +1,41 @@
 from pymongo import MongoClient
-from pymongo.cursor import Cursor
-from typing import Dict, List, Union
+from pymongo.collection import Collection
 from .utils import Config, logging
+
+LOG = logging.getLogger(__name__)
+
+DB_MAIN_STRING = "$$$>>> __{}__ <<<$$$"
+
+LOG.info(
+    DB_MAIN_STRING.format("Connecting to Database...")
+)
 
 MGCLIENT = MongoClient(Config.DB_URI)
 
-MONGODICT = Dict[str, Union[int, str, bool]]
+
+if "Userge" in MGCLIENT.list_database_names():
+    LOG.info(
+        DB_MAIN_STRING.format("Userge Database Found :) => Now Logging to it...")
+    )
+
+else:
+    LOG.info(
+        DB_MAIN_STRING.format("Userge Database Not Found :( => Creating New Database...")
+    )
 
 
-class Database:
-    def __init__(
-        self,
-        tablename: str
-    ) -> None:
+DATABASE = MGCLIENT["Userge"]
 
-        self.log = logging.getLogger(__name__)
-        self.name = tablename
-        self.db = MGCLIENT[tablename]
 
-        self.log.info(
-            f"Creating Table => {tablename}"
+def get_collection(name: str) -> Collection:
+    if name in DATABASE.list_collection_names():
+        LOG.info(
+            DB_MAIN_STRING.format(f"{name} Collection Found :) => Now Logging to it...")
         )
 
-    @classmethod
-    def create_table(
-        cls,
-        tablename: str
-    ) -> 'Database':
-
-        return cls(tablename)
-
-    def insert_one(
-        self,
-        dict_: MONGODICT
-    ) -> Cursor:
-
-        self.log.info(
-            f"{self.name} :: Inserting {dict_}"
+    else:
+        LOG.info(
+            DB_MAIN_STRING.format(f"{name} Collection Not Found :( => Creating New Collection...")
         )
 
-        return self.db.reviews.insert_one(dict_)
-
-    def update_one(
-        self,
-        existingentry: MONGODICT,
-        new_dictionary_entry: MONGODICT,
-    ) -> Cursor:
-
-        self.log.info(
-            f"{self.name} :: Updating {existingentry} To {new_dictionary_entry}"
-        )
-
-        return self.db.reviews.update_one(
-            existingentry,
-            {'$set': new_dictionary_entry}
-        )
-
-    def delete_one(
-        self,
-        dict_: MONGODICT
-    ) -> Cursor:
-
-        self.log.info(
-            f"{self.name} :: Deleting {dict_}"
-        )
-
-        return self.db.reviews.delete_one(dict_)
-
-    def find_one(
-        self,
-        key: str,
-        value: Union[int, str, bool]
-    ) -> MONGODICT:
-
-        dict_ = {key: value}
-
-        self.log.info(
-            f"{self.name} :: Finding One {dict_}"
-        )
-
-        cursor = self.db.reviews.find_one(dict_)
-        ret_val = dict(cursor) if cursor else None
-
-        self.log.info(
-            f"{self.name} :: Found {ret_val} For {dict_}"
-        )
-
-        return ret_val
-
-    def find_all(
-        self,
-        query: MONGODICT,
-        output: MONGODICT
-    ) -> List[MONGODICT]:
-
-        self.log.info(
-            f"{self.name} :: Finding All For {query}, Requesting {output}"
-        )
-
-        cursor = self.db.reviews.find(query, output)
-
-        self.log.info(
-            f"{self.name} :: Found results For {query}, Requesting {output}"
-        )
-
-        return cursor
-
-    def delete_table(self) -> None:
-
-        self.log.info(
-            f"WARNING! :: Droping {self.name}"
-        )
-
-        self.db.reviews.drop()
+    return DATABASE[name]

@@ -135,3 +135,4 @@ config.env
 .vscode/settings.json
 *.session
 rn
+log.txt

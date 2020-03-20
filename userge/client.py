@@ -53,7 +53,9 @@ class Userge(Client):
         self,
         command: str,
         about: str,
-        group: int = 0
+        group: int = 0,
+        trigger: str = '.',
+        only_me: bool = True
     ) -> Callable[[PYROFUNC], PYROFUNC]:
 
         found = [i for i in '()[]+*.\\|?:' if i in command]
@@ -61,17 +63,19 @@ class Userge(Client):
         if found:
             match = re.search(r"([\w_]+)", command)
             command_name = match.groups()[0]
-            pattern = command
+            pattern = f"{trigger}{command}"
 
         else:
             command_name = command
-            pattern = f"^.{command}(?: (.+))?"
+            pattern = f"^{trigger}{command}(?:\\s([\\S\\s]+))?$"
 
-        self.__add_help(command_name, about)
+        if command_name:
+            self.__add_help(command_name, about)
 
         return self.__build_decorator(
             log=f"On .{command_name} Command",
-            filters=Filters.regex(pattern=pattern) & Filters.me,
+            filters=Filters.regex(pattern=pattern) & Filters.me \
+                if only_me else Filters.regex(pattern=pattern),
             group=group
         )
 
