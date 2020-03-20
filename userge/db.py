@@ -6,7 +6,6 @@ from .utils import Config, logging
 MGCLIENT = MongoClient(Config.DB_URI)
 
 MONGODICT = Dict[str, Union[int, str, bool]]
-EMPTY_MONGODICT = {'': ''}
 
 
 class Database:
@@ -81,7 +80,7 @@ class Database:
         )
 
         cursor = self.db.reviews.find_one(dict_)
-        ret_val = dict(cursor) if cursor else EMPTY_MONGODICT
+        ret_val = dict(cursor) if cursor else None
 
         self.log.info(
             f"{self.name} :: Found {ret_val} For {dict_}"
@@ -100,13 +99,12 @@ class Database:
         )
 
         cursor = self.db.reviews.find(query, output)
-        ret_val = list(cursor) if cursor else [EMPTY_MONGODICT]
 
         self.log.info(
-            f"{self.name} :: Found {ret_val} For {query}, Requesting {output}"
+            f"{self.name} :: Found results For {query}, Requesting {output}"
         )
 
-        return ret_val
+        return cursor
 
     def delete_table(self) -> None:
 

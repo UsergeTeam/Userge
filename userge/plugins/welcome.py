@@ -18,7 +18,7 @@ for i in LEFT_LIST:
 
 
 @userge.on_cmd("setwelcome",
-    about="""__Creates a welcome message in current chat :)__
+               about="""__Creates a welcome message in current chat :)__
 
 **Available options:**
 
@@ -37,7 +37,7 @@ async def setwel(_, msg):
 
 
 @userge.on_cmd("setleft",
-    about="""__Creates a left message in current chat :)__
+               about="""__Creates a left message in current chat :)__
 
 **Available options:**
 
