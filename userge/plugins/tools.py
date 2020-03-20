@@ -38,8 +38,8 @@ async def helpme(_, message):
             out_str += f"\t`.{cmd}`\n"
 
     else:
-        out = userge.get_help(cmd.strip('.'))
-        out_str += f"`.{cmd}`\n\n{out}" if out else "__command not found!__"
+        out = userge.get_help(cmd.lstrip('.'))
+        out_str += f"`.{cmd.lstrip('.')}`\n\n{out}" if out else "__command not found!__"
 
     await message.edit(out_str)
 
@@ -246,30 +246,30 @@ __{dumps(LANGUAGES, indent=4, sort_keys=True)}__
 
 **Usage:**
 
---from english to sinhala--
+__from english to sinhala__
     `.tr -en -si i am userge`
 
---from auto detected language to sinhala--
+__from auto detected language to sinhala__
     `.tr -si i am userge`
 
---reply to message you want to translate from english to sinhala--
+__from auto detected language to preferred__
+    `.tr i am userge`
+
+__reply to message you want to translate from english to sinhala__
     `.tr -en -si`
 
---reply to message you want to translate from from auto detected language to sinhala--
-    `.tr -si`""")
+__reply to message you want to translate from auto detected language to sinhala__
+    `.tr -si`
+    
+__reply to message you want to translate from auto detected language to preferred__
+    `.tr`""")
 async def translateme(_, message):
     translator = Translator()
 
     text, flags = await userge.filter_flags(message, del_pre=True)
-    replied = False
 
     if message.reply_to_message:
         text = message.reply_to_message.text
-        replied = True
-
-    if (not replied and len(flags) < 1) or (replied and len(flags) == 0):
-        await message.edit("No enough arguments found!\nuse `.help tr`")
-        return
 
     if not text:
         await message.edit("Give a text or reply to a message to translate!\nuse `.help tr`")
@@ -278,8 +278,11 @@ async def translateme(_, message):
     if len(flags) == 2:
         src, dest = list(flags)
 
-    else:
+    elif len(flags) == 1:
         src, dest = 'auto', list(flags)[0]
+
+    else:
+        src, dest = 'auto', Config.LANG
 
     text = get_emoji_regexp().sub(u'', text)
 
@@ -313,17 +316,22 @@ async def translateme(_, message):
 async def speedtst(_, message):
     await message.edit("`Running speed test . . .`")
 
-    test = speedtest.Speedtest()
-    test.get_best_server()
+    try:
+        test = speedtest.Speedtest()
+        test.get_best_server()
 
-    await message.edit("`Running download test . . .`")
-    test.download()
+        await message.edit("`Running download test . . .`")
+        test.download()
 
-    await message.edit("`Running upload test . . .`")
-    test.upload()
+        await message.edit("`Running upload test . . .`")
+        test.upload()
 
-    test.results.share()
-    result = test.results.dict()
+        test.results.share()
+        result = test.results.dict()
+        
+    except Exception as e:
+        await message.edit(str(e))
+        return
 
     path = wget.download(result['share'])
 
@@ -378,8 +386,8 @@ async def selfdestruct(_, message):
 
 **Available Flags:**
 
-    `-p` : __page of results to return__
-    `-l` : __limit the number of returned results (defaults to 5)__
+    `-p` : __page of results to return (default to 1)__
+    `-l` : __limit the number of returned results (defaults to 5)(max 10)__
     
 **Usage:**
 
@@ -402,7 +410,13 @@ async def gsearch(_, message):
         return
 
     gsearch = GoogleSearch()
-    gresults = gsearch.search(query, page)
+
+    try:
+        gresults = gsearch.search(query, page)
+
+    except Exception as e:
+        await message.edit(str(e))
+        return
 
     OUTPUT = ""
 

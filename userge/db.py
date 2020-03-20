@@ -1,11 +1,12 @@
 from pymongo import MongoClient
 from pymongo.cursor import Cursor
-from typing import Dict, Union
+from typing import Dict, List, Union
 from .utils import Config, logging
 
 MGCLIENT = MongoClient(Config.DB_URI)
 
 MONGODICT = Dict[str, Union[int, str, bool]]
+EMPTY_MONGODICT = {'': ''}
 
 
 class Database:
@@ -71,7 +72,7 @@ class Database:
         self,
         key: str,
         value: Union[int, str, bool]
-    ) -> Cursor:
+    ) -> MONGODICT:
 
         dict_ = {key: value}
 
@@ -79,7 +80,8 @@ class Database:
             f"{self.name} :: Finding One {dict_}"
         )
 
-        ret_val = dict(self.db.reviews.find_one(dict_) or {})
+        cursor = self.db.reviews.find_one(dict_)
+        ret_val = dict(cursor) if cursor else EMPTY_MONGODICT
 
         self.log.info(
             f"{self.name} :: Found {ret_val} For {dict_}"
@@ -91,13 +93,14 @@ class Database:
         self,
         query: MONGODICT,
         output: MONGODICT
-    ) -> Cursor:
+    ) -> List[MONGODICT]:
 
         self.log.info(
             f"{self.name} :: Finding All For {query}, Requesting {output}"
         )
 
-        ret_val = list(self.db.reviews.find(query, output) or [])
+        cursor = self.db.reviews.find(query, output)
+        ret_val = list(cursor) if cursor else [EMPTY_MONGODICT]
 
         self.log.info(
             f"{self.name} :: Found {ret_val} For {query}, Requesting {output}"

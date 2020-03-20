@@ -25,3 +25,5 @@ class Config:
     DB_URI = os.environ.get("DATABASE_URL", None)
 
     MAX_MESSAGE_LENGTH = 4096
+
+    LANG = os.environ.get("PREFERRED_LANGUAGE", "en")
