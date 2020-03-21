@@ -1,6 +1,6 @@
 from userge import userge, get_collection
 import asyncio
-
+from pyrogram.errors.exceptions import MessageAuthorRequired
 NOTES_COLLECTION = get_collection("notes")
 
 
@@ -12,7 +12,7 @@ async def notes_active(_, message):
         if out == "`There are no saved notes in this chat`":
             out = "**--Notes saved in this chat:--**\n\n"
             out += " 🔹 `{}`\n".format(note['name'])
-            
+
         else:
             out += " 🔹 `{}`\n".format(note['name'])
 
@@ -20,15 +20,16 @@ async def notes_active(_, message):
 
 
 @userge.on_cmd("delnote",
-    about="""__Deletes a note by name__
+               about="""__Deletes a note by name__
 
 **Usage:**
 
     `.delnote [note name]`""")
 async def remove_notes(_, message):
     notename = message.matches[0].group(1)
-
-    if NOTES_COLLECTION.find_one_and_delete({'chat_id': message.chat.id, 'name': notename}):
+    if notename is None:
+        out = "`Wrong syntax`\nNo arguements"
+    elif NOTES_COLLECTION.find_one_and_delete({'chat_id': message.chat.id, 'name': notename}):
         out = "`Successfully deleted note:` **{}**".format(notename)
 
     else:
@@ -40,13 +41,13 @@ async def remove_notes(_, message):
 
 
 @userge.on_cmd(r"(\w[\w_]*)",
-    about="""__Gets a note by name__
+               about="""__Gets a note by name__
 
 **Usage:**
 
     `#[notname]`""",
-    trigger='#',
-    only_me=False)
+               trigger='#',
+               only_me=False)
 async def note(_, message):
     notename = message.matches[0].group(1)
     found = NOTES_COLLECTION.find_one({'chat_id': message.chat.id, 'name': notename}, {'content': 1})
@@ -56,7 +57,7 @@ async def note(_, message):
         try:
             await message.edit(out)
 
-        except:
+        except MessageAuthorRequired:
             await userge.send_message(
                 chat_id=message.chat.id,
                 text=out,
@@ -65,7 +66,7 @@ async def note(_, message):
 
 
 @userge.on_cmd("addnote (\\w[\\w_]*)(?:\\s([\\s\\S]+))?",
-    about="""__Adds a note by name__
+               about="""__Adds a note by name__
 
 **Usage:**
 
@@ -84,15 +85,12 @@ async def add_filter(_, message):
         return
 
     out = "`{} note #{}`"
-
-    if NOTES_COLLECTION.find_one_and_update(
-        {'chat_id': message.chat.id, 'name': notename}, {"$set": {'content': content}}):
-
-        out = out.format('Updated', notename)
-
-    else:
-        NOTES_COLLECTION.insert_one({'chat_id': message.chat.id, 'name': notename, 'content': content})
+    result = NOTES_COLLECTION.update_one({'chat_id': message.chat.id, 'name': notename}, {"$set": {'content': content}},
+                                         upsert=True)
+    if result.upserted_id:
         out = out.format('Added', notename)
+    else:
+        out = out.format('Updated', notename)
 
     await message.edit(out)
     await asyncio.sleep(3)

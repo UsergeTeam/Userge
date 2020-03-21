@@ -134,10 +134,7 @@ async def raw_set(message, name, collection, chats):
         out = f"**Wrong Syntax**\n`.set{name.lower()} <{name.lower()} message>`"
 
     else:
-        if not collection.find_one_and_update(
-            {'_id': message.chat.id}, {"$set": {'data': string}}):
-            collection.insert_one({'_id': message.chat.id, 'data': string, 'on': True})
-
+        collection.update_one({'_id': message.chat.id}, {"$set": {'data': string, 'on': True}}, upsert=True)
         chats.add(message.chat.id)
         out = f"{name} __message has been set for the__\n`{message.chat.title}`"
 
@@ -162,11 +159,10 @@ async def raw_no(message, name, collection, chats):
 
 async def raw_do(message, name, collection, chats):
     out = f'Please set the {name} message with `.set{name.lower()}`'
-
     if collection.find_one_and_update({'_id': message.chat.id}, {"$set": {'on': True}}):
         chats.add(message.chat.id)
         out = f'`I will {name} new members XD`'
-    
+
     await message.edit(out)
     await asyncio.sleep(3)
     await message.delete()
@@ -180,7 +176,7 @@ async def raw_del(message, name, collection, chats):
             chats.remove(message.chat.id)
 
         out = f"`{name} Removed Successfully!`"
-    
+
     await message.edit(out)
     await asyncio.sleep(3)
     await message.delete()
@@ -226,9 +222,9 @@ async def raw_say(message, name, collection):
     }
 
     try:
-        await message.reply(message_str.format(**kwargs))
+        welcome_message = await message.reply(message_str.format(**kwargs))
         await asyncio.sleep(60)
-        await message.delete()
+        await welcome_message.delete()
 
     except KeyError:
         pass
