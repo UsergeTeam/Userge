@@ -1,14 +1,14 @@
-from userge import userge
 from pyrogram import ChatPermissions
+from userge import userge
 
 @userge.on_cmd("lock",
-    about="""__use this to get any user details__
+    about="""__use this to lock group permissions__
 
 **Usage:**
 
 `Allows you to lock some common message types in the chat.`
 
-[NOTE: Requires proper admin rights in the chat !!]
+[NOTE: Requires proper admin rights in the chat!!!]
 
 **Available types to Lock Messages:**
 
@@ -17,8 +17,11 @@ from pyrogram import ChatPermissions
 **Example:**
 
     `.lock [all | type]`""")
-async def lock_type(_, message):
-    
+
+async def lock_perm(_, message):
+    """
+    this function can lock chat permissions from tg group
+    """
     chat_id = message.chat.id
     if " " in message.text:
         _, lock_type = message.text.split(" ")
@@ -33,10 +36,9 @@ async def lock_type(_, message):
 
 
     if lock_type == "all":
-        perm = "Everything"
+        perm = "all permission"
         await userge.set_chat_permissions(chat_id, ChatPermissions())
-        await message.edit(f"`Locked {perm} for this Chat!`")
-        return
+        await message.edit(f"`🔐 Locked {perm} from this Chat!`")
 
     elif lock_type == "msg":
         msg = False
@@ -69,10 +71,8 @@ async def lock_type(_, message):
     else:
         if not lock_type:
             await message.edit("`I Can't Lock Nothing! 🤦‍♂️`")
-            return
         else:
             await message.edit(r"`Invalid Lock Type! ¯\_(ツ)_/¯`")
-            return
 
     try:
         await userge.set_chat_permissions(
@@ -87,8 +87,52 @@ async def lock_type(_, message):
                 can_pin_messages=pin,
                 )
             )
-        await message.edit(f"`Locked {perm} for this chat!`")
+        await message.edit(f"`🔐 Locked {perm} for this chat!`")
 
-    except Exception as e:
-        await message.edit(f"`Do I have proper Admin rights for that?`\n**Error:** {str(e)}")
+    except:
+        await message.edit("`Do I have proper Admin rights for that ⚠`")
+        return
+
+@userge.on_cmd("unlock",
+    about="""__use this to unlock group permissions__
+
+**Usage:**
+
+`Allows you to unlock all message types in the chat.`
+
+[NOTE: Requires proper admin rights in the chat!!!]
+
+**Example:**
+
+    `.unlock all`""")
+
+async def unlock_perm(_, message):
+    """
+    this function can unlock chat permissions from tg group
+    """
+    chat_id = message.chat.id
+    if " " in message.text:
+        _, unlock_type = message.text.split(" ")
+
+    if unlock_type == "all":
+        uperm = "all permissions"
+        await userge.set_chat_permissions(
+            chat_id,
+            ChatPermissions(
+                can_send_messages=True,
+                can_send_media_messages=True,
+                can_send_other_messages=True,
+                can_send_polls=True,
+                can_change_info=True,
+                can_invite_users=True,
+                can_pin_messages=True,
+                can_add_web_page_previews=True,
+            )
+        )
+        await message.edit(f"`🔓 Unlocked {uperm} for this Chat!`")
+
+    else:
+        await message.edit("""
+        'something went wrong! do .help unlock to see how this module works'
+        """)
         return
