@@ -23,8 +23,8 @@ async def who_is(_, message):
             from_user = await userge.get_users(user_id)
             from_chat = await userge.get_chat(user_id)
 
-        except Exception as e:
-            await message.edit(str(e))
+        except:
+            await message.edit("<code>no valid user_id or message specified, do .help whois for more info</code>")
             return
 
     elif message.reply_to_message:
@@ -32,7 +32,7 @@ async def who_is(_, message):
         from_chat = await userge.get_chat(message.reply_to_message.from_user.id)
 
     else:
-        await message.edit("'no valid user_id or message specified, do .help whois for more info'")
+        await message.edit("<code>no valid user_id or message specified, do .help whois for more info</code>")
         return
 
     if from_user or from_chat is not None:
