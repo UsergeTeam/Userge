@@ -7,7 +7,7 @@ from userge import userge
 
 **Usage:**
 
---just reply to any user message or add user_id or username--
+`just reply to any user message or add user_id or username`
 
 **Example:**
 
@@ -32,7 +32,7 @@ async def who_is(_, message):
         from_chat = await userge.get_chat(message.reply_to_message.from_user.id)
 
     else:
-        await message.edit("no valid user_id / message specified")
+        await message.edit("'no valid user_id or message specified, do .help whois for more info'")
         return
 
     if from_user or from_chat is not None:
