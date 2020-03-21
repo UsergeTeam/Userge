@@ -12,7 +12,7 @@ from urllib.error import HTTPError
 from googletrans import Translator, LANGUAGES
 from search_engine_parser import GoogleSearch
 from userge import userge, Config
-from userge.utils import humanbytes
+from userge.utils.progress import humanbytes
 
 
 @userge.on_cmd("ping", about="__check how long it takes to ping your userbot__")
@@ -63,7 +63,7 @@ async def search(_, message):
 
 
 @userge.on_cmd("json",
-    about="""__message object to json__
+               about="""__message object to json__
 
 **Usage:**
 
@@ -71,7 +71,7 @@ async def search(_, message):
 async def jsonify(_, message):
     the_real_message = str(message.reply_to_message) \
         if message.reply_to_message \
-            else str(message)
+        else str(message)
 
     if len(the_real_message) > Config.MAX_MESSAGE_LENGTH:
         await userge.send_output_as_file(
@@ -108,7 +108,7 @@ async def del_msg(_, message):
 
 
 @userge.on_cmd("ids",
-    about="""__display ids__
+               about="""__display ids__
 
 **Usage:**
 
@@ -149,7 +149,7 @@ async def getids(_, message):
 
 
 @userge.on_cmd("admins",
-    about="""__View or mention admins in chat__
+               about="""__View or mention admins in chat__
 
 **Available Flags:**
 `-m` : __mention all admins__
@@ -211,7 +211,7 @@ async def mentionadmins(_, message):
 
 
 @userge.on_cmd("ub",
-    about="""__Searches Urban Dictionary for the query__
+               about="""__Searches Urban Dictionary for the query__
 
 **Usage:**
 
@@ -257,7 +257,7 @@ async def urban_dict(_, message):
 
 
 @userge.on_cmd("tr",
-    about=f"""__Translate the given text using Google Translate__
+               about=f"""__Translate the given text using Google Translate__
 
 **Supported Languages:**
 __{dumps(LANGUAGES, indent=4, sort_keys=True)}__
@@ -346,7 +346,7 @@ async def speedtst(_, message):
 
         test.results.share()
         result = test.results.dict()
-        
+
     except Exception as e:
         await message.edit(str(e))
         return
@@ -384,7 +384,7 @@ Upload: `{await humanbytes(result['upload'])}/s`**"""
 
 
 @userge.on_cmd("sd (\\d+) (.+)",
-    about="""__make self-destructable messages__
+               about="""__make self-destructable messages__
 
 **Usage:**
 
@@ -400,7 +400,7 @@ async def selfdestruct(_, message):
 
 
 @userge.on_cmd("google",
-    about="""__do a Google search__
+               about="""__do a Google search__
 
 **Available Flags:**
 
@@ -464,7 +464,7 @@ async def gsearch(_, message):
 
 
 @userge.on_cmd("wiki",
-    about="""__do a Wikipedia search__
+               about="""__do a Wikipedia search__
 
 **Available Flags:**
 

@@ -11,37 +11,6 @@ from .logger import logging
 LOG = logging.getLogger(__name__)
 
 
-async def humanbytes(size):
-    if not size:
-        return ""
-
-    power = 2 ** 10
-    n = 0
-
-    Dic_powerN = {0: ' ', 1: 'K', 2: 'M', 3: 'G', 4: 'T'}
-
-    while size > power:
-        size /= power
-        n += 1
-
-    return str(round(size, 2)) + " " + Dic_powerN[n] + 'B'
-
-
-async def TimeFormatter(milliseconds: int) -> str:
-    seconds, milliseconds = divmod(int(milliseconds), 1000)
-    minutes, seconds = divmod(seconds, 60)
-    hours, minutes = divmod(minutes, 60)
-    days, hours = divmod(hours, 24)
-
-    tmp = ((str(days) + "d, ") if days else "") + \
-          ((str(hours) + "h, ") if hours else "") + \
-          ((str(minutes) + "m, ") if minutes else "") + \
-          ((str(seconds) + "s, ") if seconds else "") + \
-          ((str(milliseconds) + "ms, ") if milliseconds else "")
-
-    return tmp[:-2]
-
-
 async def runcmd(cmd):
     args = shlex.split(cmd)
 

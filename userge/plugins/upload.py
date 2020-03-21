@@ -1,21 +1,16 @@
 import time
+from datetime import datetime
+from userge.utils import progress
 from userge import userge
 from pathlib import Path
 from pyrogram import Message
 from pyrogram.errors.exceptions import FloodWait
 
-from userge.utils import (
-    progress,
-    take_screen_shot,
-    extractMetadata,
-    createParser
-)
-
 LOGGER = userge.getLogger(__name__)
 
 
 @userge.on_cmd("upload", about="upload files to telegram")
-async def uploadtotg(_, message):
+async def uploadtotg(_, message: Message):
     try:
         string = Path(message.text.split(" ", maxsplit=1)[1])
 
@@ -23,118 +18,38 @@ async def uploadtotg(_, message):
         await message.edit("wrong syntax\n`.upload <path>`")
     else:
         await message.delete()
-        await explorer(string, message)
+        await explorer(string, message.chat.id)
 
 
-async def explorer(path: Path, message: Message):
+async def explorer(path: Path, chatid):
     if path.is_file():
         try:
-            await upload(path, message.chat.id)
+            await upload(path, chatid)
         except FloodWait as x:
             time.sleep(x.x)  # asyncio sleep ?
-            await message.edit(f"`Floodwait occured for {x.x} seconds")
     elif path.is_dir():
         for i in path.iterdir():
-            await explorer(i, message)
+            await explorer(i, chatid)
 
 
 async def upload(path: Path, chat_id: int):
-
-    message = await userge.send_message(chat_id, "`Starting ...`")
-    message_id = message.message_id
-    size = path.stat().st_size
-    if int(size) > (1024 * 1024 * 1500):
-        await message.edit('<i>File Size Too Large(' + str(round(int(size) / (1024 * 1024), 0)) + 'MB)</i> \U0001f61e')
-        return
-
-    LOGGER.info(path.name)
-    metadata = extractMetadata(createParser(str(path)))
-    duration = 0
-    width = 0
-    height = 0
-    title = None
-    artist = None
-    thumb = 'resources/userge(8).png'
-    caption = path.name
-    if metadata:
-        if metadata.has("duration"):
-            duration = metadata.get('duration').seconds
-        if metadata.has("width"):
-            width = metadata.get("width")
-        if metadata.has("height"):
-            height = metadata.get("height")
-        if metadata.has("title"):
-            title = metadata.get("title")
-        if metadata.has("artist"):
-            artist = metadata.get("artist")
-    filename = str(path)
-    if filename.endswith((".mkv", ".mp4", ".webm")) and duration:
-        thumb = await take_screen_shot(f'./{filename}', duration)
-    start_time = time.time()
-    await message.edit('<i>Trying To Upload......</i> \U0001f9D0')
-    try:
-        if filename.endswith((".mp3", ".flac", ".wav", ".m4a")):
-            await userge.send_audio(
-                chat_id=chat_id,
-                audio=filename,
-                caption=caption,
-                duration=duration,
-                title=title,
-                performer=artist,
-                thumb=thumb,
-                progress=progress,
-                progress_args=(
-                    userge,
-                    message_id,
-                    chat_id,
-                    start_time,
-                    '<i>Uploading......</i>\U0001f60E'
-                )
-            )
-        elif filename.endswith((".mkv", ".mp4", ".webm")):
-            await userge.send_video(
-                chat_id=chat_id,
-                video=filename,
-                caption=caption,
-                duration=duration,
-                width=width,
-                height=height,
-                thumb=thumb,
-                supports_streaming=True,
-                progress=progress,
-                progress_args=(
-                    userge,
-                    message_id,
-                    chat_id,
-                    start_time,
-                    '<i>Uploading......</i>\U0001f60E'
-                )
-            )
-        else:
-            await userge.send_document(
-                chat_id=chat_id,
-                document=filename,
-                thumb=thumb,
-                caption=caption,
-                progress=progress,
-                progress_args=(
-                    userge,
-                    message_id,
-                    chat_id,
-                    start_time,
-                    '<i>Uploading......</i>\U0001f60E'
-                )
-            )
-
-            await userge.edit_message_text(
-                chat_id=chat_id,
-                message_id=message_id,
-                text='<i>Uploaded Successfully</i> \U0001f618'
-            )
-    except Exception as e:
-        LOGGER.exception("Exception occurred")
-        await userge.edit_message_text(
-            chat_id=chat_id,
-            message_id=message_id,
-            text=f"<b>ERROR:</b> <i>{e}</i>"
+    thumb_image_path = 'resources/userge(8).png'
+    message = await userge.send_message(chat_id, f"`Uploading {path.name} ...`")
+    start_t = datetime.now()
+    c_time = time.time()
+    doc_caption = path.name
+    the_real_download_location = await userge.send_document(
+        chat_id=chat_id,
+        document=str(path),
+        thumb=thumb_image_path,
+        caption=doc_caption,
+        parse_mode="html",
+        disable_notification=True,
+        progress=progress,
+        progress_args=(
+            "uploading", message, c_time
         )
+    )
+    end_t = datetime.now()
+    ms = (end_t - start_t).seconds
+    await message.edit(f"Uploaded in {ms} seconds")
