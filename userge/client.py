@@ -7,7 +7,6 @@ from typing import (
     Dict, Union, Any,
     Tuple, List, Callable
 )
-
 import os
 import re
 import nest_asyncio
@@ -19,7 +18,6 @@ PYROFUNC = Callable[[Client, Message], Any]
 
 
 class Userge(Client):
-
     __HELP_DICT: Dict[str, str] = {}
     __USERGE_MAIN_STRING = "<<<!  #####  ___{}___  #####  !>>>"
     __USERGE_SUB_STRING = "<<<!  {}  !>>>"
@@ -39,8 +37,8 @@ class Userge(Client):
         )
 
     def getLogger(
-        self,
-        name: str
+            self,
+            name: str
     ) -> logging.Logger:
 
         self.log.info(
@@ -50,12 +48,12 @@ class Userge(Client):
         return logging.getLogger(name)
 
     def on_cmd(
-        self,
-        command: str,
-        about: str,
-        group: int = 0,
-        trigger: str = '.',
-        only_me: bool = True
+            self,
+            command: str,
+            about: str,
+            group: int = 0,
+            trigger: str = '.',
+            only_me: bool = True
     ) -> Callable[[PYROFUNC], PYROFUNC]:
 
         found = [i for i in '()[]+*.\\|?:' if i in command]
@@ -80,9 +78,9 @@ class Userge(Client):
         )
 
     def on_new_member(
-        self,
-        welcome_chats: Filters.chat,
-        group: int = 0
+            self,
+            welcome_chats: Filters.chat,
+            group: int = 0
     ) -> Callable[[PYROFUNC], PYROFUNC]:
 
         return self.__build_decorator(
@@ -92,9 +90,9 @@ class Userge(Client):
         )
 
     def on_left_member(
-        self,
-        leaving_chats: Filters.chat,
-        group: int = 0
+            self,
+            leaving_chats: Filters.chat,
+            group: int = 0
     ) -> Callable[[PYROFUNC], PYROFUNC]:
 
         return self.__build_decorator(
@@ -104,12 +102,12 @@ class Userge(Client):
         )
 
     async def send_output_as_file(
-        self,
-        output: str,
-        message: Message,
-        filename: str = "output.txt",
-        caption: str = '',
-        delete_message: bool = True
+            self,
+            output: str,
+            message: Message,
+            filename: str = "output.txt",
+            caption: str = '',
+            delete_message: bool = True
     ) -> None:
 
         with open(filename, "w+", encoding="utf8") as out_file:
@@ -117,7 +115,7 @@ class Userge(Client):
 
         reply_to_id = message.reply_to_message.message_id \
             if message.reply_to_message \
-                else message.message_id
+            else message.message_id
 
         self.log.info(
             self.__USERGE_SUB_STRING.format(f"Uploading {filename} To Telegram")
@@ -137,10 +135,10 @@ class Userge(Client):
             await message.delete()
 
     async def filter_flags(
-        self,
-        message: Message,
-        prefix: str = '-',
-        del_pre: bool = False
+            self,
+            message: Message,
+            prefix: str = '-',
+            del_pre: bool = False
     ) -> Tuple[str, Dict[str, str]]:
 
         input_str = message.matches[0].group(1) or ''
@@ -167,8 +165,8 @@ class Userge(Client):
         return text, flags
 
     async def get_user_dict(
-        self,
-        user_id: int
+            self,
+            user_id: int
     ) -> Dict[str, str]:
 
         user_obj = await self.get_users(user_id)
@@ -197,8 +195,8 @@ class Userge(Client):
         }
 
     def get_help(
-        self,
-        key: str = ''
+            self,
+            key: str = ''
     ) -> Union[str, Dict[str, str]]:
 
         if key and key in self.__HELP_DICT:
@@ -211,9 +209,9 @@ class Userge(Client):
             return self.__HELP_DICT
 
     def __add_help(
-        self,
-        command: str,
-        about: str
+            self,
+            command: str,
+            about: str
     ) -> None:
 
         self.log.info(
@@ -223,14 +221,13 @@ class Userge(Client):
         self.__HELP_DICT.update({command: about})
 
     def __build_decorator(
-        self,
-        log: str,
-        filters: Filters,
-        group: int
+            self,
+            log: str,
+            filters: Filters,
+            group: int
     ) -> Callable[[PYROFUNC], PYROFUNC]:
 
         def decorator(func: PYROFUNC) -> PYROFUNC:
-
             self.log.info(
                 self.__USERGE_SUB_STRING.format(f"Loading => [ async def {func.__name__}(client, message) ] `{log}`")
             )

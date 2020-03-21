@@ -1,9 +1,11 @@
-import shlex
 import asyncio
 import os
+import shlex
+
 from PIL import Image
 from hachoir.metadata import extractMetadata
 from hachoir.parser import createParser
+
 from .logger import logging
 
 LOG = logging.getLogger(__name__)
@@ -82,3 +84,8 @@ async def take_screen_shot(video_file, duration):
 
             return thumb_image_path
     return None
+
+
+class SafeDict(dict):
+    def __missing__(self, key):
+        return '{' + key + '}'

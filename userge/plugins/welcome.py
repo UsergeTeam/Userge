@@ -1,5 +1,7 @@
-from userge import userge, Filters, get_collection
 import asyncio
+
+from userge import userge, Filters, get_collection
+from userge.utils import SafeDict
 
 WELCOME_COLLECTION = get_collection("welcome")
 LEFT_COLLECTION = get_collection("left")
@@ -220,11 +222,6 @@ async def raw_say(message, name, collection):
         'chat': message.chat.title if message.chat.title else "this group",
         'mention': f"<a href='tg://user?id={user.id}'>{user_dict['uname'] or user_dict['flname']}</a>",
     }
-
-    try:
-        welcome_message = await message.reply(message_str.format(**kwargs))
-        await asyncio.sleep(60)
-        await welcome_message.delete()
-
-    except KeyError:
-        pass
+    welcome_message = await message.reply(message_str.format_map(SafeDict(**kwargs)))
+    await asyncio.sleep(60)
+    await welcome_message.delete()

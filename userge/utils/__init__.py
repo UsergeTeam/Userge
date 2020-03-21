@@ -7,5 +7,6 @@ from .tools import (
     TimeFormatter,
     take_screen_shot,
     createParser,
-    extractMetadata
+    extractMetadata,
+    SafeDict
 )
