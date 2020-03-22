@@ -264,7 +264,7 @@ async def unlock_perm(_, message):
 
 **Usage:**
 
-`Allows you to lock view permission types status in the chat.`""")
+`Allows you to view permission types on/off status in the chat.`""")
 
 async def view_perm(_, message):
     """
