@@ -22,7 +22,6 @@ async def lock_perm(_, message):
     """
     this function can lock chat permissions from tg group
     """
-    lock_type = ""
     msg = ""
     media = ""
     other = ""
@@ -34,24 +33,40 @@ async def lock_perm(_, message):
     perm = ""
 
     chat_id = message.chat.id
-    if " " in message.text:
-        _, lock_type = message.text.split(" ")
 
-        get_perm = await userge.get_chat(chat_id)
-        
-        msg = get_perm.permissions.can_send_messages
-        media = get_perm.permissions.can_send_media_messages
-        other = get_perm.permissions.can_send_other_messages
-        webprev = get_perm.permissions.can_add_web_page_previews
-        polls = get_perm.permissions.can_send_polls
-        info = get_perm.permissions.can_change_info
-        invite = get_perm.permissions.can_invite_users
-        pin = get_perm.permissions.can_pin_messages
+    if " " not in message.text:
+        await userge.send_msg(message,
+                              text="**I Can't Lock Nothing! 🤦‍♂️**",
+                              del_in=3)
+        return
+
+    _, lock_type = message.text.split(" ")
+
+    get_perm = await userge.get_chat(chat_id)
+    
+    msg = get_perm.permissions.can_send_messages
+    media = get_perm.permissions.can_send_media_messages
+    other = get_perm.permissions.can_send_other_messages
+    webprev = get_perm.permissions.can_add_web_page_previews
+    polls = get_perm.permissions.can_send_polls
+    info = get_perm.permissions.can_change_info
+    invite = get_perm.permissions.can_invite_users
+    pin = get_perm.permissions.can_pin_messages
 
     if lock_type == "all":
-        await userge.set_chat_permissions(chat_id, ChatPermissions())
-        await message.edit("**🔒 Locked all permission from this Chat!**")
-        return
+        try:
+            await userge.set_chat_permissions(chat_id, ChatPermissions())
+            await userge.send_msg(message,
+                                  text="**🔒 Locked all permission from this Chat!**",
+                                  del_in=3)
+
+        except:
+            await userge.send_msg(message,
+                                  text=f"**Do I have proper Admin rights for that 🤔**",
+                                  del_in=3)
+
+        finally:
+            return
 
     if lock_type == "msg":
         msg = False
@@ -86,31 +101,31 @@ async def lock_perm(_, message):
         perm = "pin"
 
     else:
-        if not lock_type:
-            await message.edit("**I Can't Lock Nothing! 🤦‍♂️**")
-        else:
-            await message.edit(r"**Invalid Lock Type! ¯\_(ツ)_/¯**")
-            return
-
-    if lock_type is not None:
-        await userge.set_chat_permissions(
-            chat_id,
-            ChatPermissions(
-                can_send_messages=msg,
-                can_send_media_messages=media,
-                can_send_other_messages=other,
-                can_add_web_page_previews=webprev,
-                can_send_polls=polls,
-                can_change_info=info,
-                can_invite_users=invite,
-                can_pin_messages=pin,
-                )
-            )
-        await message.edit(f"**🔒 Locked {perm} for this chat!**")
-
-    else:
-        await message.edit("**Do I have proper Admin rights for that 🤔**")
+        await userge.send_msg(message,
+                              text=r"**Invalid Lock Type! ¯\_(ツ)_/¯**",
+                              del_in=3)
         return
+
+    try:
+        await userge.set_chat_permissions(chat_id,
+                                          ChatPermissions(can_send_messages=msg,
+                                                          can_send_media_messages=media,
+                                                          can_send_other_messages=other,
+                                                          can_add_web_page_previews=webprev,
+                                                          can_send_polls=polls,
+                                                          can_change_info=info,
+                                                          can_invite_users=invite,
+                                                          can_pin_messages=pin,))
+
+        await userge.send_msg(message,
+                              text=f"**🔒 Locked {perm} for this chat!**",
+                              del_in=3)
+
+    except:
+        await userge.send_msg(message,
+                              text="**Do I have proper Admin rights for that 🤔**",
+                              del_in=3)
+
 
 @userge.on_cmd("unlock",
     about="""__use this to unlock group permissions__
@@ -133,7 +148,6 @@ async def unlock_perm(_, message):
     """
     this function can unlock chat permissions from tg group
     """
-    unlock_type = ""
     umsg = ""
     umedia = ""
     uother = ""
@@ -145,36 +159,48 @@ async def unlock_perm(_, message):
     uperm = ""
 
     chat_id = message.chat.id
-    if " " in message.text:
-        _, unlock_type = message.text.split(" ")
 
-        get_uperm = await userge.get_chat(chat_id)
-        
-        umsg = get_uperm.permissions.can_send_messages
-        umedia = get_uperm.permissions.can_send_media_messages
-        uother = get_uperm.permissions.can_send_other_messages
-        uwebprev = get_uperm.permissions.can_add_web_page_previews
-        upolls = get_uperm.permissions.can_send_polls
-        uinfo = get_uperm.permissions.can_change_info
-        uinvite = get_uperm.permissions.can_invite_users
-        upin = get_uperm.permissions.can_pin_messages
+    if " " not in message.text:
+        await userge.send_msg(message,
+                              text="**I Can't Unlock Nothing! 🤦‍♂️**",
+                              del_in=3)
+        return
+
+    _, unlock_type = message.text.split(" ")
+
+    get_uperm = await userge.get_chat(chat_id)
+    
+    umsg = get_uperm.permissions.can_send_messages
+    umedia = get_uperm.permissions.can_send_media_messages
+    uother = get_uperm.permissions.can_send_other_messages
+    uwebprev = get_uperm.permissions.can_add_web_page_previews
+    upolls = get_uperm.permissions.can_send_polls
+    uinfo = get_uperm.permissions.can_change_info
+    uinvite = get_uperm.permissions.can_invite_users
+    upin = get_uperm.permissions.can_pin_messages
 
     if unlock_type == "all":
-        await userge.set_chat_permissions(
-            chat_id,
-            ChatPermissions(
-                can_send_messages=True,
-                can_send_media_messages=True,
-                can_send_other_messages=True,
-                can_send_polls=True,
-                can_change_info=True,
-                can_invite_users=True,
-                can_pin_messages=True,
-                can_add_web_page_previews=True,
-            )
-        )
-        await message.edit("**🔓 Unlocked all permission from this Chat!**")
-        return
+        try:
+            await userge.set_chat_permissions(chat_id,
+                                              ChatPermissions(can_send_messages=True,
+                                                              can_send_media_messages=True,
+                                                              can_send_other_messages=True,
+                                                              can_send_polls=True,
+                                                              can_change_info=True,
+                                                              can_invite_users=True,
+                                                              can_pin_messages=True,
+                                                              can_add_web_page_previews=True,))
+
+            await userge.send_msg(message,
+                                  text="**🔓 Unlocked all permission from this Chat!**",
+                                  del_in=3)
+
+        except:
+            await userge.send_msg(message,
+                                  text=f"**Do I have proper Admin rights for that 🤔**",
+                                  del_in=3)
+        finally:
+            return
 
     if unlock_type == "msg":
         umsg = True
@@ -209,28 +235,27 @@ async def unlock_perm(_, message):
         uperm = "pin"
 
     else:
-        if not unlock_type:
-            await message.edit("**I Can't Unlock Nothing! 🤦‍♂️**")
-        else:
-            await message.edit(r"**Invalid Unlock Type! ¯\_(ツ)_/¯**")
-            return
-
-    if unlock_type is not None:
-        await userge.set_chat_permissions(
-            chat_id,
-            ChatPermissions(
-                can_send_messages=umsg,
-                can_send_media_messages=umedia,
-                can_send_other_messages=uother,
-                can_add_web_page_previews=uwebprev,
-                can_send_polls=upolls,
-                can_change_info=uinfo,
-                can_invite_users=uinvite,
-                can_pin_messages=upin,
-                )
-            )
-        await message.edit(f"**🔓 Unlocked {uperm} for this chat!**")
-
-    else:
-        await message.edit(f"**Do I have proper Admin rights for that 🤔**")
+        await userge.send_msg(message,
+                              text=r"**Invalid Unlock Type! ¯\_(ツ)_/¯**",
+                              del_in=3)
         return
+
+    try:
+        await userge.set_chat_permissions(chat_id,
+                                          ChatPermissions(can_send_messages=umsg,
+                                                          can_send_media_messages=umedia,
+                                                          can_send_other_messages=uother,
+                                                          can_add_web_page_previews=uwebprev,
+                                                          can_send_polls=upolls,
+                                                          can_change_info=uinfo,
+                                                          can_invite_users=uinvite,
+                                                          can_pin_messages=upin,))
+                            
+        await userge.send_msg(message,
+                              text=f"**🔓 Unlocked {uperm} for this chat!**",
+                              del_in=3)
+
+    except:
+        await userge.send_msg(message,
+                              text=f"**Do I have proper Admin rights for that 🤔**",
+                              del_in=3)

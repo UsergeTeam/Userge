@@ -1,14 +1,14 @@
 import io
 import os
 import sys
-import asyncio
 import traceback
 from getpass import getuser
 from userge import userge, Config
+from userge.utils import runcmd
 
 
 @userge.on_cmd("eval",
-    about="""__run python code line | lines__
+               about="""__run python code line | lines__
 
 **Usage:**
 
@@ -33,8 +33,9 @@ async def eval_(_, message):
 
     async def aexec(code, userge, message):
         exec(
-            "async def __aexec(userge, message):\n " + '\n '.join(line for line in code.split('\n'))
-        )
+            "async def __aexec(userge, message):\n " + \
+                '\n '.join(line for line in code.split('\n')))
+
         return await locals()['__aexec'](userge, message)
 
     try:
@@ -65,19 +66,17 @@ async def eval_(_, message):
 **OUTPUT**:\n```{}```".format(cmd, evaluation.strip())
 
     if len(OUTPUT) > Config.MAX_MESSAGE_LENGTH:
-        await userge.send_output_as_file(
-            output=OUTPUT,
-            message=message,
-            filename="eval.txt",
-            caption=cmd
-        )
+        await userge.send_output_as_file(output=OUTPUT,
+                                         message=message,
+                                         filename="eval.txt",
+                                         caption=cmd)
 
     else:
         await message.edit(OUTPUT)
 
 
 @userge.on_cmd("exec",
-    about="""__run shell commands__
+               about="""__run shell commands__
 
 **Usage:**
 
@@ -92,36 +91,29 @@ async def exec_(_, message):
     if cmd is None:
         return
 
-    process = await asyncio.create_subprocess_shell(
-        cmd,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE
-    )
-    stdout, stderr = await process.communicate()
+    out, err, ret, pid = await runcmd(cmd)
 
-    err = stderr.decode() or "no error"
-    out = stdout.decode() or "no output"
+    out = out or "no output"
+    err = err or "no error"
 
     out = "\n".join(out.split("\n"))
 
     OUTPUT = f"**EXEC**:\n\n\
-__Command:__\n`{cmd}`\n__PID:__\n`{process.pid}`\n\n\
+__Command:__\n`{cmd}`\n__PID:__\n`{pid}`\n__RETURN:__\n`{ret}`\n\n\
 **stderr:**\n`{err}`\n\n**stdout:**\n``{out}`` "
 
     if len(OUTPUT) > Config.MAX_MESSAGE_LENGTH:
-        await userge.send_output_as_file(
-            output=OUTPUT,
-            message=message,
-            filename="exec.txt",
-            caption=cmd
-        )
+        await userge.send_output_as_file(output=OUTPUT,
+                                         message=message,
+                                         filename="exec.txt",
+                                         caption=cmd)
 
     else:
         await message.edit(OUTPUT)
 
 
 @userge.on_cmd("term",
-    about="""__run terminal commands__
+               about="""__run terminal commands__
 
 **Usage:**
 
@@ -136,21 +128,15 @@ async def term_(_, message):
     if cmd is None:
         return
 
-    process = await asyncio.create_subprocess_shell(
-        cmd,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE)
-    stdout, stderr = await process.communicate()
+    out, err, _, _ = await runcmd(cmd)
 
-    OUTPUT = str(stdout.decode().strip()) + str(stderr.decode().strip())
+    OUTPUT = str(out) + str(err)
 
     if len(OUTPUT) > Config.MAX_MESSAGE_LENGTH:
-        await userge.send_output_as_file(
-            output=OUTPUT,
-            message=message,
-            filename="term.txt",
-            caption=cmd
-        )
+        await userge.send_output_as_file(output=OUTPUT,
+                                         message=message,
+                                         filename="term.txt",
+                                         caption=cmd)
 
     else:
         try:
@@ -174,11 +160,11 @@ async def init_func(message):
     cmd = message.matches[0].group(1)
 
     if cmd is None:
-        await message.edit("__No Command Found!__")
+        await userge.send_err(message, text="No Command Found!")
         return None
 
     if "config.env" in cmd:
-        await message.edit("`That's a dangerous operation! Not Permitted!`")
+        await userge.send_err(message, text="That's a dangerous operation! Not Permitted!")
         return None
 
     return cmd

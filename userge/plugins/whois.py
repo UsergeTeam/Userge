@@ -3,7 +3,7 @@ from userge import userge
 
 
 @userge.on_cmd("whois",
-    about="""__use this to get any user details__
+               about="""__use this to get any user details__
 
 **Usage:**
 
@@ -24,7 +24,9 @@ async def who_is(_, message):
             from_chat = await userge.get_chat(user_id)
 
         except:
-            await message.edit("<code>no valid user_id or message specified, do .help whois for more info</code>")
+            await userge.send_err(message,
+                                  text="no valid user_id or message specified, \
+                                      do .help whois for more info")
             return
 
     elif message.reply_to_message:
@@ -32,7 +34,9 @@ async def who_is(_, message):
         from_chat = await userge.get_chat(message.reply_to_message.from_user.id)
 
     else:
-        await message.edit("<code>no valid user_id or message specified, do .help whois for more info</code>")
+        await userge.send_err(message,
+                              text="no valid user_id or message specified, \
+                                  do .help whois for more info")
         return
 
     if from_user or from_chat is not None:
@@ -57,17 +61,15 @@ async def who_is(_, message):
                 message=from_user.photo.big_file_id
             )
 
-            await userge.send_photo(
-                chat_id=message.chat.id,
-                photo=local_user_photo,
-                caption=message_out_str,
-                parse_mode="html",
-                disable_notification=True
-            )
+            await userge.send_photo(chat_id=message.chat.id,
+                                    photo=local_user_photo,
+                                    caption=message_out_str,
+                                    parse_mode="html",
+                                    disable_notification=True)
             
             os.remove(local_user_photo)
             await message.delete()
 
         else:
             message_out_str = "<b>📷 NO DP Found 📷</b>\n\n" + message_out_str
-            await message.edit(message_out_str, parse_mode="html")
+            await message.edit(message_out_str)

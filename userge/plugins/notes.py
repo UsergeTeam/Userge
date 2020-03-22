@@ -1,14 +1,15 @@
 from userge import userge, get_collection
-import asyncio
-from pyrogram.errors.exceptions import MessageAuthorRequired
+
 NOTES_COLLECTION = get_collection("notes")
 
 
-@userge.on_cmd("notes", about="__List all saved notes__")
+@userge.on_cmd("notes",
+               about="__List all saved notes__")
 async def notes_active(_, message):
     out = "`There are no saved notes in this chat`"
 
-    for note in NOTES_COLLECTION.find({'chat_id': message.chat.id}, {'name': 1}):
+    for note in NOTES_COLLECTION.find({'chat_id': message.chat.id},
+                                      {'name': 1}):
         if out == "`There are no saved notes in this chat`":
             out = "**--Notes saved in this chat:--**\n\n"
             out += " 🔹 `{}`\n".format(note['name'])
@@ -27,17 +28,19 @@ async def notes_active(_, message):
     `.delnote [note name]`""")
 async def remove_notes(_, message):
     notename = message.matches[0].group(1)
+
     if notename is None:
         out = "`Wrong syntax`\nNo arguements"
+
     elif NOTES_COLLECTION.find_one_and_delete({'chat_id': message.chat.id, 'name': notename}):
         out = "`Successfully deleted note:` **{}**".format(notename)
 
     else:
         out = "`Couldn't find note:` **{}**".format(notename)
 
-    await message.edit(out)
-    await asyncio.sleep(3)
-    await message.delete()
+    await userge.send_msg(message,
+                          text=out,
+                          del_in=3)
 
 
 @userge.on_cmd(r"(\w[\w_]*)",
@@ -50,19 +53,13 @@ async def remove_notes(_, message):
                only_me=False)
 async def note(_, message):
     notename = message.matches[0].group(1)
-    found = NOTES_COLLECTION.find_one({'chat_id': message.chat.id, 'name': notename}, {'content': 1})
+    found = NOTES_COLLECTION.find_one({'chat_id': message.chat.id, 'name': notename},
+                                      {'content': 1})
 
     if found:
         out = "**--{}--**\n\n{}".format(notename, found['content'])
-        try:
-            await message.edit(out)
 
-        except MessageAuthorRequired:
-            await userge.send_message(
-                chat_id=message.chat.id,
-                text=out,
-                reply_to_message_id=message.message_id
-            )
+        await userge.send_msg(message, text=out)
 
 
 @userge.on_cmd("addnote (\\w[\\w_]*)(?:\\s([\\s\\S]+))?",
@@ -79,19 +76,21 @@ async def add_filter(_, message):
         content = message.reply_to_message.text
 
     if not content:
-        await message.edit("`No Content Found!`")
-        await asyncio.sleep(3)
-        await message.delete()
+        await userge.send_err(message,
+                              text="No Content Found!")
         return
 
     out = "`{} note #{}`"
-    result = NOTES_COLLECTION.update_one({'chat_id': message.chat.id, 'name': notename}, {"$set": {'content': content}},
+    result = NOTES_COLLECTION.update_one({'chat_id': message.chat.id, 'name': notename},
+                                         {"$set": {'content': content}},
                                          upsert=True)
+
     if result.upserted_id:
         out = out.format('Added', notename)
+
     else:
         out = out.format('Updated', notename)
 
-    await message.edit(out)
-    await asyncio.sleep(3)
-    await message.delete()
+    await userge.send_msg(message,
+                          text=out,
+                          del_in=3)

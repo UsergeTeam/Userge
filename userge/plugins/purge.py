@@ -1,4 +1,3 @@
-import asyncio
 from datetime import datetime
 from userge import userge
 
@@ -6,7 +5,7 @@ LOG = userge.getLogger(__name__)
 
 
 @userge.on_cmd("purge",
-    about="""__purge messages from user__
+               about="""__purge messages from user__
     
 **Usage:**
 
@@ -36,11 +35,10 @@ async def purge_(_, message):
         start_message = message.reply_to_message.message_id
         end_message = message.message_id
 
-        list_of_messages = await userge.get_messages(
-            chat_id=message.chat.id,
-            message_ids=range(start_message, end_message),
-            replies=0
-        )
+        list_of_messages = await userge.get_messages(chat_id=message.chat.id,
+                                                     message_ids=range(
+                                                         start_message, end_message),
+                                                     replies=0)
 
         LOG.info(list_of_messages)
 
@@ -49,11 +47,9 @@ async def purge_(_, message):
 
         for a_message in list_of_messages:
             if len(list_of_messages_to_delete) == 100:
-                await userge.delete_messages(
-                    chat_id=message.chat.id,
-                    message_ids=list_of_messages_to_delete,
-                    revoke=True
-                )
+                await userge.delete_messages(chat_id=message.chat.id,
+                                             message_ids=list_of_messages_to_delete,
+                                             revoke=True)
 
                 purged_messages_count += len(list_of_messages_to_delete)
                 list_of_messages_to_delete = []
@@ -67,22 +63,17 @@ async def purge_(_, message):
 
         LOG.info(list_of_messages_to_delete)
 
-        await userge.delete_messages(
-            chat_id=message.chat.id,
-            message_ids=list_of_messages_to_delete,
-            revoke=True
-        )
+        await userge.delete_messages(chat_id=message.chat.id,
+                                     message_ids=list_of_messages_to_delete,
+                                     revoke=True)
 
         purged_messages_count += len(list_of_messages_to_delete)
         end_t = datetime.now()
         time_taken_s = (end_t - start_t).seconds
 
-        await message.edit(
-            f"<u>purged</u> {purged_messages_count} messages in {time_taken_s} seconds."
-        )
+        out = f"<u>purged</u> {purged_messages_count} messages in {time_taken_s} seconds."
+        await userge.send_msg(message, text=out, del_in=3)
 
-        await asyncio.sleep(5)
-        await message.delete()
-        
     else:
-        await message.edit("Reply to a message to purge [user's] messages.")
+        out = "Reply to a message to purge [user's] messages."
+        await userge.send_err(message, text=out)

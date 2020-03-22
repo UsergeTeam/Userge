@@ -13,3 +13,4 @@ speedtest-cli
 emoji
 wget
 nest_asyncio
+requests
