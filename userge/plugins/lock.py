@@ -1,8 +1,9 @@
+import os
 from pyrogram import ChatPermissions
 from userge import userge
 
 @userge.on_cmd("lock",
-    about="""__use this to lock group permissions__
+               about="""__use this to lock group permissions__
 
 **Usage:**
 
@@ -65,8 +66,7 @@ async def lock_perm(_, message):
                                   text=f"**Do I have proper Admin rights for that 🤔**",
                                   del_in=3)
 
-        finally:
-            return
+        return
 
     if lock_type == "msg":
         msg = False
@@ -128,7 +128,7 @@ async def lock_perm(_, message):
 
 
 @userge.on_cmd("unlock",
-    about="""__use this to unlock group permissions__
+               about="""__use this to unlock group permissions__
 
 **Usage:**
 
@@ -199,8 +199,7 @@ async def unlock_perm(_, message):
             await userge.send_msg(message,
                                   text=f"**Do I have proper Admin rights for that 🤔**",
                                   del_in=3)
-        finally:
-            return
+        return
 
     if unlock_type == "msg":
         umsg = True
@@ -258,4 +257,56 @@ async def unlock_perm(_, message):
     except:
         await userge.send_msg(message,
                               text=f"**Do I have proper Admin rights for that 🤔**",
+                              del_in=3)
+
+@userge.on_cmd("vperm",
+               about="""__use this to view group permissions__
+
+**Usage:**
+
+`Allows you to lock view permission types status in the chat.`""")
+
+async def view_perm(_, message):
+    """
+    this function can check chat permissions from tg group
+    """
+   
+    v_perm = ""
+
+    await message.edit("`Checking group permissions... Hang on!`")
+
+    v_perm = await userge.get_chat(message.chat.id)
+
+    if v_perm is not None:
+        permission_view_str = ""
+
+        permission_view_str += f"<b>CHAT PERMISSION INFO:</b>\n\n"
+        permission_view_str += f"<b>📩 Send Messages:</b> <code>{v_perm.permissions.can_send_messages}</code>\n"
+        permission_view_str += f"<b>🎭 Send Media:</b> <code>{v_perm.permissions.can_send_media_messages}</code>\n"
+        permission_view_str += f"<b>🎲 Send Other Messages:</b> <code>{v_perm.permissions.can_send_other_messages}</code>\n"
+        permission_view_str += f"<b>🌐 Webpage Preview:</b> <code>{v_perm.permissions.can_add_web_page_previews}</code>\n"
+        permission_view_str += f"<b>🗳 Send Polls:</b> <code>{v_perm.permissions.can_send_polls}</code>\n"
+        permission_view_str += f"<b>ℹ Change Info:</b> <code>{v_perm.permissions.can_change_info}</code>\n"
+        permission_view_str += f"<b>👥 Invite Users:</b> <code>{v_perm.permissions.can_invite_users}</code>\n"
+        permission_view_str += f"<b>📌 Pin Messages:</b> <code>{v_perm.permissions.can_pin_messages}</code>\n"
+
+        if v_perm.photo:
+            local_chat_photo = await userge.download_media(
+                message=v_perm.photo.big_file_id
+            )
+
+            await userge.send_photo(chat_id=message.chat.id,
+                                    photo=local_chat_photo,
+                                    caption=permission_view_str,
+                                    parse_mode="html")
+            
+            os.remove(local_chat_photo)
+            await message.delete()
+
+        else:
+            await message.edit(permission_view_str)
+
+    else:
+        await userge.send_msg(message,
+                              text=f"**Something went wrong! do** `.help vperm`",
                               del_in=3)
