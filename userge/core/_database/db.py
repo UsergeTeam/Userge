@@ -1,6 +1,6 @@
 from pymongo import MongoClient
 from pymongo.collection import Collection
-from .utils import Config, logging
+from userge.utils import Config, logging
 
 LOG = logging.getLogger(__name__)
 

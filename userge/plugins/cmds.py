@@ -7,8 +7,8 @@ from userge import userge, Config
 from userge.utils import runcmd
 
 
-@userge.on_cmd("eval",
-               about="""__run python code line | lines__
+@userge.on_cmd("eval", about="""\
+__run python code line | lines__
 
 **Usage:**
 
@@ -17,7 +17,7 @@ from userge.utils import runcmd
 **Example:**
 
     `.eval print('Userge')`""")
-async def eval_(_, message):
+async def eval_(message):
     cmd = await init_func(message)
 
     if cmd is None:
@@ -32,8 +32,7 @@ async def eval_(_, message):
     stdout, stderr, exc = None, None, None
 
     async def aexec(code, userge, message):
-        exec(
-            "async def __aexec(userge, message):\n " + \
+        exec("async def __aexec(userge, message):\n " + \
                 '\n '.join(line for line in code.split('\n')))
 
         return await locals()['__aexec'](userge, message)
@@ -66,17 +65,16 @@ async def eval_(_, message):
 **OUTPUT**:\n```{}```".format(cmd, evaluation.strip())
 
     if len(OUTPUT) > Config.MAX_MESSAGE_LENGTH:
-        await userge.send_output_as_file(output=OUTPUT,
-                                         message=message,
-                                         filename="eval.txt",
-                                         caption=cmd)
+        await message.send_as_file(text=OUTPUT,
+                                   filename="eval.txt",
+                                   caption=cmd)
 
     else:
         await message.edit(OUTPUT)
 
 
-@userge.on_cmd("exec",
-               about="""__run shell commands__
+@userge.on_cmd("exec", about="""\
+__run shell commands__
 
 **Usage:**
 
@@ -85,7 +83,7 @@ async def eval_(_, message):
 **Example:**
 
     `.exec echo "Userge"`""")
-async def exec_(_, message):
+async def exec_(message):
     cmd = await init_func(message)
 
     if cmd is None:
@@ -103,17 +101,16 @@ __Command:__\n`{cmd}`\n__PID:__\n`{pid}`\n__RETURN:__\n`{ret}`\n\n\
 **stderr:**\n`{err}`\n\n**stdout:**\n``{out}`` "
 
     if len(OUTPUT) > Config.MAX_MESSAGE_LENGTH:
-        await userge.send_output_as_file(output=OUTPUT,
-                                         message=message,
-                                         filename="exec.txt",
-                                         caption=cmd)
+        await message.send_as_file(text=OUTPUT,
+                                   filename="exec.txt",
+                                   caption=cmd)
 
     else:
         await message.edit(OUTPUT)
 
 
-@userge.on_cmd("term",
-               about="""__run terminal commands__
+@userge.on_cmd("term", about="""\
+__run terminal commands__
 
 **Usage:**
 
@@ -122,7 +119,7 @@ __Command:__\n`{cmd}`\n__PID:__\n`{pid}`\n__RETURN:__\n`{ret}`\n\n\
 **Example:**
 
     `.term echo "Userge"`""")
-async def term_(_, message):
+async def term_(message):
     cmd = await init_func(message)
 
     if cmd is None:
@@ -133,10 +130,9 @@ async def term_(_, message):
     OUTPUT = str(out) + str(err)
 
     if len(OUTPUT) > Config.MAX_MESSAGE_LENGTH:
-        await userge.send_output_as_file(output=OUTPUT,
-                                         message=message,
-                                         filename="term.txt",
-                                         caption=cmd)
+        await message.send_as_file(text=OUTPUT,
+                                   filename="term.txt",
+                                   caption=cmd)
 
     else:
         try:
@@ -157,14 +153,14 @@ async def term_(_, message):
 
 async def init_func(message):
     await message.edit("Processing ...")
-    cmd = message.matches[0].group(1)
+    cmd = message.input_str
 
-    if cmd is None:
-        await userge.send_err(message, text="No Command Found!")
+    if not cmd:
+        await message.err(text="No Command Found!")
         return None
 
     if "config.env" in cmd:
-        await userge.send_err(message, text="That's a dangerous operation! Not Permitted!")
+        await message.err(text="That's a dangerous operation! Not Permitted!")
         return None
 
     return cmd

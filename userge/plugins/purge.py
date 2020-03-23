@@ -4,9 +4,9 @@ from userge import userge
 LOG = userge.getLogger(__name__)
 
 
-@userge.on_cmd("purge",
-               about="""__purge messages from user__
-    
+@userge.on_cmd("purge", about="""\
+__purge messages from user__
+
 **Usage:**
 
 reply `.purge` to the start message to purge
@@ -18,10 +18,11 @@ reply `.purge` to the start message to purge
     `.purge`
     `.purge -u`
     `.purge [user_id | user_name]`""")
-async def purge_(_, message):
+async def purge_(message):
     if message.reply_to_message:
         start_t = datetime.now()
-        user_id, flags = await userge.filter_flags(message)
+        user_id = message.filtered_input_str
+        flags = message.flags
 
         if '-u' in flags:
             from_user = message.reply_to_message.from_user
@@ -36,8 +37,7 @@ async def purge_(_, message):
         end_message = message.message_id
 
         list_of_messages = await userge.get_messages(chat_id=message.chat.id,
-                                                     message_ids=range(
-                                                         start_message, end_message),
+                                                     message_ids=range(start_message, end_message),
                                                      replies=0)
 
         LOG.info(list_of_messages)
@@ -72,8 +72,8 @@ async def purge_(_, message):
         time_taken_s = (end_t - start_t).seconds
 
         out = f"<u>purged</u> {purged_messages_count} messages in {time_taken_s} seconds."
-        await userge.send_msg(message, text=out, del_in=3)
+        await message.edit(text=out, del_in=3)
 
     else:
         out = "Reply to a message to purge [user's] messages."
-        await userge.send_err(message, text=out)
+        await message.err(text=out)

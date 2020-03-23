@@ -2,8 +2,8 @@ import os
 from userge import userge
 
 
-@userge.on_cmd("whois",
-               about="""__use this to get any user details__
+@userge.on_cmd("whois", about="""\
+__use this to get any user details__
 
 **Usage:**
 
@@ -12,21 +12,18 @@ from userge import userge
 **Example:**
 
     `.whois [user_id | username]`""")
-async def who_is(_, message):
-
+async def who_is(message):
     await message.edit("`Collecting Whois Info.. Hang on!`")
-
-    if " " in message.text:
-        _, user_id = message.text.split(" ")
-
+    user_id = message.input_str
+    
+    if user_id:
         try:
             from_user = await userge.get_users(user_id)
             from_chat = await userge.get_chat(user_id)
 
         except:
-            await userge.send_err(message,
-                                  text="no valid user_id or message specified, \
-                                      do .help whois for more info")
+            await message.err(
+                text="no valid user_id or message specified, do .help whois for more info")
             return
 
     elif message.reply_to_message:
@@ -34,9 +31,8 @@ async def who_is(_, message):
         from_chat = await userge.get_chat(message.reply_to_message.from_user.id)
 
     else:
-        await userge.send_err(message,
-                              text="no valid user_id or message specified, \
-                                  do .help whois for more info")
+        await message.err(
+            text="no valid user_id or message specified, do .help whois for more info")
         return
 
     if from_user or from_chat is not None:
@@ -57,9 +53,7 @@ async def who_is(_, message):
         message_out_str += f"<b>🔗 Permanent Link To Profile:</b> <a href='tg://user?id={from_user.id}'>{from_user.first_name}</a>"
 
         if from_user.photo:
-            local_user_photo = await userge.download_media(
-                message=from_user.photo.big_file_id
-            )
+            local_user_photo = await userge.download_media(message=from_user.photo.big_file_id)
 
             await userge.send_photo(chat_id=message.chat.id,
                                     photo=local_user_photo,

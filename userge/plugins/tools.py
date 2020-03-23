@@ -16,9 +16,8 @@ from userge import userge, Config
 from userge.utils import humanbytes
 
 
-@userge.on_cmd("ping",
-               about="__check how long it takes to ping your userbot__")
-async def pingme(_, message):
+@userge.on_cmd("ping", about="__check how long it takes to ping your userbot__")
+async def pingme(message):
     start = datetime.now()
 
     await message.edit('`Pong!`')
@@ -29,13 +28,12 @@ async def pingme(_, message):
     await message.edit(f"**Pong!**\n`{ms} ms`")
 
 
-@userge.on_cmd("help",
-               about="__to know how to use **USERGE** commands__")
-async def helpme(_, message):
-    cmd = message.matches[0].group(1)
+@userge.on_cmd("help", about="__to know how to use **USERGE** commands__")
+async def helpme(message):
+    cmd = message.input_str
     out_str = ""
 
-    if cmd is None:
+    if not cmd:
         out_str += """**--Which command you want ?--**
 
 **Usage**:
@@ -52,19 +50,15 @@ async def helpme(_, message):
         out_str += f"`.{cmd.lstrip('.')}`\n\n{out}" if out \
             else "__command not found!__"
 
-    await userge.send_msg(message,
-                          text=out_str,
-                          del_in=15)
+    await message.edit(text=out_str, del_in=15)
 
 
-@userge.on_cmd("s",
-               about="__to search commands in **USERGE**__")
-async def search(_, message):
-    cmd = message.matches[0].group(1)
+@userge.on_cmd("s", about="__to search commands in **USERGE**__")
+async def search(message):
+    cmd = message.input_str
 
-    if cmd is None:
-        await userge.send_err(message,
-                              text="Enter any keyword to search in commands")
+    if not cmd:
+        await message.err(text="Enter any keyword to search in commands")
         return
 
     found = '\n.'.join([i for i in sorted(userge.get_help()) \
@@ -76,34 +70,30 @@ async def search(_, message):
     else:
         out = "__command not found!__"
 
-    await userge.send_msg(message,
-                          text=out,
-                          del_in=15)
+    await message.edit(text=out, del_in=15)
 
 
-@userge.on_cmd("json",
-               about="""__message object to json__
+@userge.on_cmd("json", about="""\
+__message object to json__
 
 **Usage:**
 
     reply `.json` to any message""")
-async def jsonify(_, message):
+async def jsonify(message):
     the_real_message = str(message.reply_to_message) if message.reply_to_message \
         else str(message)
 
     if len(the_real_message) > Config.MAX_MESSAGE_LENGTH:
-        await userge.send_output_as_file(output=the_real_message,
-                                         message=message,
-                                         filename="json.txt",
-                                         caption="Too Large")
+        await message.send_as_file(text=the_real_message,
+                                   filename="json.txt",
+                                   caption="Too Large")
 
     else:
         await message.edit(the_real_message)
 
 
-@userge.on_cmd("all",
-               about="__list all plugins in plugins/ path__")
-async def getplugins(_, message):
+@userge.on_cmd("all", about="__list all plugins in plugins/ path__")
+async def getplugins(message):
     all_plugins = await get_all_plugins()
 
     out_str = "**--All Userge Plugins--**\n\n"
@@ -111,14 +101,11 @@ async def getplugins(_, message):
     for plugin in all_plugins:
         out_str += f"    `{plugin}`\n"
 
-    await userge.send_msg(message,
-                          text=out_str,
-                          del_in=15)
+    await message.edit(text=out_str, del_in=15)
 
 
-@userge.on_cmd("del",
-               about="__delete replied message__")
-async def del_msg(_, message):
+@userge.on_cmd("del", about="__delete replied message__")
+async def del_msg(message):
     msg_ids = [message.message_id]
 
     if message.reply_to_message:
@@ -127,13 +114,13 @@ async def del_msg(_, message):
     await userge.delete_messages(message.chat.id, msg_ids)
 
 
-@userge.on_cmd("ids",
-               about="""__display ids__
+@userge.on_cmd("ids", about="""\
+__display ids__
 
 **Usage:**
 
 reply `.ids` any message, file or just send this command""")
-async def getids(_, message):
+async def getids(message):
     out_str = f"💁 Current Chat ID: `{message.chat.id}`"
 
     if message.reply_to_message:
@@ -168,8 +155,8 @@ async def getids(_, message):
     await message.edit(out_str)
 
 
-@userge.on_cmd("admins",
-               about="""__View or mention admins in chat__
+@userge.on_cmd("admins", about="""\
+__View or mention admins in chat__
 
 **Available Flags:**
 `-m` : __mention all admins__
@@ -179,9 +166,10 @@ async def getids(_, message):
 **Usage:**
 
     `.admins [any flag] [chatid]`""")
-async def mentionadmins(_, message):
+async def mentionadmins(message):
     mentions = "🛡 **Admin List** 🛡\n"
-    chat_id, flags = await userge.filter_flags(message)
+    chat_id = message.filtered_input_str
+    flags = message.flags
 
     men_admins = '-m' in flags
     men_creator = '-mc' in flags
@@ -232,8 +220,8 @@ async def mentionadmins(_, message):
                                disable_web_page_preview=True)
 
 
-@userge.on_cmd("ub",
-               about="""__Searches Urban Dictionary for the query__
+@userge.on_cmd("ub", about="""\
+__Searches Urban Dictionary for the query__
 
 **Usage:**
 
@@ -242,28 +230,25 @@ async def mentionadmins(_, message):
 **Exaple:**
 
     `.ub userge`""")
-async def urban_dict(_, message):
+async def urban_dict(message):
     await message.edit("Processing...")
-    query = message.matches[0].group(1)
+    query = message.input_str
 
-    if query is None:
-        await userge.send_err(message,
-                              text="No found any query!")
+    if not query:
+        await message.err(text="No found any query!")
         return
 
     try:
         mean = urbandict.define(query)
 
     except HTTPError:
-        await userge.send_err(message,
-                              text=f"Sorry, couldn't find any results for: `{query}``")
+        await message.err(text=f"Sorry, couldn't find any results for: `{query}``")
         return
 
     meanlen = len(mean[0]["def"]) + len(mean[0]["example"])
 
     if meanlen == 0:
-        await userge.send_err(message,
-                              text=f"No result found for **{query}**")
+        await message.err(text=f"No result found for **{query}**")
         return
 
     OUTPUT = f"**Query:** `{query}`\n\n\
@@ -271,16 +256,14 @@ async def urban_dict(_, message):
 **Example:**\n__{mean[0]['example']}__"
 
     if len(OUTPUT) >= Config.MAX_MESSAGE_LENGTH:
-        await userge.send_output_as_file(output=OUTPUT,
-                                         message=message,
-                                         caption=query)
+        await message.send_as_file(text=OUTPUT, caption=query)
 
     else:
         await message.edit(OUTPUT)
 
 
-@userge.on_cmd("tr",
-               about=f"""__Translate the given text using Google Translate__
+@userge.on_cmd("tr", about=f"""\
+__Translate the given text using Google Translate__
 
 **Supported Languages:**
 __{dumps(LANGUAGES, indent=4, sort_keys=True)}__
@@ -304,17 +287,18 @@ __reply to message you want to translate from auto detected language to sinhala_
     
 __reply to message you want to translate from auto detected language to preferred__
     `.tr`""")
-async def translateme(_, message):
+async def translateme(message):
     translator = Translator()
 
-    text, flags = await userge.filter_flags(message, del_pre=True)
+    text = message.filtered_input_str
+    flags = message.flags
 
     if message.reply_to_message:
         text = message.reply_to_message.text
 
     if not text:
-        await userge.send_err(message,
-                              text="Give a text or reply to a message to translate!\nuse `.help tr`")
+        await message.err(
+            text="Give a text or reply to a message to translate!\nuse `.help tr`")
         return
 
     if len(flags) == 2:
@@ -331,13 +315,11 @@ async def translateme(_, message):
     await message.edit("Translating...")
 
     try:
-        reply_text = translator.translate(text,
-                                          dest=dest,
-                                          src=src)
+        reply_text = translator.translate(
+            text, dest=dest, src=src)
 
     except ValueError:
-        await userge.send_err(message,
-                              text="Invalid destination language.\nuse `.help tr`")
+        await message.err(text="Invalid destination language.\nuse `.help tr`")
         return
 
     source_lan = LANGUAGES[f'{reply_text.src.lower()}']
@@ -347,17 +329,14 @@ async def translateme(_, message):
 **Translation ({transl_lan.title()}):**\n`{reply_text.text}`"
 
     if len(OUTPUT) >= Config.MAX_MESSAGE_LENGTH:
-        await userge.send_output_as_file(output=OUTPUT,
-                                         message=message,
-                                         caption="translated")
+        await message.send_as_file(text=OUTPUT, caption="translated")
 
     else:
         await message.edit(OUTPUT)
 
 
-@userge.on_cmd("speedtest",
-               about="__test your server speed__")
-async def speedtst(_, message):
+@userge.on_cmd("speedtest", about="__test your server speed__")
+async def speedtst(message):
     await message.edit("`Running speed test . . .`")
 
     try:
@@ -374,8 +353,7 @@ async def speedtst(_, message):
         result = test.results.dict()
 
     except Exception as e:
-        await userge.send_err(message,
-                              text=str(e))
+        await message.err(text=e)
         return
 
     path = wget.download(result['share'])
@@ -408,24 +386,21 @@ Upload: `{await humanbytes(result['upload'])}/s`**"""
     await message.delete()
 
 
-@userge.on_cmd("sd (\\d+) (.+)",
-               about="""__make self-destructable messages__
+@userge.on_cmd("sd (\\d+) (.+)", about="""\
+__make self-destructable messages__
 
 **Usage:**
 
     `.sd [time in seconds] [text]`""")
-async def selfdestruct(_, message):
+async def selfdestruct(message):
     seconds = int(message.matches[0].group(1))
     text = str(message.matches[0].group(2))
 
-    await message.edit(text)
-
-    await asyncio.sleep(seconds)
-    await message.delete()
+    await message.edit(text=text, del_in=seconds)
 
 
-@userge.on_cmd("google",
-               about="""__do a Google search__
+@userge.on_cmd("google", about="""\
+__do a Google search__
 
 **Available Flags:**
 
@@ -439,11 +414,11 @@ async def selfdestruct(_, message):
 **Example:**
 
     `.google -p4 -l10 github-userge`""")
-async def gsearch(_, message):
+async def gsearch(message):
     await message.edit("Processing ...")
 
-    query, flags = await userge.filter_flags(message)
-
+    query = message.filtered_input_str
+    flags = message.flags
     page = int(flags.get('-p', 1))
     limit = int(flags.get('-l', 5))
 
@@ -451,8 +426,7 @@ async def gsearch(_, message):
         query = message.reply_to_message.text
 
     if not query:
-        await userge.send_err(message,
-                              text="Give a query or reply to a message to google!")
+        await message.err(text="Give a query or reply to a message to google!")
         return
 
     try:
@@ -460,8 +434,7 @@ async def gsearch(_, message):
         gresults = gsearch.search(query, page)
 
     except Exception as e:
-        await userge.send_err(message,
-                              text=str(e))
+        await message.err(text=e)
         return
 
     OUTPUT = ""
@@ -480,16 +453,14 @@ async def gsearch(_, message):
     OUTPUT = f"**Google Search:**\n`{query}`\n\n**Results:**\n{OUTPUT}"
 
     if len(OUTPUT) >= Config.MAX_MESSAGE_LENGTH:
-        await userge.send_output_as_file(output=OUTPUT,
-                                         message=message,
-                                         caption=query)
+        await message.send_as_file(text=OUTPUT, caption=query)
 
     else:
         await message.edit(OUTPUT, disable_web_page_preview=True)
 
 
-@userge.on_cmd("wiki",
-               about="""__do a Wikipedia search__
+@userge.on_cmd("wiki", about="""\
+__do a Wikipedia search__
 
 **Available Flags:**
 
@@ -502,10 +473,11 @@ async def gsearch(_, message):
 **Example:**
 
     `.wiki -l5 userge`""")
-async def wiki_pedia(_, message):
+async def wiki_pedia(message):
     await message.edit("Processing ...")
 
-    query, flags = await userge.filter_flags(message)
+    query = message.filtered_input_str
+    flags = message.flags
 
     limit = int(flags.get('-l', 5))
 
@@ -513,8 +485,7 @@ async def wiki_pedia(_, message):
         query = message.reply_to_message.text
 
     if not query:
-        await userge.send_err(message,
-                              text="Give a query or reply to a message to wikipedia!")
+        await message.err(text="Give a query or reply to a message to wikipedia!")
         return
 
     try:
@@ -522,8 +493,7 @@ async def wiki_pedia(_, message):
         results = wikipedia.search(query)
 
     except Exception as e:
-        await userge.send_err(message,
-                              text=str(e))
+        await message.err(text=e)
         return
 
     OUTPUT = ""
@@ -539,17 +509,14 @@ async def wiki_pedia(_, message):
     OUTPUT = f"**Wikipedia Search:**\n`{query}`\n\n**Results:**\n{OUTPUT}"
 
     if len(OUTPUT) >= Config.MAX_MESSAGE_LENGTH:
-        await userge.send_output_as_file(output=OUTPUT,
-                                         message=message,
-                                         caption=query)
+        await message.send_as_file(text=OUTPUT, caption=query)
 
     else:
-        await message.edit(OUTPUT,
-                           disable_web_page_preview=True)
+        await message.edit(OUTPUT, disable_web_page_preview=True)
 
 
-@userge.on_cmd("head",
-               about="""__View headers in URL__
+@userge.on_cmd("head", about="""\
+__View headers in URL__
 
 **Available Flags:**
 
@@ -564,18 +531,18 @@ async def wiki_pedia(_, message):
 **Example:**
 
     `.head -r -s -t5 https://www.google.com`""")
-async def req_head(_, message):
+async def req_head(message):
     await message.edit("Processing ...")
 
-    link, flags = await userge.filter_flags(message)
+    link = message.filtered_input_str
+    flags = message.flags
     
     red = True if '-r' in flags else False
     stm = True if '-s' in flags else False
     tout = int(flags.get('-t', 3))
 
     if not link:
-        await userge.send_err(message,
-                              text="Please give me a link link!")
+        await message.err(text="Please give me a link link!")
         return
 
     try:
@@ -585,8 +552,7 @@ async def req_head(_, message):
                            timeout=tout)
 
     except Exception as e:
-        await userge.send_err(message,
-                              text=str(e))
+        await message.err(text=e)
         return
 
     OUTPUT = f"**url**: `{link}`\n**http_status_code**: __{cd.status_code}__\n**headers**:\n"
@@ -595,10 +561,7 @@ async def req_head(_, message):
         OUTPUT += f"    __{k.lower()}__ : `{v}`\n"
 
     if len(OUTPUT) >= Config.MAX_MESSAGE_LENGTH:
-        await userge.send_output_as_file(output=OUTPUT,
-                                         message=message,
-                                         caption=link)
+        await message.send_as_file(text=OUTPUT, caption=link)
 
     else:
-        await message.edit(OUTPUT,
-                           disable_web_page_preview=True)
+        await message.edit(OUTPUT, disable_web_page_preview=True)

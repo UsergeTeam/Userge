@@ -2,8 +2,8 @@ import os
 from pyrogram import ChatPermissions
 from userge import userge
 
-@userge.on_cmd("lock",
-               about="""__use this to lock group permissions__
+@userge.on_cmd("lock", about="""\
+__use this to lock group permissions__
 
 **Usage:**
 
@@ -19,7 +19,7 @@ from userge import userge
 
     `.lock [all | type]`""")
 
-async def lock_perm(_, message):
+async def lock_perm(message):
     """
     this function can lock chat permissions from tg group
     """
@@ -33,15 +33,12 @@ async def lock_perm(_, message):
     pin = ""
     perm = ""
 
+    lock_type = message.input_str
     chat_id = message.chat.id
 
-    if " " not in message.text:
-        await userge.send_msg(message,
-                              text="**I Can't Lock Nothing! 🤦‍♂️**",
-                              del_in=3)
+    if not lock_type:
+        await message.edit(text="**I Can't Lock Nothing! 🤦‍♂️**", del_in=3)
         return
-
-    _, lock_type = message.text.split(" ")
 
     get_perm = await userge.get_chat(chat_id)
     
@@ -57,14 +54,12 @@ async def lock_perm(_, message):
     if lock_type == "all":
         try:
             await userge.set_chat_permissions(chat_id, ChatPermissions())
-            await userge.send_msg(message,
-                                  text="**🔒 Locked all permission from this Chat!**",
-                                  del_in=3)
+            await message.edit(
+                text="**🔒 Locked all permission from this Chat!**", del_in=3)
 
         except:
-            await userge.send_msg(message,
-                                  text=f"**Do I have proper Admin rights for that 🤔**",
-                                  del_in=3)
+            await message.edit(
+                text=f"**Do I have proper Admin rights for that 🤔**", del_in=3)
 
         return
 
@@ -101,9 +96,7 @@ async def lock_perm(_, message):
         perm = "pin"
 
     else:
-        await userge.send_msg(message,
-                              text=r"**Invalid Lock Type! ¯\_(ツ)_/¯**",
-                              del_in=3)
+        await message.edit(text=r"**Invalid Lock Type! ¯\_(ツ)_/¯**", del_in=3)
         return
 
     try:
@@ -117,18 +110,15 @@ async def lock_perm(_, message):
                                                           can_invite_users=invite,
                                                           can_pin_messages=pin,))
 
-        await userge.send_msg(message,
-                              text=f"**🔒 Locked {perm} for this chat!**",
-                              del_in=3)
+        await message.edit(text=f"**🔒 Locked {perm} for this chat!**", del_in=3)
 
     except:
-        await userge.send_msg(message,
-                              text="**Do I have proper Admin rights for that 🤔**",
-                              del_in=3)
+        await message.edit(
+            text="**Do I have proper Admin rights for that 🤔**", del_in=3)
 
 
-@userge.on_cmd("unlock",
-               about="""__use this to unlock group permissions__
+@userge.on_cmd("unlock", about="""\
+__use this to unlock group permissions__
 
 **Usage:**
 
@@ -158,15 +148,12 @@ async def unlock_perm(_, message):
     upin = ""
     uperm = ""
 
+    unlock_type = message.input_str
     chat_id = message.chat.id
 
-    if " " not in message.text:
-        await userge.send_msg(message,
-                              text="**I Can't Unlock Nothing! 🤦‍♂️**",
-                              del_in=3)
+    if not unlock_type:
+        await message.edit(text="**I Can't Unlock Nothing! 🤦‍♂️**", del_in=3)
         return
-
-    _, unlock_type = message.text.split(" ")
 
     get_uperm = await userge.get_chat(chat_id)
     
@@ -191,14 +178,12 @@ async def unlock_perm(_, message):
                                                               can_pin_messages=True,
                                                               can_add_web_page_previews=True,))
 
-            await userge.send_msg(message,
-                                  text="**🔓 Unlocked all permission from this Chat!**",
-                                  del_in=3)
+            await message.edit(
+                text="**🔓 Unlocked all permission from this Chat!**", del_in=3)
 
         except:
-            await userge.send_msg(message,
-                                  text=f"**Do I have proper Admin rights for that 🤔**",
-                                  del_in=3)
+            await message.edit(
+                text=f"**Do I have proper Admin rights for that 🤔**", del_in=3)
         return
 
     if unlock_type == "msg":
@@ -234,9 +219,7 @@ async def unlock_perm(_, message):
         uperm = "pin"
 
     else:
-        await userge.send_msg(message,
-                              text=r"**Invalid Unlock Type! ¯\_(ツ)_/¯**",
-                              del_in=3)
+        await message.edit(text=r"**Invalid Unlock Type! ¯\_(ツ)_/¯**", del_in=3)
         return
 
     try:
@@ -250,17 +233,14 @@ async def unlock_perm(_, message):
                                                           can_invite_users=uinvite,
                                                           can_pin_messages=upin,))
                             
-        await userge.send_msg(message,
-                              text=f"**🔓 Unlocked {uperm} for this chat!**",
-                              del_in=3)
+        await message.edit(text=f"**🔓 Unlocked {uperm} for this chat!**", del_in=3)
 
     except:
-        await userge.send_msg(message,
-                              text=f"**Do I have proper Admin rights for that 🤔**",
-                              del_in=3)
+        await message.edit(text=f"**Do I have proper Admin rights for that 🤔**", del_in=3)
 
-@userge.on_cmd("vperm",
-               about="""__use this to view group permissions__
+
+@userge.on_cmd("vperm", about="""\
+__use this to view group permissions__
 
 **Usage:**
 
@@ -331,6 +311,5 @@ async def view_perm(_, message):
                 await message.edit(permission_view_str)
 
         except:
-            await userge.send_msg(message,
-                                  text=f"**Something went wrong! do** `.help vperm`",
-                                  del_in=3)
+            await message.edit(
+                text=f"**Something went wrong! do** `.help vperm`", del_in=3)
