@@ -78,7 +78,7 @@ async def down_load_media(message):
                     await message.edit(text=current_message,
                                        disable_web_page_preview=True)
 
-                    display_message = current_message
+                    # display_message = current_message
                     await asyncio.sleep(10)
 
             except Exception as e:

@@ -1,10 +1,10 @@
-from userge import userge, get_collection
+from userge import userge, get_collection, Message
 
 NOTES_COLLECTION = get_collection("notes")
 
 
 @userge.on_cmd("notes", about="__List all saved notes__")
-async def notes_active(message):
+async def notes_active(message: Message):
     out = "`There are no saved notes in this chat`"
 
     for note in NOTES_COLLECTION.find({'chat_id': message.chat.id}, {'name': 1}):

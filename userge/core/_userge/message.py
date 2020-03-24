@@ -9,8 +9,7 @@ from pyrogram import (
 
 
 class Message(Base, Msg):
-
-    __ERROR_MSG_DELETE_TIMEOUT = 3
+    __ERROR_MSG_DELETE_TIMEOUT = 5
     __ERROR_STRING = "**ERROR**: `{}`"
 
     def __init__(self,
@@ -24,8 +23,8 @@ class Message(Base, Msg):
 
         super().__init__(client=client, **kwargs_)
 
-        self.__filtered_input_str: str = None
-        self.__flags: Dict[str, str] = None
+        self.__filtered_input_str: str or None = None
+        self.__flags: Dict[str, str] or None = None
         self.__kwargs = kwargs
 
     @property
@@ -57,7 +56,7 @@ class Message(Base, Msg):
             del_pre: bool = self.__kwargs.get('del_pre', False)
             input_str: str = self.matches[0].group(1) or ''
 
-            text: List[str] = []
+            text: List[str] or str = []
             flags: Dict[str, Union[str, bool, int]] = {}
 
             for i in input_str.strip().split():
@@ -95,10 +94,10 @@ class Message(Base, Msg):
             self._SUB_STRING.format(f"Uploading {filename} To Telegram"))
 
         await self._client.send_document(chat_id=self.chat.id,
-                                          document=filename,
-                                          caption=caption,
-                                          disable_notification=True,
-                                          reply_to_message_id=reply_to_id)
+                                         document=filename,
+                                         caption=caption,
+                                         disable_notification=True,
+                                         reply_to_message_id=reply_to_id)
 
         os.remove(filename)
 
@@ -113,8 +112,8 @@ class Message(Base, Msg):
                     disable_web_page_preview: bool = None,
                     disable_notification: bool = None,
                     reply_to_message_id: int = None,
-                    reply_markup: InlineKeyboardMarkup = None,
-                    **kwargs) -> Msg:
+                    reply_markup: InlineKeyboardMarkup = None
+                    ) -> Msg:
 
         if quote is None:
             quote = self.chat.type != "private"
@@ -141,15 +140,15 @@ class Message(Base, Msg):
                    del_in: int = -1,
                    parse_mode: Union[str, None] = object,
                    disable_web_page_preview: bool = None,
-                   reply_markup: InlineKeyboardMarkup = None,
-                   **kwargs) -> Msg:
+                   reply_markup: InlineKeyboardMarkup = None
+                   ) -> Msg:
 
-        msg =  await self._client.edit_message_text(chat_id=self.chat.id,
-                                                    message_id=self.message_id,
-                                                    text=text,
-                                                    parse_mode=parse_mode,
-                                                    disable_web_page_preview=disable_web_page_preview,
-                                                    reply_markup=reply_markup)
+        msg = await self._client.edit_message_text(chat_id=self.chat.id,
+                                                   message_id=self.message_id,
+                                                   text=text,
+                                                   parse_mode=parse_mode,
+                                                   disable_web_page_preview=disable_web_page_preview,
+                                                   reply_markup=reply_markup)
 
         if del_in > 0:
             await asyncio.sleep(del_in)
@@ -170,7 +169,7 @@ class Message(Base, Msg):
                             parse_mode=parse_mode,
                             disable_web_page_preview=disable_web_page_preview,
                             reply_markup=reply_markup,
-                            **kwargs)
+                            )
 
         except:
             msg = await self.reply(text=text,
@@ -195,9 +194,9 @@ class Message(Base, Msg):
                   del_in: int = -1,
                   parse_mode: Union[str, None] = object,
                   disable_web_page_preview: bool = None,
-                  reply_markup: InlineKeyboardMarkup = None,
-                  **kwargs) -> None:
-        
+                  reply_markup: InlineKeyboardMarkup = None
+                  ) -> None:
+
         del_in = del_in if del_in > 0 \
             else self.__ERROR_MSG_DELETE_TIMEOUT
 
@@ -205,8 +204,8 @@ class Message(Base, Msg):
                         del_in=del_in,
                         parse_mode=parse_mode,
                         disable_web_page_preview=disable_web_page_preview,
-                        reply_markup=reply_markup,
-                        **kwargs)
+                        reply_markup=reply_markup
+                        )
 
     async def force_err(self,
                         text: str,

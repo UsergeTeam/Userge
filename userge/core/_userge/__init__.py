@@ -1,1 +1,1 @@
-from .client import Userge, Filters
+from .client import Userge, Filters, Message

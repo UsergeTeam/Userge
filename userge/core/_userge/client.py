@@ -1,13 +1,10 @@
-import os
 import re
-import asyncio
 import nest_asyncio
 from userge.utils import Config, logging
 from typing import Dict, Union, Any, Callable
 from .base import Base
 from .message import Message
 from pyrogram import Client, Filters, MessageHandler
-from pyrogram.errors.exceptions import MessageAuthorRequired
 
 logging.getLogger("pyrogram").setLevel(logging.WARNING)
 
@@ -46,11 +43,8 @@ class Userge(Base, Client):
         if fname and lname:
             full_name = fname + ' ' + lname
 
-        elif fname:
-            full_name = fname
-
-        elif lname:
-            full_name = lname
+        elif fname or lname:
+            full_name = fname or lname
 
         else:
             full_name = "user"
@@ -65,8 +59,8 @@ class Userge(Base, Client):
                about: str,
                group: int = 0,
                trigger: str = '.',
-               only_me: bool = True,
-               **kwargs) -> Callable[[PYROFUNC], PYROFUNC]:
+               only_me: bool = True
+               ) -> Callable[[PYROFUNC], PYROFUNC]:
 
         found = [i for i in '()[]+*.\\|?:' if i in command]
 
@@ -87,8 +81,8 @@ class Userge(Base, Client):
 
         return self.__build_decorator(log=f"On .{command_name} Command",
                                       filters=filters_,
-                                      group=group,
-                                      **kwargs)
+                                      group=group
+                                      )
 
     def on_new_member(self,
                       welcome_chats: Filters.chat,
@@ -130,11 +124,10 @@ class Userge(Base, Client):
     def __build_decorator(self,
                           log: str,
                           filters: Filters,
-                          group: int,
-                          **kwargs) -> Callable[[PYROFUNC], PYROFUNC]:
+                          group: int
+                          ) -> Callable[[PYROFUNC], PYROFUNC]:
 
         def __decorator(func: PYROFUNC) -> PYROFUNC:
-
             async def __template(_: Client,
                                  message: Message) -> None:
 

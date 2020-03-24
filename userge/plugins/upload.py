@@ -2,11 +2,9 @@ import os
 import time
 from datetime import datetime
 from pathlib import Path
-
-from pyrogram import Message
 from pyrogram.errors.exceptions import FloodWait
 
-from userge import userge
+from userge import userge, Message
 from userge.utils import progress, take_screen_shot, extractMetadata, createParser
 
 LOGGER = userge.getLogger(__name__)

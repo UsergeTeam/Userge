@@ -2,6 +2,7 @@ import os
 from pyrogram import ChatPermissions
 from userge import userge
 
+
 @userge.on_cmd("lock", about="""\
 __use this to lock group permissions__
 
@@ -18,7 +19,6 @@ __use this to lock group permissions__
 **Example:**
 
     `.lock [all | type]`""")
-
 async def lock_perm(message):
     """
     this function can lock chat permissions from tg group
@@ -41,7 +41,7 @@ async def lock_perm(message):
         return
 
     get_perm = await userge.get_chat(chat_id)
-    
+
     msg = get_perm.permissions.can_send_messages
     media = get_perm.permissions.can_send_media_messages
     other = get_perm.permissions.can_send_other_messages
@@ -66,7 +66,7 @@ async def lock_perm(message):
     if lock_type == "msg":
         msg = False
         perm = "messages"
-    
+
     elif lock_type == "media":
         media = False
         perm = "audios, documents, photos, videos, video notes, voice notes"
@@ -108,7 +108,7 @@ async def lock_perm(message):
                                                           can_send_polls=polls,
                                                           can_change_info=info,
                                                           can_invite_users=invite,
-                                                          can_pin_messages=pin,))
+                                                          can_pin_messages=pin, ))
 
         await message.edit(text=f"**🔒 Locked {perm} for this chat!**", del_in=3)
 
@@ -133,7 +133,6 @@ __use this to unlock group permissions__
 **Example:**
 
     `.unlock [all | type]`""")
-
 async def unlock_perm(_, message):
     """
     this function can unlock chat permissions from tg group
@@ -156,7 +155,7 @@ async def unlock_perm(_, message):
         return
 
     get_uperm = await userge.get_chat(chat_id)
-    
+
     umsg = get_uperm.permissions.can_send_messages
     umedia = get_uperm.permissions.can_send_media_messages
     uother = get_uperm.permissions.can_send_other_messages
@@ -176,7 +175,7 @@ async def unlock_perm(_, message):
                                                               can_change_info=True,
                                                               can_invite_users=True,
                                                               can_pin_messages=True,
-                                                              can_add_web_page_previews=True,))
+                                                              can_add_web_page_previews=True, ))
 
             await message.edit(
                 text="**🔓 Unlocked all permission from this Chat!**", del_in=3)
@@ -231,8 +230,8 @@ async def unlock_perm(_, message):
                                                           can_send_polls=upolls,
                                                           can_change_info=uinfo,
                                                           can_invite_users=uinvite,
-                                                          can_pin_messages=upin,))
-                            
+                                                          can_pin_messages=upin, ))
+
         await message.edit(text=f"**🔓 Unlocked {uperm} for this chat!**", del_in=3)
 
     except:
@@ -245,7 +244,6 @@ __use this to view group permissions__
 **Usage:**
 
 `Allows you to view permission types on/off status in the chat.`""")
-
 async def view_perm(_, message):
     """
     this function can check chat permissions from tg group

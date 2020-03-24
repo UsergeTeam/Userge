@@ -12,7 +12,7 @@ async def progress(
 ):
     now = time.time()
     diff = now - start
-    if diff % 10 < 0.05 or current == total:
+    if diff % 10 < 0.1 or current == total:
         percentage = current * 100 // total
         speed = current // diff
         time_to_completion = (total - current) // speed
