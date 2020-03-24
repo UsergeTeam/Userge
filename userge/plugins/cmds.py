@@ -3,7 +3,7 @@ import os
 import sys
 import traceback
 from getpass import getuser
-from userge import userge, Config
+from userge import userge, Config, Message
 from userge.utils import runcmd
 
 
@@ -17,7 +17,7 @@ __run python code line | lines__
 **Example:**
 
     `.eval print('Userge')`""")
-async def eval_(message):
+async def eval_(message: Message):
     cmd = await init_func(message)
 
     if cmd is None:
@@ -83,7 +83,7 @@ __run shell commands__
 **Example:**
 
     `.exec echo "Userge"`""")
-async def exec_(message):
+async def exec_(message: Message):
     cmd = await init_func(message)
 
     if cmd is None:
@@ -119,7 +119,7 @@ __run terminal commands__
 **Example:**
 
     `.term echo "Userge"`""")
-async def term_(message):
+async def term_(message: Message):
     cmd = await init_func(message)
 
     if cmd is None:
@@ -151,7 +151,7 @@ async def term_(message):
             await message.edit(f"`{curruser}:~$ {cmd}\n{OUTPUT}`")
 
 
-async def init_func(message):
+async def init_func(message: Message):
     await message.edit("Processing ...")
     cmd = message.input_str
 

@@ -3,7 +3,6 @@ import time
 from datetime import datetime
 from pathlib import Path
 from pyrogram.errors.exceptions import FloodWait
-
 from userge import userge, Message
 from userge.utils import progress, take_screen_shot, extractMetadata, createParser
 
@@ -49,7 +48,7 @@ async def upload(path: Path, chat_id: int):
 
 
 async def doc_upload(chat_id, path):
-    message = await userge.send_message(chat_id, f"`Uploading {path.name} ...`")
+    message: Message = await userge.send_message(chat_id, f"`Uploading {path.name} ...`")
     start_t = datetime.now()
     c_time = time.time()
 
@@ -78,7 +77,7 @@ async def vid_upload(chat_id, path):
         if (metadata and metadata.has("duration")) \
             else thumb_image_path
 
-    message = await userge.send_message(chat_id, f"`Uploading {path.name} ...` as a video")
+    message: Message = await userge.send_message(chat_id, f"`Uploading {path.name} ...` as a video")
 
     start_t = datetime.now()
     c_time = time.time()

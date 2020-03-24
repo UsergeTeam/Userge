@@ -1,4 +1,4 @@
-from userge import userge, Filters, get_collection
+from userge import userge, Filters, Message, get_collection
 from userge.utils import SafeDict
 
 WELCOME_COLLECTION = get_collection("welcome")
@@ -33,7 +33,7 @@ __Creates a welcome message in current chat :)__
 
     `.setwelcome Hi {mention}, <b>Welcome</b> to {chat} chat`
     or reply `.setwelcome` to text message""")
-async def setwel(msg):
+async def setwel(msg: Message):
     await raw_set(msg, 'Welcome', WELCOME_COLLECTION, WELCOME_CHATS)
 
 
@@ -53,72 +53,72 @@ __Creates a left message in current chat :)__
 
     `.setleft {flname}, <pre>Why you left :(</pre>`
     or reply `.setleft` to text message""")
-async def setleft(msg):
+async def setleft(msg: Message):
     await raw_set(msg, 'Left', LEFT_COLLECTION, LEFT_CHATS)
 
 
 @userge.on_cmd("nowelcome", about="\
 __Disables and removes welcome message in the current chat__")
-async def nowel(msg):
+async def nowel(msg: Message):
     await raw_no(msg, 'Welcome', WELCOME_COLLECTION, WELCOME_CHATS)
 
 
 @userge.on_cmd("noleft", about="__Disables and removes left message in the current chat__")
-async def noleft(msg):
+async def noleft(msg: Message):
     await raw_no(msg, 'Left', LEFT_COLLECTION, LEFT_CHATS)
 
 
 @userge.on_cmd("dowelcome", about="__Turns on welcome message in the current chat__")
-async def dowel(msg):
+async def dowel(msg: Message):
     await raw_do(msg, 'Welcome', WELCOME_COLLECTION, WELCOME_CHATS)
 
 
 @userge.on_cmd("doleft", about="__Turns on left message in the current chat :)__")
-async def doleft(msg):
+async def doleft(msg: Message):
     await raw_do(msg, 'Left', LEFT_COLLECTION, LEFT_CHATS)
 
 
 @userge.on_cmd("delwelcome", about="__Delete welcome message in the current chat :)__")
-async def delwel(msg):
+async def delwel(msg: Message):
     await raw_del(msg, 'Welcome',  WELCOME_COLLECTION, WELCOME_CHATS)
 
 
 @userge.on_cmd("delleft", about="__Delete left message in the current chat :)__")
-async def delleft(msg):
+async def delleft(msg: Message):
     await raw_del(msg, 'Left', LEFT_COLLECTION, LEFT_CHATS)
 
 
 @userge.on_cmd("lswelcome", about="__Shows the activated chats for welcome__")
-async def lswel(msg):
+async def lswel(msg: Message):
     await raw_ls(msg, 'Welcome',  WELCOME_COLLECTION)
 
 
 @userge.on_cmd("lsleft", about="__Shows the activated chats for left__")
-async def lsleft(msg):
+async def lsleft(msg: Message):
     await raw_ls(msg, 'Left', LEFT_COLLECTION)
 
 
 @userge.on_cmd("vwelcome", about="__Shows welcome message in current chat__")
-async def viewwel(msg):
+async def viewwel(msg: Message):
     await raw_view(msg, 'Welcome', WELCOME_COLLECTION)
 
 
 @userge.on_cmd("vleft", about="__Shows left message in current chat__")
-async def viewleft(msg):
+async def viewleft(msg: Message):
     await raw_view(msg, 'Left', LEFT_COLLECTION)
 
 
 @userge.on_new_member(WELCOME_CHATS)
-async def saywel(msg):
+async def saywel(msg: Message):
     await raw_say(msg, 'Welcome', WELCOME_COLLECTION)
 
 
 @userge.on_left_member(LEFT_CHATS)
-async def sayleft(msg):
+async def sayleft(msg: Message):
     await raw_say(msg, 'Left', LEFT_COLLECTION)
 
 
-async def raw_set(message, name, collection, chats):
+async def raw_set(message: Message, name, collection, chats):
     if message.chat.type in ["private", "bot", "channel"]:
         await message.err(text=f'Are you high XO\nSet {name} in a group chat')
         return
@@ -141,7 +141,7 @@ async def raw_set(message, name, collection, chats):
     await message.edit(text=out, del_in=3)
 
 
-async def raw_no(message, name, collection, chats):
+async def raw_no(message: Message, name, collection, chats):
     out = f"`First Set {name} Message!`"
 
     if collection.find_one_and_update({'_id': message.chat.id}, {"$set": {'on': False}}):
@@ -153,7 +153,7 @@ async def raw_no(message, name, collection, chats):
     await message.edit(text=out, del_in=3)
 
 
-async def raw_do(message, name, collection, chats):
+async def raw_do(message: Message, name, collection, chats):
     out = f'Please set the {name} message with `.set{name.lower()}`'
     if collection.find_one_and_update(
         {'_id': message.chat.id}, {"$set": {'on': True}}):
@@ -163,7 +163,7 @@ async def raw_do(message, name, collection, chats):
     await message.edit(text=out, del_in=3)
 
 
-async def raw_del(message, name, collection, chats):
+async def raw_del(message: Message, name, collection, chats):
     out = f"`First Set {name} Message!`"
 
     if collection.find_one_and_delete({'_id': message.chat.id}):
@@ -175,7 +175,7 @@ async def raw_del(message, name, collection, chats):
     await message.edit(text=out, del_in=3)
 
 
-async def raw_view(message, name, collection):
+async def raw_view(message: Message, name, collection):
     liststr = ""
     found = collection.find_one(
         {'_id': message.chat.id}, {'data': 1, 'on': 1})
@@ -189,7 +189,7 @@ async def raw_view(message, name, collection):
         text=liststr or f'`NO {name.upper()} STARTED`', del_in=15)
 
 
-async def raw_ls(message, name, collection):
+async def raw_ls(message: Message, name, collection):
     liststr = ""
 
     for c in collection.find():
@@ -201,7 +201,7 @@ async def raw_ls(message, name, collection):
         text=liststr or f'`NO {name.upper()}S STARTED`', del_in=15)
 
 
-async def raw_say(message, name, collection):
+async def raw_say(message: Message, name, collection):
     message_str = collection.find_one({'_id': message.chat.id})['data']
 
     user = message.new_chat_members[0] if name == "Welcome" \
@@ -215,5 +215,5 @@ async def raw_say(message, name, collection):
             {user_dict['uname'] or user_dict['flname']}</a>",
     }
 
-    await message.force_edit(
+    await message.reply(
         text=message_str.format_map(SafeDict(**kwargs)), del_in=60)

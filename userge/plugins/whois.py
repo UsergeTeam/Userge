@@ -1,5 +1,5 @@
 import os
-from userge import userge
+from userge import userge, Message
 
 
 @userge.on_cmd("whois", about="""\
@@ -12,7 +12,7 @@ __use this to get any user details__
 **Example:**
 
     `.whois [user_id | username]`""")
-async def who_is(message):
+async def who_is(message: Message):
     await message.edit("`Collecting Whois Info.. Hang on!`")
     user_id = message.input_str
     

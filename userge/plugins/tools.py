@@ -12,12 +12,12 @@ from emoji import get_emoji_regexp
 from urllib.error import HTTPError
 from googletrans import Translator, LANGUAGES
 from search_engine_parser import GoogleSearch
-from userge import userge, Config
+from userge import userge, Config, Message
 from userge.utils import humanbytes
 
 
 @userge.on_cmd("ping", about="__check how long it takes to ping your userbot__")
-async def pingme(message):
+async def pingme(message: Message):
     start = datetime.now()
 
     await message.edit('`Pong!`')
@@ -29,7 +29,7 @@ async def pingme(message):
 
 
 @userge.on_cmd("help", about="__to know how to use **USERGE** commands__")
-async def helpme(message):
+async def helpme(message: Message):
     cmd = message.input_str
     out_str = ""
 
@@ -54,7 +54,7 @@ async def helpme(message):
 
 
 @userge.on_cmd("s", about="__to search commands in **USERGE**__")
-async def search(message):
+async def search(message: Message):
     cmd = message.input_str
 
     if not cmd:
@@ -79,7 +79,7 @@ __message object to json__
 **Usage:**
 
     reply `.json` to any message""")
-async def jsonify(message):
+async def jsonify(message: Message):
     the_real_message = str(message.reply_to_message) if message.reply_to_message \
         else str(message)
 
@@ -93,7 +93,7 @@ async def jsonify(message):
 
 
 @userge.on_cmd("all", about="__list all plugins in plugins/ path__")
-async def getplugins(message):
+async def getplugins(message: Message):
     all_plugins = await get_all_plugins()
 
     out_str = "**--All Userge Plugins--**\n\n"
@@ -105,7 +105,7 @@ async def getplugins(message):
 
 
 @userge.on_cmd("del", about="__delete replied message__")
-async def del_msg(message):
+async def del_msg(message: Message):
     msg_ids = [message.message_id]
 
     if message.reply_to_message:
@@ -120,7 +120,7 @@ __display ids__
 **Usage:**
 
 reply `.ids` any message, file or just send this command""")
-async def getids(message):
+async def getids(message: Message):
     out_str = f"💁 Current Chat ID: `{message.chat.id}`"
 
     if message.reply_to_message:
@@ -166,7 +166,7 @@ __View or mention admins in chat__
 **Usage:**
 
     `.admins [any flag] [chatid]`""")
-async def mentionadmins(message):
+async def mentionadmins(message: Message):
     mentions = "🛡 **Admin List** 🛡\n"
     chat_id = message.filtered_input_str
     flags = message.flags
@@ -215,7 +215,7 @@ async def mentionadmins(message):
         mentions += " " + str(e) + "\n"
 
     await message.delete()
-    await message.send_message(chat_id=message.chat.id,
+    await userge.send_message(chat_id=message.chat.id,
                                text=mentions,
                                disable_web_page_preview=True)
 
@@ -230,7 +230,7 @@ __Searches Urban Dictionary for the query__
 **Exaple:**
 
     `.ub userge`""")
-async def urban_dict(message):
+async def urban_dict(message: Message):
     await message.edit("Processing...")
     query = message.input_str
 
@@ -286,8 +286,8 @@ __reply to message you want to translate from auto detected language to sinhala_
     `.tr -si`
     
 __reply to message you want to translate from auto detected language to preferred__
-    `.tr`""")
-async def translateme(message):
+    `.tr`""", del_pre=True)
+async def translateme(message: Message):
     translator = Translator()
 
     text = message.filtered_input_str
@@ -336,7 +336,7 @@ async def translateme(message):
 
 
 @userge.on_cmd("speedtest", about="__test your server speed__")
-async def speedtst(message):
+async def speedtst(message: Message):
     await message.edit("`Running speed test . . .`")
 
     try:
@@ -392,7 +392,7 @@ __make self-destructable messages__
 **Usage:**
 
     `.sd [time in seconds] [text]`""")
-async def selfdestruct(message):
+async def selfdestruct(message: Message):
     seconds = int(message.matches[0].group(1))
     text = str(message.matches[0].group(2))
 
@@ -414,7 +414,7 @@ __do a Google search__
 **Example:**
 
     `.google -p4 -l10 github-userge`""")
-async def gsearch(message):
+async def gsearch(message: Message):
     await message.edit("Processing ...")
 
     query = message.filtered_input_str
@@ -473,7 +473,7 @@ __do a Wikipedia search__
 **Example:**
 
     `.wiki -l5 userge`""")
-async def wiki_pedia(message):
+async def wiki_pedia(message: Message):
     await message.edit("Processing ...")
 
     query = message.filtered_input_str
@@ -531,7 +531,7 @@ __View headers in URL__
 **Example:**
 
     `.head -r -s -t5 https://www.google.com`""")
-async def req_head(message):
+async def req_head(message: Message):
     await message.edit("Processing ...")
 
     link = message.filtered_input_str

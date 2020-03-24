@@ -1,6 +1,6 @@
 import os
 from pyrogram import ChatPermissions
-from userge import userge
+from userge import userge, Message
 
 
 @userge.on_cmd("lock", about="""\
@@ -19,7 +19,7 @@ __use this to lock group permissions__
 **Example:**
 
     `.lock [all | type]`""")
-async def lock_perm(message):
+async def lock_perm(message: Message):
     """
     this function can lock chat permissions from tg group
     """
@@ -133,7 +133,7 @@ __use this to unlock group permissions__
 **Example:**
 
     `.unlock [all | type]`""")
-async def unlock_perm(_, message):
+async def unlock_perm(message: Message):
     """
     this function can unlock chat permissions from tg group
     """
@@ -244,7 +244,7 @@ __use this to view group permissions__
 **Usage:**
 
 `Allows you to view permission types on/off status in the chat.`""")
-async def view_perm(_, message):
+async def view_perm(message: Message):
     """
     this function can check chat permissions from tg group
     """

@@ -1,5 +1,5 @@
 from datetime import datetime
-from userge import userge
+from userge import userge, Message
 
 LOG = userge.getLogger(__name__)
 
@@ -18,7 +18,7 @@ reply `.purge` to the start message to purge
     `.purge`
     `.purge -u`
     `.purge [user_id | user_name]`""")
-async def purge_(message):
+async def purge_(message: Message):
     if message.reply_to_message:
         start_t = datetime.now()
         user_id = message.filtered_input_str

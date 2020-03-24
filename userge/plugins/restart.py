@@ -1,6 +1,5 @@
 import asyncio
-from userge import userge
-from pyrogram import Message
+from userge import userge, Message
 
 LOG = userge.getLogger(__name__)
 
@@ -14,7 +13,7 @@ async def restart_cmd_handler(m: Message):
     asyncio.create_task(restart(userge, ack_message))
 
 
-async def restart(c, m):
+async def restart(c, m: Message):
     await c.restart()
     await m.edit(f"USERGE Services have been Restarted!")
     LOG.info(f"USERGE - Restarted")

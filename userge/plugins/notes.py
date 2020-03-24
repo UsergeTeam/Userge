@@ -1,4 +1,4 @@
-from userge import userge, get_collection, Message
+from userge import userge, Message, get_collection
 
 NOTES_COLLECTION = get_collection("notes")
 
@@ -24,7 +24,7 @@ __Deletes a note by name__
 **Usage:**
 
     `.delnote [note name]`""")
-async def remove_notes(message):
+async def remove_notes(message: Message):
     notename = message.input_str
 
     if not notename:
@@ -48,7 +48,7 @@ __Gets a note by name__
     `#[notname]`""",
                trigger='#',
                only_me=False)
-async def note(message):
+async def note(message: Message):
     notename = message.matches[0].group(1)
     found = NOTES_COLLECTION.find_one(
         {'chat_id': message.chat.id, 'name': notename}, {'content': 1})
@@ -66,7 +66,7 @@ __Adds a note by name__
 **Usage:**
 
     `.addnote [note name] [content | reply to msg]`""")
-async def add_filter(message):
+async def add_filter(message: Message):
     notename = message.matches[0].group(1)
     content = message.matches[0].group(2)
 

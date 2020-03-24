@@ -25,6 +25,10 @@ DATABASE = MGCLIENT["Userge"]
 
 
 def get_collection(name: str) -> Collection:
+    """
+    Create or Get Collection from your database.
+    """
+    
     if name in DATABASE.list_collection_names():
         LOG.info(
             DB_MAIN_STRING.format(f"{name} Collection Found :) => Now Logging to it..."))

@@ -4,7 +4,7 @@ import os
 import time
 from datetime import datetime
 from pySmartDL import SmartDL
-from userge import userge
+from userge import userge, Message
 from userge.utils import progress, humanbytes
 
 LOGGER = userge.getLogger(__name__)
@@ -16,7 +16,7 @@ __download files to server__
 **Usage:**
 
     `.download [url | reply to telegram media]`""")
-async def down_load_media(message):
+async def down_load_media(message: Message):
     if message.reply_to_message is not None:
         start_t = datetime.now()
         c_time = time.time()
