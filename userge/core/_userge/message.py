@@ -18,67 +18,15 @@ class Message(Base, Msg):
                  client: Client,
                  **kwargs):
 
-        self._client = client
-        self.message_id = message.message_id
-        self.date = message.date
-        self.chat = message.chat
-        self.from_user = message.from_user
-        self.forward_from = message.forward_from
-        self.forward_sender_name = message.forward_sender_name
-        self.forward_from_chat = message.forward_from_chat
-        self.forward_from_message_id = message.forward_from_message_id
-        self.forward_signature = message.forward_signature
-        self.forward_date = message.forward_date
-        self.reply_to_message = message.reply_to_message
-        self.mentioned = message.mentioned
-        self.empty = message.empty
-        self.service = message.service
-        self.scheduled = message.scheduled
-        self.from_scheduled = message.from_scheduled
-        self.media = message.media
-        self.edit_date = message.edit_date
-        self.media_group_id = message.media_group_id
-        self.author_signature = message.author_signature
-        self.text = message.text
-        self.entities = message.entities
-        self.caption_entities = message.caption_entities
-        self.audio = message.audio
-        self.document = message.document
-        self.photo = message.photo
-        self.sticker = message.sticker
-        self.animation = message.animation
-        self.game = message.game
-        self.video = message.video
-        self.voice = message.voice
-        self.video_note = message.video_note
-        self.caption = message.caption
-        self.contact = message.contact
-        self.location = message.location
-        self.venue = message.venue
-        self.web_page = message.web_page
-        self.poll = message.poll
-        self.new_chat_members = message.new_chat_members
-        self.left_chat_member = message.left_chat_member
-        self.new_chat_title = message.new_chat_title
-        self.new_chat_photo = message.new_chat_photo
-        self.delete_chat_photo = message.delete_chat_photo
-        self.group_chat_created = message.group_chat_created
-        self.supergroup_chat_created = message.supergroup_chat_created
-        self.channel_chat_created = message.channel_chat_created
-        self.migrate_to_chat_id = message.migrate_to_chat_id
-        self.migrate_from_chat_id = message.migrate_from_chat_id
-        self.pinned_message = message.pinned_message
-        self.game_high_score = message.game_high_score
-        self.views = message.views
-        self.via_bot = message.via_bot
-        self.outgoing = message.outgoing
-        self.matches = message.matches
-        self.command = message.command
-        self.reply_markup = message.reply_markup
+        kwargs_ = vars(message)
+        del message
+        del kwargs_['_client']
+
+        super().__init__(client=client, **kwargs_)
+
         self.__filtered_input_str: str = None
         self.__flags: Dict[str, str] = None
         self.__kwargs = kwargs
-        del message
 
     @property
     def input_str(self) -> str:

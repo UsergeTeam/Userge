@@ -138,7 +138,7 @@ class Userge(Base, Client):
             async def __template(_: Client,
                                  message: Message) -> None:
 
-                await func(Message(message, self))
+                await func(Message(message, self, **kwargs))
 
             self._LOG.info(
                 self._SUB_STRING.format(
