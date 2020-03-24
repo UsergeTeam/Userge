@@ -2,12 +2,16 @@ import os
 import time
 from datetime import datetime
 from pathlib import Path
+from hachoir.metadata import extractMetadata
+from hachoir.parser import createParser
 from pyrogram.errors.exceptions import FloodWait
-from userge import userge, Message
-from userge.utils import progress, take_screen_shot, extractMetadata, createParser
+from userge import userge, Config, Message
+from userge.utils import progress, take_screen_shot
 
 LOGGER = userge.getLogger(__name__)
-thumb_image_path = 'resources/userge(8).png'
+
+LOGO_PATH = 'resources/userge(8).png'
+THUMB_PATH = Config.DOWN_PATH + "thumb_image.jpg"
 
 
 @userge.on_cmd("upload", about="__upload files to telegram__")
@@ -51,11 +55,12 @@ async def doc_upload(chat_id, path):
     message: Message = await userge.send_message(chat_id, f"`Uploading {path.name} ...`")
     start_t = datetime.now()
     c_time = time.time()
+    thumb = await get_thumb()
 
     the_real_download_location = await userge.send_document(
         chat_id=chat_id,
         document=str(path),
-        thumb=thumb_image_path,
+        thumb=thumb,
         caption=path.name,
         parse_mode="html",
         disable_notification=True,
@@ -72,10 +77,8 @@ async def doc_upload(chat_id, path):
 
 async def vid_upload(chat_id, path):
     strpath = str(path)
+    thumb = await get_thumb(strpath)
     metadata = extractMetadata(createParser(strpath))
-    thumb = await take_screen_shot(strpath, metadata.get("duration").seconds) \
-        if (metadata and metadata.has("duration")) \
-            else thumb_image_path
 
     message: Message = await userge.send_message(chat_id, f"`Uploading {path.name} ...` as a video")
 
@@ -86,7 +89,7 @@ async def vid_upload(chat_id, path):
         chat_id=chat_id,
         video=strpath,
         duration=metadata.get("duration").seconds,
-        thumb=thumb if thumb else thumb_image_path,
+        thumb=thumb,
         caption=path.name,
         parse_mode="html",
         disable_notification=True,
@@ -100,3 +103,17 @@ async def vid_upload(chat_id, path):
     end_t = datetime.now()
     ms = (end_t - start_t).seconds
     await message.edit(f"Uploaded in {ms} seconds")
+
+
+async def get_thumb(path: str = '') -> str:
+    if os.path.exists(THUMB_PATH):
+        return THUMB_PATH
+
+    if path:
+        metadata = extractMetadata(createParser(path))
+
+        if metadata and metadata.has("duration"):
+            return await take_screen_shot(
+                path, metadata.get("duration").seconds)
+
+    return LOGO_PATH

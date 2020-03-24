@@ -4,8 +4,6 @@ from .progress import progress
 
 from .tools import (
     take_screen_shot,
-    createParser,
-    extractMetadata,
     SafeDict,
     runcmd,
     humanbytes,

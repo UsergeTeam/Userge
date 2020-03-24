@@ -1,11 +1,9 @@
 import asyncio
 import os
 import shlex
-
 from PIL import Image
 from hachoir.metadata import extractMetadata
 from hachoir.parser import createParser
-
 from .logger import logging
 
 LOG = logging.getLogger(__name__)
@@ -26,8 +24,7 @@ async def humanbytes(size):
     return str(round(size, 2)) + " " + Dic_powerN[n] + 'B'
 
 
-async def time_formatter(milliseconds: int) -> str:
-    seconds, milliseconds = divmod(int(milliseconds), 1000)
+async def time_formatter(seconds: int) -> str:
     minutes, seconds = divmod(seconds, 60)
     hours, minutes = divmod(minutes, 60)
     days, hours = divmod(hours, 24)
@@ -35,8 +32,7 @@ async def time_formatter(milliseconds: int) -> str:
     tmp = ((str(days) + "d, ") if days else "") + \
         ((str(hours) + "h, ") if hours else "") + \
         ((str(minutes) + "m, ") if minutes else "") + \
-        ((str(seconds) + "s, ") if seconds else "") + \
-        ((str(milliseconds) + "ms, ") if milliseconds else "")
+        ((str(seconds) + "s, ") if seconds else "")
 
     return tmp[:-2]
 
