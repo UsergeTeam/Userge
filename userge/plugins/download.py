@@ -4,7 +4,7 @@ import os
 import time
 from datetime import datetime
 from pySmartDL import SmartDL
-from userge import userge, Message
+from userge import userge, Message, Config
 from userge.utils import progress, humanbytes
 
 LOGGER = userge.getLogger(__name__)
@@ -23,7 +23,7 @@ async def down_load_media(message: Message):
 
         the_real_download_location = await userge.download_media(
             message=message.reply_to_message,
-            file_name='.',
+            file_name=Config.DOWN_PATH,
             progress=progress,
             progress_args=(
                 "trying to download", message, c_time
@@ -45,7 +45,7 @@ async def down_load_media(message: Message):
             url = url.strip()
             custom_file_name = custom_file_name.strip()
 
-        download_file_path = os.path.join('.', custom_file_name)
+        download_file_path = os.path.join(Config.DOWN_PATH, custom_file_name)
         downloader = SmartDL(url, download_file_path, progress_bar=False)
         downloader.start(blocking=False)
         c_time = time.time()

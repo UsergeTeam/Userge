@@ -12,16 +12,13 @@ LOG = logging.getLogger(__name__)
 async def humanbytes(size):
     if not size:
         return ""
-
-    power = 2**10
+    power = 1024
     n = 0
     Dic_powerN = {0: ' ', 1: 'Ki', 2: 'Mi', 3: 'Gi', 4: 'Ti'}
-
     while size > power:
         size /= power
         n += 1
-
-    return str(round(size, 2)) + " " + Dic_powerN[n] + 'B'
+    return "{:.2f} {}B".format(size, Dic_powerN[n])
 
 
 async def time_formatter(seconds: int) -> str:

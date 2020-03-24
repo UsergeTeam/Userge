@@ -28,4 +28,4 @@ class Config:
 
     LANG = os.environ.get("PREFERRED_LANGUAGE", "en")
 
-    DOWN_PATH = "downloads/"
+    DOWN_PATH = "./downloads/"

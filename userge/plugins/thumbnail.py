@@ -1,8 +1,6 @@
 import os
 import time
 from datetime import datetime
-from hachoir.metadata import extractMetadata
-from hachoir.parser import createParser
 from PIL import Image
 from userge import userge, Config, Message
 from userge.utils import progress
@@ -13,7 +11,7 @@ THUMB_PATH = Config.DOWN_PATH + "thumb_image.jpg"
 @userge.on_cmd('sthumb', about="__Save thumbnail__")
 async def save_thumb_nail(message: Message):
     await message.edit("processing ...")
-    if message.reply_to_message is not None:
+    if message.reply_to_message is not None and message.reply_to_message.photo:
         start_t = datetime.now()
         c_time = time.time()
 
@@ -24,14 +22,14 @@ async def save_thumb_nail(message: Message):
                     progress_args=(
                         "trying to download", message, c_time))
 
-        Image.open(downloaded_file_name).convert("RGB").save(downloaded_file_name)
-        metadata = extractMetadata(createParser(downloaded_file_name))
-        height = 0
-        if metadata and metadata.has("height"):
-            height = metadata.get("height")
-        img = Image.open(downloaded_file_name)
-        img.resize((320, height or 320))
-        img.save(THUMB_PATH, "JPEG")
+        Image.open(downloaded_file_name).convert("RGB").save(THUMB_PATH, 'JPEG')
+        # metadata = extractMetadata(createParser(downloaded_file_name))
+        # height = 0
+        # if metadata and metadata.has("height"):
+        #     height = metadata.get("height")
+        # img = Image.open(downloaded_file_name)
+        # img.resize((320, height or 320))
+        # img.save(THUMB_PATH, "JPEG")
         os.remove(downloaded_file_name)
         end_t = datetime.now()
         ms = (end_t - start_t).seconds
@@ -43,7 +41,7 @@ async def save_thumb_nail(message: Message):
 
 @userge.on_cmd('dthumb', about="__Delete thumbnail__")
 async def clear_thumb_nail(message: Message):
-    await message.edit("processing ...")
+    await message.edit("`processing ...`")
     if os.path.exists(THUMB_PATH):
         os.remove(THUMB_PATH)
 
@@ -86,7 +84,7 @@ async def get_thumb_nail(message: Message):
             )
             os.remove(downloaded_file_name)
         await message.delete()"""
-        
+
         await message.err("issues")
 
     elif os.path.exists(THUMB_PATH):

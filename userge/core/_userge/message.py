@@ -309,7 +309,7 @@ class Message(Msg, Base):
                   del_in: int = -1,
                   parse_mode: Union[str, None] = object,
                   disable_web_page_preview: bool = None,
-                  reply_markup: InlineKeyboardMarkup = None) -> None:
+                  reply_markup: InlineKeyboardMarkup = None):
         """
         You can send error messages using this method
 
@@ -350,7 +350,7 @@ class Message(Msg, Base):
                         parse_mode: Union[str, None] = object,
                         disable_web_page_preview: bool = None,
                         reply_markup: InlineKeyboardMarkup = None,
-                        **kwargs) -> None:
+                        **kwargs):
         """
         This will first try to edit that message. If it found any errors
         it will reply that message.
