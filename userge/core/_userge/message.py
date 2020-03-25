@@ -1,11 +1,9 @@
+from pyrogram import Client, Message as Msg, InlineKeyboardMarkup
+from typing import Dict, List, Union, Optional, Sequence
+from .base import Base
 import re
 import os
 import asyncio
-from typing import Dict, Union, List
-from .base import Base
-from pyrogram import (
-    Client, Message as Msg,
-    InlineKeyboardMarkup)
 
 
 class Message(Msg, Base):
@@ -19,7 +17,7 @@ class Message(Msg, Base):
     def __init__(self,
                  client: Client,
                  message: Msg,
-                 **kwargs):
+                 **kwargs) -> None:
 
         kwargs_ = vars(message)
         del message
@@ -27,8 +25,8 @@ class Message(Msg, Base):
 
         super().__init__(client=client, **kwargs_)
 
-        self.__filtered_input_str = None
-        self.__flags = None
+        self.__filtered_input_str: Optional[str] = None
+        self.__flags: Optional[Dict[str, str]] = None
         self.__kwargs = kwargs
 
     @property
@@ -40,13 +38,13 @@ class Message(Msg, Base):
         input_ = self.text
 
         if ' ' in input_:
-            return input_.split(maxsplit=1)[1].strip()
+            return str(input_.split(maxsplit=1)[1].strip())
 
         else:
             return ''
 
     @property
-    def filtered_input_str(self) -> str:
+    def filtered_input_str(self) -> Optional[str]:
         """
         Returns the filtered input string without command and flags.
         """
@@ -56,7 +54,7 @@ class Message(Msg, Base):
         return self.__filtered_input_str
 
     @property
-    def flags(self) -> Dict[str, str]:
+    def flags(self) -> Optional[Dict[str, str]]:
         """
         Returns all flags in input string as `Dict`.
         """
@@ -72,27 +70,26 @@ class Message(Msg, Base):
             del_pre: bool = self.__kwargs.get('del_pre', False)
             input_str: str = self.input_str
 
-            text: Union[List[str], str] = []
-            flags: Dict[str, Union[str, bool, int]] = {}
+            text: List[str] = []
+            flags: Dict[str, str] = {}
 
             for i in input_str.strip().split():
                 match = re.match(f"({prefix}[a-z]+)($|[0-9]+)?$", i)
 
                 if match:
-                    items: List[Union[str, None]] = match.groups()
+                    items: Sequence[str] = match.groups()
                     flags[items[0].lstrip(prefix) if del_pre \
                         else items[0]] = items[1] or ''
 
                 else:
                     text.append(i)
 
-            text = ' '.join(text)
+            self.__filtered_input_str = ' '.join(text)
+            self.__flags = flags
 
             self._LOG.info(
                 self._SUB_STRING.format(
-                    f"Filtered Input String => [ {text}, {flags} ]"))
-
-            self.__filtered_input_str, self.__flags = text, flags
+                    f"Filtered Input String => [ {self.__filtered_input_str}, {flags} ]"))
 
     async def send_as_file(self,
                            text: str,
@@ -103,8 +100,8 @@ class Message(Msg, Base):
         You can send large outputs as file
 
         Example:
-            .. code-block:: python
                 message.send_as_file(text="hello")
+
         Parameters:
             text (``str``):
                 Text of the message to be sent.
@@ -143,16 +140,16 @@ class Message(Msg, Base):
     async def reply(self,
                     text: str,
                     del_in: int = -1,
-                    quote: bool = None,
-                    parse_mode: Union[str, None] = object,
-                    disable_web_page_preview: bool = None,
-                    disable_notification: bool = None,
-                    reply_to_message_id: int = None,
+                    quote: Optional[bool] = None,
+                    parse_mode: Union[str, object] = object,
+                    disable_web_page_preview: Optional[bool] = None,
+                    disable_notification: Optional[bool] = None,
+                    reply_to_message_id: Optional[int] = None,
                     reply_markup: InlineKeyboardMarkup = None) -> Msg:
         """
         Example:
-            .. code-block:: python
                 message.reply("hello")
+
         Parameters:
             text (``str``):
                 Text of the message to be sent.
@@ -207,13 +204,13 @@ class Message(Msg, Base):
     async def edit(self,
                    text: str,
                    del_in: int = -1,
-                   parse_mode: Union[str, None] = object,
-                   disable_web_page_preview: bool = None,
+                   parse_mode: Union[str, object] = object,
+                   disable_web_page_preview: Optional[bool] = None,
                    reply_markup: InlineKeyboardMarkup = None) -> Msg:
         """
         Example:
-            .. code-block:: python
                 message.edit_text("hello")
+
         Parameters:
             text (``str``):
                 New text of the message.
@@ -251,8 +248,8 @@ class Message(Msg, Base):
     async def force_edit(self,
                          text: str,
                          del_in: int = -1,
-                         parse_mode: Union[str, None] = object,
-                         disable_web_page_preview: bool = None,
+                         parse_mode: Union[str, object] = object,
+                         disable_web_page_preview: Optional[bool] = None,
                          reply_markup: InlineKeyboardMarkup = None,
                          **kwargs) -> Msg:
         """
@@ -260,8 +257,8 @@ class Message(Msg, Base):
         it will reply that message.
 
         Example:
-            .. code-block:: python
                 message.force_edit(text='force_edit', del_in=3)
+
         Parameters:
             text (``str``):
                 New text of the message.
@@ -309,15 +306,15 @@ class Message(Msg, Base):
     async def err(self,
                   text: str,
                   del_in: int = -1,
-                  parse_mode: Union[str, None] = object,
-                  disable_web_page_preview: bool = None,
+                  parse_mode: Union[str, object] = object,
+                  disable_web_page_preview: Optional[bool] = None,
                   reply_markup: InlineKeyboardMarkup = None) -> Msg:
         """
         You can send error messages using this method
 
         Example:
-            .. code-block:: python
                 message.err(text='error', del_in=3)
+
         Parameters:
             text (``str``):
                 New text of the message.
@@ -349,17 +346,17 @@ class Message(Msg, Base):
     async def force_err(self,
                         text: str,
                         del_in: int = -1,
-                        parse_mode: Union[str, None] = object,
-                        disable_web_page_preview: bool = None,
+                        parse_mode: Union[str, object] = object,
+                        disable_web_page_preview: Optional[bool] = None,
                         reply_markup: InlineKeyboardMarkup = None,
                         **kwargs) -> Msg:
         """
         This will first try to edit that message. If it found any errors
         it will reply that message.
-        
+
         Example:
-            .. code-block:: python
                 message.force_err(text='force_err', del_in=3)
+
         Parameters:
             text (``str``):
                 New text of the message.
