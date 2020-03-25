@@ -30,7 +30,7 @@ async def down_load_media(message: Message):
                 "trying to download", userge, message, c_time
             )
         )
-        await userge.send_chat_action(message.chat.id, "cancel")
+        # await userge.send_chat_action(message.chat.id, "cancel")
 
         if message.message_id in CANCEL_LIST:
             CANCEL_LIST.remove(message.message_id)

@@ -1,7 +1,8 @@
 import re
 import nest_asyncio
+
 from userge.utils import Config, logging
-from typing import Dict, List, Union, Any, Callable
+from typing import Dict, List, Union, Any, Callable, Tuple
 from .base import Base
 from .message import Message
 from pyrogram import Client, Filters, MessageHandler
@@ -15,7 +16,7 @@ class Userge(Client, Base):
     """
     Userge: userbot
     """
-    
+
     __HELP_DICT: Dict[str, Dict[str, str]] = {}
 
     def __init__(self) -> None:
@@ -26,6 +27,14 @@ class Userge(Client, Base):
                          api_id=Config.API_ID,
                          api_hash=Config.API_HASH,
                          plugins=dict(root="userge/plugins"))
+
+    async def send_message(
+            self,
+            *args,
+            **kwargs
+    ) -> Message:
+        orimsg = await super().send_message(*args, **kwargs)
+        return Message(self, orimsg)
 
     def getLogger(self,
                   name: str) -> logging.Logger:
@@ -140,25 +149,25 @@ class Userge(Client, Base):
                                       group=group)
 
     def get_help(self,
-                 key: str = '') -> Union[str, List[str]]:
+                 key: str = '') -> Tuple[Union[str, List[str]], bool]:
         """
         This will return help string for specific key
         or all help strings as `Dict`.
         """
 
         if not key:
-            return list(self.__HELP_DICT), True # module names
+            return list(self.__HELP_DICT), True  # module names
 
         if not key.startswith('.') and key in self.__HELP_DICT:
-            return list(self.__HELP_DICT[key]), False # all commands for that module
+            return list(self.__HELP_DICT[key]), False  # all commands for that module
 
         dict_ = {x: y for _, i in self.__HELP_DICT.items() for x, y in i.items()}
 
         if key.lstrip('.') in dict_:
-            return dict_[key.lstrip('.')], False # help text for that command
+            return dict_[key.lstrip('.')], False  # help text for that command
 
         else:
-            return '', False # unknown
+            return '', False  # unknown
 
     def __add_help(self,
                    module: str,
@@ -186,7 +195,6 @@ class Userge(Client, Base):
         def __decorator(func: PYROFUNC) -> PYROFUNC:
             async def __template(_: Client,
                                  message: Message) -> None:
-
                 await func(Message(self, message, **kwargs))
 
             self._LOG.info(
