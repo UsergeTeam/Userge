@@ -1,7 +1,7 @@
 import re
 import nest_asyncio
 from userge.utils import Config, logging
-from typing import Dict, Union, Any, Callable
+from typing import Dict, List, Union, Any, Callable
 from .base import Base
 from .message import Message
 from pyrogram import Client, Filters, MessageHandler
@@ -16,7 +16,7 @@ class Userge(Client, Base):
     Userge: userbot
     """
     
-    __HELP_DICT: Dict[str, str] = {}
+    __HELP_DICT: Dict[str, Dict[str, str]] = {}
 
     def __init__(self) -> None:
         self._LOG.info(
@@ -100,20 +100,19 @@ class Userge(Client, Base):
 
         if found:
             match = re.match(r"([\w_]+)", command)
-            command_name = match.groups()[0] if match else ''
-            pattern = f"{trigger}{command}"
+            cname = match.groups()[0] if match else ''
+            pattern = f"\\{trigger}{command}"
 
         else:
-            command_name = command
-            pattern = f"^{trigger}{command}(?:\\s([\\S\\s]+))?$"
+            cname = command
+            pattern = f"^\\{trigger}{command}(?:\\s([\\S\\s]+))?$"
 
-        if command_name:
-            self.__add_help(command_name, about)
+        kwargs.update({'cname': cname, 'chelp': about})
 
         filters_ = Filters.regex(pattern=pattern) & Filters.me if only_me \
             else Filters.regex(pattern=pattern)
 
-        return self.__build_decorator(log=f"On .{command_name} Command",
+        return self.__build_decorator(log=f"On {pattern}",
                                       filters=filters_,
                                       group=group,
                                       **kwargs)
@@ -141,29 +140,42 @@ class Userge(Client, Base):
                                       group=group)
 
     def get_help(self,
-                 key: str = '') -> Union[str, Dict[str, str]]:
+                 key: str = '') -> Union[str, List[str]]:
         """
         This will return help string for specific key
         or all help strings as `Dict`.
         """
 
-        if key and key in self.__HELP_DICT:
-            return self.__HELP_DICT[key]
+        if not key:
+            return list(self.__HELP_DICT), True # module names
 
-        elif key:
-            return ''
+        if not key.startswith('.') and key in self.__HELP_DICT:
+            return list(self.__HELP_DICT[key]), False # all commands for that module
+
+        dict_ = {x: y for _, i in self.__HELP_DICT.items() for x, y in i.items()}
+
+        if key.lstrip('.') in dict_:
+            return dict_[key.lstrip('.')], False # help text for that command
 
         else:
-            return self.__HELP_DICT
+            return '', False # unknown
 
     def __add_help(self,
-                   command: str,
-                   about: str) -> None:
+                   module: str,
+                   cname: str = '',
+                   chelp: str = '',
+                   **kwargs) -> None:
+        if cname:
+            self._LOG.info(
+                self._SUB_STRING.format(f"Updating Help Dict => [ {cname} : {chelp} ]"))
 
-        self._LOG.info(
-            self._SUB_STRING.format(f"Updating Help Dict => [ {command} : {about} ]"))
+            mname = module.split('.')[-1]
 
-        self.__HELP_DICT.update({command: about})
+            if mname in self.__HELP_DICT:
+                self.__HELP_DICT[mname].update({cname: chelp})
+
+            else:
+                self.__HELP_DICT.update({mname: {cname: chelp}})
 
     def __build_decorator(self,
                           log: str,
@@ -179,7 +191,9 @@ class Userge(Client, Base):
 
             self._LOG.info(
                 self._SUB_STRING.format(
-                    f"Loading => [ async def {func.__name__}(message) ] `{log}`"))
+                    f"Loading => [ async def {func.__name__}(message) ] from {func.__module__} `{log}`"))
+
+            self.__add_help(func.__module__, **kwargs)
 
             self.add_handler(MessageHandler(__template, filters), group)
 

@@ -16,6 +16,10 @@ if os.environ.get("_____REMOVE_____THIS_____LINE_____", None):
 
 
 class Config:
+    """
+    Configs to setup Userge.
+    """
+
     API_ID = int(os.environ.get("API_ID", 12345))
 
     API_HASH = os.environ.get("API_HASH", None)
@@ -30,4 +34,4 @@ class Config:
 
     DOWN_PATH = "./downloads/"
 
-    screenshot_api = os.environ.get("screenshot_api", None)
+    SCREENSHOT_API = os.environ.get("SCREENSHOT_API", None)

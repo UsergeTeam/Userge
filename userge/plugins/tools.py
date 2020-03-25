@@ -13,7 +13,7 @@ from urllib.error import HTTPError
 from googletrans import Translator, LANGUAGES
 from search_engine_parser import GoogleSearch
 from userge import userge, Config, Message
-from userge.utils import humanbytes
+from userge.utils import humanbytes, CANCEL_LIST
 
 
 @userge.on_cmd("ping", about="__check how long it takes to ping your userbot__")
@@ -30,25 +30,38 @@ async def pingme(message: Message):
 
 @userge.on_cmd("help", about="__to know how to use **USERGE** commands__")
 async def helpme(message: Message):
-    cmd = message.input_str
-    out_str = ""
+    out, is_mdl = userge.get_help(message.input_str)
+    cmd = message.input_str.lstrip('.')
 
-    if not cmd:
-        out_str += """**--Which command you want ?--**
+    if not out:
+        out_str = "__No Module or Command Found!__"
+
+    elif isinstance(out, str):
+        out_str = f"`.{cmd}`\n\n{out}"
+
+    elif isinstance(out, list) and is_mdl:
+        out_str = """**--Which module you want ?--**
+
+**Usage**:
+
+    `.help [module]`
+
+**Available Modules:**\n\n"""
+
+        for i in sorted(out):
+            out_str += f"    `{i}`\n"
+
+    elif isinstance(out, list) and not is_mdl:
+        out_str = f"""**--Which command you want ?--**
 
 **Usage**:
 
     `.help [command]`
 
-**Available Commands:**\n\n"""
+**Available Commands Under `{cmd}` Module:**\n\n"""
 
-        for cmd in sorted(userge.get_help()):
-            out_str += f"    `.{cmd}`\n"
-
-    else:
-        out = userge.get_help(cmd.lstrip('.'))
-        out_str += f"`.{cmd.lstrip('.')}`\n\n{out}" if out \
-            else "__command not found!__"
+        for i in sorted(out):
+            out_str += f"    `.{i}`\n"
 
     await message.edit(text=out_str, del_in=15)
 
@@ -99,7 +112,7 @@ async def getplugins(message: Message):
     out_str = "**--All Userge Plugins--**\n\n"
 
     for plugin in all_plugins:
-        out_str += f"    `{plugin}`\n"
+        out_str += f"    `{plugin}.py`\n"
 
     await message.edit(text=out_str, del_in=15)
 
@@ -112,6 +125,21 @@ async def del_msg(message: Message):
         msg_ids.append(message.reply_to_message.message_id)
 
     await userge.delete_messages(message.chat.id, msg_ids)
+
+
+@userge.on_cmd("cancel", about="\
+__Reply this to message you want to cancel__")
+async def cancel_(message: Message):
+    replied = message.reply_to_message
+
+    if replied:
+        CANCEL_LIST.append(replied.message_id)
+        await message.edit(
+            "`added your request to cancel list`", del_in=5)
+
+    else:
+        await message.edit(
+            "`reply to the message you want to cancel`", del_in=5)
 
 
 @userge.on_cmd("ids", about="""\

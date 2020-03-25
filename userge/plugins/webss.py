@@ -6,7 +6,7 @@ import os
 
 @userge.on_cmd("webss", about="__Get snapshot of a website__")
 async def webss(message: Message):
-    if Config.screenshot_api is None:
+    if Config.SCREENSHOT_API is None:
         await message.edit("Damn!\nI forgot to get the api from (here)[https://screenshotlayer.com]", del_in=10)
         return
     await message.edit("`Processing`")
@@ -27,7 +27,7 @@ async def getimg(url):
     requrl = "https://api.screenshotlayer.com/api/capture"
     requrl += "?access_key={}&url={}&fullpage={}&viewport={}"
     response = requests.get(
-        requrl.format(Config.screenshot_api, url, '1', "2560x1440"),
+        requrl.format(Config.SCREENSHOT_API, url, '1', "2560x1440"),
         stream=True
     )
     if 'image' in response.headers["content-type"]:

@@ -27,8 +27,8 @@ class Message(Msg, Base):
 
         super().__init__(client=client, **kwargs_)
 
-        self.__filtered_input_str: str or None = None
-        self.__flags: Dict[str, str] or None = None
+        self.__filtered_input_str = None
+        self.__flags = None
         self.__kwargs = kwargs
 
     @property
@@ -70,9 +70,9 @@ class Message(Msg, Base):
         if self.__filtered_input_str is None or self.__flags is None:
             prefix: str = self.__kwargs.get('prefix', '-')
             del_pre: bool = self.__kwargs.get('del_pre', False)
-            input_str: str = self.matches[0].group(1) or ''
+            input_str: str = self.input_str
 
-            text: List[str] or str = []
+            text: Union[List[str], str] = []
             flags: Dict[str, Union[str, bool, int]] = {}
 
             for i in input_str.strip().split():
@@ -80,8 +80,8 @@ class Message(Msg, Base):
 
                 if match:
                     items: List[Union[str, None]] = match.groups()
-                    flags[items[0].lstrip(prefix) if del_pre
-                          else items[0]] = items[1] or ''
+                    flags[items[0].lstrip(prefix) if del_pre \
+                        else items[0]] = items[1] or ''
 
                 else:
                     text.append(i)
@@ -98,7 +98,7 @@ class Message(Msg, Base):
                            text: str,
                            filename: str = "output.txt",
                            caption: str = '',
-                           delete_message: bool = True) -> None:
+                           delete_message: bool = True) -> Msg:
         """
         You can send large outputs as file
 
@@ -115,7 +115,7 @@ class Message(Msg, Base):
             delete_message (``bool``, *optional*):
                 If ``True``, the message will be deleted after sending the file.
         Returns:
-            None.
+            On success, the sent Message is returned.
         """
 
         with open(filename, "w+", encoding="utf8") as out_file:
@@ -127,16 +127,18 @@ class Message(Msg, Base):
         self._LOG.info(
             self._SUB_STRING.format(f"Uploading {filename} To Telegram"))
 
-        await self._client.send_document(chat_id=self.chat.id,
-                                         document=filename,
-                                         caption=caption,
-                                         disable_notification=True,
-                                         reply_to_message_id=reply_to_id)
+        msg = await self._client.send_document(chat_id=self.chat.id,
+                                               document=filename,
+                                               caption=caption,
+                                               disable_notification=True,
+                                               reply_to_message_id=reply_to_id)
 
         os.remove(filename)
 
         if delete_message:
             await self.delete()
+
+        return msg
 
     async def reply(self,
                     text: str,
@@ -309,7 +311,7 @@ class Message(Msg, Base):
                   del_in: int = -1,
                   parse_mode: Union[str, None] = object,
                   disable_web_page_preview: bool = None,
-                  reply_markup: InlineKeyboardMarkup = None):
+                  reply_markup: InlineKeyboardMarkup = None) -> Msg:
         """
         You can send error messages using this method
 
@@ -332,7 +334,7 @@ class Message(Msg, Base):
             reply_markup (:obj:`InlineKeyboardMarkup`, *optional*):
                 An InlineKeyboardMarkup object.
         Returns:
-            None.
+            On success, the edited or deleted :obj:`Message` is returned.
         """
 
         del_in = del_in if del_in > 0 \
@@ -350,7 +352,7 @@ class Message(Msg, Base):
                         parse_mode: Union[str, None] = object,
                         disable_web_page_preview: bool = None,
                         reply_markup: InlineKeyboardMarkup = None,
-                        **kwargs):
+                        **kwargs) -> Msg:
         """
         This will first try to edit that message. If it found any errors
         it will reply that message.
@@ -375,7 +377,7 @@ class Message(Msg, Base):
                 An InlineKeyboardMarkup object.
             **kwargs (for reply message)
         Returns:
-            None.
+            On success, the edited, replied or deleted :obj:`Message` is returned.
         """
 
         del_in = del_in if del_in > 0 \

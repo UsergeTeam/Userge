@@ -5,7 +5,7 @@ import time
 from datetime import datetime
 from pySmartDL import SmartDL
 from userge import userge, Message, Config
-from userge.utils import progress, humanbytes
+from userge.utils import progress, CANCEL_LIST, humanbytes
 
 LOGGER = userge.getLogger(__name__)
 
@@ -17,6 +17,7 @@ __download files to server__
 
     `.download [url | reply to telegram media]`""")
 async def down_load_media(message: Message):
+    await message.edit("Trying to Download...")
     if message.reply_to_message is not None:
         start_t = datetime.now()
         c_time = time.time()
@@ -26,14 +27,20 @@ async def down_load_media(message: Message):
             file_name=Config.DOWN_PATH,
             progress=progress,
             progress_args=(
-                "trying to download", message, c_time
+                "trying to download", userge, message, c_time
             )
         )
+        await userge.send_chat_action(message.chat.id, "cancel")
 
-        end_t = datetime.now()
-        ms = (end_t - start_t).seconds
+        if message.message_id in CANCEL_LIST:
+            CANCEL_LIST.remove(message.message_id)
+            await message.edit(f"`Process Canceled!`", del_in=5)
 
-        await message.edit(f"Downloaded to `{the_real_download_location}` in {ms} seconds")
+        else:
+            end_t = datetime.now()
+            ms = (end_t - start_t).seconds
+            await message.edit(
+                f"Downloaded to `{the_real_download_location}` in {ms} seconds")
 
     elif message.input_str:
         start_t = datetime.now()

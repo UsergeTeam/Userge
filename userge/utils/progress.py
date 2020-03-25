@@ -1,14 +1,20 @@
 import time
-from pyrogram import Message
+from pyrogram import Client, Message
 from pyrogram.errors.exceptions import FloodWait
 from .tools import humanbytes, time_formatter
+
+CANCEL_LIST = []
 
 
 async def progress(current: int,
                    total: int,
                    ud_type: str,
+                   userge: Client,
                    message: Message,
                    start: int):
+    if message.message_id in CANCEL_LIST:
+        await userge.stop_transmission()
+
     now = time.time()
     diff = now - start
     if diff % 10 < 0.1 or current == total:

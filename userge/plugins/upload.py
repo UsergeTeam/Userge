@@ -6,7 +6,7 @@ from hachoir.metadata import extractMetadata
 from hachoir.parser import createParser
 from pyrogram.errors.exceptions import FloodWait
 from userge import userge, Config, Message
-from userge.utils import progress, take_screen_shot
+from userge.utils import progress, CANCEL_LIST, take_screen_shot
 
 LOGGER = userge.getLogger(__name__)
 
@@ -14,7 +14,12 @@ LOGO_PATH = 'resources/userge(8).png'
 THUMB_PATH = Config.DOWN_PATH + "thumb_image.jpg"
 
 
-@userge.on_cmd("upload", about="__upload files to telegram__")
+@userge.on_cmd("upload", about="""\
+__upload files to telegram__
+
+**Usage:**
+
+    `.upload [file or folder path]`""")
 async def uploadtotg(message: Message):
     try:
         string = Path(message.input_str)
@@ -63,14 +68,19 @@ async def doc_upload(chat_id, path):
         disable_notification=True,
         progress=progress,
         progress_args=(
-            "uploading", message, c_time
+            "uploading", userge, message, c_time
         )
     )
     await userge.send_chat_action(chat_id, "cancel")
 
-    end_t = datetime.now()
-    ms = (end_t - start_t).seconds
-    await message.edit(f"Uploaded in {ms} seconds")
+    if message.message_id in CANCEL_LIST:
+        CANCEL_LIST.remove(message.message_id)
+        await message.edit(f"`Process Canceled!`", del_in=5)
+
+    else:
+        end_t = datetime.now()
+        ms = (end_t - start_t).seconds
+        await message.edit(f"Uploaded in {ms} seconds")
 
 
 async def vid_upload(chat_id, path):
@@ -93,15 +103,20 @@ async def vid_upload(chat_id, path):
         disable_notification=True,
         progress=progress,
         progress_args=(
-            "uploading", message, c_time
+            "uploading", userge, message, c_time
         )
     )
     await userge.send_chat_action(chat_id, "cancel")
-    
     os.remove(thumb)
-    end_t = datetime.now()
-    ms = (end_t - start_t).seconds
-    await message.edit(f"Uploaded in {ms} seconds")
+
+    if message.message_id in CANCEL_LIST:
+        CANCEL_LIST.remove(message.message_id)
+        await message.edit(f"`Process Canceled!`", del_in=5)
+
+    else:
+        end_t = datetime.now()
+        ms = (end_t - start_t).seconds
+        await message.edit(f"Uploaded in {ms} seconds")
 
 
 async def get_thumb(path: str = '') -> str:
