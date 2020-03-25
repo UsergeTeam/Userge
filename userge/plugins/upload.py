@@ -31,7 +31,6 @@ async def explorer(path: Path, chatid):
     if path.is_file():
         try:
             await upload(path, chatid)
-            await userge.send_chat_action(chatid, "cancel")
 
         except FloodWait as x:
             time.sleep(x.x)  # asyncio sleep ?
@@ -43,11 +42,9 @@ async def explorer(path: Path, chatid):
 
 async def upload(path: Path, chat_id: int):
     if path.name.endswith((".mkv", ".mp4", ".webm")):
-        await userge.send_chat_action(chat_id, "upload_video")
         await vid_upload(chat_id, path)
 
     else:
-        await userge.send_chat_action(chat_id, "upload_document")
         await doc_upload(chat_id, path)
 
 
@@ -56,7 +53,7 @@ async def doc_upload(chat_id, path):
     start_t = datetime.now()
     c_time = time.time()
     thumb = await get_thumb()
-
+    await userge.send_chat_action(chat_id, "upload_document")
     the_real_download_location = await userge.send_document(
         chat_id=chat_id,
         document=str(path),
@@ -69,6 +66,7 @@ async def doc_upload(chat_id, path):
             "uploading", message, c_time
         )
     )
+    await userge.send_chat_action(chat_id, "cancel")
 
     end_t = datetime.now()
     ms = (end_t - start_t).seconds
@@ -84,7 +82,7 @@ async def vid_upload(chat_id, path):
 
     start_t = datetime.now()
     c_time = time.time()
-
+    await userge.send_chat_action(chat_id, "upload_video")
     the_real_download_location = await userge.send_video(
         chat_id=chat_id,
         video=strpath,
@@ -98,6 +96,7 @@ async def vid_upload(chat_id, path):
             "uploading", message, c_time
         )
     )
+    await userge.send_chat_action(chat_id, "cancel")
     
     os.remove(thumb)
     end_t = datetime.now()

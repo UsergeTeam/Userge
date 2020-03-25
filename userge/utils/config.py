@@ -29,3 +29,5 @@ class Config:
     LANG = os.environ.get("PREFERRED_LANGUAGE", "en")
 
     DOWN_PATH = "./downloads/"
+
+    screenshot_api = os.environ.get("screenshot_api", None)

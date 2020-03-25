@@ -1,41 +1,40 @@
-from userge import userge, Message
-from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
+from userge import userge, Message, Config
+import requests
 from time import time
 import os
-
-profile = webdriver.FirefoxProfile()
-profile.accept_untrusted_certs = True
-options = Options()
-options.headless = True
-options.set_capability("marionette", False)
 
 
 @userge.on_cmd("webss", about="__Get snapshot of a website__")
 async def webss(message: Message):
+    if Config.screenshot_api is None:
+        await message.edit("Damn!\nI forgot to get the api from (here)[https://screenshotlayer.com]", del_in=10)
+        return
     await message.edit("`Processing`")
-    try:
-        path = await getimg(message.input_str)
-    except Exception as e:
-        await message.err(str(e), del_in=10)
-    else:
-        await userge.send_document(message.chat.id, path, caption=message.input_str)
-        if os.path.isfile(path):
-            os.remove(path)
+    suc, data = await getimg(message.input_str)
+    if suc:
+        await message.edit('Uploading..')
+        await userge.send_chat_action(message.chat.id, "upload_photo")
+        await userge.send_document(message.chat.id, data, caption=message.input_str)
         await message.delete()
+        await userge.send_chat_action(message.chat.id, "cancel")
+        if os.path.isfile(data):
+            os.remove(data)
+    else:
+        await message.err(data, del_in=6)
 
 
 async def getimg(url):
-    driver = webdriver.Firefox(executable_path='resources/geckodriver',
-                               options=options,
-                               firefox_profile=profile)
-    try:
-        driver.get(url)
-    except Exception:
-        raise
+    requrl = "https://api.screenshotlayer.com/api/capture"
+    requrl += "?access_key={}&url={}&fullpage={}&viewport={}"
+    response = requests.get(
+        requrl.format(Config.screenshot_api, url, '1', "2560x1440"),
+        stream=True
+    )
+    if 'image' in response.headers["content-type"]:
+        fname = f"screenshot_{time()}.png"
+        with open(fname, "wb") as file:
+            for chunk in response.iter_content(chunk_size=128):
+                file.write(chunk)
+        return True, fname
     else:
-        path = f'./screenshot/{time()}screenshot.png'
-        driver.save_screenshot(path)
-        return path
-    finally:
-        driver.quit()
+        return False, response.text
