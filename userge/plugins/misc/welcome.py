@@ -80,7 +80,7 @@ async def doleft(msg: Message):
 
 @userge.on_cmd("delwelcome", about="__Delete welcome message in the current chat :)__")
 async def delwel(msg: Message):
-    await raw_del(msg, 'Welcome',  WELCOME_COLLECTION, WELCOME_CHATS)
+    await raw_del(msg, 'Welcome', WELCOME_COLLECTION, WELCOME_CHATS)
 
 
 @userge.on_cmd("delleft", about="__Delete left message in the current chat :)__")
@@ -90,7 +90,7 @@ async def delleft(msg: Message):
 
 @userge.on_cmd("lswelcome", about="__Shows the activated chats for welcome__")
 async def lswel(msg: Message):
-    await raw_ls(msg, 'Welcome',  WELCOME_COLLECTION)
+    await raw_ls(msg, 'Welcome', WELCOME_COLLECTION)
 
 
 @userge.on_cmd("lsleft", about="__Shows the activated chats for left__")
@@ -155,8 +155,7 @@ async def raw_no(message: Message, name, collection, chats):
 
 async def raw_do(message: Message, name, collection, chats):
     out = f'Please set the {name} message with `.set{name.lower()}`'
-    if collection.find_one_and_update(
-        {'_id': message.chat.id}, {"$set": {'on': True}}):
+    if collection.find_one_and_update({'_id': message.chat.id}, {"$set": {'on': True}}):
         chats.add(message.chat.id)
         out = f'`I will {name} new members XD`'
 

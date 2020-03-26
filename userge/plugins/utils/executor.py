@@ -1,8 +1,8 @@
 import io
-import os
 import sys
 import traceback
 from getpass import getuser
+from os import geteuid
 from userge import userge, Config, Message
 from userge.utils import runcmd
 
@@ -39,7 +39,7 @@ async def eval_(message: Message):
 
     try:
         await aexec(cmd, userge, message)
-        
+
     except Exception:
         exc = traceback.format_exc()
 
@@ -61,16 +61,16 @@ async def eval_(message: Message):
     else:
         evaluation = "Success"
 
-    OUTPUT = "**EVAL**:\n```{}```\n\n\
+    output = "**EVAL**:\n```{}```\n\n\
 **OUTPUT**:\n```{}```".format(cmd, evaluation.strip())
 
-    if len(OUTPUT) > Config.MAX_MESSAGE_LENGTH:
-        await message.send_as_file(text=OUTPUT,
+    if len(output) > Config.MAX_MESSAGE_LENGTH:
+        await message.send_as_file(text=output,
                                    filename="eval.txt",
                                    caption=cmd)
 
     else:
-        await message.edit(OUTPUT)
+        await message.edit(output)
 
 
 @userge.on_cmd("exec", about="""\
@@ -96,17 +96,17 @@ async def exec_(message: Message):
 
     out = "\n".join(out.split("\n"))
 
-    OUTPUT = f"**EXEC**:\n\n\
+    output = f"**EXEC**:\n\n\
 __Command:__\n`{cmd}`\n__PID:__\n`{pid}`\n__RETURN:__\n`{ret}`\n\n\
 **stderr:**\n`{err}`\n\n**stdout:**\n``{out}`` "
 
-    if len(OUTPUT) > Config.MAX_MESSAGE_LENGTH:
-        await message.send_as_file(text=OUTPUT,
+    if len(output) > Config.MAX_MESSAGE_LENGTH:
+        await message.send_as_file(text=output,
                                    filename="exec.txt",
                                    caption=cmd)
 
     else:
-        await message.edit(OUTPUT)
+        await message.edit(output)
 
 
 @userge.on_cmd("term", about="""\
@@ -127,16 +127,15 @@ async def term_(message: Message):
 
     out, err, _, _ = await runcmd(cmd)
 
-    OUTPUT = str(out) + str(err)
+    output = str(out) + str(err)
 
-    if len(OUTPUT) > Config.MAX_MESSAGE_LENGTH:
-        await message.send_as_file(text=OUTPUT,
+    if len(output) > Config.MAX_MESSAGE_LENGTH:
+        await message.send_as_file(text=output,
                                    filename="term.txt",
                                    caption=cmd)
 
     else:
         try:
-            from os import geteuid
             uid = geteuid()
 
         except ImportError:
@@ -145,10 +144,10 @@ async def term_(message: Message):
         curruser = getuser()
 
         if uid == 0:
-            await message.edit(f"`{curruser}:~# {cmd}\n{OUTPUT}`")
-            
+            await message.edit(f"`{curruser}:~# {cmd}\n{output}`")
+
         else:
-            await message.edit(f"`{curruser}:~$ {cmd}\n{OUTPUT}`")
+            await message.edit(f"`{curruser}:~$ {cmd}\n{output}`")
 
 
 async def init_func(message: Message):

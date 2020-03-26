@@ -1,5 +1,5 @@
-from userge import userge, Message
 from pyrogram.errors.exceptions import FileIdInvalid, FileReferenceEmpty
+from userge import userge, Message
 
 LOGO_STICKER_ID, LOGO_STICKER_REF = None, None
 
@@ -14,11 +14,11 @@ async def alive(message: Message):
         else:
             await refresh_id()
             await sendit(LOGO_STICKER_ID, message)
-            
+
     except FileIdInvalid:
         await refresh_id()
         await sendit(LOGO_STICKER_ID, message)
-        
+
     except FileReferenceEmpty:
         await refresh_id()
         await sendit(LOGO_STICKER_ID, message)

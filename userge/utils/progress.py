@@ -11,7 +11,7 @@ async def progress(current: int,
                    ud_type: str,
                    userge: Client,
                    message: Message,
-                   start: int):
+                   start: int) -> None:
     if message.message_id in CANCEL_LIST:
         await userge.stop_transmission()
 

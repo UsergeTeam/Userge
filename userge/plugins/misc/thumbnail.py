@@ -20,26 +20,19 @@ async def save_thumb_nail(message: Message):
         start_t = datetime.now()
         c_time = time.time()
 
-        downloaded_file_name = await userge.download_media(
-                    message=message.reply_to_message,
-                    file_name=Config.DOWN_PATH,
-                    progress=progress,
-                    progress_args=(
-                        "trying to download", message, c_time))
+        d_f_name = await userge.download_media(message=message.reply_to_message,
+                                               file_name=Config.DOWN_PATH,
+                                               progress=progress,
+                                               progress_args=(
+                                                   "trying to download", message, c_time))
 
-        Image.open(downloaded_file_name).convert("RGB").save(THUMB_PATH, 'JPEG')
-        # metadata = extractMetadata(createParser(downloaded_file_name))
-        # height = 0
-        # if metadata and metadata.has("height"):
-        #     height = metadata.get("height")
-        # img = Image.open(downloaded_file_name)
-        # img.resize((320, height or 320))
-        # img.save(THUMB_PATH, "JPEG")
-        os.remove(downloaded_file_name)
+        Image.open(d_f_name).convert("RGB").save(THUMB_PATH, 'JPEG')
+        os.remove(d_f_name)
         end_t = datetime.now()
         ms = (end_t - start_t).seconds
 
         await message.edit(f"thumbnail saved in {ms} seconds.", del_in=3)
+
     else:
         await message.edit("Reply to a photo to save custom thumbnail", del_in=3)
 

@@ -1,9 +1,11 @@
-from pyrogram import Client, Message as Msg, InlineKeyboardMarkup
-from typing import Dict, List, Union, Optional, Sequence
-from .base import Base
 import re
 import os
 import asyncio
+from typing import Dict, List, Union, Optional, Sequence
+
+from pyrogram import Client, Message as Msg, InlineKeyboardMarkup
+from pyrogram.errors.exceptions import MessageAuthorRequired
+from .base import Base
 
 
 class Message(Msg, Base):
@@ -19,11 +21,8 @@ class Message(Msg, Base):
                  message: Msg,
                  **kwargs) -> None:
 
-        kwargs_ = vars(message)
-        del message
-        del kwargs_['_client']
-
-        super().__init__(client=client, **kwargs_)
+        super().__init__(client=client,
+                         **self._msg_to_dict(message))
 
         self.__filtered_input_str: Optional[str] = None
         self.__flags: Optional[Dict[str, str]] = None
@@ -135,7 +134,7 @@ class Message(Msg, Base):
         if delete_message:
             await self.delete()
 
-        return msg
+        return Message(self._client, msg)
 
     async def reply(self,
                     text: str,
@@ -197,9 +196,11 @@ class Message(Msg, Base):
 
         if del_in > 0:
             await asyncio.sleep(del_in)
-            msg = await msg.delete()
+            await msg.delete()
 
-        return msg
+        return Message(self._client, msg)
+
+    reply_text = reply
 
     async def edit(self,
                    text: str,
@@ -227,7 +228,7 @@ class Message(Msg, Base):
             reply_markup (:obj:`InlineKeyboardMarkup`, *optional*):
                 An InlineKeyboardMarkup object.
         Returns:
-            On success, the edited or deleted :obj:`Message` is returned.
+            On success, the edited :obj:`Message` is returned.
         Raises:
             RPCError: In case of a Telegram RPC error.
         """
@@ -241,9 +242,11 @@ class Message(Msg, Base):
 
         if del_in > 0:
             await asyncio.sleep(del_in)
-            msg = await msg.delete()
+            await msg.delete()
 
-        return msg
+        return Message(self._client, msg)
+
+    edit_text = edit
 
     async def force_edit(self,
                          text: str,
@@ -276,7 +279,7 @@ class Message(Msg, Base):
                 An InlineKeyboardMarkup object.
             **kwargs (for reply message)
         Returns:
-            On success, the edited, replied or deleted :obj:`Message` is returned.
+            On success, the edited or replied :obj:`Message` is returned.
         """
 
         try:
@@ -286,7 +289,7 @@ class Message(Msg, Base):
                                   disable_web_page_preview=disable_web_page_preview,
                                   reply_markup=reply_markup)
 
-        except:
+        except MessageAuthorRequired:
             msg = await self.reply(text=text,
                                    del_in=del_in,
                                    parse_mode=parse_mode,
@@ -296,12 +299,9 @@ class Message(Msg, Base):
 
         if del_in > 0:
             await asyncio.sleep(del_in)
-            try:
-                await msg.delete()
-            except:
-                pass
+            await msg.delete()
 
-        return msg
+        return Message(self._client, msg)
 
     async def err(self,
                   text: str,
@@ -331,7 +331,7 @@ class Message(Msg, Base):
             reply_markup (:obj:`InlineKeyboardMarkup`, *optional*):
                 An InlineKeyboardMarkup object.
         Returns:
-            On success, the edited or deleted :obj:`Message` is returned.
+            On success, the edited :obj:`Message` is returned.
         """
 
         del_in = del_in if del_in > 0 \
@@ -374,7 +374,7 @@ class Message(Msg, Base):
                 An InlineKeyboardMarkup object.
             **kwargs (for reply message)
         Returns:
-            On success, the edited, replied or deleted :obj:`Message` is returned.
+            On success, the edited or replied :obj:`Message` is returned.
         """
 
         del_in = del_in if del_in > 0 \

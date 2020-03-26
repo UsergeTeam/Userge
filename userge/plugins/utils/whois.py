@@ -15,7 +15,7 @@ __use this to get any user details__
 async def who_is(message: Message):
     await message.edit("`Collecting Whois Info.. Hang on!`")
     user_id = message.input_str
-    
+
     if user_id:
         try:
             from_user = await userge.get_users(user_id)
@@ -60,7 +60,7 @@ async def who_is(message: Message):
                                     caption=message_out_str,
                                     parse_mode="html",
                                     disable_notification=True)
-            
+
             os.remove(local_user_photo)
             await message.delete()
 

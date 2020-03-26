@@ -1,15 +1,13 @@
 import asyncio
-import os
 import shlex
-from PIL import Image
-from hachoir.metadata import extractMetadata
-from hachoir.parser import createParser
+from os.path import isfile, relpath
+from glob import glob
 from .logger import logging
 
 LOG = logging.getLogger(__name__)
 
 
-async def humanbytes(size):
+async def humanbytes(size: int) -> str:
     if not size:
         return ""
     power = 1024
@@ -25,7 +23,7 @@ async def time_formatter(seconds: int) -> str:
     minutes, seconds = divmod(seconds, 60)
     hours, minutes = divmod(minutes, 60)
     days, hours = divmod(hours, 24)
-    
+
     tmp = ((str(days) + "d, ") if days else "") + \
         ((str(hours) + "h, ") if hours else "") + \
         ((str(minutes) + "m, ") if minutes else "") + \
@@ -34,7 +32,7 @@ async def time_formatter(seconds: int) -> str:
     return tmp[:-2]
 
 
-async def runcmd(cmd):
+async def runcmd(cmd: str):
     args = shlex.split(cmd)
 
     process = await asyncio.create_subprocess_exec(*args,
@@ -49,14 +47,14 @@ async def runcmd(cmd):
             process.pid)
 
 
-async def take_screen_shot(video_file, duration):
+async def take_screen_shot(video_file: str, duration: int):
     LOG.info(f'[[[Extracting a frame from {video_file} ||| Video duration => {duration}]]]')
     ttl = duration // 2
     thumb_image_path = f"{video_file}.jpg"
     # -filter:v scale=90:-1
     command = f"ffmpeg -ss {ttl} -i '{video_file}' -vframes 1 '{thumb_image_path}'"
-    _, err, rcode, _ = await runcmd(command)
-    
+    _, err, _, _ = await runcmd(command)
+
     if err:
         LOG.error(err)
 
@@ -66,3 +64,18 @@ async def take_screen_shot(video_file, duration):
 class SafeDict(dict):
     def __missing__(self, key):
         return '{' + key + '}'
+
+
+def get_import_path(root: str, path: str):
+    if isfile(path):
+        return '.'.join(relpath(path, root).split('/'))[:-3]
+
+    else:
+        all_paths = glob(root + path.rstrip('/') + "/*.py", recursive=True)
+
+        return sorted(
+            [
+                '.'.join(relpath(f, root).split('/'))[:-3] for f in all_paths
+                if not f.endswith("__init__.py")
+            ]
+        )

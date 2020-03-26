@@ -1,13 +1,16 @@
+import re
+import importlib
+from types import ModuleType
+from typing import (
+    Dict, List, Tuple, Optional, Union, Any, Callable)
+
 from pyrogram import (
     Client, Filters, MessageHandler, InlineKeyboardMarkup,
     ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply)
-from typing import (
-    Dict, List, Tuple, Optional, Union, Any, Callable)
 from userge.utils import Config, logging
+from userge.plugins import get_all_plugins
 from .base import Base
 from .message import Message
-import nest_asyncio
-import re
 
 logging.getLogger("pyrogram").setLevel(logging.WARNING)
 
@@ -20,6 +23,8 @@ class Userge(Client, Base):
     """
 
     __HELP_DICT: Dict[str, Dict[str, str]] = {}
+    __IMPORTED: List[ModuleType] = []
+    __PLUGINS_PATH = "userge.plugins.{}"
 
     def __init__(self) -> None:
         self._LOG.info(
@@ -27,8 +32,7 @@ class Userge(Client, Base):
 
         super().__init__(Config.HU_STRING_SESSION,
                          api_id=Config.API_ID,
-                         api_hash=Config.API_HASH,
-                         plugins=dict(root="userge/plugins"))
+                         api_hash=Config.API_HASH)
 
     def getLogger(self,
                   name: str) -> logging.Logger:
@@ -203,7 +207,7 @@ class Userge(Client, Base):
                  key: str = '') -> Tuple[Union[str, List[str]], bool]:
         """
         This will return help string for specific key
-        or all help strings as `Dict`.
+        or all modules or commands as `List`.
         """
 
         if not key:
@@ -260,6 +264,83 @@ class Userge(Client, Base):
 
         return __decorator
 
+    async def load_plugin(self,
+                          name: str) -> None:
+        """
+        Load plugin to Userge.
+        """
+
+        name = self.__PLUGINS_PATH.format(name)
+        self._LOG.info(
+            self._MAIN_STRING.format(f"Importing {name}"))
+
+        try:
+            imported_ = importlib.import_module(name)
+
+        except ImportError as i_e:
+            self._LOG.error(i_e)
+            raise
+
+        else:
+            self.__IMPORTED.append(imported_)
+
+            self._LOG.info(
+                self._MAIN_STRING.format(
+                    f"Imported {imported_.__name__} Plugin Successfully"))
+
+    def load_plugins(self) -> None:
+        """
+        Load all Plugins.
+        """
+
+        self.__HELP_DICT.clear()
+        self.__IMPORTED.clear()
+        imported: List[str] = []
+
+        self._LOG.info(
+            self._MAIN_STRING.format("Importing All Plugins"))
+
+        for name in get_all_plugins():
+            try:
+                imported_ = importlib.import_module(
+                    self.__PLUGINS_PATH.format(name))
+
+            except ImportError as i_e:
+                self._LOG.error(i_e)
+
+            else:
+                self.__IMPORTED.append(imported_)
+                imported.append(imported_.__name__)
+
+        self._LOG.info(
+            self._MAIN_STRING.format(
+                f"Imported ({len(imported)}) Plugins => {imported}"))
+
+    async def reload_plugins(self) -> int:
+        """
+        Reload all Plugins.
+        """
+
+        reloaded: List[str] = []
+
+        self._LOG.info(
+            self._MAIN_STRING.format("Reloading All Plugins"))
+
+        for imported in self.__IMPORTED:
+            try:
+                reloaded_ = importlib.reload(imported)
+
+            except ImportError as i_e:
+                self._LOG.error(i_e)
+
+            else:
+                reloaded.append(reloaded_.__name__)
+
+        self._LOG.info(
+            self._MAIN_STRING.format(f"Reloaded These Plugins => {reloaded}"))
+
+        return len(reloaded)
+
     def begin(self) -> None:
         """
         This will start the Userge.
@@ -268,7 +349,7 @@ class Userge(Client, Base):
         self._LOG.info(
             self._MAIN_STRING.format("Starting Userge"))
 
-        nest_asyncio.apply()
+        self._NST_ASYNC.apply()
 
         self.run()
 

@@ -1,13 +1,14 @@
-from userge import userge, Message, Config
-import requests
-from time import time
 import os
+from time import time
+import requests
+from userge import userge, Message, Config
 
 
 @userge.on_cmd("webss", about="__Get snapshot of a website__")
 async def webss(message: Message):
     if Config.SCREENSHOT_API is None:
-        await message.edit("Damn!\nI forgot to get the api from (here)[https://screenshotlayer.com]", del_in=10)
+        await message.edit(
+            "Damn!\nI forgot to get the api from (here)[https://screenshotlayer.com]", del_in=10)
         return
     await message.edit("`Processing`")
     suc, data = await getimg(message.input_str)

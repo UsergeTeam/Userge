@@ -1,19 +1,15 @@
-import glob
-from typing import List
-from os.path import dirname, basename, isfile
-from userge import logging
+from os.path import dirname
+from userge.utils import get_import_path, logging
 
-log = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
+ROOT = dirname(__file__)
 
 
-async def get_all_plugins() -> List[str]:
-    plugins = sorted(
-        [
-            basename(f)[:-3] for f in glob.glob(dirname(__file__) + "/*.py")
-            if isfile(f) and f.endswith(".py") and not f.endswith("__init__.py")
-        ]
-    )
+def get_all_plugins():
+    plugins = get_import_path(ROOT, "/**/")
 
-    log.info(f"all plugins: {plugins}")
+    LOG.info(f"all plugins: {plugins}")
 
     return plugins
+
+__all__ = get_all_plugins()
