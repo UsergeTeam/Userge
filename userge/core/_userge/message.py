@@ -1,7 +1,7 @@
 import re
 import os
 import asyncio
-from typing import Dict, List, Union, Optional, Sequence
+from typing import Dict, Union, Optional, Sequence
 
 from pyrogram import Client, Message as Msg, InlineKeyboardMarkup
 from pyrogram.errors.exceptions import MessageAuthorRequired
@@ -24,8 +24,9 @@ class Message(Msg, Base):
         super().__init__(client=client,
                          **self._msg_to_dict(message))
 
-        self.__filtered_input_str: Optional[str] = None
-        self.__flags: Optional[Dict[str, str]] = None
+        self.__filtered = False
+        self.__filtered_input_str: str = ''
+        self.__flags: Dict[str, str] = {}
         self.__kwargs = kwargs
 
     @property
@@ -43,7 +44,7 @@ class Message(Msg, Base):
             return ''
 
     @property
-    def filtered_input_str(self) -> Optional[str]:
+    def filtered_input_str(self) -> str:
         """
         Returns the filtered input string without command and flags.
         """
@@ -53,7 +54,7 @@ class Message(Msg, Base):
         return self.__filtered_input_str
 
     @property
-    def flags(self) -> Optional[Dict[str, str]]:
+    def flags(self) -> Dict[str, str]:
         """
         Returns all flags in input string as `Dict`.
         """
@@ -64,31 +65,29 @@ class Message(Msg, Base):
 
     def __filter(self) -> None:
 
-        if self.__filtered_input_str is None or self.__flags is None:
+        if not self.__filtered:
             prefix: str = self.__kwargs.get('prefix', '-')
             del_pre: bool = self.__kwargs.get('del_pre', False)
             input_str: str = self.input_str
-
-            text: List[str] = []
-            flags: Dict[str, str] = {}
 
             for i in input_str.strip().split():
                 match = re.match(f"({prefix}[a-z]+)($|[0-9]+)?$", i)
 
                 if match:
                     items: Sequence[str] = match.groups()
-                    flags[items[0].lstrip(prefix) if del_pre \
+                    self.__flags[items[0].lstrip(prefix) if del_pre \
                         else items[0]] = items[1] or ''
 
                 else:
-                    text.append(i)
+                    self.__filtered_input_str += ' ' + i
 
-            self.__filtered_input_str = ' '.join(text)
-            self.__flags = flags
+            self.__filtered_input_str = self.__filtered_input_str.strip()
 
             self._LOG.info(
                 self._SUB_STRING.format(
-                    f"Filtered Input String => [ {self.__filtered_input_str}, {flags} ]"))
+                    f"Filtered Input String => [ {self.__filtered_input_str}, {self.__flags} ]"))
+
+            self.__filtered = True
 
     async def send_as_file(self,
                            text: str,

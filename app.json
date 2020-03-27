@@ -30,7 +30,7 @@
         },
         "SCREENSHOT_API": {
             "description": "api key from 'https://screenshotlayer.com'",
-            "value": "4",
+            "value": "",
             "required": false
         }
     },

@@ -34,8 +34,7 @@ class Userge(Client, Base):
                          api_id=Config.API_ID,
                          api_hash=Config.API_HASH)
 
-    def getLogger(self,
-                  name: str) -> logging.Logger:
+    def getLogger(self, name: str) -> logging.Logger:
         """
         This will return new logger object.
         """
@@ -45,8 +44,7 @@ class Userge(Client, Base):
 
         return logging.getLogger(name)
 
-    async def get_user_dict(self,
-                            user_id: int) -> Dict[str, str]:
+    async def get_user_dict(self, user_id: int) -> Dict[str, str]:
         """
         This will return user `Dict` which contains
         `fname`, `lname`, `flname` and `uname`.
@@ -54,9 +52,9 @@ class Userge(Client, Base):
 
         user_obj = await self.get_users(user_id)
 
-        fname = user_obj.first_name or ''
-        lname = user_obj.last_name or ''
-        username = user_obj.username or ''
+        fname = user_obj.first_name.strip() or ''
+        lname = user_obj.last_name.strip() or ''
+        username = user_obj.username.strip() or ''
 
         if fname and lname:
             full_name = fname + ' ' + lname
@@ -165,7 +163,7 @@ class Userge(Client, Base):
         if found:
             match = re.match(r"([\w_]+)", command)
             cname = match.groups()[0] if match else ''
-            pattern = f"\\{trigger}{command}"
+            pattern = f"^\\{trigger}{command}"
 
         else:
             cname = command
@@ -203,8 +201,7 @@ class Userge(Client, Base):
                                       filters=Filters.left_chat_member & leaving_chats,
                                       group=group)
 
-    def get_help(self,
-                 key: str = '') -> Tuple[Union[str, List[str]], bool]:
+    def get_help(self, key: str = '') -> Tuple[Union[str, List[str]], bool]:
         """
         This will return help string for specific key
         or all modules or commands as `List`.
@@ -213,7 +210,7 @@ class Userge(Client, Base):
         if not key:
             return list(self.__HELP_DICT), True  # module names
 
-        if not key.startswith('.') and key in self.__HELP_DICT:
+        if not key.startswith('.') and key in self.__HELP_DICT and len(self.__HELP_DICT[key]) > 1:
             return list(self.__HELP_DICT[key]), False  # all commands for that module
 
         dict_ = {x: y for _, i in self.__HELP_DICT.items() for x, y in i.items()}
@@ -248,6 +245,7 @@ class Userge(Client, Base):
                           **kwargs) -> Callable[[PYROFUNC], PYROFUNC]:
 
         def __decorator(func: PYROFUNC) -> PYROFUNC:
+
             async def __template(_: Client,
                                  message: Message) -> None:
                 await func(Message(self, message, **kwargs))
@@ -264,29 +262,20 @@ class Userge(Client, Base):
 
         return __decorator
 
-    async def load_plugin(self,
-                          name: str) -> None:
+    def load_plugin(self, name: str) -> None:
         """
         Load plugin to Userge.
         """
 
-        name = self.__PLUGINS_PATH.format(name)
         self._LOG.info(
             self._MAIN_STRING.format(f"Importing {name}"))
 
-        try:
-            imported_ = importlib.import_module(name)
+        self.__IMPORTED.append(
+            importlib.import_module(self.__PLUGINS_PATH.format(name)))
 
-        except ImportError as i_e:
-            self._LOG.error(i_e)
-            raise
-
-        else:
-            self.__IMPORTED.append(imported_)
-
-            self._LOG.info(
-                self._MAIN_STRING.format(
-                    f"Imported {imported_.__name__} Plugin Successfully"))
+        self._LOG.info(
+            self._MAIN_STRING.format(
+                f"Imported {self.__IMPORTED[-1].__name__} Plugin Successfully"))
 
     def load_plugins(self) -> None:
         """
@@ -295,26 +284,21 @@ class Userge(Client, Base):
 
         self.__HELP_DICT.clear()
         self.__IMPORTED.clear()
-        imported: List[str] = []
 
         self._LOG.info(
             self._MAIN_STRING.format("Importing All Plugins"))
 
         for name in get_all_plugins():
             try:
-                imported_ = importlib.import_module(
-                    self.__PLUGINS_PATH.format(name))
+                self.load_plugin(name)
 
             except ImportError as i_e:
                 self._LOG.error(i_e)
 
-            else:
-                self.__IMPORTED.append(imported_)
-                imported.append(imported_.__name__)
-
         self._LOG.info(
             self._MAIN_STRING.format(
-                f"Imported ({len(imported)}) Plugins => {imported}"))
+                f"Imported ({len(self.__IMPORTED)}) Plugins => " + \
+                str([i.__name__ for i in self.__IMPORTED])))
 
     async def reload_plugins(self) -> int:
         """
@@ -337,9 +321,25 @@ class Userge(Client, Base):
                 reloaded.append(reloaded_.__name__)
 
         self._LOG.info(
-            self._MAIN_STRING.format(f"Reloaded These Plugins => {reloaded}"))
+            self._MAIN_STRING.format(
+                f"Reloaded {len(reloaded)} Plugins => {reloaded}"))
 
         return len(reloaded)
+
+    async def restart(self) -> None:
+        """
+        Restart the Userge.
+        """
+
+        self._LOG.info(
+            self._MAIN_STRING.format("Restarting Userge"))
+
+        await self.stop()
+        await self.reload_plugins()
+        await self.start()
+
+        self._LOG.info(
+            self._MAIN_STRING.format("Restarted Userge"))
 
     def begin(self) -> None:
         """
@@ -350,7 +350,6 @@ class Userge(Client, Base):
             self._MAIN_STRING.format("Starting Userge"))
 
         self._NST_ASYNC.apply()
-
         self.run()
 
         self._LOG.info(

@@ -21,7 +21,7 @@ async def load_cmd_handler(message: Message):
             plugin = get_import_path(ROOT, path)
 
             try:
-                await userge.load_plugin(plugin)
+                userge.load_plugin(plugin)
 
             except Exception as e:
                 os.remove(path)
@@ -40,5 +40,4 @@ async def load_cmd_handler(message: Message):
 @userge.on_cmd('reload', about="__Reload all plugins__")
 async def reload_cmd_handler(message: Message):
     await message.edit("`Reloading All Plugins`")
-    reloaded = await userge.reload_plugins()
-    await message.edit(f"`Reloaded {reloaded} Plugins`", del_in=3)
+    await message.edit(f"`Reloaded {await userge.reload_plugins()} Plugins`", del_in=3)
