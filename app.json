@@ -1,0 +1,52 @@
+{
+    "name": "Userge",
+    "description": "userbot.",
+    "keywords": [
+        "telegram",
+        "userbot"
+    ],
+    "repository": "https://github.com/uaudith/Userge",
+    "env": {
+        "APP_ID": {
+            "description": "Get this value from https://my.telegram.org",
+            "value": ""
+        },
+        "API_HASH": {
+            "description": "Get this value from https://my.telegram.org",
+            "value": ""
+        },
+        "HU_STRING_SESSION": {
+            "description": "Get it by running `bash genStr` command",
+            "value": ""
+        },
+        "DATABASE_URL": {
+            "description": "Mongodb url from https://cloud.mongodb.com/",
+            "value": ""
+        },
+        "PREFERRED_LANGUAGE": {
+            "description": "Your Languge ( ex: if english => 'en' )",
+            "value": "",
+            "required": false
+        },
+        "SCREENSHOT_API": {
+            "description": "api key from 'https://screenshotlayer.com'",
+            "value": "4",
+            "required": false
+        }
+    },
+    "addons": [
+    ],
+    "buildpacks": [
+        {
+            "url": "https://github.com/jonathanong/heroku-buildpack-ffmpeg-latest.git"
+        }, {
+            "url": "heroku/python"
+        }
+    ],
+    "formation": {
+        "worker": {
+            "quantity": 1,
+            "size": "free"
+        }
+    }
+}
