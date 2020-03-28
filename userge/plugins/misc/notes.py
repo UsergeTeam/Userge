@@ -45,7 +45,8 @@ __Gets a note by name__
 
 **Usage:**
 
-    `#[notname]`""",
+    `#[notename]`""",
+               name="note",
                trigger='#',
                only_me=False)
 async def note(message: Message):

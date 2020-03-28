@@ -131,6 +131,7 @@ class Userge(Client, Base):
                command: str,
                about: str,
                group: int = 0,
+               name: str = '',
                trigger: str = '.',
                only_me: bool = True,
                **kwargs) -> Callable[[PYROFUNC], PYROFUNC]:
@@ -147,6 +148,8 @@ class Userge(Client, Base):
                 help string for command.
             group (``int``, *optional*):
                 The group identifier, defaults to 0.
+            name (``str``, *optional*):
+                name for command.
             trigger (``str``, *optional*):
                 trigger to start command, defaults to '.'.
             only_me (``bool``, *optional*):
@@ -158,16 +161,17 @@ class Userge(Client, Base):
                     If ``True``, flags returns without prefix,  defaults to False.
         """
 
-        found = [i for i in '()[]+*.\\|?:' if i in command]
+        pattern = f"^\\{trigger}{command.lstrip('^')}" if trigger else f"^{command.lstrip('^')}"
 
-        if found:
-            match = re.match(r"([\w_]+)", command)
+        if [i for i in '^()[]+*.\\|?:$' if i in command]:
+            match = re.match("(\\w[\\w_]*)", command)
             cname = match.groups()[0] if match else ''
-            pattern = f"^\\{trigger}{command}"
+            cname = name or cname
+            cname = trigger + cname if cname else ''
 
         else:
-            cname = command
-            pattern = f"^\\{trigger}{command}(?:\\s([\\S\\s]+))?$"
+            cname = trigger + command
+            pattern += r"(?:\s([\S\s]+))?$"
 
         kwargs.update({'cname': cname, 'chelp': about})
 
@@ -203,28 +207,35 @@ class Userge(Client, Base):
 
     def get_help(self,
                  key: str = '',
-                 all_cmds: bool = False) -> Tuple[Union[str, List[str]], bool]:
+                 all_cmds: bool = False) -> Tuple[Union[str, List[str]], Union[bool, str]]:
         """
         This will return help string for specific key
         or all modules or commands as `List`.
         """
 
         if not key and not all_cmds:
-            return sorted(list(self.__HELP_DICT)), True  # module names
+            return sorted(list(self.__HELP_DICT)), True         # names of all modules
 
-        if not key.startswith('.') and key in self.__HELP_DICT and len(self.__HELP_DICT[key]) > 1:
-            return sorted(list(self.__HELP_DICT[key])), False  # all commands for that module
+        if not key.startswith('.') and key in self.__HELP_DICT and \
+            (len(self.__HELP_DICT[key]) > 1 or list(self.__HELP_DICT[key])[0] != key):
+            return sorted(list(self.__HELP_DICT[key])), False   # all commands for that module
 
         dict_ = {x: y for _, i in self.__HELP_DICT.items() for x, y in i.items()}
 
         if all_cmds:
-            return sorted(list(dict_)), False  # all command for .s
+            return sorted(list(dict_)), False                   # all commands for .s
 
-        if key.lstrip('.') in dict_:
-            return dict_[key.lstrip('.')], False  # help text for that command
+        key = key.lstrip('.')
+        key_ = '.' + key
+
+        if key in dict_:
+            return dict_[key], key      # help text and command for given command
+
+        elif key_ in dict_:
+            return dict_[key_], key_    # help text and command for modified command
 
         else:
-            return '', False  # unknown
+            return '', False            # if unknown
 
     def __add_help(self,
                    module: str,
@@ -256,8 +267,8 @@ class Userge(Client, Base):
                 await func(Message(self, message, **kwargs))
 
             self._LOG.info(
-                self._SUB_STRING.format(
-                    f"Loading => [ async def {func.__name__}(message) ] from {func.__module__} `{log}`"))
+                self._SUB_STRING.format(f"Loading => [ async def {func.__name__}(message) ] " + \
+                                        f"from {func.__module__} `{log}`"))
 
             self.__add_help(func.__module__, **kwargs)
 

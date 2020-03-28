@@ -138,7 +138,10 @@ FACEREACTS = (
 )
 
 
-@userge.on_cmd("shg", about="__shrugger__")
+@userge.on_cmd("[Ss]hg",
+               about="__shrugger__",
+               name="shg",
+               trigger='')
 async def shg_(message: Message):
 
     await message.edit("¯¯\\__(ツ)__/¯¯", parse_mode='html')
@@ -150,7 +153,10 @@ async def react_(message: Message):
     await message.edit(random.choice(FACEREACTS), parse_mode='html')
 
 
-@userge.on_cmd("kek", about="__:/__")
+@userge.on_cmd("[Kk]ek",
+               about="__:/__",
+               name="kek",
+               trigger='')
 async def kek_(message: Message):
     uio = ["/", "\\"]
     for i in range(1, 15):
@@ -159,7 +165,10 @@ async def kek_(message: Message):
         await message.edit(":" + uio[i % 2])
 
 
-@userge.on_cmd("lol", about="__-_-__")
+@userge.on_cmd("[Ll]ol",
+               about="__-_-__",
+               name="lol",
+               trigger='')
 async def lol_(message: Message):
     okay = r"-_ "
     for _ in range(10):
@@ -168,9 +177,12 @@ async def lol_(message: Message):
         await message.edit(okay, parse_mode='html')
 
 
-@userge.on_cmd("oof", about="__`oof`s more dramatic__")
+@userge.on_cmd("[Oo]of",
+               about="__`oof`s more dramatic__",
+               name="oof",
+               trigger='')
 async def oof_(message: Message):
-    t = "o "
+    t = "oo "
     for _ in range(10):
         t = t[:-1] + "of"
 
@@ -191,11 +203,15 @@ async def clap_(message: Message):
     await message.edit(f"👏 {re.sub(r' +', ' 👏 ', text)} 👏")
 
 
-@userge.on_cmd("owo", about="""\
+@userge.on_cmd("[Oo]wo",
+               about="""\
 __UwU's you OwO__
 
 **Usage:**
-    `.owo [text | reply to msg]`""")
+
+    `owo [text | reply to msg]`""",
+               name="owo",
+               trigger='')
 async def faces_(message: Message):
     text = message.input_str
     if message.reply_to_message:
