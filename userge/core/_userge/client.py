@@ -201,19 +201,24 @@ class Userge(Client, Base):
                                       filters=Filters.left_chat_member & leaving_chats,
                                       group=group)
 
-    def get_help(self, key: str = '') -> Tuple[Union[str, List[str]], bool]:
+    def get_help(self,
+                 key: str = '',
+                 all_cmds: bool = False) -> Tuple[Union[str, List[str]], bool]:
         """
         This will return help string for specific key
         or all modules or commands as `List`.
         """
 
-        if not key:
-            return list(self.__HELP_DICT), True  # module names
+        if not key and not all_cmds:
+            return sorted(list(self.__HELP_DICT)), True  # module names
 
         if not key.startswith('.') and key in self.__HELP_DICT and len(self.__HELP_DICT[key]) > 1:
-            return list(self.__HELP_DICT[key]), False  # all commands for that module
+            return sorted(list(self.__HELP_DICT[key])), False  # all commands for that module
 
         dict_ = {x: y for _, i in self.__HELP_DICT.items() for x, y in i.items()}
+
+        if all_cmds:
+            return sorted(list(dict_)), False  # all command for .s
 
         if key.lstrip('.') in dict_:
             return dict_[key.lstrip('.')], False  # help text for that command
@@ -282,7 +287,6 @@ class Userge(Client, Base):
         Load all Plugins.
         """
 
-        self.__HELP_DICT.clear()
         self.__IMPORTED.clear()
 
         self._LOG.info(
@@ -305,6 +309,7 @@ class Userge(Client, Base):
         Reload all Plugins.
         """
 
+        self.__HELP_DICT.clear()
         reloaded: List[str] = []
 
         self._LOG.info(

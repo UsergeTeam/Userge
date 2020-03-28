@@ -15,7 +15,11 @@ __download files to server__
 
 **Usage:**
 
-    `.download [url | reply to telegram media]`""")
+    `.download [url | reply to telegram media]`
+
+**Example:**
+
+    `.download https://speed.hetzner.de/100MB.bin | testing upload.bin`""")
 async def down_load_media(message: Message):
     await message.edit("Trying to Download...")
     if message.reply_to_message is not None:

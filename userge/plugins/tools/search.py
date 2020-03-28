@@ -9,7 +9,7 @@ async def search(message: Message):
         await message.err(text="Enter any keyword to search in commands")
         return
 
-    found = '\n.'.join([i for i in sorted(userge.get_help()) \
+    found = '\n.'.join([i for i in userge.get_help(all_cmds=True)[0] \
         if cmd.lstrip('.') in i])
 
     if found:

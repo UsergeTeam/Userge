@@ -1,7 +1,7 @@
+import os
 from userge import userge, Message
 from userge.utils import get_import_path
 from userge.plugins import ROOT
-import os
 
 
 @userge.on_cmd('load', about="""\
@@ -23,9 +23,9 @@ async def load_cmd_handler(message: Message):
             try:
                 userge.load_plugin(plugin)
 
-            except Exception as e:
+            except ImportError as i_e:
                 os.remove(path)
-                await message.err(e)
+                await message.err(i_e)
 
             else:
                 await message.edit(f"`Loaded {plugin}`", del_in=3)

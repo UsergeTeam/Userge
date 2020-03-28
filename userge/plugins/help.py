@@ -21,7 +21,7 @@ async def helpme(message: Message):
 
 **Available Modules:**\n\n"""
 
-        for i in sorted(out):
+        for i in out:
             out_str += f"    `{i}`\n"
 
     elif isinstance(out, list) and not is_mdl:
@@ -33,7 +33,7 @@ async def helpme(message: Message):
 
 **Available Commands Under `{cmd}` Module:**\n\n"""
 
-        for i in sorted(out):
+        for i in out:
             out_str += f"    `.{i}`\n"
 
     await message.edit(text=out_str, del_in=15)
