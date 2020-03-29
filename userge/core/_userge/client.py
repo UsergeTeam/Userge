@@ -7,12 +7,10 @@ from typing import (
 from pyrogram import (
     Client, Filters, MessageHandler, InlineKeyboardMarkup,
     ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply)
-from userge.utils import Config, logging
+from userge.utils import Config
 from userge.plugins import get_all_plugins
 from .base import Base
 from .message import Message
-
-logging.getLogger("pyrogram").setLevel(logging.WARNING)
 
 PYROFUNC = Callable[[Message], Any]
 
@@ -33,16 +31,6 @@ class Userge(Client, Base):
         super().__init__(Config.HU_STRING_SESSION,
                          api_id=Config.API_ID,
                          api_hash=Config.API_HASH)
-
-    def getLogger(self, name: str) -> logging.Logger:
-        """
-        This will return new logger object.
-        """
-
-        self._LOG.info(
-            self._SUB_STRING.format(f"Creating Logger => {name}"))
-
-        return logging.getLogger(name)
 
     async def get_user_dict(self, user_id: int) -> Dict[str, str]:
         """

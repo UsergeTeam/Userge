@@ -43,10 +43,10 @@ Sponsor: `{result['server']['sponsor']}`
 Latency: `{result['server']['latency']}`
 
 Ping: `{result['ping']}`
-Sent: `{await humanbytes(result['bytes_sent'])}`
-Received: `{await humanbytes(result['bytes_received'])}`
-Download: `{await humanbytes(result['download'])}/s`
-Upload: `{await humanbytes(result['upload'])}/s`**"""
+Sent: `{humanbytes(result['bytes_sent'])}`
+Received: `{humanbytes(result['bytes_received'])}`
+Download: `{humanbytes(result['download'])}/s`
+Upload: `{humanbytes(result['upload'])}/s`**"""
 
     await userge.send_photo(chat_id=message.chat.id,
                             photo=path,

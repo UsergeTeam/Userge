@@ -75,7 +75,7 @@ async def doc_upload(chat_id, path):
 
     if message.message_id in CANCEL_LIST:
         CANCEL_LIST.remove(message.message_id)
-        await message.edit(f"`Process Canceled!`", del_in=5)
+        await message.edit("`Process Canceled!`", del_in=5)
 
     else:
         end_t = datetime.now()
@@ -111,7 +111,7 @@ async def vid_upload(chat_id, path):
 
     if message.message_id in CANCEL_LIST:
         CANCEL_LIST.remove(message.message_id)
-        await message.edit(f"`Process Canceled!`", del_in=5)
+        await message.edit("`Process Canceled!`", del_in=5)
 
     else:
         end_t = datetime.now()

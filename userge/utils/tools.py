@@ -7,7 +7,7 @@ from .logger import logging
 LOG = logging.getLogger(__name__)
 
 
-async def humanbytes(size: int) -> str:
+def humanbytes(size: int) -> str:
     if not size:
         return ""
     power = 1024
@@ -19,7 +19,7 @@ async def humanbytes(size: int) -> str:
     return "{:.2f} {}B".format(size, Dic_powerN[n])
 
 
-async def time_formatter(seconds: int) -> str:
+def time_formatter(seconds: int) -> str:
     minutes, seconds = divmod(seconds, 60)
     hours, minutes = divmod(minutes, 60)
     days, hours = divmod(hours, 24)
