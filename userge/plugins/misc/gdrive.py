@@ -22,7 +22,7 @@ from userge.utils import humanbytes, time_formatter, CANCEL_LIST
 
 class ProcessCanceled(Exception):
     """
-    Custom Exception to terminate uploading/downloading/coping thread.
+    Custom Exception to terminate uploading / downloading or copying thread.
     """
 
 
@@ -89,7 +89,7 @@ class DBase:
 
 class GDrive(DBase):
     """
-    GDrive Class For Setup, Search, Upload, Download, Copy, Delete, Empty, ...
+    GDrive Class For Search, Upload, Download, Copy, Move, Delete, EmptyTrash, ...
     """
 
     AUTH_FLOW = None
@@ -538,7 +538,7 @@ class GDrive(DBase):
         percentage = (self.__completed / self.__list) * 100
 
         tmp = \
-            "__Coping Files In GDrive...__\n" + \
+            "__Copying Files In GDrive...__\n" + \
             "```[{}{}]({}%)```\n" + \
             "**Completed** : `{}/{}`"
 
@@ -754,7 +754,7 @@ class GDrive(DBase):
         """
 
         if self._auth_flow is None:
-            await self.__message.edit("Please run `.gset` first", del_in=5)
+            await self.__message.edit("Please run `.gsetup` first", del_in=5)
             return
 
         await self.__message.edit("Checking Auth Code...")
@@ -824,7 +824,7 @@ class GDrive(DBase):
                     out, caption=f"search results for `{self.__message.filtered_input_str}`")
 
         else:
-            await self.__message.edit("Please run `.gset` first", del_in=5)
+            await self.__message.edit("Please run `.gsetup` first", del_in=5)
 
     async def list_folder(self) -> None:
         """
@@ -834,7 +834,7 @@ class GDrive(DBase):
         file_id, file_type = self.__get_file_id(filter_str=True)
 
         if not file_id and not self._parent_id:
-            await self.__message.edit("First set parent path by `.gsetpid`", del_in=5)
+            await self.__message.edit("First set parent path by `.gset`", del_in=5)
             return
 
         if file_id and file_type != "folder":
@@ -861,7 +861,7 @@ class GDrive(DBase):
                     out, caption=f"list results for `{file_id}`")
 
         else:
-            await self.__message.edit("Please run `.gset` first", del_in=5)
+            await self.__message.edit("Please run `.gsetup` first", del_in=5)
 
     async def upload(self) -> None:
         """
@@ -908,7 +908,7 @@ class GDrive(DBase):
             await self.__message.edit(out, disable_web_page_preview=True)
 
         else:
-            await self.__message.edit("Please run `.gset` first", del_in=5)
+            await self.__message.edit("Please run `.gsetup` first", del_in=5)
 
     async def download(self) -> None:
         """
@@ -951,7 +951,7 @@ class GDrive(DBase):
             await self.__message.edit(out, disable_web_page_preview=True)
 
         else:
-            await self.__message.edit("Please run `.gset` first", del_in=5)
+            await self.__message.edit("Please run `.gsetup` first", del_in=5)
 
     async def copy(self) -> None:
         """
@@ -959,7 +959,7 @@ class GDrive(DBase):
         """
 
         if not self._parent_id:
-            await self.__message.edit("First set parent path by `.gsetpid`", del_in=5)
+            await self.__message.edit("First set parent path by `.gset`", del_in=5)
             return
 
         if self._creds:
@@ -998,7 +998,7 @@ class GDrive(DBase):
             await self.__message.edit(out, disable_web_page_preview=True)
 
         else:
-            await self.__message.edit("Please run `.gset` first", del_in=5)
+            await self.__message.edit("Please run `.gsetup` first", del_in=5)
 
     async def move(self) -> None:
         """
@@ -1006,7 +1006,7 @@ class GDrive(DBase):
         """
 
         if not self._parent_id:
-            await self.__message.edit("First set parent path by `.gsetpid`", del_in=5)
+            await self.__message.edit("First set parent path by `.gset`", del_in=5)
             return
 
         if self._creds:
@@ -1025,7 +1025,7 @@ class GDrive(DBase):
                     f"`{file_id}` **Moved Successfully**\n\n{link}")
 
         else:
-            await self.__message.edit("Please run `.gset` first", del_in=5)
+            await self.__message.edit("Please run `.gsetup` first", del_in=5)
 
     async def delete(self) -> None:
         """
@@ -1048,7 +1048,7 @@ class GDrive(DBase):
                     f"`{file_id}` **Deleted Successfully**", del_in=5)
 
         else:
-            await self.__message.edit("Please run `.gset` first", del_in=5)
+            await self.__message.edit("Please run `.gsetup` first", del_in=5)
 
     async def empty(self) -> None:
         """
@@ -1067,7 +1067,7 @@ class GDrive(DBase):
                 await self.__message.edit("`Empty the Trash Successfully`", del_in=5)
 
         else:
-            await self.__message.edit("Please run `.gset` first", del_in=5)
+            await self.__message.edit("Please run `.gsetup` first", del_in=5)
 
     async def get(self) -> None:
         """
@@ -1095,7 +1095,7 @@ class GDrive(DBase):
                     meta_data, caption=f"metadata for `{file_id}`")
 
         else:
-            await self.__message.edit("Please run `.gset` first", del_in=5)
+            await self.__message.edit("Please run `.gsetup` first", del_in=5)
 
     async def get_perms(self) -> None:
         """
@@ -1123,7 +1123,7 @@ class GDrive(DBase):
                     out, caption=f"view perm results for `{file_id}`")
 
         else:
-            await self.__message.edit("Please run `.gset` first", del_in=5)
+            await self.__message.edit("Please run `.gsetup` first", del_in=5)
 
     async def set_perms(self) -> None:
         """
@@ -1146,7 +1146,7 @@ class GDrive(DBase):
                 await self.__message.edit(out, disable_web_page_preview=True)
 
         else:
-            await self.__message.edit("Please run `.gset` first", del_in=5)
+            await self.__message.edit("Please run `.gsetup` first", del_in=5)
 
     async def del_perms(self) -> None:
         """
@@ -1175,7 +1175,7 @@ class GDrive(DBase):
                     out, caption=f"removed perm results for `{file_id}`")
 
         else:
-            await self.__message.edit("Please run `.gset` first", del_in=5)
+            await self.__message.edit("Please run `.gsetup` first", del_in=5)
 
 
 @userge.on_cmd("gsetup", about="__Setup GDrive Creds__")
@@ -1212,7 +1212,8 @@ __Set parent id__
     `.gset [drive folder link]`
 
     **drive folder link should be like this!**
-    ```https://drive.google.com/drive/folders/{file_id}```""")
+    ```https://drive.google.com/drive/folders/{file_id}```
+    ```https://drive.google.com/drive/folderview?id={file_id}```""")
 async def gset_(message: Message):
     """gset"""
     await GDrive(message).set_parent()
@@ -1252,7 +1253,8 @@ __List files in GDrive Folder or Root__
     `.gls -l10 [drive folder link]` (add limit)
 
     **drive folder link should be like this!**
-    ```https://drive.google.com/drive/folders/{file_id}```""")
+    ```https://drive.google.com/drive/folders/{file_id}```
+    ```https://drive.google.com/drive/folderview?id={file_id}```""")
 async def gls_(message: Message):
     """gls"""
     await GDrive(message).list_folder()
@@ -1262,7 +1264,7 @@ async def gls_(message: Message):
 __Upload files to GDrive__
 
     set destination by setting parent_id,
-    use `.gsetpid` to set parent_id (root path).
+    use `.gset` to set parent_id (root path).
 
 **Usage:**
 
@@ -1287,7 +1289,7 @@ async def gdown_(message: Message):
 __Copy files in GDrive__
 
     set destination by setting parent_id,
-    use `.gsetpid` to set parent_id (root path).
+    use `.gset` to set parent_id (root path).
 
 **Usage:**
 
@@ -1301,7 +1303,7 @@ async def gcopy_(message: Message):
 __Move files in GDrive__
 
     set destination by setting parent_id,
-    use `.gsetpid` to set parent_id (root path).
+    use `.gset` to set parent_id (root path).
 
 **Usage:**
 
