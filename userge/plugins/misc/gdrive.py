@@ -36,7 +36,7 @@ class DBase:
     _LOG = userge.getLogger(__name__)
     __GDRIVE_COLLECTION = get_collection("gdrive")
 
-    def __init__(self, id_: str):
+    def __init__(self, id_: str) -> None:
         self.__id = id_
         self._LOG.info("Setting GDrive DBase...")
         self.__load_creds()
@@ -121,13 +121,13 @@ class GDrive(DBase):
     def _auth_flow(self, flow: object) -> None:
         self.__class__.AUTH_FLOW = flow
 
-    def _set_auth_flow(self):
+    def _set_auth_flow(self) -> None:
         self._auth_flow = OAuth2WebServerFlow(Config.G_DRIVE_CLIENT_ID,
                                               Config.G_DRIVE_CLIENT_SECRET,
                                               self.__OAUTH_SCOPE,
                                               redirect_uri=self.__REDIRECT_URI)
 
-    def _reset_auth_flow(self):
+    def _reset_auth_flow(self) -> None:
         self._auth_flow = None
 
     @property

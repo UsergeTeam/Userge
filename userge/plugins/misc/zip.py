@@ -27,7 +27,7 @@ class Zip:
 
     __COUNTER_LOCK = Lock()
 
-    def __init__(self, file_path: str):
+    def __init__(self, file_path: str) -> None:
         self.__file_path = file_path
         self.__final_file_path = ""
         self.__current = 0
@@ -149,7 +149,7 @@ class Zip:
             raise ProcessCanceled
 
     @staticmethod
-    def _unzip(file_path: str, file_names: list, final_file_path: str):
+    def _unzip(file_path: str, file_names: list, final_file_path: str) -> tuple:
         error = ""
 
         with ZipFile(file_path, 'r') as z_f:
@@ -173,7 +173,7 @@ class Zip:
 
         file_paths = []
 
-        def explorer(path: Path):
+        def explorer(path: Path) -> None:
             if path.is_file():
                 self.__total += 1
                 file_paths.append(str(path))
@@ -227,7 +227,7 @@ class Zip:
 
         pool.close()
 
-    def get_info(self):
+    def get_info(self) -> list:
         """
         Returns ZIP info.
         """
@@ -292,11 +292,11 @@ async def zip_(message: Message):
 
 
 @userge.on_cmd('unzip', about="""\
-__UnZip file / folder__
+__UnZip zip file__
 
 **Usage:**
 
-    `.unzip [file path]`""")
+    `.unzip [zip file path]`""")
 async def unzip_(message: Message):
     """unzip"""
 

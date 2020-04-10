@@ -1,5 +1,7 @@
 from userge import userge, Message
 
+CHANNEL = userge.getCLogger(__name__)
+
 
 @userge.on_cmd("promote", about="""\
 __use this to promote group members__
@@ -23,7 +25,8 @@ async def promote_usr(message: Message):
     get_chat = await userge.get_chat_member(message.chat.id, message.from_user.id)
     promote_perm = get_chat.can_promote_members
 
-    await message.edit("`Trying to Promote User.. Hang on!`")
+    await message.edit("`Trying to Promote User.. Hang on!`", log=True)
+    #await CHANNEL.log("`Trying to Promote User.. Hang on!`")
 
     if promote_perm:
 
@@ -56,6 +59,8 @@ async def promote_usr(message: Message):
         await message.edit(
             text="`I don't have proper admin permission to do that ⚠`")
 
+    await CHANNEL.fwd_msg(message)
+
 @userge.on_cmd("demote", about="""\
 __use this to demote group members__
 
@@ -79,6 +84,7 @@ async def demote_usr(message: Message):
     demote_perm = get_chat.can_promote_members
 
     await message.edit("`Trying to Demote User.. Hang on!`")
+    await CHANNEL.log("`Trying to Demote User.. Hang on!`")
 
     if demote_perm:
 
@@ -120,3 +126,5 @@ async def demote_usr(message: Message):
     else:
         await message.edit(
             text="`I don't have proper admin permission to do that ⚠`")
+
+    await CHANNEL.fwd_msg(message)

@@ -44,6 +44,8 @@ class Config:
 
     G_DRIVE_IS_TD = bool(os.environ.get("G_DRIVE_IS_TD", False))
 
+    LOG_CHANNEL_ID = int(os.environ.get("LOG_CHANNEL_ID", 0))
+
 
 if not os.path.isdir(Config.DOWN_PATH):
     os.makedirs(Config.DOWN_PATH)

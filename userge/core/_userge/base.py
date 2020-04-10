@@ -1,63 +1,40 @@
-import asyncio
-from typing import Dict, Callable
-from concurrent.futures import ThreadPoolExecutor
-from pyrogram import Message
-import nest_asyncio
-from userge.utils import logging
+from pyrogram import Client
 
 
-class Base:
+class Base(Client):
     """
-    Base Class for Client and Message.
+    Base Class for Userge.
     """
 
-    _MAIN_STRING = "<<<!  #####  ___{}___  #####  !>>>"
-    _SUB_STRING = "<<<!  {}  !>>>"
-    _LOG = logging.getLogger(__name__)
-    _NST_ASYNC = nest_asyncio
+    def getLogger(self, *args, **kwargs):
+        pass
 
-    def getLogger(self, name: str) -> logging.Logger:
-        """
-        This will return new logger object.
-        """
+    def getCLogger(self, *args, **kwargs):
+        pass
 
-        self._LOG.info(
-            self._SUB_STRING.format(f"Creating Logger => {name}"))
+    def new_thread(self, *args, **kwargs):
+        pass
 
-        return logging.getLogger(name)
+    async def get_user_dict(self, *args, **kwargs):
+        pass
 
-    def _msg_to_dict(self,
-                     message: Message) -> Dict[str, object]:
-        """
-        Convert message obj to dict.
-        """
+    def on_cmd(self, *args, **kwargs):
+        pass
 
-        kwargs_ = vars(message)
-        del message
+    def on_new_member(self, *args, **kwargs):
+        pass
 
-        del kwargs_['_client']
+    def on_left_member(self, *args, **kwargs):
+        pass
 
-        if '_Message__filtered_input_str' in kwargs_:
-            del kwargs_['_Message__filtered_input_str']
+    def get_help(self, *args, **kwargs):
+        pass
 
-        if '_Message__flags' in kwargs_:
-            del kwargs_['_Message__flags']
+    def load_plugin(self, *args, **kwargs):
+        pass
 
-        if '_Message__kwargs' in kwargs_:
-            del kwargs_['_Message__kwargs']
+    async def reload_plugins(self, *args, **kwargs):
+        pass
 
-        return kwargs_
-
-    def new_thread(self, func: Callable) -> Callable:
-        """
-        Run funcion in new thread.
-        """
-
-        async def thread(*args, **kwargs):
-            loop = asyncio.get_event_loop()
-
-            with ThreadPoolExecutor() as pool:
-                return await loop.run_in_executor(pool, func,
-                                                  *args, **kwargs)
-
-        return thread
+    def begin(self, *args, **kwargs):
+        pass
