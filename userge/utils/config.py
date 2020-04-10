@@ -35,3 +35,17 @@ class Config:
     DOWN_PATH = "./downloads/"
 
     SCREENSHOT_API = os.environ.get("SCREENSHOT_API", None)
+
+    G_DRIVE_CLIENT_ID = os.environ.get("G_DRIVE_CLIENT_ID", None)
+
+    G_DRIVE_CLIENT_SECRET = os.environ.get("G_DRIVE_CLIENT_SECRET", None)
+
+    G_DRIVE_PARENT_ID = os.environ.get("G_DRIVE_PARENT_ID", None)
+
+    G_DRIVE_IS_TD = bool(os.environ.get("G_DRIVE_IS_TD", False))
+
+    LOG_CHANNEL_ID = int(os.environ.get("LOG_CHANNEL_ID", 0))
+
+
+if not os.path.isdir(Config.DOWN_PATH):
+    os.makedirs(Config.DOWN_PATH)

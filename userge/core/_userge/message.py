@@ -3,27 +3,32 @@ import os
 import asyncio
 from typing import Dict, Union, Optional, Sequence
 
-from pyrogram import Client, Message as Msg, InlineKeyboardMarkup
+from pyrogram import Message as Msg, InlineKeyboardMarkup
 from pyrogram.errors.exceptions import MessageAuthorRequired
+
+from userge.utils import logging
 from .base import Base
 
 
-class Message(Msg, Base):
+class Message(Msg):
     """
     Moded Message Class For Userge
     """
 
+    __LOG = logging.getLogger(__name__)
+    __LOG_STR = "<<<!  [[[[[  ___{}___  ]]]]]  !>>>"
     __ERROR_MSG_DELETE_TIMEOUT = 5
     __ERROR_STRING = "**ERROR**: `{}`"
 
     def __init__(self,
-                 client: Client,
+                 client: Base,
                  message: Msg,
                  **kwargs) -> None:
 
         super().__init__(client=client,
-                         **self._msg_to_dict(message))
+                         **self.__msg_to_dict(message))
 
+        self.__channel = client.getCLogger(__name__)
         self.__filtered = False
         self.__filtered_input_str: str = ''
         self.__flags: Dict[str, str] = {}
@@ -40,8 +45,7 @@ class Message(Msg, Base):
         if ' ' in input_:
             return str(input_.split(maxsplit=1)[1].strip())
 
-        else:
-            return ''
+        return ''
 
     @property
     def filtered_input_str(self) -> str:
@@ -63,6 +67,33 @@ class Message(Msg, Base):
 
         return self.__flags
 
+    def __msg_to_dict(self, message: Msg) -> Dict[str, object]:
+
+        self.__LOG.info(
+            self.__LOG_STR.format("Creating moded message object"))
+
+        kwargs_ = vars(message)
+        del message
+
+        del kwargs_['_client']
+
+        if '_Message__channel' in kwargs_:
+            del kwargs_['_Message__channel']
+
+        if '_Message__filtered' in kwargs_:
+            del kwargs_['_Message__filtered']
+
+        if '_Message__filtered_input_str' in kwargs_:
+            del kwargs_['_Message__filtered_input_str']
+
+        if '_Message__flags' in kwargs_:
+            del kwargs_['_Message__flags']
+
+        if '_Message__kwargs' in kwargs_:
+            del kwargs_['_Message__kwargs']
+
+        return kwargs_
+
     def __filter(self) -> None:
 
         if not self.__filtered:
@@ -83,8 +114,8 @@ class Message(Msg, Base):
 
             self.__filtered_input_str = self.__filtered_input_str.strip()
 
-            self._LOG.info(
-                self._SUB_STRING.format(
+            self.__LOG.info(
+                self.__LOG_STR.format(
                     f"Filtered Input String => [ {self.__filtered_input_str}, {self.__flags} ]"))
 
             self.__filtered = True
@@ -93,6 +124,7 @@ class Message(Msg, Base):
                            text: str,
                            filename: str = "output.txt",
                            caption: str = '',
+                           log: bool = False,
                            delete_message: bool = True) -> Msg:
         """
         You can send large outputs as file
@@ -107,6 +139,8 @@ class Message(Msg, Base):
                 file_name for output file.
             caption (``str``, *optional*):
                 caption for output file.
+            log (``bool``, *optional*):
+                If ``True``, the message will be log to the log channel.
             delete_message (``bool``, *optional*):
                 If ``True``, the message will be deleted after sending the file.
         Returns:
@@ -119,8 +153,8 @@ class Message(Msg, Base):
         reply_to_id = self.reply_to_message.message_id if self.reply_to_message \
             else self.message_id
 
-        self._LOG.info(
-            self._SUB_STRING.format(f"Uploading {filename} To Telegram"))
+        self.__LOG.info(
+            self.__LOG_STR.format(f"Uploading {filename} To Telegram"))
 
         msg = await self._client.send_document(chat_id=self.chat.id,
                                                document=filename,
@@ -130,6 +164,9 @@ class Message(Msg, Base):
 
         os.remove(filename)
 
+        if log:
+            await self.__channel.fwd_msg(msg)
+
         if delete_message:
             await self.delete()
 
@@ -138,6 +175,7 @@ class Message(Msg, Base):
     async def reply(self,
                     text: str,
                     del_in: int = -1,
+                    log: bool = False,
                     quote: Optional[bool] = None,
                     parse_mode: Union[str, object] = object,
                     disable_web_page_preview: Optional[bool] = None,
@@ -153,6 +191,8 @@ class Message(Msg, Base):
                 Text of the message to be sent.
             del_in (``int``):
                 Time in Seconds for delete that message.
+            log (``bool``, *optional*):
+                If ``True``, the message will be log to the log channel.
             quote (``bool``, *optional*):
                 If ``True``, the message will be sent as a reply to this message.
                 If *reply_to_message_id* is passed, this parameter will be ignored.
@@ -193,6 +233,9 @@ class Message(Msg, Base):
                                               reply_to_message_id=reply_to_message_id,
                                               reply_markup=reply_markup)
 
+        if log:
+            await self.__channel.fwd_msg(msg)
+
         if del_in > 0:
             await asyncio.sleep(del_in)
             await msg.delete()
@@ -204,6 +247,7 @@ class Message(Msg, Base):
     async def edit(self,
                    text: str,
                    del_in: int = -1,
+                   log: bool = False,
                    parse_mode: Union[str, object] = object,
                    disable_web_page_preview: Optional[bool] = None,
                    reply_markup: InlineKeyboardMarkup = None) -> Msg:
@@ -216,6 +260,8 @@ class Message(Msg, Base):
                 New text of the message.
             del_in (``int``):
                 Time in Seconds for delete that message.
+            log (``bool``, *optional*):
+                If ``True``, the message will be log to the log channel.
             parse_mode (``str``, *optional*):
                 By default, texts are parsed using both Markdown and HTML styles.
                 You can combine both syntaxes together.
@@ -239,6 +285,9 @@ class Message(Msg, Base):
                                                    disable_web_page_preview=disable_web_page_preview,
                                                    reply_markup=reply_markup)
 
+        if log:
+            await self.__channel.fwd_msg(msg)
+
         if del_in > 0:
             await asyncio.sleep(del_in)
             await msg.delete()
@@ -250,6 +299,7 @@ class Message(Msg, Base):
     async def force_edit(self,
                          text: str,
                          del_in: int = -1,
+                         log: bool = False,
                          parse_mode: Union[str, object] = object,
                          disable_web_page_preview: Optional[bool] = None,
                          reply_markup: InlineKeyboardMarkup = None,
@@ -266,6 +316,8 @@ class Message(Msg, Base):
                 New text of the message.
             del_in (``int``):
                 Time in Seconds for delete that message.
+            log (``bool``, *optional*):
+                If ``True``, the message will be log to the log channel.
             parse_mode (``str``, *optional*):
                 By default, texts are parsed using both Markdown and HTML styles.
                 You can combine both syntaxes together.
@@ -284,6 +336,7 @@ class Message(Msg, Base):
         try:
             msg = await self.edit(text=text,
                                   del_in=del_in,
+                                  log=log,
                                   parse_mode=parse_mode,
                                   disable_web_page_preview=disable_web_page_preview,
                                   reply_markup=reply_markup)
@@ -291,6 +344,7 @@ class Message(Msg, Base):
         except MessageAuthorRequired:
             msg = await self.reply(text=text,
                                    del_in=del_in,
+                                   log=log,
                                    parse_mode=parse_mode,
                                    disable_web_page_preview=disable_web_page_preview,
                                    reply_markup=reply_markup,
@@ -305,6 +359,7 @@ class Message(Msg, Base):
     async def err(self,
                   text: str,
                   del_in: int = -1,
+                  log: bool = False,
                   parse_mode: Union[str, object] = object,
                   disable_web_page_preview: Optional[bool] = None,
                   reply_markup: InlineKeyboardMarkup = None) -> Msg:
@@ -319,6 +374,8 @@ class Message(Msg, Base):
                 New text of the message.
             del_in (``int``):
                 Time in Seconds for delete that message.
+            log (``bool``, *optional*):
+                If ``True``, the message will be log to the log channel.
             parse_mode (``str``, *optional*):
                 By default, texts are parsed using both Markdown and HTML styles.
                 You can combine both syntaxes together.
@@ -338,6 +395,7 @@ class Message(Msg, Base):
 
         return await self.edit(text=self.__ERROR_STRING.format(text),
                                del_in=del_in,
+                               log=log,
                                parse_mode=parse_mode,
                                disable_web_page_preview=disable_web_page_preview,
                                reply_markup=reply_markup)
@@ -345,6 +403,7 @@ class Message(Msg, Base):
     async def force_err(self,
                         text: str,
                         del_in: int = -1,
+                        log: bool = False,
                         parse_mode: Union[str, object] = object,
                         disable_web_page_preview: Optional[bool] = None,
                         reply_markup: InlineKeyboardMarkup = None,
@@ -361,6 +420,8 @@ class Message(Msg, Base):
                 New text of the message.
             del_in (``int``):
                 Time in Seconds for delete that message.
+            log (``bool``, *optional*):
+                If ``True``, the message will be log to the log channel.
             parse_mode (``str``, *optional*):
                 By default, texts are parsed using both Markdown and HTML styles.
                 You can combine both syntaxes together.
@@ -381,6 +442,7 @@ class Message(Msg, Base):
 
         return await self.force_edit(text=self.__ERROR_STRING.format(text),
                                      del_in=del_in,
+                                     log=log,
                                      parse_mode=parse_mode,
                                      disable_web_page_preview=disable_web_page_preview,
                                      reply_markup=reply_markup,

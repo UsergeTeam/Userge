@@ -38,14 +38,14 @@ async def req_head(message: Message):
                            allow_redirects=red,
                            timeout=tout)
 
-    except Exception as e:
-        await message.err(text=e)
+    except Exception as i_e:
+        await message.err(i_e)
         return
 
-    output = f"**url**: `{link}`\n**http_status_code**: __{cd.status_code}__\n**headers**:\n"
+    output = f"**URL**: `{link}`\n\n**STATUS CODE**: __{cd.status_code}__\n\n**HEADERS**:\n\n"
 
     for k, v in cd.headers.items():
-        output += f"    __{k.lower()}__ : `{v}`\n"
+        output += f"   🏷 __{k.lower()}__ : `{v}`\n\n"
 
     if len(output) >= Config.MAX_MESSAGE_LENGTH:
         await message.send_as_file(text=output, caption=link)

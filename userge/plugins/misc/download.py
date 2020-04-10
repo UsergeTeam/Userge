@@ -38,7 +38,7 @@ async def down_load_media(message: Message):
 
         if message.message_id in CANCEL_LIST:
             CANCEL_LIST.remove(message.message_id)
-            await message.edit(f"`Process Canceled!`", del_in=5)
+            await message.edit("`Process Canceled!`", del_in=5)
 
         else:
             end_t = datetime.now()
@@ -82,7 +82,7 @@ async def down_load_media(message: Message):
                 current_message += f"URL: {url}\n"
                 current_message += f"File Name: {custom_file_name}\n"
                 current_message += f"{progress_str}\n"
-                current_message += f"{await humanbytes(downloaded)} of {await humanbytes(total_length)}\n"
+                current_message += f"{humanbytes(downloaded)} of {humanbytes(total_length)}\n"
                 current_message += f"ETA: {estimated_total_time}"
 
                 if round(diff % 10.00) == 0 and current_message != display_message:

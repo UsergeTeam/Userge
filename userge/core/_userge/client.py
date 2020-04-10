@@ -1,34 +1,41 @@
 import re
+import asyncio
 import importlib
 from types import ModuleType
 from typing import (
     Dict, List, Tuple, Optional, Union, Any, Callable)
+from concurrent.futures import ThreadPoolExecutor
 
+import nest_asyncio
 from pyrogram import (
-    Client, Filters, MessageHandler, InlineKeyboardMarkup,
+    Filters, MessageHandler, InlineKeyboardMarkup,
     ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply)
+
 from userge.utils import Config, logging
 from userge.plugins import get_all_plugins
 from .base import Base
 from .message import Message
-
-logging.getLogger("pyrogram").setLevel(logging.WARNING)
+from .logger import CLogger
 
 PYROFUNC = Callable[[Message], Any]
 
 
-class Userge(Client, Base):
+class Userge(Base):
     """
     Userge: userbot
     """
 
-    __HELP_DICT: Dict[str, Dict[str, str]] = {}
-    __IMPORTED: List[ModuleType] = []
+    __LOG = logging.getLogger(__name__)
+    __LOG_STR = "<<<!  #####  ___{}___  #####  !>>>"
     __PLUGINS_PATH = "userge.plugins.{}"
 
     def __init__(self) -> None:
-        self._LOG.info(
-            self._MAIN_STRING.format("Setting Userge Configs"))
+
+        self.__help_dict: Dict[str, Dict[str, str]] = {}
+        self.__imported: List[ModuleType] = []
+
+        self.__LOG.info(
+            self.__LOG_STR.format("Setting Userge Configs"))
 
         super().__init__(Config.HU_STRING_SESSION,
                          api_id=Config.API_ID,
@@ -39,10 +46,37 @@ class Userge(Client, Base):
         This will return new logger object.
         """
 
-        self._LOG.info(
-            self._SUB_STRING.format(f"Creating Logger => {name}"))
+        self.__LOG.info(
+            self.__LOG_STR.format(f"Creating Logger => {name}"))
 
         return logging.getLogger(name)
+
+    def getCLogger(self, name: str) -> CLogger:
+        """
+        This will return new channel logger object.
+        """
+
+        self.__LOG.info(
+            self.__LOG_STR.format(f"Creating CLogger => {name}"))
+
+        return CLogger(self, name)
+
+    def new_thread(self, func: Callable) -> Callable:
+        """
+        Run funcion in new thread.
+        """
+
+        async def thread(*args, **kwargs):
+            loop = asyncio.get_event_loop()
+
+            self.__LOG.info(
+                self.__LOG_STR.format("Creating new thread"))
+
+            with ThreadPoolExecutor() as pool:
+                return await loop.run_in_executor(pool, func,
+                                                  *args, **kwargs)
+
+        return thread
 
     async def get_user_dict(self, user_id: int) -> Dict[str, str]:
         """
@@ -52,9 +86,9 @@ class Userge(Client, Base):
 
         user_obj = await self.get_users(user_id)
 
-        fname = user_obj.first_name.strip() or ''
-        lname = user_obj.last_name.strip() or ''
-        username = user_obj.username.strip() or ''
+        fname = (user_obj.first_name or '').strip()
+        lname = (user_obj.last_name or '').strip()
+        username = (user_obj.username or '').strip()
 
         if fname and lname:
             full_name = fname + ' ' + lname
@@ -73,6 +107,7 @@ class Userge(Client, Base):
     async def send_message(self,
                            chat_id: Union[int, str],
                            text: str,
+                           log: bool = False,
                            parse_mode: Union[str, object] = object,
                            disable_web_page_preview: Optional[bool] = None,
                            disable_notification: Optional[bool] = None,
@@ -95,6 +130,8 @@ class Userge(Client, Base):
                 For a contact that exists in your Telegram address book you can use his phone number (str).
             text (``str``):
                 Text of the message to be sent.
+            log (``bool``, *optional*):
+                If ``True``, the message will be log to the log channel.
             parse_mode (``str``, *optional*):
                 By default, texts are parsed using both Markdown and HTML styles.
                 You can combine both syntaxes together.
@@ -117,20 +154,25 @@ class Userge(Client, Base):
             :obj:`Message`: On success, the sent text message is returned.
         """
 
-        return Message(self,
-                       await super().send_message(chat_id=chat_id,
-                                                  text=text,
-                                                  parse_mode=parse_mode,
-                                                  disable_web_page_preview=disable_web_page_preview,
-                                                  disable_notification=disable_notification,
-                                                  reply_to_message_id=reply_to_message_id,
-                                                  schedule_date=schedule_date,
-                                                  reply_markup=reply_markup))
+        msg = await super().send_message(chat_id=chat_id,
+                                         text=text,
+                                         parse_mode=parse_mode,
+                                         disable_web_page_preview=disable_web_page_preview,
+                                         disable_notification=disable_notification,
+                                         reply_to_message_id=reply_to_message_id,
+                                         schedule_date=schedule_date,
+                                         reply_markup=reply_markup)
+
+        if log:
+            await self.getCLogger(__name__).fwd_msg(msg)
+
+        return Message(self, msg)
 
     def on_cmd(self,
                command: str,
                about: str,
                group: int = 0,
+               name: str = '',
                trigger: str = '.',
                only_me: bool = True,
                **kwargs) -> Callable[[PYROFUNC], PYROFUNC]:
@@ -147,6 +189,8 @@ class Userge(Client, Base):
                 help string for command.
             group (``int``, *optional*):
                 The group identifier, defaults to 0.
+            name (``str``, *optional*):
+                name for command.
             trigger (``str``, *optional*):
                 trigger to start command, defaults to '.'.
             only_me (``bool``, *optional*):
@@ -158,16 +202,17 @@ class Userge(Client, Base):
                     If ``True``, flags returns without prefix,  defaults to False.
         """
 
-        found = [i for i in '()[]+*.\\|?:' if i in command]
+        pattern = f"^\\{trigger}{command.lstrip('^')}" if trigger else f"^{command.lstrip('^')}"
 
-        if found:
-            match = re.match(r"([\w_]+)", command)
+        if [i for i in '^()[]+*.\\|?:$' if i in command]:
+            match = re.match("(\\w[\\w_]*)", command)
             cname = match.groups()[0] if match else ''
-            pattern = f"^\\{trigger}{command}"
+            cname = name or cname
+            cname = trigger + cname if cname else ''
 
         else:
-            cname = command
-            pattern = f"^\\{trigger}{command}(?:\\s([\\S\\s]+))?$"
+            cname = trigger + command
+            pattern += r"(?:\s([\S\s]+))?$"
 
         kwargs.update({'cname': cname, 'chelp': about})
 
@@ -203,45 +248,51 @@ class Userge(Client, Base):
 
     def get_help(self,
                  key: str = '',
-                 all_cmds: bool = False) -> Tuple[Union[str, List[str]], bool]:
+                 all_cmds: bool = False) -> Tuple[Union[str, List[str]], Union[bool, str]]:
         """
         This will return help string for specific key
         or all modules or commands as `List`.
         """
 
         if not key and not all_cmds:
-            return sorted(list(self.__HELP_DICT)), True  # module names
+            return sorted(list(self.__help_dict)), True         # names of all modules
 
-        if not key.startswith('.') and key in self.__HELP_DICT and len(self.__HELP_DICT[key]) > 1:
-            return sorted(list(self.__HELP_DICT[key])), False  # all commands for that module
+        if not key.startswith('.') and key in self.__help_dict and \
+            (len(self.__help_dict[key]) > 1 or list(self.__help_dict[key])[0] != key):
+            return sorted(list(self.__help_dict[key])), False   # all commands for that module
 
-        dict_ = {x: y for _, i in self.__HELP_DICT.items() for x, y in i.items()}
+        dict_ = {x: y for _, i in self.__help_dict.items() for x, y in i.items()}
 
         if all_cmds:
-            return sorted(list(dict_)), False  # all command for .s
+            return sorted(list(dict_)), False                   # all commands for .s
 
-        if key.lstrip('.') in dict_:
-            return dict_[key.lstrip('.')], False  # help text for that command
+        key = key.lstrip('.')
+        key_ = '.' + key
 
-        else:
-            return '', False  # unknown
+        if key in dict_:
+            return dict_[key], key      # help text and command for given command
+
+        if key_ in dict_:
+            return dict_[key_], key_    # help text and command for modified command
+
+        return '', False                # if unknown
 
     def __add_help(self,
                    module: str,
                    cname: str = '',
                    chelp: str = '',
-                   **kwargs) -> None:
+                   **_) -> None:
         if cname:
-            self._LOG.info(
-                self._SUB_STRING.format(f"Updating Help Dict => [ {cname} : {chelp} ]"))
+            self.__LOG.info(
+                self.__LOG_STR.format(f"Updating Help Dict => [ {cname} : {chelp} ]"))
 
             mname = module.split('.')[-1]
 
-            if mname in self.__HELP_DICT:
-                self.__HELP_DICT[mname].update({cname: chelp})
+            if mname in self.__help_dict:
+                self.__help_dict[mname].update({cname: chelp})
 
             else:
-                self.__HELP_DICT.update({mname: {cname: chelp}})
+                self.__help_dict.update({mname: {cname: chelp}})
 
     def __build_decorator(self,
                           log: str,
@@ -251,13 +302,13 @@ class Userge(Client, Base):
 
         def __decorator(func: PYROFUNC) -> PYROFUNC:
 
-            async def __template(_: Client,
-                                 message: Message) -> None:
+            async def __template(_: Base, message: Message) -> None:
+
                 await func(Message(self, message, **kwargs))
 
-            self._LOG.info(
-                self._SUB_STRING.format(
-                    f"Loading => [ async def {func.__name__}(message) ] from {func.__module__} `{log}`"))
+            self.__LOG.info(
+                self.__LOG_STR.format(f"Loading => [ async def {func.__name__}(message) ] " + \
+                                      f"from {func.__module__} `{log}`"))
 
             self.__add_help(func.__module__, **kwargs)
 
@@ -272,61 +323,61 @@ class Userge(Client, Base):
         Load plugin to Userge.
         """
 
-        self._LOG.info(
-            self._MAIN_STRING.format(f"Importing {name}"))
+        self.__LOG.info(
+            self.__LOG_STR.format(f"Importing {name}"))
 
-        self.__IMPORTED.append(
+        self.__imported.append(
             importlib.import_module(self.__PLUGINS_PATH.format(name)))
 
-        self._LOG.info(
-            self._MAIN_STRING.format(
-                f"Imported {self.__IMPORTED[-1].__name__} Plugin Successfully"))
+        self.__LOG.info(
+            self.__LOG_STR.format(
+                f"Imported {self.__imported[-1].__name__} Plugin Successfully"))
 
     def load_plugins(self) -> None:
         """
         Load all Plugins.
         """
 
-        self.__IMPORTED.clear()
+        self.__imported.clear()
 
-        self._LOG.info(
-            self._MAIN_STRING.format("Importing All Plugins"))
+        self.__LOG.info(
+            self.__LOG_STR.format("Importing All Plugins"))
 
         for name in get_all_plugins():
             try:
                 self.load_plugin(name)
 
             except ImportError as i_e:
-                self._LOG.error(i_e)
+                self.__LOG.error(i_e)
 
-        self._LOG.info(
-            self._MAIN_STRING.format(
-                f"Imported ({len(self.__IMPORTED)}) Plugins => " + \
-                str([i.__name__ for i in self.__IMPORTED])))
+        self.__LOG.info(
+            self.__LOG_STR.format(
+                f"Imported ({len(self.__imported)}) Plugins => " + \
+                str([i.__name__ for i in self.__imported])))
 
     async def reload_plugins(self) -> int:
         """
         Reload all Plugins.
         """
 
-        self.__HELP_DICT.clear()
+        self.__help_dict.clear()
         reloaded: List[str] = []
 
-        self._LOG.info(
-            self._MAIN_STRING.format("Reloading All Plugins"))
+        self.__LOG.info(
+            self.__LOG_STR.format("Reloading All Plugins"))
 
-        for imported in self.__IMPORTED:
+        for imported in self.__imported:
             try:
                 reloaded_ = importlib.reload(imported)
 
             except ImportError as i_e:
-                self._LOG.error(i_e)
+                self.__LOG.error(i_e)
 
             else:
                 reloaded.append(reloaded_.__name__)
 
-        self._LOG.info(
-            self._MAIN_STRING.format(
+        self.__LOG.info(
+            self.__LOG_STR.format(
                 f"Reloaded {len(reloaded)} Plugins => {reloaded}"))
 
         return len(reloaded)
@@ -336,26 +387,26 @@ class Userge(Client, Base):
         Restart the Userge.
         """
 
-        self._LOG.info(
-            self._MAIN_STRING.format("Restarting Userge"))
+        self.__LOG.info(
+            self.__LOG_STR.format("Restarting Userge"))
 
         await self.stop()
         await self.reload_plugins()
         await self.start()
 
-        self._LOG.info(
-            self._MAIN_STRING.format("Restarted Userge"))
+        self.__LOG.info(
+            self.__LOG_STR.format("Restarted Userge"))
 
     def begin(self) -> None:
         """
         This will start the Userge.
         """
 
-        self._LOG.info(
-            self._MAIN_STRING.format("Starting Userge"))
+        self.__LOG.info(
+            self.__LOG_STR.format("Starting Userge"))
 
-        self._NST_ASYNC.apply()
+        nest_asyncio.apply()
         self.run()
 
-        self._LOG.info(
-            self._MAIN_STRING.format("Exiting Userge"))
+        self.__LOG.info(
+            self.__LOG_STR.format("Exiting Userge"))
