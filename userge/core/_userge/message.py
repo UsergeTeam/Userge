@@ -16,7 +16,7 @@ class Message(Msg):
     """
 
     __LOG = logging.getLogger(__name__)
-    __LOG_STR = "<<<!  {}  !>>>"
+    __LOG_STR = "<<<!  [[[[[  ___{}___  ]]]]]  !>>>"
     __ERROR_MSG_DELETE_TIMEOUT = 5
     __ERROR_STRING = "**ERROR**: `{}`"
 
@@ -77,6 +77,12 @@ class Message(Msg):
 
         del kwargs_['_client']
 
+        if '_Message__channel' in kwargs_:
+            del kwargs_['_Message__channel']
+
+        if '_Message__filtered' in kwargs_:
+            del kwargs_['_Message__filtered']
+
         if '_Message__filtered_input_str' in kwargs_:
             del kwargs_['_Message__filtered_input_str']
 
@@ -134,7 +140,7 @@ class Message(Msg):
             caption (``str``, *optional*):
                 caption for output file.
             log (``bool``, *optional*):
-                If ``True``, the message will be log to log channel.
+                If ``True``, the message will be log to the log channel.
             delete_message (``bool``, *optional*):
                 If ``True``, the message will be deleted after sending the file.
         Returns:
@@ -186,7 +192,7 @@ class Message(Msg):
             del_in (``int``):
                 Time in Seconds for delete that message.
             log (``bool``, *optional*):
-                If ``True``, the message will be log to log channel.
+                If ``True``, the message will be log to the log channel.
             quote (``bool``, *optional*):
                 If ``True``, the message will be sent as a reply to this message.
                 If *reply_to_message_id* is passed, this parameter will be ignored.
@@ -228,7 +234,7 @@ class Message(Msg):
                                               reply_markup=reply_markup)
 
         if log:
-            await self.__channel.log(msg.text)
+            await self.__channel.fwd_msg(msg)
 
         if del_in > 0:
             await asyncio.sleep(del_in)
@@ -255,7 +261,7 @@ class Message(Msg):
             del_in (``int``):
                 Time in Seconds for delete that message.
             log (``bool``, *optional*):
-                If ``True``, the message will be log to log channel.
+                If ``True``, the message will be log to the log channel.
             parse_mode (``str``, *optional*):
                 By default, texts are parsed using both Markdown and HTML styles.
                 You can combine both syntaxes together.
@@ -280,7 +286,7 @@ class Message(Msg):
                                                    reply_markup=reply_markup)
 
         if log:
-            await self.__channel.log(msg.text)
+            await self.__channel.fwd_msg(msg)
 
         if del_in > 0:
             await asyncio.sleep(del_in)
@@ -311,7 +317,7 @@ class Message(Msg):
             del_in (``int``):
                 Time in Seconds for delete that message.
             log (``bool``, *optional*):
-                If ``True``, the message will be log to log channel.
+                If ``True``, the message will be log to the log channel.
             parse_mode (``str``, *optional*):
                 By default, texts are parsed using both Markdown and HTML styles.
                 You can combine both syntaxes together.
@@ -369,7 +375,7 @@ class Message(Msg):
             del_in (``int``):
                 Time in Seconds for delete that message.
             log (``bool``, *optional*):
-                If ``True``, the message will be log to log channel.
+                If ``True``, the message will be log to the log channel.
             parse_mode (``str``, *optional*):
                 By default, texts are parsed using both Markdown and HTML styles.
                 You can combine both syntaxes together.
@@ -415,7 +421,7 @@ class Message(Msg):
             del_in (``int``):
                 Time in Seconds for delete that message.
             log (``bool``, *optional*):
-                If ``True``, the message will be log to log channel.
+                If ``True``, the message will be log to the log channel.
             parse_mode (``str``, *optional*):
                 By default, texts are parsed using both Markdown and HTML styles.
                 You can combine both syntaxes together.

@@ -137,3 +137,4 @@ config.env
 rn
 log.txt
 gen
+unknown_errors.txt

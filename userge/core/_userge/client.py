@@ -107,6 +107,7 @@ class Userge(Base):
     async def send_message(self,
                            chat_id: Union[int, str],
                            text: str,
+                           log: bool = False,
                            parse_mode: Union[str, object] = object,
                            disable_web_page_preview: Optional[bool] = None,
                            disable_notification: Optional[bool] = None,
@@ -129,6 +130,8 @@ class Userge(Base):
                 For a contact that exists in your Telegram address book you can use his phone number (str).
             text (``str``):
                 Text of the message to be sent.
+            log (``bool``, *optional*):
+                If ``True``, the message will be log to the log channel.
             parse_mode (``str``, *optional*):
                 By default, texts are parsed using both Markdown and HTML styles.
                 You can combine both syntaxes together.
@@ -151,15 +154,19 @@ class Userge(Base):
             :obj:`Message`: On success, the sent text message is returned.
         """
 
-        return Message(self,
-                       await super().send_message(chat_id=chat_id,
-                                                  text=text,
-                                                  parse_mode=parse_mode,
-                                                  disable_web_page_preview=disable_web_page_preview,
-                                                  disable_notification=disable_notification,
-                                                  reply_to_message_id=reply_to_message_id,
-                                                  schedule_date=schedule_date,
-                                                  reply_markup=reply_markup))
+        msg = await super().send_message(chat_id=chat_id,
+                                         text=text,
+                                         parse_mode=parse_mode,
+                                         disable_web_page_preview=disable_web_page_preview,
+                                         disable_notification=disable_notification,
+                                         reply_to_message_id=reply_to_message_id,
+                                         schedule_date=schedule_date,
+                                         reply_markup=reply_markup)
+
+        if log:
+            await self.getCLogger(__name__).fwd_msg(msg)
+
+        return Message(self, msg)
 
     def on_cmd(self,
                command: str,

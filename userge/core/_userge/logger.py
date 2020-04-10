@@ -1,4 +1,4 @@
-from userge.utils import Config
+from userge.utils import Config, logging
 from .base import Base
 from .message import Message
 
@@ -7,6 +7,9 @@ class CLogger:
     """
     Channel logger for Userge.
     """
+
+    __LOG = logging.getLogger(__name__)
+    __LOG_STR = "<<<!  (((((  ___{}___  )))))  !>>>"
 
     def __init__(self, client: Base, name: str) -> None:
         self.__client = client
@@ -22,6 +25,10 @@ class CLogger:
         Returns:
             None
         """
+
+        self.__LOG.info(
+            self.__LOG_STR.format(f"logging text : {text} to channel : {Config.LOG_CHANNEL_ID}"))
+
         if Config.LOG_CHANNEL_ID:
             await self.__client.send_message(chat_id=Config.LOG_CHANNEL_ID,
                                              text=self.__string.format(text))
@@ -47,6 +54,9 @@ class CLogger:
         Returns:
             None
         """
+
+        self.__LOG.info(
+            self.__LOG_STR.format(f"logging msg : {message} to channel : {Config.LOG_CHANNEL_ID}"))
 
         if Config.LOG_CHANNEL_ID:
             await self.__client.forward_messages(chat_id=Config.LOG_CHANNEL_ID,
