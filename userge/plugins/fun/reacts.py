@@ -182,7 +182,7 @@ async def lol_(message: Message):
                name="oof",
                trigger='')
 async def oof_(message: Message):
-    t = "oo "
+    t = "Oo "
     for _ in range(10):
         t = t[:-1] + "of"
 
