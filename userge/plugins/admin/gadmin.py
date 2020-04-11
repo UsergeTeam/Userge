@@ -8,7 +8,7 @@ __use this to promote group members__
 
 **Usage:**
 
-`Provides admin rights to the person in the chat.`
+`Provides admin rights to the person in the supergroup.`
 
 [NOTE: Requires proper admin rights in the chat!!!]
 
@@ -25,48 +25,61 @@ async def promote_usr(message: Message):
     get_chat = await userge.get_chat_member(message.chat.id, message.from_user.id)
     promote_perm = get_chat.can_promote_members
 
-    await message.edit("`Trying to Promote User.. Hang on!`", log=True)
-    #await CHANNEL.log("`Trying to Promote User.. Hang on!`")
+    await message.edit("`Trying to Promote User.. Hang on!`")
 
     if promote_perm:
 
-        user_id = message.input_str
+        if message.input_str:
 
-        if user_id:
+            user_id = message.input_str
+
             try:
-                await userge.promote_chat_member(chat_id, user_id)
+                await userge.promote_chat_member(chat_id, user_id,
+                                                 can_change_info=True,
+                                                 can_delete_messages=True,
+                                                 can_restrict_members=True,
+                                                 can_invite_users=True,
+                                                 can_pin_messages=True)
 
                 await message.edit("**👑 Promoted Successfully**", del_in=5)
 
-            except Exception as e:
+                await CHANNEL.log(f"#PROMOTE \n User: `{user_id}` \n Chat: `{chat_id}`")
+
+            except:
                 await message.edit(
-                    text=f"`something went wrong 🤔, do .help promote for more info` \n **ERROR** {str(e)}")
+                    text="`something went wrong 🤔, do .help promote for more info`")
 
         else:
 
             user_id = message.reply_to_message.from_user.id
 
             try:
-                await userge.promote_chat_member(chat_id, user_id)
+                await userge.promote_chat_member(chat_id, user_id,
+                                                 can_change_info=True,
+                                                 can_delete_messages=True,
+                                                 can_restrict_members=True,
+                                                 can_invite_users=True,
+                                                 can_pin_messages=True)
 
                 await message.edit("**👑 Promoted Successfully**", del_in=5)
 
-            except Exception as e:
+                await CHANNEL.log(f"#PROMOTE \n User: `{user_id}` \n Chat: `{chat_id}`")
+
+            except:
                 await message.edit(
-                    text=f"`something went wrong 🤔, do .help promote for more info` \n **ERROR** {str(e)}")
+                    text="`something went wrong 🤔, do .help promote for more info`")
 
     else:
         await message.edit(
-            text="`I don't have proper admin permission to do that ⚠`")
+            text="`Looks like i don't have proper admin permission to do that ⚠`", del_in=5)
 
-    await CHANNEL.fwd_msg(message)
 
 @userge.on_cmd("demote", about="""\
 __use this to demote group members__
 
 **Usage:**
 
-`Remove admin rights from admin in the chat.`
+`Remove admin rights from admin in the supergroup.`
 
 [NOTE: Requires proper admin rights in the chat!!!]
 
@@ -84,13 +97,13 @@ async def demote_usr(message: Message):
     demote_perm = get_chat.can_promote_members
 
     await message.edit("`Trying to Demote User.. Hang on!`")
-    await CHANNEL.log("`Trying to Demote User.. Hang on!`")
 
     if demote_perm:
 
-        user_id = message.input_str
+        if message.input_str:
 
-        if user_id:
+            user_id = message.input_str
+
             try:
                 await userge.promote_chat_member(chat_id, user_id,
                                                  can_change_info=False,
@@ -100,10 +113,11 @@ async def demote_usr(message: Message):
                                                  can_pin_messages=False)
 
                 await message.edit("**🛡 Demoted Successfully**", del_in=5)
+                await CHANNEL.log(f"#DEMOTE \n User: `{user_id}` \n Chat: `{chat_id}`")
 
-            except Exception as e:
+            except:
                 await message.edit(
-                    text=f"`something went wrong 🤔, do .help demoted for more info` \n **ERROR** {str(e)}")
+                    text="`something went wrong 🤔, do .help demoted for more info`")
 
         else:
 
@@ -118,13 +132,12 @@ async def demote_usr(message: Message):
                                                  can_pin_messages=False)
 
                 await message.edit("**🛡 Demoted Successfully**", del_in=5)
+                await CHANNEL.log(f"#DEMOTE \n User: `{user_id}` \n Chat: `{chat_id}`")
 
-            except Exception as e:
+            except:
                 await message.edit(
-                    text=f"`something went wrong 🤔, do .help demote for more info` \n **ERROR** {str(e)}")
+                    text="`something went wrong 🤔, do .help demote for more info`")
 
     else:
         await message.edit(
-            text="`I don't have proper admin permission to do that ⚠`")
-
-    await CHANNEL.fwd_msg(message)
+            text="`Looks like i don't have proper admin permission to do that ⚠`", del_in=5)
