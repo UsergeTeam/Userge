@@ -1,9 +1,18 @@
+# Copyright (C) 2020 by UsergeTeam@Telegram, < https://t.me/theUserge >.
+#
+# This file is part of < https://github.com/uaudith/Userge > project,
+# and is released under the "GNU v3.0 License Agreement".
+# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+#
+# All rights reserved.
+
+
 import io
 import sys
 import traceback
 from getpass import getuser
 from os import geteuid
-from userge import userge, Config, Message
+from userge import userge, Message
 from userge.utils import runcmd
 
 
@@ -64,13 +73,9 @@ async def eval_(message: Message):
     output = "**EVAL**:\n```{}```\n\n\
 **OUTPUT**:\n```{}```".format(cmd, evaluation.strip())
 
-    if len(output) > Config.MAX_MESSAGE_LENGTH:
-        await message.send_as_file(text=output,
-                                   filename="eval.txt",
-                                   caption=cmd)
-
-    else:
-        await message.edit(output)
+    await message.edit_or_send_as_file(text=output,
+                                       filename="eval.txt",
+                                       caption=cmd)
 
 
 @userge.on_cmd("exec", about="""\
@@ -100,13 +105,9 @@ async def exec_(message: Message):
 __Command:__\n`{cmd}`\n__PID:__\n`{pid}`\n__RETURN:__\n`{ret}`\n\n\
 **stderr:**\n`{err}`\n\n**stdout:**\n``{out}`` "
 
-    if len(output) > Config.MAX_MESSAGE_LENGTH:
-        await message.send_as_file(text=output,
-                                   filename="exec.txt",
-                                   caption=cmd)
-
-    else:
-        await message.edit(output)
+    await message.edit_or_send_as_file(text=output,
+                                       filename="exec.txt",
+                                       caption=cmd)
 
 
 @userge.on_cmd("term", about="""\
@@ -126,28 +127,23 @@ async def term_(message: Message):
         return
 
     out, err, _, _ = await runcmd(cmd)
+    curruser = getuser()
 
-    output = str(out) + str(err)
+    try:
+        uid = geteuid()
 
-    if len(output) > Config.MAX_MESSAGE_LENGTH:
-        await message.send_as_file(text=output,
-                                   filename="term.txt",
-                                   caption=cmd)
+    except ImportError:
+        uid = 1
+
+    if uid == 0:
+        output = f"`{curruser}:~# {cmd}\n{str(out) + str(err)}`"
 
     else:
-        try:
-            uid = geteuid()
+        output = f"`{curruser}:~$ {cmd}\n{str(out) + str(err)}`"
 
-        except ImportError:
-            uid = 1
-
-        curruser = getuser()
-
-        if uid == 0:
-            await message.edit(f"`{curruser}:~# {cmd}\n{output}`")
-
-        else:
-            await message.edit(f"`{curruser}:~$ {cmd}\n{output}`")
+    await message.edit_or_send_as_file(text=output,
+                                       filename="term.txt",
+                                       caption=cmd)
 
 
 async def init_func(message: Message):

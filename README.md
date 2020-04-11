@@ -75,7 +75,7 @@ async def testing(message: Message):
 
 ### Project Credits
 
-* [Specially these projects](https://github.com/uaudith/Userge#inspiration)
+* [Specially to these projects](https://github.com/uaudith/Userge#inspiration)
 * [@uaudIth](https://t.me/uaudIth)
 * [@K_E_N_W_A_Y](https://t.me/K_E_N_W_A_Y)
 * [@nawwasl](https://t.me/nawwasl)
@@ -84,4 +84,4 @@ async def testing(message: Message):
 ### Copyright & License
 
 * Copyright (C) 2020 [@SLBOTS](https://t.me/slbotsupdates)
-* Licensed under the terms of the [GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007](https://github.com/uaudith/Userge/LICENSE)
+* Licensed under the terms of the [GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007](https://github.com/uaudith/Userge/blob/master/LICENSE)

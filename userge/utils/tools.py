@@ -1,3 +1,12 @@
+# Copyright (C) 2020 by UsergeTeam@Telegram, < https://t.me/theUserge >.
+#
+# This file is part of < https://github.com/uaudith/Userge > project,
+# and is released under the "GNU v3.0 License Agreement".
+# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+#
+# All rights reserved.
+
+
 import asyncio
 import shlex
 from os.path import isfile, relpath
@@ -49,10 +58,11 @@ async def runcmd(cmd: str):
 
 async def take_screen_shot(video_file: str, duration: int):
     LOG.info(f'[[[Extracting a frame from {video_file} ||| Video duration => {duration}]]]')
+
     ttl = duration // 2
     thumb_image_path = f"{video_file}.jpg"
-    # -filter:v scale=90:-1
     command = f"ffmpeg -ss {ttl} -i '{video_file}' -vframes 1 '{thumb_image_path}'"
+
     _, err, _, _ = await runcmd(command)
 
     if err:
@@ -68,11 +78,13 @@ class SafeDict(dict):
 
 def get_import_path(root: str, path: str):
     seperator = '\\' if '\\' in root else '/'
+
     if isfile(path):
         return '.'.join(relpath(path, root).split(seperator))[:-3]
 
     else:
         all_paths = glob(root + path.rstrip(seperator) + f"{seperator}*.py", recursive=True)
+
         return sorted(
             [
                 '.'.join(relpath(f, root).split(seperator))[:-3] for f in all_paths

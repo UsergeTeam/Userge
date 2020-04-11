@@ -1,3 +1,12 @@
+# Copyright (C) 2020 by UsergeTeam@Telegram, < https://t.me/theUserge >.
+#
+# This file is part of < https://github.com/uaudith/Userge > project,
+# and is released under the "GNU v3.0 License Agreement".
+# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+#
+# All rights reserved.
+
+
 from json import dumps
 from emoji import get_emoji_regexp
 from googletrans import Translator, LANGUAGES
@@ -70,8 +79,4 @@ async def translateme(message: Message):
     output = f"**Source ({source_lan.title()}):**`\n{text}`\n\n\
 **Translation ({transl_lan.title()}):**\n`{reply_text.text}`"
 
-    if len(output) >= Config.MAX_MESSAGE_LENGTH:
-        await message.send_as_file(text=output, caption="translated")
-
-    else:
-        await message.edit(output)
+    await message.edit_or_send_as_file(text=output, caption="translated")

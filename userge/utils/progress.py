@@ -1,23 +1,33 @@
-import time
-from pyrogram import Client, Message
-from pyrogram.errors.exceptions import FloodWait
-from .tools import humanbytes, time_formatter
+# Copyright (C) 2020 by UsergeTeam@Telegram, < https://t.me/theUserge >.
+#
+# This file is part of < https://github.com/uaudith/Userge > project,
+# and is released under the "GNU v3.0 License Agreement".
+# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+#
+# All rights reserved.
 
-CANCEL_LIST = []
+
+import time
+from pyrogram.errors.exceptions import FloodWait
+
+from userge.core._userge.base import BaseClient, BaseMessage
+from .tools import humanbytes, time_formatter
 
 
 async def progress(current: int,
                    total: int,
                    ud_type: str,
-                   userge: Client,
-                   message: Message,
+                   userge: BaseClient,
+                   message: BaseMessage,
                    start: int) -> None:
-    if message.message_id in CANCEL_LIST:
+
+    if message.process_is_canceled:
         await userge.stop_transmission()
 
     now = time.time()
     diff = now - start
-    if diff % 10 < 0.1 or current == total:
+
+    if diff % 10 < 0.5 or current == total:
         percentage = current * 100 // total
         speed = current // diff
         time_to_completion = (total - current) // speed
