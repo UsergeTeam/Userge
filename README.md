@@ -68,8 +68,9 @@ async def testing(message: Message):
 
 ## Requirements
 
-* Python 3.8 or Higher
+* Python 3.6 or Higher
 * Telegram [API Keys](https://my.telegram.org/apps)
+* Google Drive [API Keys](https://console.developers.google.com/)
 * MongoDB [Database URL](https://cloud.mongodb.com/)
   * Step 1
 
@@ -104,13 +105,42 @@ async def testing(message: Message):
     ![mongo help 8](resources/mongo_help/8.jpg)
 
     **REMEMBER the password**
-* Google Drive [API Keys](https://console.developers.google.com/)
 
 ## How To Deploy
 
-> If you are using [HEROKU](https://www.heroku.com/) simply click the button below.
+* [HEROKU](https://www.heroku.com/) Method.
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/UsergeTeam/Userge)
+  > First click the button below.  
+  > If you don't have HU_STRING_SESSION just ignore it.  
+  > After Deployed to Heroku first turn off the app (resources -> turn off) and run `bash genStr` in console (more -> run console).  
+  > After that copy the string session and past it in Config Vars (settings -> reveal config vars).  
+  > Finally turn on the app and check the logs (settings -> view logs) :)
+
+  [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/UsergeTeam/Userge)
+
+* Other Method.
+
+  ```bash
+  # clone the repo
+  git clone https://github.com/UsergeTeam/Userge.git
+  cd Userge
+
+  # create virtualenv
+  virtualenv -p /usr/bin/python3 venv
+  . ./venv/bin/activate
+
+  # install requirements
+  pip install -r requirements.txt
+
+  # Create config.env as given config.env.sample and fill that
+  cp config.env.sample config.env
+
+  # get string session and add it to config.env
+  bash genStr
+
+  # finally run the Userge ;)
+  bash run
+  ```
 
 > TODO: add Docker Support.
 

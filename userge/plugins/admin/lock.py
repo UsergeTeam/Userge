@@ -23,7 +23,7 @@ __use this to lock group permissions__
 
 **Available types to Lock Permissions:**
 
-`all, msg, media, polls, invite, pin, info, web preview, other [animations, games, stickers, inline bots]`
+`all, msg, media, polls, invite, pin, info, webprev, animations, games, stickers, inlinebots`
 
 **Example:**
 
@@ -34,7 +34,10 @@ async def lock_perm(message: Message):
     """
     msg = ""
     media = ""
-    other = ""
+    stickers = ""
+    animations = ""
+    games = ""
+    inlinebots = ""
     webprev = ""
     polls = ""
     info = ""
@@ -53,7 +56,10 @@ async def lock_perm(message: Message):
 
     msg = get_perm.permissions.can_send_messages
     media = get_perm.permissions.can_send_media_messages
-    other = get_perm.permissions.can_send_other_messages
+    stickers = get_perm.permissions.can_send_stickers
+    animations = get_perm.permissions.can_send_animations
+    games = get_perm.permissions.can_send_games
+    inlinebots = get_perm.permissions.can_use_inline_bots
     webprev = get_perm.permissions.can_add_web_page_previews
     polls = get_perm.permissions.can_send_polls
     info = get_perm.permissions.can_change_info
@@ -80,9 +86,21 @@ async def lock_perm(message: Message):
         media = False
         perm = "audios, documents, photos, videos, video notes, voice notes"
 
-    elif lock_type == "other":
-        other = False
-        perm = "animations, games, stickers, inline bots"
+    elif lock_type == "stickers":
+        stickers = False
+        perm = "stickers"
+
+    elif lock_type == "animations":
+        animations = False
+        perm = "animations"
+
+    elif lock_type == "games":
+        games = False
+        perm = "games"
+
+    elif lock_type == "inlinebots":
+        inlinebots = False
+        perm = "inline bots"
 
     elif lock_type == "webprev":
         webprev = False
@@ -112,7 +130,10 @@ async def lock_perm(message: Message):
         await userge.set_chat_permissions(chat_id,
                                           ChatPermissions(can_send_messages=msg,
                                                           can_send_media_messages=media,
-                                                          can_send_other_messages=other,
+                                                          can_send_stickers=stickers,
+                                                          can_send_animations=animations,
+                                                          can_send_games=games,
+                                                          can_use_inline_bots=inlinebots,
                                                           can_add_web_page_previews=webprev,
                                                           can_send_polls=polls,
                                                           can_change_info=info,
@@ -148,7 +169,10 @@ async def unlock_perm(message: Message):
     """
     umsg = ""
     umedia = ""
-    uother = ""
+    ustickers = ""
+    uanimations = ""
+    ugames = ""
+    uinlinebots = ""
     uwebprev = ""
     upolls = ""
     uinfo = ""
@@ -167,7 +191,10 @@ async def unlock_perm(message: Message):
 
     umsg = get_uperm.permissions.can_send_messages
     umedia = get_uperm.permissions.can_send_media_messages
-    uother = get_uperm.permissions.can_send_other_messages
+    ustickers = get_uperm.permissions.can_send_stickers
+    uanimations = get_uperm.permissions.can_send_animations
+    ugames = get_uperm.permissions.can_send_games
+    uinlinebots = get_uperm.permissions.can_use_inline_bots
     uwebprev = get_uperm.permissions.can_add_web_page_previews
     upolls = get_uperm.permissions.can_send_polls
     uinfo = get_uperm.permissions.can_change_info
@@ -179,7 +206,10 @@ async def unlock_perm(message: Message):
             await userge.set_chat_permissions(chat_id,
                                               ChatPermissions(can_send_messages=True,
                                                               can_send_media_messages=True,
-                                                              can_send_other_messages=True,
+                                                              can_send_stickers=True,
+                                                              can_send_animations=True,
+                                                              can_send_games=True,
+                                                              can_use_inline_bots=True,
                                                               can_send_polls=True,
                                                               can_change_info=True,
                                                               can_invite_users=True,
@@ -202,9 +232,21 @@ async def unlock_perm(message: Message):
         umedia = True
         uperm = "audios, documents, photos, videos, video notes, voice notes"
 
-    elif unlock_type == "other":
-        uother = True
-        uperm = "animations, games, stickers, inline bots"
+    elif unlock_type == "stickers":
+        ustickers = True
+        uperm = "stickers"
+
+    elif unlock_type == "animations":
+        uanimations = True
+        uperm = "animations"
+
+    elif unlock_type == "games":
+        ugames = True
+        uperm = "games"
+
+    elif unlock_type == "inlinebots":
+        uinlinebots = True
+        uperm = "inline bots"
 
     elif unlock_type == "webprev":
         uwebprev = True
@@ -234,7 +276,10 @@ async def unlock_perm(message: Message):
         await userge.set_chat_permissions(chat_id,
                                           ChatPermissions(can_send_messages=umsg,
                                                           can_send_media_messages=umedia,
-                                                          can_send_other_messages=uother,
+                                                          can_send_stickers=ustickers,
+                                                          can_send_animations=uanimations,
+                                                          can_send_games=ugames,
+                                                          can_use_inline_bots=uinlinebots,
                                                           can_add_web_page_previews=uwebprev,
                                                           can_send_polls=upolls,
                                                           can_change_info=uinfo,
@@ -261,7 +306,10 @@ async def view_perm(message: Message):
     v_perm = ""
     vmsg = ""
     vmedia = ""
-    vother = ""
+    vstickers = ""
+    vanimations = ""
+    vgames = ""
+    vinlinebots = ""
     vwebprev = ""
     vpolls = ""
     vinfo = ""
@@ -280,7 +328,10 @@ async def view_perm(message: Message):
 
     vmsg = convert_to_emoji(v_perm.permissions.can_send_messages)
     vmedia = convert_to_emoji(v_perm.permissions.can_send_media_messages)
-    vother = convert_to_emoji(v_perm.permissions.can_send_other_messages)
+    vstickers = convert_to_emoji(v_perm.permissions.can_send_stickers)
+    vanimations = convert_to_emoji(v_perm.permissions.can_send_animations)
+    vgames = convert_to_emoji(v_perm.permissions.can_send_games)
+    vinlinebots = convert_to_emoji(v_perm.permissions.can_use_inline_bots)
     vwebprev = convert_to_emoji(v_perm.permissions.can_add_web_page_previews)
     vpolls = convert_to_emoji(v_perm.permissions.can_send_polls)
     vinfo = convert_to_emoji(v_perm.permissions.can_change_info)
@@ -294,7 +345,10 @@ async def view_perm(message: Message):
             permission_view_str += f"<b>CHAT PERMISSION INFO:</b>\n\n"
             permission_view_str += f"<b>📩 Send Messages:</b> {vmsg}\n"
             permission_view_str += f"<b>🎭 Send Media:</b> {vmedia}\n"
-            permission_view_str += f"<b>🎲 Send Other Messages:</b> {vother}\n"
+            permission_view_str += f"<b>🎴 Send Stickers:</b> {vstickers}\n"
+            permission_view_str += f"<b>🎲 Send Animations:</b> {vanimations}\n"
+            permission_view_str += f"<b>🎮 Can Play Games:</b> {vgames}\n"
+            permission_view_str += f"<b>🤖 Send Use Inline Bots:</b> {vinlinebots}\n"
             permission_view_str += f"<b>🌐 Webpage Preview:</b> {vwebprev}\n"
             permission_view_str += f"<b>🗳 Send Polls:</b> {vpolls}\n"
             permission_view_str += f"<b>ℹ Change Info:</b> {vinfo}\n"

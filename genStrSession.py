@@ -21,4 +21,4 @@ async def genStrSession():
 
 
 if __name__ == "__main__":
-    asyncio.run(genStrSession())
+    asyncio.get_event_loop().run_until_complete(genStrSession())
