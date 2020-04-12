@@ -1,21 +1,21 @@
 <p align="center">
-    <a href="https://github.com/uaudith/Userge">
+    <a href="https://github.com/UsergeTeam/Userge">
         <img src="resources/userge(8).png" alt="Userge">
     </a>
     <br>
     <b>Pluggable Telegram UserBot</b>
     <br>
-    <a href="https://github.com/uaudith/Userge#inspiration">Inspiration</a>
+    <a href="https://github.com/UsergeTeam/Userge#inspiration">Inspiration</a>
     &nbsp•&nbsp
-    <a href="https://github.com/uaudith/Userge#features">Features</a>
+    <a href="https://github.com/UsergeTeam/Userge#features">Features</a>
     &nbsp•&nbsp
-    <a href="https://github.com/uaudith/Userge#example-plugin">Example</a>
+    <a href="https://github.com/UsergeTeam/Userge#example-plugin">Example</a>
     &nbsp•&nbsp
-    <a href="https://github.com/uaudith/Userge#requirements">Requirements</a>
+    <a href="https://github.com/UsergeTeam/Userge#requirements">Requirements</a>
     &nbsp•&nbsp
-    <a href="https://github.com/uaudith/Userge#project-credits">Project Credits</a>
+    <a href="https://github.com/UsergeTeam/Userge#project-credits">Project Credits</a>
     &nbsp•&nbsp
-    <a href="https://github.com/uaudith/Userge#copyright--license">Copyright & License</a>
+    <a href="https://github.com/UsergeTeam/Userge#copyright--license">Copyright & License</a>
 </p>
 
 # Userge
@@ -79,7 +79,7 @@ async def testing(message: Message):
 
 ### Project Credits
 
-* [Specially to these projects](https://github.com/uaudith/Userge#inspiration)
+* [Specially to these projects](https://github.com/UsergeTeam/Userge#inspiration)
 * [@uaudIth](https://t.me/uaudIth)
 * [@K_E_N_W_A_Y](https://t.me/K_E_N_W_A_Y)
 * [@nawwasl](https://t.me/nawwasl)
@@ -88,4 +88,4 @@ async def testing(message: Message):
 ### Copyright & License
 
 * Copyright (C) 2020 by [UsergeTeam](https://github.com/UsergeTeam)
-* Licensed under the terms of the [GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007](https://github.com/uaudith/Userge/blob/master/LICENSE)
+* Licensed under the terms of the [GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007](https://github.com/UsergeTeam/Userge/blob/master/LICENSE)
