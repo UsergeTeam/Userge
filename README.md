@@ -35,13 +35,13 @@
 
 ## Features
 
-* Powerful and Very Usefull build in plugins
+* Powerful and Very Usefull built-in plugins
 * Channel log support
 * Database support
 * Easy to setup
 * Easy to use
 * Easy to add plugins
-* Improved user friendliness of plugins
+* Easy to write modules with the modefied client
 
 ## Example Plugin
 
@@ -72,7 +72,8 @@ async def testing(message: Message):
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/uaudith/Userge)
 
 > TODO: add Docker Support.
-
+### Support & Discussions
+>Head over to the [Discussion Group](https://t.me/slbotsbugs)
 ### Project Credits
 
 * [Specially to these projects](https://github.com/uaudith/Userge#inspiration)
