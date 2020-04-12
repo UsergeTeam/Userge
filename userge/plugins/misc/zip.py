@@ -1,3 +1,12 @@
+# Copyright (C) 2020 by UsergeTeam@Telegram, < https://t.me/theUserge >.
+#
+# This file is part of < https://github.com/uaudith/Userge > project,
+# and is released under the "GNU v3.0 License Agreement".
+# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+#
+# All rights reserved.
+
+
 from asyncio import sleep
 from datetime import datetime
 from math import floor
@@ -7,11 +16,11 @@ from os.path import join, splitext, basename, dirname, relpath, exists
 from zipfile import ZipFile
 from threading import Thread
 from multiprocessing import Pool, Lock
-from pyrogram.errors.exceptions.bad_request_400 import MessageNotModified
 from userge import userge, Message, Config
-from userge.utils import CANCEL_LIST, humanbytes
+from userge.utils import humanbytes
 
 LOGGER = userge.getLogger(__name__)
+COUNTER_LOCK = Lock()
 
 
 class ProcessCanceled(Exception):
@@ -24,8 +33,6 @@ class Zip:
     """
     Class for ZIP / UNZIP (files / folders).
     """
-
-    __COUNTER_LOCK = Lock()
 
     def __init__(self, file_path: str) -> None:
         self.__file_path = file_path
@@ -140,7 +147,7 @@ class Zip:
             self.__finish()
             raise Exception(error)
 
-        with self.__COUNTER_LOCK:
+        with COUNTER_LOCK:
             self.__current += c_out
 
         if self.__is_canceled:
@@ -265,19 +272,15 @@ async def zip_(message: Message):
         "**Completed** : `{}/{}`"
 
     while not z_obj.finished:
-        if message.message_id in CANCEL_LIST:
+        if message.process_is_canceled:
             z_obj.cancel()
-            CANCEL_LIST.remove(message.message_id)
 
-        try:
-            await message.edit(tmp.format(z_obj.progress,
-                                          z_obj.percentage,
-                                          file_path,
-                                          z_obj.final_file_path,
-                                          z_obj.completed_files,
-                                          z_obj.total_files))
-        except MessageNotModified:
-            pass
+        await message.try_to_edit(tmp.format(z_obj.progress,
+                                             z_obj.percentage,
+                                             file_path,
+                                             z_obj.final_file_path,
+                                             z_obj.completed_files,
+                                             z_obj.total_files))
 
         await sleep(3)
 
@@ -323,19 +326,15 @@ async def unzip_(message: Message):
         "**Completed** : `{}/{}`"
 
     while not z_obj.finished:
-        if message.message_id in CANCEL_LIST:
+        if message.process_is_canceled:
             z_obj.cancel()
-            CANCEL_LIST.remove(message.message_id)
 
-        try:
-            await message.edit(tmp.format(z_obj.progress,
-                                          z_obj.percentage,
-                                          file_path,
-                                          z_obj.final_file_path,
-                                          z_obj.completed_files,
-                                          z_obj.total_files))
-        except MessageNotModified:
-            pass
+        await message.try_to_edit(tmp.format(z_obj.progress,
+                                             z_obj.percentage,
+                                             file_path,
+                                             z_obj.final_file_path,
+                                             z_obj.completed_files,
+                                             z_obj.total_files))
 
         await sleep(3)
 
@@ -377,8 +376,4 @@ async def zipinfo_(message: Message):
     for file_ in infos:
         output += f"📄 {file_.filename} __({humanbytes(file_.file_size)})__\n"
 
-    if len(output) >= Config.MAX_MESSAGE_LENGTH:
-        await message.send_as_file(text=output, caption=file_path)
-
-    else:
-        await message.edit(output)
+    await message.edit_or_send_as_file(text=output, caption=file_path)

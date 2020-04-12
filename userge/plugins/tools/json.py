@@ -1,4 +1,13 @@
-from userge import userge, Message, Config
+# Copyright (C) 2020 by UsergeTeam@Telegram, < https://t.me/theUserge >.
+#
+# This file is part of < https://github.com/uaudith/Userge > project,
+# and is released under the "GNU v3.0 License Agreement".
+# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+#
+# All rights reserved.
+
+
+from userge import userge, Message
 
 
 @userge.on_cmd("json", about="""\
@@ -11,10 +20,6 @@ async def jsonify(message: Message):
     the_real_message = str(message.reply_to_message) if message.reply_to_message \
         else str(message)
 
-    if len(the_real_message) > Config.MAX_MESSAGE_LENGTH:
-        await message.send_as_file(text=the_real_message,
-                                   filename="json.txt",
-                                   caption="Too Large")
-
-    else:
-        await message.edit(the_real_message)
+    await message.edit_or_send_as_file(text=the_real_message,
+                                       filename="json.txt",
+                                       caption="Too Large")

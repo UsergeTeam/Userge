@@ -1,3 +1,12 @@
+# Copyright (C) 2020 by UsergeTeam@Telegram, < https://t.me/theUserge >.
+#
+# This file is part of < https://github.com/uaudith/Userge > project,
+# and is released under the "GNU v3.0 License Agreement".
+# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+#
+# All rights reserved.
+
+
 from datetime import datetime
 from userge import userge, Message
 
@@ -9,9 +18,9 @@ __purge messages from user__
 
 **Usage:**
 
-reply `.purge` to the start message to purge
+    reply `.purge` to the start message to purge.
     use `.purge [user_id | user_name]` to purge messages from that user
-    or use `-u` flag to get user_id from replied message
+    or use `-u` flag to get user_id from replied message.
 
 **Example:**
 

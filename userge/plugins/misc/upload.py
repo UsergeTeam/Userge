@@ -1,3 +1,12 @@
+# Copyright (C) 2020 by UsergeTeam@Telegram, < https://t.me/theUserge >.
+#
+# This file is part of < https://github.com/uaudith/Userge > project,
+# and is released under the "GNU v3.0 License Agreement".
+# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+#
+# All rights reserved.
+
+
 import os
 import time
 from datetime import datetime
@@ -6,7 +15,7 @@ from hachoir.metadata import extractMetadata
 from hachoir.parser import createParser
 from pyrogram.errors.exceptions import FloodWait
 from userge import userge, Config, Message
-from userge.utils import progress, CANCEL_LIST, take_screen_shot
+from userge.utils import progress, take_screen_shot
 
 LOGGER = userge.getLogger(__name__)
 
@@ -73,8 +82,7 @@ async def doc_upload(chat_id, path):
     )
     await userge.send_chat_action(chat_id, "cancel")
 
-    if message.message_id in CANCEL_LIST:
-        CANCEL_LIST.remove(message.message_id)
+    if message.process_is_canceled:
         await message.edit("`Process Canceled!`", del_in=5)
 
     else:
@@ -107,10 +115,9 @@ async def vid_upload(chat_id, path):
         )
     )
     await userge.send_chat_action(chat_id, "cancel")
-    os.remove(thumb)
+    await remove_thumb(thumb)
 
-    if message.message_id in CANCEL_LIST:
-        CANCEL_LIST.remove(message.message_id)
+    if message.process_is_canceled:
         await message.edit("`Process Canceled!`", del_in=5)
 
     else:
@@ -131,3 +138,10 @@ async def get_thumb(path: str = '') -> str:
                 path, metadata.get("duration").seconds)
 
     return LOGO_PATH
+
+
+async def remove_thumb(thumb: str) -> None:
+    if os.path.exists(thumb) and \
+        thumb != LOGO_PATH and \
+            thumb != THUMB_PATH:
+        os.remove(thumb)

@@ -35,13 +35,13 @@
 
 ## Features
 
-* Powerful and Very Usefull build in plugins
+* Powerful and Very Usefull built-in plugins
 * Channel log support
 * Database support
 * Easy to setup
 * Easy to use
 * Easy to add plugins
-* Improved user friendliness of plugins
+* Easy to write modules with the modefied client
 
 ## Example Plugin
 
@@ -72,10 +72,11 @@ async def testing(message: Message):
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/uaudith/Userge)
 
 > TODO: add Docker Support.
-
+### Support & Discussions
+>Head over to the [Discussion Group](https://t.me/slbotsbugs)
 ### Project Credits
 
-* [Specially these projects](https://github.com/uaudith/Userge#inspiration)
+* [Specially to these projects](https://github.com/uaudith/Userge#inspiration)
 * [@uaudIth](https://t.me/uaudIth)
 * [@K_E_N_W_A_Y](https://t.me/K_E_N_W_A_Y)
 * [@nawwasl](https://t.me/nawwasl)
@@ -84,4 +85,4 @@ async def testing(message: Message):
 ### Copyright & License
 
 * Copyright (C) 2020 [@SLBOTS](https://t.me/slbotsupdates)
-* Licensed under the terms of the [GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007](https://github.com/uaudith/Userge/LICENSE)
+* Licensed under the terms of the [GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007](https://github.com/uaudith/Userge/blob/master/LICENSE)

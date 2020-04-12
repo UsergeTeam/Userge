@@ -1,5 +1,14 @@
+# Copyright (C) 2020 by UsergeTeam@Telegram, < https://t.me/theUserge >.
+#
+# This file is part of < https://github.com/uaudith/Userge > project,
+# and is released under the "GNU v3.0 License Agreement".
+# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+#
+# All rights reserved.
+
+
 import wikipedia
-from userge import userge, Message, Config
+from userge import userge, Message
 
 
 @userge.on_cmd("wiki", about="""\
@@ -51,8 +60,4 @@ async def wiki_pedia(message: Message):
 
     output = f"**Wikipedia Search:**\n`{query}`\n\n**Results:**\n{output}"
 
-    if len(output) >= Config.MAX_MESSAGE_LENGTH:
-        await message.send_as_file(text=output, caption=query)
-
-    else:
-        await message.edit(output, disable_web_page_preview=True)
+    await message.edit_or_send_as_file(text=output, caption=query, disable_web_page_preview=True)

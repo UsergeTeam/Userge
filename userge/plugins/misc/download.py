@@ -1,3 +1,12 @@
+# Copyright (C) 2020 by UsergeTeam@Telegram, < https://t.me/theUserge >.
+#
+# This file is part of < https://github.com/uaudith/Userge > project,
+# and is released under the "GNU v3.0 License Agreement".
+# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+#
+# All rights reserved.
+
+
 import asyncio
 import math
 import os
@@ -5,7 +14,7 @@ import time
 from datetime import datetime
 from pySmartDL import SmartDL
 from userge import userge, Message, Config
-from userge.utils import progress, CANCEL_LIST, humanbytes
+from userge.utils import progress, humanbytes
 
 LOGGER = userge.getLogger(__name__)
 
@@ -36,8 +45,7 @@ async def down_load_media(message: Message):
         )
         # await userge.send_chat_action(message.chat.id, "cancel")
 
-        if message.message_id in CANCEL_LIST:
-            CANCEL_LIST.remove(message.message_id)
+        if message.process_is_canceled:
             await message.edit("`Process Canceled!`", del_in=5)
 
         else:

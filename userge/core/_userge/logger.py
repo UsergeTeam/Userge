@@ -1,17 +1,25 @@
+# Copyright (C) 2020 by UsergeTeam@Telegram, < https://t.me/theUserge >.
+#
+# This file is part of < https://github.com/uaudith/Userge > project,
+# and is released under the "GNU v3.0 License Agreement".
+# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+#
+# All rights reserved.
+
+
 from userge.utils import Config, logging
-from .base import Base
-from .message import Message
+from .base import BaseCLogger, BaseClient, BaseMessage
+
+LOG = logging.getLogger(__name__)
+LOG_STR = "<<<!  (((((  ___{}___  )))))  !>>>"
 
 
-class CLogger:
+class CLogger(BaseCLogger):
     """
     Channel logger for Userge.
     """
 
-    __LOG = logging.getLogger(__name__)
-    __LOG_STR = "<<<!  (((((  ___{}___  )))))  !>>>"
-
-    def __init__(self, client: Base, name: str) -> None:
+    def __init__(self, client: BaseClient, name: str) -> None:
         self.__client = client
         self.__string = "**logger** : `" + name + "`\n\n{}"
 
@@ -26,17 +34,17 @@ class CLogger:
             None
         """
 
-        self.__LOG.info(
-            self.__LOG_STR.format(f"logging text : {text} to channel : {Config.LOG_CHANNEL_ID}"))
+        LOG.info(
+            LOG_STR.format(f"logging text : {text} to channel : {Config.LOG_CHANNEL_ID}"))
 
         if Config.LOG_CHANNEL_ID:
             await self.__client.send_message(chat_id=Config.LOG_CHANNEL_ID,
                                              text=self.__string.format(text))
 
     async def fwd_msg(self,
-                      message: Message,
-                      as_copy=False,
-                      remove_caption=False) -> None:
+                      message: BaseMessage,
+                      as_copy: bool = False,
+                      remove_caption: bool = False) -> None:
         """
         forward message to log channel.
 
@@ -55,8 +63,8 @@ class CLogger:
             None
         """
 
-        self.__LOG.info(
-            self.__LOG_STR.format(f"logging msg : {message} to channel : {Config.LOG_CHANNEL_ID}"))
+        LOG.info(
+            LOG_STR.format(f"logging msg : {message} to channel : {Config.LOG_CHANNEL_ID}"))
 
         if Config.LOG_CHANNEL_ID:
             await self.__client.forward_messages(chat_id=Config.LOG_CHANNEL_ID,
