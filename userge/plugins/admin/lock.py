@@ -191,10 +191,10 @@ async def unlock_perm(message: Message):
 
     umsg = get_uperm.permissions.can_send_messages
     umedia = get_uperm.permissions.can_send_media_messages
-    ustickers = get_perm.permissions.can_send_stickers
-    uanimations = get_perm.permissions.can_send_animations
-    ugames = get_perm.permissions.can_send_games
-    uinlinebots = get_perm.permissions.can_use_inline_bots
+    ustickers = get_uperm.permissions.can_send_stickers
+    uanimations = get_uperm.permissions.can_send_animations
+    ugames = get_uperm.permissions.can_send_games
+    uinlinebots = get_uperm.permissions.can_use_inline_bots
     uwebprev = get_uperm.permissions.can_add_web_page_previews
     upolls = get_uperm.permissions.can_send_polls
     uinfo = get_uperm.permissions.can_change_info
@@ -232,21 +232,21 @@ async def unlock_perm(message: Message):
         umedia = True
         uperm = "audios, documents, photos, videos, video notes, voice notes"
 
-    elif lock_type == "stickers":
+    elif unlock_type == "stickers":
         ustickers = False
-        perm = "stickers"
+        uperm = "stickers"
 
-    elif lock_type == "animations":
+    elif unlock_type == "animations":
         uanimations = False
-        perm = "animations"
+        uperm = "animations"
 
-    elif lock_type == "games":
+    elif unlock_type == "games":
         ugames = False
-        perm = "games"
+        uperm = "games"
 
-    elif lock_type == "inlinebots":
+    elif unlock_type == "inlinebots":
         uinlinebots = False
-        perm = "inline bots"
+        uperm = "inline bots"
 
     elif unlock_type == "webprev":
         uwebprev = True
@@ -328,10 +328,10 @@ async def view_perm(message: Message):
 
     vmsg = convert_to_emoji(v_perm.permissions.can_send_messages)
     vmedia = convert_to_emoji(v_perm.permissions.can_send_media_messages)
-    vstickers = get_perm.permissions.can_send_stickers
-    vanimations = get_perm.permissions.can_send_animations
-    vgames = get_perm.permissions.can_send_games
-    vinlinebots = get_perm.permissions.can_use_inline_bots
+    vstickers = convert_to_emoji(v_perm.permissions.can_send_stickers)
+    vanimations = convert_to_emoji(v_perm.permissions.can_send_animations)
+    vgames = convert_to_emoji(v_perm.permissions.can_send_games)
+    vinlinebots = convert_to_emoji(v_perm.permissions.can_use_inline_bots)
     vwebprev = convert_to_emoji(v_perm.permissions.can_add_web_page_previews)
     vpolls = convert_to_emoji(v_perm.permissions.can_send_polls)
     vinfo = convert_to_emoji(v_perm.permissions.can_change_info)
