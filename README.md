@@ -1,6 +1,6 @@
 <p align="center">
     <a href="https://github.com/UsergeTeam/Userge">
-        <img src="resources/userge(8).png" alt="Userge">
+        <img src="resources/userge.png" alt="Userge">
     </a>
     <br>
     <b>Pluggable Telegram UserBot</b>
@@ -26,7 +26,7 @@
 
 > This project is inspired by the following projects :)
 
-* [tg_userbot](https://github.com/watzon/tg_userbot) (heavily)
+* [tg_userbot](https://github.com/watzon/tg_userbot) ( heavily )
 * [PyroGramUserBot](https://github.com/SpEcHiDe/PyroGramUserBot)
 * [Telegram-Paperplane](https://github.com/RaphielGang/Telegram-Paperplane)
 * [UniBorg](https://github.com/SpEcHiDe/UniBorg)
@@ -35,13 +35,18 @@
 
 ## Features
 
-* Powerful and Very Usefull built-in plugins
-* Channel log support
+* Powerful and Very Useful **built-in** Plugins
+  * gdrive ( Team Drives Supported! )
+  * zip / unzip
+  * telegram upload
+  * telegram download
+  * etc...
+* Channel & Group log support
 * Database support
-* Easy to setup
-* Easy to use
-* Easy to add plugins
-* Easy to write modules with the modefied client
+* Build-in help support
+* Easy to Setup & Use
+* Easy to add / port Plugins
+* Easy to write modules with the modified client
 
 ## Example Plugin
 
@@ -49,12 +54,15 @@
 from userge import userge, Message
 
 LOG = userge.getLogger(__name__)  # logger object
+
 CHANNEL = userge.getCLogger(__name__)  # channel logger object
 
 @userge.on_cmd("test", about="help text to this command")  # adding handler and help text to .test command
 async def testing(message: Message):
    LOG.info("starting test command...")  # log to console
+
    await message.edit("testing...", del_in=5)  # this will be automatically deleted after 5 sec
+
    CHANNEL.log("testing completed!")  # log to channel
 ```
 
@@ -63,6 +71,39 @@ async def testing(message: Message):
 * Python 3.8 or Higher
 * Telegram [API Keys](https://my.telegram.org/apps)
 * MongoDB [Database URL](https://cloud.mongodb.com/)
+  * Step 1
+
+    ![mongo help 1](resources/mongo_help/1.jpg)
+
+  * Step 2
+
+    ![mongo help 2](resources/mongo_help/2.jpg)
+
+  * Step 3
+
+    ![mongo help 3](resources/mongo_help/3.jpg)
+
+  * Step 4
+
+    ![mongo help 4](resources/mongo_help/4.jpg)
+
+  * Step 5
+
+    ![mongo help 5](resources/mongo_help/5.jpg)
+
+  * Step 6
+
+    ![mongo help 6](resources/mongo_help/6.jpg)
+
+  * Step 7
+
+    ![mongo help 7](resources/mongo_help/7.jpg)
+
+  * Final Step
+
+    ![mongo help 8](resources/mongo_help/8.jpg)
+
+    **REMEMBER the password**
 * Google Drive [API Keys](https://console.developers.google.com/)
 
 ## How To Deploy

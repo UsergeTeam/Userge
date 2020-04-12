@@ -17,6 +17,7 @@ from userge import userge, Message
 __Simulate a typewriter__
 
 **Usage:**
+
     `.type [text | reply to msg]`""")
 async def type_(message: Message):
     text = message.input_str

@@ -19,7 +19,7 @@ from userge.utils import progress, take_screen_shot
 
 LOGGER = userge.getLogger(__name__)
 
-LOGO_PATH = 'resources/userge(8).png'
+LOGO_PATH = 'resources/userge.png'
 THUMB_PATH = Config.DOWN_PATH + "thumb_image.jpg"
 
 
