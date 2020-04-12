@@ -39,9 +39,10 @@ async def promote_usr(message: Message):
 
     if promote_perm:
 
-        if message.input_str:
+        user_id = message.input_str
 
-            user_id = message.input_str
+        if user_id:
+
             get_mem = await userge.get_chat_member(chat_id, user_id)
 
             try:
@@ -57,35 +58,43 @@ async def promote_usr(message: Message):
                 await CHANNEL.log(
                     f"#PROMOTE\n\n"
                     f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id})\n"
-                    f"CHAT: {get_group.title} (`{chat_id}`)")
+                    f"CHAT: `{get_group.title}` (`{chat_id}`)")
 
             except:
                 await message.edit(
-                    text="`something went wrong 🤔, do .help promote for more info`", del_in=5)
+                    text="`something went wrong 🤔,`"
+                    "`do .help promote for more info`", del_in=5)
+
+        elif message.reply_to_message:
+
+            get_mem = await userge.get_chat_member(chat_id, message.reply_to_message.from_user.id)
+
+            try:
+                await userge.promote_chat_member(chat_id, message.reply_to_message.from_user.id,
+                                                 can_change_info=True,
+                                                 can_delete_messages=True,
+                                                 can_restrict_members=True,
+                                                 can_invite_users=True,
+                                                 can_pin_messages=True)
+
+                await message.edit("**👑 Promoted Successfully**", del_in=5)
+
+                await CHANNEL.log(
+                    f"#PROMOTE\n\n"
+                    f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id})\n"
+                    f"CHAT: `{get_group.title}` (`{chat_id}`)")
+
+            except:
+                await message.edit(
+                    text="`something went wrong 🤔,`"
+                    "`do .help promote for more info`", del_in=5)
 
         else:
+            await message.edit(
+                text="`no valid user_id or message specified,`"
+                "`do .help promote for more info`", del_in=5)
 
-            user_id = message.reply_to_message.from_user.id
-            get_mem = await userge.get_chat_member(chat_id, user_id)
-
-            try:
-                await userge.promote_chat_member(chat_id, user_id,
-                                                 can_change_info=True,
-                                                 can_delete_messages=True,
-                                                 can_restrict_members=True,
-                                                 can_invite_users=True,
-                                                 can_pin_messages=True)
-
-                await message.edit("**👑 Promoted Successfully**", del_in=5)
-
-                await CHANNEL.log(
-                    f"#PROMOTE\n\n"
-                    f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id})\n"
-                    f"CHAT: {get_group.title} (`{chat_id}`)")
-
-            except:
-                await message.edit(
-                    text="`something went wrong 🤔, do .help promote for more info`", del_in=5)
+            return
 
     else:
         await message.edit(
@@ -119,32 +128,10 @@ async def demote_usr(message: Message):
 
     if demote_perm:
 
-        if message.input_str:
+        user_id = message.input_str
 
-            user_id = message.input_str
-            get_mem = await userge.get_chat_member(chat_id, user_id)
+        if user_id:
 
-            try:
-                await userge.promote_chat_member(chat_id, user_id,
-                                                 can_change_info=False,
-                                                 can_delete_messages=False,
-                                                 can_restrict_members=False,
-                                                 can_invite_users=False,
-                                                 can_pin_messages=False)
-
-                await message.edit("**🛡 Demoted Successfully**", del_in=5)
-                await CHANNEL.log(
-                    f"#DEMOTE\n\n"
-                    f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id})\n"
-                    f"CHAT: {get_group.title} (`{chat_id}`)")
-
-            except:
-                await message.edit(
-                    text="`something went wrong 🤔, do .help demoted for more info`", del_in=5)
-
-        else:
-
-            user_id = message.reply_to_message.from_user.id
             get_mem = await userge.get_chat_member(chat_id, user_id)
 
             try:
@@ -163,7 +150,38 @@ async def demote_usr(message: Message):
 
             except:
                 await message.edit(
-                    text="`something went wrong 🤔, do .help demote for more info`", del_in=5)
+                    text="`something went wrong 🤔,`"
+                    "`do .help demote for more info`", del_in=5)
+
+        elif message.reply_to_message:
+
+            get_mem = await userge.get_chat_member(chat_id, message.reply_to_message.from_user.id)
+
+            try:
+                await userge.promote_chat_member(chat_id, message.reply_to_message.from_user.id,
+                                                 can_change_info=False,
+                                                 can_delete_messages=False,
+                                                 can_restrict_members=False,
+                                                 can_invite_users=False,
+                                                 can_pin_messages=False)
+
+                await message.edit("**🛡 Demoted Successfully**", del_in=5)
+                await CHANNEL.log(
+                    f"#DEMOTE\n\n"
+                    f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id})\n"
+                    f"CHAT: `{get_group.title}` (`{chat_id}`)")
+
+            except:
+                await message.edit(
+                    text="`something went wrong 🤔,`"
+                    "`do .help demote for more info`", del_in=5)
+
+        else:
+            await message.edit(
+                text="`no valid user_id or message specified,`"
+                "`do .help demote for more info`", del_in=5)
+
+            return
 
     else:
         await message.edit(
