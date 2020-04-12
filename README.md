@@ -72,8 +72,11 @@ async def testing(message: Message):
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/UsergeTeam/Userge)
 
 > TODO: add Docker Support.
+
 ### Support & Discussions
->Head over to the [Discussion Group](https://t.me/slbotsbugs)
+
+> Head over to the [Discussion Group](https://t.me/slbotsbugs) and [Update Channel](https://t.me/theUserge)
+
 ### Project Credits
 
 * [Specially to these projects](https://github.com/uaudith/Userge#inspiration)
@@ -84,5 +87,5 @@ async def testing(message: Message):
 
 ### Copyright & License
 
-* Copyright (C) 2020 [@SLBOTS](https://t.me/slbotsupdates)
+* Copyright (C) 2020 by [UsergeTeam](https://github.com/UsergeTeam)
 * Licensed under the terms of the [GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007](https://github.com/uaudith/Userge/blob/master/LICENSE)
