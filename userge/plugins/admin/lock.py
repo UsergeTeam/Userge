@@ -233,19 +233,19 @@ async def unlock_perm(message: Message):
         uperm = "audios, documents, photos, videos, video notes, voice notes"
 
     elif unlock_type == "stickers":
-        ustickers = False
+        ustickers = True
         uperm = "stickers"
 
     elif unlock_type == "animations":
-        uanimations = False
+        uanimations = True
         uperm = "animations"
 
     elif unlock_type == "games":
-        ugames = False
+        ugames = True
         uperm = "games"
 
     elif unlock_type == "inlinebots":
-        uinlinebots = False
+        uinlinebots = True
         uperm = "inline bots"
 
     elif unlock_type == "webprev":
@@ -347,7 +347,7 @@ async def view_perm(message: Message):
             permission_view_str += f"<b>🎭 Send Media:</b> {vmedia}\n"
             permission_view_str += f"<b>🎴 Send Stickers:</b> {vstickers}\n"
             permission_view_str += f"<b>🎲 Send Animations:</b> {vanimations}\n"
-            permission_view_str += f"<b>🎮 Send Play Games:</b> {vgames}\n"
+            permission_view_str += f"<b>🎮 Can Play Games:</b> {vgames}\n"
             permission_view_str += f"<b>🤖 Send Use Inline Bots:</b> {vinlinebots}\n"
             permission_view_str += f"<b>🌐 Webpage Preview:</b> {vwebprev}\n"
             permission_view_str += f"<b>🗳 Send Polls:</b> {vpolls}\n"
