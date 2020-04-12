@@ -1,6 +1,6 @@
+https://github.com/pyrogram/pyrogram/archive/asyncio.zip
 python-dotenv
 tgcrypto
-git+https://github.com/pyrogram/pyrogram.git@asyncio-dev
 pymongo
 dnspython
 hachoir
