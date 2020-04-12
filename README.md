@@ -69,7 +69,7 @@ async def testing(message: Message):
 
 > If you are using [HEROKU](https://www.heroku.com/) simply click the button below.
 
-[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/uaudith/Userge)
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/UsergeTeam/Userge)
 
 > TODO: add Docker Support.
 ### Support & Discussions
