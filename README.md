@@ -18,25 +18,25 @@
     <a href="https://github.com/UsergeTeam/Userge#copyright--license">Copyright & License</a>
 </p>
 
-# Userge
+# Userge 🔥
 
 > **Userge** is a Powerful , _Pluggable_ Telegram UserBot written in _Python_ using [Pyrogram](https://github.com/pyrogram/pyrogram).
 
-## Inspiration
+## Inspiration 😇
 
 > This project is inspired by the following projects :)
 
-* [tg_userbot](https://github.com/watzon/tg_userbot) ( heavily )
+* [tg_userbot](https://github.com/watzon/tg_userbot) ( heavily ) 🤗
 * [PyroGramUserBot](https://github.com/SpEcHiDe/PyroGramUserBot)
 * [Telegram-Paperplane](https://github.com/RaphielGang/Telegram-Paperplane)
 * [UniBorg](https://github.com/SpEcHiDe/UniBorg)
 
 > Special Thanks to all of you !!!.
 
-## Features
+## Features 😍
 
 * Powerful and Very Useful **built-in** Plugins
-  * gdrive ( Team Drives Supported! )
+  * gdrive ( Team Drives Supported! ) 🤥
   * zip / unzip
   * telegram upload
   * telegram download
@@ -48,7 +48,9 @@
 * Easy to add / port Plugins
 * Easy to write modules with the modified client
 
-## Example Plugin
+## Example Plugin 🤨
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/dacadcbabdb74de3903ddae25dc95375)](https://app.codacy.com/gh/UsergeTeam/Userge?utm_source=github.com&utm_medium=referral&utm_content=UsergeTeam/Userge&utm_campaign=Badge_Grade_Dashboard)
 
 ```python
 from userge import userge, Message
@@ -66,60 +68,63 @@ async def testing(message: Message):
    await CHANNEL.log("testing completed!")  # log to channel
 ```
 
-## Requirements
+## Requirements 🥴
 
-* Python 3.6 or Higher
+* Python 3.6 or Higher 👻
 * Telegram [API Keys](https://my.telegram.org/apps)
 * Google Drive [API Keys](https://console.developers.google.com/)
 * MongoDB [Database URL](https://cloud.mongodb.com/)
-  * Step 1
+  * Step 1 👀
 
     ![mongo help 1](resources/mongo_help/1.jpg)
 
-  * Step 2
+  * Step 2 👀
 
     ![mongo help 2](resources/mongo_help/2.jpg)
 
-  * Step 3
+  * Step 3 👀
 
     ![mongo help 3](resources/mongo_help/3.jpg)
 
-  * Step 4
+  * Step 4 👀
 
     ![mongo help 4](resources/mongo_help/4.jpg)
 
-  * Step 5
+  * Step 5 👀
 
     ![mongo help 5](resources/mongo_help/5.jpg)
 
-  * Step 6
+  * Step 6 👀
 
     ![mongo help 6](resources/mongo_help/6.jpg)
 
-  * Step 7
+  * Step 7 👀
 
     ![mongo help 7](resources/mongo_help/7.jpg)
 
-  * Final Step
+  * Final Step 🙈
 
     ![mongo help 8](resources/mongo_help/8.jpg)
 
-    **REMEMBER the password**
+    **REMEMBER the password** 😜
 
-## How To Deploy
+## How To Deploy 👷
 
-* [HEROKU](https://www.heroku.com/) Method.
+* **[HEROKU](https://www.heroku.com/) Method** 🔧
 
-  > First click the button below.  
+  > First click the button below. 
+
   > If you don't have HU_STRING_SESSION just ignore it.  
+
   > After Deployed to Heroku first turn off the app (resources -> turn off) and run `bash genStr` in console (more -> run console).  
-  > After that copy the string session and past it in Config Vars (settings -> reveal config vars).  
+
+  > After that copy the string session and past it in Config Vars (settings -> reveal config vars). 
+
   > Finally turn on the app and check the logs (settings -> view logs) :)
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/dacadcbabdb74de3903ddae25dc95375)](https://app.codacy.com/gh/UsergeTeam/Userge?utm_source=github.com&utm_medium=referral&utm_content=UsergeTeam/Userge&utm_campaign=Badge_Grade_Dashboard)
   [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/UsergeTeam/Userge)
 
-* Other Method.
+* **Other Method** 🔧
 
   ```bash
   # clone the repo
@@ -143,21 +148,24 @@ async def testing(message: Message):
   bash run
   ```
 
+* **[More Detailed Guide](https://docs.google.com/document/d/15uoiOn2NkN518MMkx9h5UaMEWMp8aNZqJocXvS0uI6E/edit?usp=sharing)** 📝
+
 > TODO: add Docker Support.
 
-### Support & Discussions
+### Support & Discussions 👥
 
 > Head over to the [Discussion Group](https://t.me/slbotsbugs) and [Update Channel](https://t.me/theUserge)
 
-### Project Credits
+### Project Credits 💆‍♂️
 
-* [Specially to these projects](https://github.com/UsergeTeam/Userge#inspiration)
+* [Specially to these projects](https://github.com/UsergeTeam/Userge#inspiration) 🥰
 * [@uaudIth](https://t.me/uaudIth)
 * [@K_E_N_W_A_Y](https://t.me/K_E_N_W_A_Y)
 * [@nawwasl](https://t.me/nawwasl)
+* [THARUKA](https://t.me/TharukaN97)
 * [@gotstc](https://t.me/gotstc)
 
-### Copyright & License
+### Copyright & License 👮
 
-* Copyright (C) 2020 by [UsergeTeam](https://github.com/UsergeTeam)
+* Copyright (C) 2020 by [UsergeTeam](https://github.com/UsergeTeam) ❤️️
 * Licensed under the terms of the [GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007](https://github.com/UsergeTeam/Userge/blob/master/LICENSE)
