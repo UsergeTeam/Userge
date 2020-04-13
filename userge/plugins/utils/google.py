@@ -64,4 +64,5 @@ async def gsearch(message: Message):
 
     output = f"**Google Search:**\n`{query}`\n\n**Results:**\n{output}"
 
-    await message.edit_or_send_as_file(text=output, caption=query, disable_web_page_preview=True)
+    await message.edit_or_send_as_file(text=output, caption=query,
+                                       disable_web_page_preview=True, log=True)

@@ -12,19 +12,25 @@ from time import time
 import requests
 from userge import userge, Message, Config
 
+CHANNEL = userge.getCLogger(__name__)
+
 
 @userge.on_cmd("webss", about="__Get snapshot of a website__")
 async def webss(message: Message):
     if Config.SCREENSHOT_API is None:
         await message.edit(
-            "Damn!\nI forgot to get the api from (here)[https://screenshotlayer.com]", del_in=10)
+            "Damn!\nI forgot to get the api from (here)[https://screenshotlayer.com]",
+            del_in=10, log=True)
         return
     await message.edit("`Processing`")
     suc, data = await getimg(message.input_str)
     if suc:
         await message.edit('Uploading..')
         await userge.send_chat_action(message.chat.id, "upload_photo")
-        await userge.send_document(message.chat.id, data, caption=message.input_str)
+
+        msg = await userge.send_document(message.chat.id, data, caption=message.input_str)
+        await CHANNEL.fwd(msg)
+
         await message.delete()
         await userge.send_chat_action(message.chat.id, "cancel")
         if os.path.isfile(data):

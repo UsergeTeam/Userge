@@ -79,4 +79,4 @@ async def translateme(message: Message):
     output = f"**Source ({source_lan.title()}):**`\n{text}`\n\n\
 **Translation ({transl_lan.title()}):**\n`{reply_text.text}`"
 
-    await message.edit_or_send_as_file(text=output, caption="translated")
+    await message.edit_or_send_as_file(text=output, caption="translated", log=True)

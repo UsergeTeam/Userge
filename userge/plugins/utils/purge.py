@@ -81,7 +81,7 @@ async def purge_(message: Message):
         time_taken_s = (end_t - start_t).seconds
 
         out = f"<u>purged</u> {purged_messages_count} messages in {time_taken_s} seconds."
-        await message.edit(text=out, del_in=3)
+        await message.edit(text=out, del_in=3, log=True)
 
     else:
         out = "Reply to a message to purge [user's] messages."

@@ -760,7 +760,8 @@ class Worker(GDrive):
             reply_string += "send back "
             reply_string += "<code>.gconf [auth_code]</code>"
 
-            await self.__message.edit(text=reply_string, disable_web_page_preview=True)
+            await self.__message.edit(
+                text=reply_string, disable_web_page_preview=True, log=True)
 
     async def confirm_setup(self) -> None:
         """
@@ -783,14 +784,14 @@ class Worker(GDrive):
             self._set_creds(cred)
             AUTH_FLOW = None
 
-            await self.__message.edit("`Saved GDrive Creds!`", del_in=3)
+            await self.__message.edit("`Saved GDrive Creds!`", del_in=3, log=True)
 
     async def clear(self) -> None:
         """
         Clear Creds.
         """
 
-        await self.__message.edit(self._clear_creds(), del_in=3)
+        await self.__message.edit(self._clear_creds(), del_in=3, log=True)
 
     async def set_parent(self) -> None:
         """
@@ -807,7 +808,7 @@ class Worker(GDrive):
             PARENT_ID = file_id
 
             await self.__message.edit(
-                f"Parents set as `{file_id}` successfully", del_in=5)
+                f"Parents set as `{file_id}` successfully", del_in=5, log=True)
 
     async def reset_parent(self) -> None:
         """
@@ -817,7 +818,7 @@ class Worker(GDrive):
 
         PARENT_ID = ""
 
-        await self.__message.edit("`Parents Reset successfully`", del_in=5)
+        await self.__message.edit("`Parents Reset successfully`", del_in=5, log=True)
 
     async def search(self) -> None:
         """
@@ -836,7 +837,7 @@ class Worker(GDrive):
 
             await self.__message.edit_or_send_as_file(
                 out, disable_web_page_preview=True,
-                caption=f"search results for `{self.__message.filtered_input_str}`")
+                caption=f"search results for `{self.__message.filtered_input_str}`", log=True)
 
         else:
             await self.__message.edit("Please run `.gsetup` first", del_in=5)
@@ -912,7 +913,7 @@ class Worker(GDrive):
             else:
                 out = "`failed to upload.. check logs?`"
 
-            await self.__message.edit(out, disable_web_page_preview=True)
+            await self.__message.edit(out, disable_web_page_preview=True, log=True)
 
         else:
             await self.__message.edit("Please run `.gsetup` first", del_in=5)
@@ -951,7 +952,7 @@ class Worker(GDrive):
             else:
                 out = "`failed to download.. check logs?`"
 
-            await self.__message.edit(out, disable_web_page_preview=True)
+            await self.__message.edit(out, disable_web_page_preview=True, log=True)
 
         else:
             await self.__message.edit("Please run `.gsetup` first", del_in=5)
@@ -994,7 +995,7 @@ class Worker(GDrive):
             else:
                 out = "`failed to copy.. check logs?`"
 
-            await self.__message.edit(out, disable_web_page_preview=True)
+            await self.__message.edit(out, disable_web_page_preview=True, log=True)
 
         else:
             await self.__message.edit("Please run `.gsetup` first", del_in=5)
@@ -1021,7 +1022,7 @@ class Worker(GDrive):
 
             else:
                 await self.__message.edit(
-                    f"`{file_id}` **Moved Successfully**\n\n{link}")
+                    f"`{file_id}` **Moved Successfully**\n\n{link}", log=True)
 
         else:
             await self.__message.edit("Please run `.gsetup` first", del_in=5)
@@ -1044,7 +1045,7 @@ class Worker(GDrive):
 
             else:
                 await self.__message.edit(
-                    f"`{file_id}` **Deleted Successfully**", del_in=5)
+                    f"`{file_id}` **Deleted Successfully**", del_in=5, log=True)
 
         else:
             await self.__message.edit("Please run `.gsetup` first", del_in=5)
@@ -1063,7 +1064,8 @@ class Worker(GDrive):
                 await self.__message.err(h_e)
 
             else:
-                await self.__message.edit("`Empty the Trash Successfully`", del_in=5)
+                await self.__message.edit(
+                    "`Empty the Trash Successfully`", del_in=5, log=True)
 
         else:
             await self.__message.edit("Please run `.gsetup` first", del_in=5)
@@ -1088,7 +1090,8 @@ class Worker(GDrive):
             out = f"**I Found these Details for** `{file_id}`\n\n{meta_data}"
 
             await self.__message.edit_or_send_as_file(
-                out, disable_web_page_preview=True, caption=f"metadata for `{file_id}`")
+                out, disable_web_page_preview=True,
+                caption=f"metadata for `{file_id}`", log=True)
 
         else:
             await self.__message.edit("Please run `.gsetup` first", del_in=5)
@@ -1113,7 +1116,8 @@ class Worker(GDrive):
             out = f"**I Found these Permissions for** `{file_id}`\n\n{out}"
 
             await self.__message.edit_or_send_as_file(
-                out, disable_web_page_preview=True, caption=f"view perm results for `{file_id}`")
+                out, disable_web_page_preview=True,
+                caption=f"view perm results for `{file_id}`", log=True)
 
         else:
             await self.__message.edit("Please run `.gsetup` first", del_in=5)
@@ -1136,7 +1140,7 @@ class Worker(GDrive):
 
             else:
                 out = f"**Set Permissions successfully for** `{file_id}`\n\n{link}"
-                await self.__message.edit(out, disable_web_page_preview=True)
+                await self.__message.edit(out, disable_web_page_preview=True, log=True)
 
         else:
             await self.__message.edit("Please run `.gsetup` first", del_in=5)
@@ -1161,7 +1165,8 @@ class Worker(GDrive):
             out = f"**Removed These Permissions successfully from** `{file_id}`\n\n{out}"
 
             await self.__message.edit_or_send_as_file(
-                out, disable_web_page_preview=True, caption=f"removed perm results for `{file_id}`")
+                out, disable_web_page_preview=True,
+                caption=f"removed perm results for `{file_id}`", log=True)
 
         else:
             await self.__message.edit("Please run `.gsetup` first", del_in=5)

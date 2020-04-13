@@ -13,6 +13,8 @@ import speedtest
 from userge import userge, Message
 from userge.utils import humanbytes
 
+CHANNEL = userge.getCLogger(__name__)
+
 
 @userge.on_cmd("speedtest", about="__test your server speed__")
 async def speedtst(message: Message):
@@ -57,9 +59,10 @@ Received: `{humanbytes(result['bytes_received'])}`
 Download: `{humanbytes(result['download'])}/s`
 Upload: `{humanbytes(result['upload'])}/s`**"""
 
-    await userge.send_photo(chat_id=message.chat.id,
-                            photo=path,
-                            caption=output)
+    msg = await userge.send_photo(chat_id=message.chat.id,
+                                  photo=path,
+                                  caption=output)
 
+    await CHANNEL.fwd_msg(msg)
     os.remove(path)
     await message.delete()

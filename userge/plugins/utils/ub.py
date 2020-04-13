@@ -50,4 +50,4 @@ async def urban_dict(message: Message):
 **Meaning:**\n__{meaning}__\n\n\
 **Example:**\n__{example}__"
 
-    await message.edit_or_send_as_file(text=output, caption=query)
+    await message.edit_or_send_as_file(text=output, caption=query, log=True)

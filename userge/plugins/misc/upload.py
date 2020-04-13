@@ -18,6 +18,7 @@ from userge import userge, Config, Message
 from userge.utils import progress, take_screen_shot
 
 LOGGER = userge.getLogger(__name__)
+CHANNEL = userge.getCLogger(__name__)
 
 LOGO_PATH = 'resources/userge.png'
 THUMB_PATH = Config.DOWN_PATH + "thumb_image.jpg"
@@ -63,12 +64,14 @@ async def upload(path: Path, chat_id: int):
 
 
 async def doc_upload(chat_id, path):
-    message: Message = await userge.send_message(chat_id, f"`Uploading {path.name} ...`")
+    message: Message = await userge.send_message(
+        chat_id, f"`Uploading {path.name} ...`", log=True)
+
     start_t = datetime.now()
     c_time = time.time()
     thumb = await get_thumb()
     await userge.send_chat_action(chat_id, "upload_document")
-    the_real_download_location = await userge.send_document(
+    msg = await userge.send_document(
         chat_id=chat_id,
         document=str(path),
         thumb=thumb,
@@ -80,15 +83,17 @@ async def doc_upload(chat_id, path):
             "uploading", userge, message, c_time
         )
     )
+
+    await CHANNEL.fwd_msg(msg)
     await userge.send_chat_action(chat_id, "cancel")
 
     if message.process_is_canceled:
-        await message.edit("`Process Canceled!`", del_in=5)
+        await message.edit("`Process Canceled!`", del_in=5, log=True)
 
     else:
         end_t = datetime.now()
         ms = (end_t - start_t).seconds
-        await message.edit(f"Uploaded in {ms} seconds")
+        await message.edit(f"Uploaded in {ms} seconds", log=True)
 
 
 async def vid_upload(chat_id, path):
@@ -96,12 +101,13 @@ async def vid_upload(chat_id, path):
     thumb = await get_thumb(strpath)
     metadata = extractMetadata(createParser(strpath))
 
-    message: Message = await userge.send_message(chat_id, f"`Uploading {path.name} ...` as a video")
+    message: Message = await userge.send_message(
+        chat_id, f"`Uploading {path.name} ...` as a video", log=True)
 
     start_t = datetime.now()
     c_time = time.time()
     await userge.send_chat_action(chat_id, "upload_video")
-    the_real_download_location = await userge.send_video(
+    msg = await userge.send_video(
         chat_id=chat_id,
         video=strpath,
         duration=metadata.get("duration").seconds,
@@ -114,16 +120,18 @@ async def vid_upload(chat_id, path):
             "uploading", userge, message, c_time
         )
     )
+
+    await CHANNEL.fwd_msg(msg)
     await userge.send_chat_action(chat_id, "cancel")
     await remove_thumb(thumb)
 
     if message.process_is_canceled:
-        await message.edit("`Process Canceled!`", del_in=5)
+        await message.edit("`Process Canceled!`", del_in=5, log=True)
 
     else:
         end_t = datetime.now()
         ms = (end_t - start_t).seconds
-        await message.edit(f"Uploaded in {ms} seconds")
+        await message.edit(f"Uploaded in {ms} seconds", log=True)
 
 
 async def get_thumb(path: str = '') -> str:

@@ -129,7 +129,7 @@ async def sayleft(msg: Message):
 
 async def raw_set(message: Message, name, collection, chats):
     if message.chat.type in ["private", "bot", "channel"]:
-        await message.err(text=f'Are you high XO\nSet {name} in a group chat')
+        await message.err(text=f'Are you high XO\nSet {name} in a group chat', log=True)
         return
 
     if message.reply_to_message:
@@ -147,7 +147,7 @@ async def raw_set(message: Message, name, collection, chats):
         chats.add(message.chat.id)
         out = f"{name} __message has been set for the__\n`{message.chat.title}`"
 
-    await message.edit(text=out, del_in=3)
+    await message.edit(text=out, del_in=3, log=True)
 
 
 async def raw_no(message: Message, name, collection, chats):
@@ -159,7 +159,7 @@ async def raw_no(message: Message, name, collection, chats):
 
         out = f"`{name} Disabled Successfully!`"
 
-    await message.edit(text=out, del_in=3)
+    await message.edit(text=out, del_in=3, log=True)
 
 
 async def raw_do(message: Message, name, collection, chats):
@@ -168,7 +168,7 @@ async def raw_do(message: Message, name, collection, chats):
         chats.add(message.chat.id)
         out = f'`I will {name} new members XD`'
 
-    await message.edit(text=out, del_in=3)
+    await message.edit(text=out, del_in=3, log=True)
 
 
 async def raw_del(message: Message, name, collection, chats):
@@ -180,7 +180,7 @@ async def raw_del(message: Message, name, collection, chats):
 
         out = f"`{name} Removed Successfully!`"
 
-    await message.edit(text=out, del_in=3)
+    await message.edit(text=out, del_in=3, log=True)
 
 
 async def raw_view(message: Message, name, collection):
@@ -194,7 +194,7 @@ async def raw_view(message: Message, name, collection):
         liststr += f"**Active:** `{found['on']}`"
 
     await message.edit(
-        text=liststr or f'`NO {name.upper()} STARTED`', del_in=15)
+        text=liststr or f'`NO {name.upper()} STARTED`', del_in=15, log=True)
 
 
 async def raw_ls(message: Message, name, collection):
@@ -206,7 +206,7 @@ async def raw_ls(message: Message, name, collection):
         liststr += f"**Active:** `{c['on']}`\n\n"
 
     await message.edit(
-        text=liststr or f'`NO {name.upper()}S STARTED`', del_in=15)
+        text=liststr or f'`NO {name.upper()}S STARTED`', del_in=15, log=True)
 
 
 async def raw_say(message: Message, name, collection):
