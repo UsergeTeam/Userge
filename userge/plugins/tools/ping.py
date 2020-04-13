@@ -18,6 +18,6 @@ async def pingme(message: Message):
     await message.edit('`Pong!`')
 
     end = datetime.now()
-    ms = (end - start).microseconds / 1000
+    m_s = (end - start).microseconds / 1000
 
-    await message.edit(f"**Pong!**\n`{ms} ms`")
+    await message.edit(f"**Pong!**\n`{m_s} ms`")

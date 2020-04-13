@@ -176,6 +176,8 @@ class Userge(BaseClient):
         if log:
             await self.getCLogger(__name__).fwd_msg(msg)
 
+        del_in = del_in or Config.MSG_DELETE_TIMEOUT
+
         if del_in > 0:
             await asyncio.sleep(del_in)
             return await msg.delete()

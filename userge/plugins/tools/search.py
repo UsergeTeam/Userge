@@ -26,4 +26,4 @@ async def search(message: Message):
     else:
         out = "__command not found!__"
 
-    await message.edit(text=out, del_in=15)
+    await message.edit(text=out, del_in=0)

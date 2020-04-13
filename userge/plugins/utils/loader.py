@@ -12,8 +12,6 @@ from userge import userge, Message
 from userge.utils import get_import_path
 from userge.plugins import ROOT
 
-CHANNEL = userge.getCLogger(__name__)
-
 
 @userge.on_cmd('load', about="""\
 __Load Userge plugin__
@@ -39,8 +37,7 @@ async def load_cmd_handler(message: Message):
                 await message.err(i_e)
 
             else:
-                await CHANNEL.log(f"`Loaded {plugin}`")
-                await message.edit(f"`Loaded {plugin}`", del_in=3)
+                await message.edit(f"`Loaded {plugin}`", del_in=3, log=True)
 
         else:
             await message.edit("`Plugin Not Found`")

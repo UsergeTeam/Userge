@@ -64,6 +64,10 @@ class Config:
 
     HEROKU_APP = None
 
+    HEROKU_GIT_URL = None
+
+    MSG_DELETE_TIMEOUT = 10
+
 
 if not os.path.isdir(Config.DOWN_PATH):
     LOG.info("Creating Download Path...")
@@ -77,6 +81,9 @@ if Config.HEROKU_API_KEY:
         if heroku_app and Config.HEROKU_APP_NAME and \
             heroku_app.name == Config.HEROKU_APP_NAME:
 
-            Config.HEROKU_APP = heroku_app
             LOG.info(f"Heroku App : {heroku_app.name} Found...")
+
+            Config.HEROKU_APP = heroku_app
+            Config.HEROKU_GIT_URL = heroku_app.git_url.replace(
+                "https://", "https://api:" + Config.HEROKU_API_KEY + "@")
             break

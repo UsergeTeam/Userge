@@ -48,4 +48,4 @@ async def getids(message: Message):
             if file_id is not None:
                 out_str += f"\n📄 File ID: `{file_id}`"
 
-    await message.edit(out_str)
+    await message.edit(out_str, log=True)

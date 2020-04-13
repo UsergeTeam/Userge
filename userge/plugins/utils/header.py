@@ -48,7 +48,7 @@ async def req_head(message: Message):
                            timeout=tout)
 
     except Exception as i_e:
-        await message.err(i_e)
+        await message.err(i_e, log=True)
         return
 
     output = f"**URL**: `{link}`\n\n**STATUS CODE**: __{cd.status_code}__\n\n**HEADERS**:\n\n"
