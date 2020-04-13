@@ -82,8 +82,11 @@ async def check_update(message: Message):
         await message.edit(f'{ERROR_TEXT}\n`{error}`', del_in=5)
         return
 
-    repo.create_head(branch, getattr(ups_rem.refs, branch))
-    getattr(repo.heads, branch).checkout(True)
+    try:
+        repo.create_head(branch, getattr(ups_rem.refs, branch))
+        getattr(repo.heads, branch).checkout(True)
+    except OSError:
+        pass
 
     out = ''
     for i in repo.iter_commits(f'HEAD..upstream/{branch}'):
