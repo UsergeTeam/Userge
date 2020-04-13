@@ -73,7 +73,7 @@ class Message(BaseMessage):
 
         input_ = self.input_str
 
-        if self.reply_to_message:
+        if not input_ and self.reply_to_message:
             input_ = (self.reply_to_message.text or '').strip()
 
         return input_

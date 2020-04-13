@@ -29,8 +29,11 @@ async def save_thumb_nail(message: Message):
         start_t = datetime.now()
         c_time = time.time()
 
+        if os.path.exists(THUMB_PATH):
+            os.remove(THUMB_PATH)
+
         await userge.download_media(message=message.reply_to_message,
-                                    file_name=Config.DOWN_PATH,
+                                    file_name=THUMB_PATH,
                                     progress=progress,
                                     progress_args=(
                                         "trying to download", userge, message, c_time))
