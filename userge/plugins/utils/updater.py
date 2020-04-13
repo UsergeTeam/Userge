@@ -9,7 +9,6 @@
 
 import asyncio
 
-import heroku3
 from git import Repo
 from git.exc import GitCommandError, InvalidGitRepositoryError, NoSuchPathError
 
@@ -106,35 +105,21 @@ async def check_update(message: Message):
         await message.edit(f'`New update found for [{branch}], trying to update...`')
         repo.git.reset('--hard', 'FETCH_HEAD')
 
-        if Config.HEROKU_API_KEY:
-            heroku = heroku3.from_key(Config.HEROKU_API_KEY)
-            heroku_app = None
+        if Config.HEROKU_APP:
+            await message.edit('`Heroku app found, trying to push update...`')
 
-            for heroku_app in heroku.apps():
-                if heroku_app and Config.HEROKU_APP_NAME and \
-                    heroku_app.name == Config.HEROKU_APP_NAME:
-                    break
+            heroku_git_url = Config.HEROKU_APP.git_url.replace(
+                "https://",
+                "https://api:" + Config.HEROKU_API_KEY + "@")
 
-            if heroku_app:
-                await message.edit('`Heroku app found, trying to push update...`')
-
-                heroku_git_url = heroku_app.git_url.replace(
-                    "https://",
-                    "https://api:" + Config.HEROKU_API_KEY + "@")
-
-                if "heroku" in repo.remotes:
-                    remote = repo.remote("heroku")
-                    remote.set_url(heroku_git_url)
-
-                else:
-                    remote = repo.create_remote("heroku", heroku_git_url)
-
-                remote.push(refspec=f"HEAD:refs/heads/{branch}")
+            if "heroku" in repo.remotes:
+                remote = repo.remote("heroku")
+                remote.set_url(heroku_git_url)
 
             else:
-                await CHANNEL.log("please check your heroku app name")
-                await message.reply(
-                    "no heroku application found for given name, but a key is given? 😕", del_in=3)
+                remote = repo.create_remote("heroku", heroku_git_url)
+
+            remote.push(refspec=f"HEAD:refs/heads/{branch}")
 
         await CHANNEL.log(f"**UPDATED Userge from [{branch}]:\n\nCHANGELOG:**\n\n`{out}`")
 

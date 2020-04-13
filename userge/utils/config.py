@@ -8,6 +8,7 @@
 
 
 import os
+import heroku3
 from dotenv import load_dotenv
 from .logger import logging
 
@@ -61,6 +62,21 @@ class Config:
 
     HEROKU_APP_NAME = os.environ.get("HEROKU_APP_NAME", None)
 
+    HEROKU_APP = None
+
 
 if not os.path.isdir(Config.DOWN_PATH):
+    LOG.info("Creating Download Path...")
     os.makedirs(Config.DOWN_PATH)
+
+
+if Config.HEROKU_API_KEY:
+    LOG.info("Checking Heroku App...")
+
+    for heroku_app in heroku3.from_key(Config.HEROKU_API_KEY).apps():
+        if heroku_app and Config.HEROKU_APP_NAME and \
+            heroku_app.name == Config.HEROKU_APP_NAME:
+
+            Config.HEROKU_APP = heroku_app
+            LOG.info(f"Heroku App : {heroku_app.name} Found...")
+            break
