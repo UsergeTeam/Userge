@@ -116,6 +116,7 @@ async def testing(message: Message):
   > After that copy the string session and past it in Config Vars (settings -> reveal config vars).  
   > Finally turn on the app and check the logs (settings -> view logs) :)
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/dacadcbabdb74de3903ddae25dc95375)](https://app.codacy.com/gh/UsergeTeam/Userge?utm_source=github.com&utm_medium=referral&utm_content=UsergeTeam/Userge&utm_campaign=Badge_Grade_Dashboard)
   [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/UsergeTeam/Userge)
 
 * Other Method.
