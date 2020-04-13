@@ -258,7 +258,7 @@ FACEREACTS = (
     "(ノಠ ∩ಠ)ノ彡( \\o°o)\\", "“ヽ(´▽｀)ノ”",)
 
 
-@userge.on_cmd(":/$", about="__Check yourself ;)__", name="kek", trigger='')
+@userge.on_cmd(":/$", about="__Check yourself, hint: `:/`__", name="kek", trigger='')
 async def kek_(message: Message):
     """kek"""
     kek = ["/", "\\"]
@@ -267,20 +267,24 @@ async def kek_(message: Message):
         await message.edit(":" + kek[i % 2])
 
 
-@userge.on_cmd("-_-$", about="__Ok...__", name="lol", trigger='')
+@userge.on_cmd("-_-$", about="__Check yourself, hint: `-_-`__", name="lol", trigger='')
 async def lol_(message: Message):
     """lol"""
     lol = "-_ "
-    for _ in range(10):
+    for i in range(15):
+        if i % 3 == 0:
+            lol = "-_ "
         lol = lol[:-1] + "_-"
         await message.edit(lol, parse_mode="html")
 
 
-@userge.on_cmd(";_;$", about="__Like `-_-` but crying__", name="fun", trigger='')
+@userge.on_cmd(";_;$", about="__Like `-_-` but crying, hint: `;_;`__", name="fun", trigger='')
 async def fun_(message: Message):
     """fun"""
     fun = ";_ "
-    for _ in range(10):
+    for i in range(15):
+        if i % 3 == 0:
+            fun = ";_ "
         fun = fun[:-1] + "_;"
         await message.edit(fun, parse_mode="html")
 
@@ -400,7 +404,7 @@ async def moon_(message: Message):
             deq.rotate(1)
 
     except Exception:
-        return
+        await message.delete()
 
 
 @userge.on_cmd("clock$", about="__kensar clock animation__")
@@ -415,7 +419,7 @@ async def clock_(message: Message):
             deq.rotate(1)
 
     except Exception:
-        return
+        await message.delete()
 
 
 @userge.on_cmd("bt$", about="""\
@@ -478,7 +482,7 @@ __cow which says things__
 
     `.[any cowacter]say [text]`
 
-    __cowacters:__ {['`' + x + '`' for x in cow.COWACTERS]}""", name="cowsay")
+    __cowacters:__ `{'`, `'.join(cow.COWACTERS)}`""", name="cowsay")
 async def cowsay_(message: Message):
     """cowsay"""
     arg = message.matches[0].group(1).lower()
@@ -869,4 +873,4 @@ async def scam_(message: Message):
                 count += 5
 
     except Exception:
-        return
+        await message.delete()

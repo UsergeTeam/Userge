@@ -29,7 +29,7 @@ LOG_STR = "<<<!  [[[[[  ___{}___  ]]]]]  !>>>"
 
 class Message(BaseMessage):
     """
-    Moded Message Class For Userge
+    Modded Message Class For Userge
     """
 
     def __init__(self,
@@ -118,9 +118,6 @@ class Message(BaseMessage):
         CANCEL_LIST.append(self.message_id)
 
     def __msg_to_dict(self, message: BaseMessage) -> Dict[str, object]:
-
-        LOG.info(
-            LOG_STR.format("Creating moded message object"))
 
         kwargs_ = vars(message)
         del message

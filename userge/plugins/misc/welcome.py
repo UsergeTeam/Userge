@@ -219,8 +219,8 @@ async def raw_say(message: Message, name, collection):
     kwargs = {
         **user_dict,
         'chat': message.chat.title if message.chat.title else "this group",
-        'mention': f"<a href='tg://user?id={user.id}'>\
-            {user_dict['uname'] or user_dict['flname']}</a>",
+        'mention': f"<a href='tg://user?id={user.id}'>" + \
+            f"{user_dict['uname'] or user_dict['flname']}</a>",
     }
 
     await message.reply(

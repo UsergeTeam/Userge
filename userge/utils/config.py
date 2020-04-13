@@ -55,6 +55,12 @@ class Config:
 
     LOG_CHANNEL_ID = int(os.environ.get("LOG_CHANNEL_ID", 0))
 
+    OFFICIAL_REPO_LINK = "https://github.com/UsergeTeam/Userge"
+
+    HEROKU_API_KEY = os.environ.get("HEROKU_API_KEY", None)
+
+    HEROKU_APP_NAME = os.environ.get("HEROKU_APP_NAME", None)
+
 
 if not os.path.isdir(Config.DOWN_PATH):
     os.makedirs(Config.DOWN_PATH)

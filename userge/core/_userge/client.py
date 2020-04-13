@@ -66,9 +66,6 @@ class Userge(BaseClient):
         This will return new channel logger object.
         """
 
-        LOG.info(
-            LOG_STR.format(f"Creating CLogger => {name}"))
-
         return CLogger(self, name)
 
     @staticmethod

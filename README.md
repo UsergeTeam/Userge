@@ -63,7 +63,7 @@ async def testing(message: Message):
 
    await message.edit("testing...", del_in=5)  # this will be automatically deleted after 5 sec
 
-   CHANNEL.log("testing completed!")  # log to channel
+   await CHANNEL.log("testing completed!")  # log to channel
 ```
 
 ## Requirements

@@ -20,9 +20,7 @@ __Simulate a typewriter__
 
     `.type [text | reply to msg]`""")
 async def type_(message: Message):
-    text = message.input_str
-    if message.reply_to_message:
-        text = message.reply_to_message.text
+    text = message.input_or_reply_str
 
     if not text:
         await message.err("input not found")
@@ -41,11 +39,11 @@ async def type_(message: Message):
         typing_text = old_text + typing_symbol
 
         try:
-            await message.edit(typing_text)
+            await message.try_to_edit(typing_text)
             time.sleep(s_t)
 
-            await message.edit(old_text)
+            await message.try_to_edit(old_text)
             time.sleep(s_t)
 
-        except FloodWait as x:
-            time.sleep(x.x)
+        except FloodWait as x_e:
+            time.sleep(x_e.x)

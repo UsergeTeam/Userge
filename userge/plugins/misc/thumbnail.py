@@ -10,7 +10,6 @@
 import os
 import time
 from datetime import datetime
-from PIL import Image
 from userge import userge, Config, Message
 from userge.utils import progress
 
@@ -29,18 +28,16 @@ async def save_thumb_nail(message: Message):
         start_t = datetime.now()
         c_time = time.time()
 
-        d_f_name = await userge.download_media(message=message.reply_to_message,
-                                               file_name=Config.DOWN_PATH,
-                                               progress=progress,
-                                               progress_args=(
-                                                   "trying to download", message, c_time))
+        await userge.download_media(message=message.reply_to_message,
+                                    file_name=Config.DOWN_PATH,
+                                    progress=progress,
+                                    progress_args=(
+                                        "trying to download", userge, message, c_time))
 
-        Image.open(d_f_name).convert("RGB").save(THUMB_PATH, 'JPEG')
-        os.remove(d_f_name)
         end_t = datetime.now()
-        ms = (end_t - start_t).seconds
+        m_s = (end_t - start_t).seconds
 
-        await message.edit(f"thumbnail saved in {ms} seconds.", del_in=3)
+        await message.edit(f"thumbnail saved in {m_s} seconds.", del_in=3)
 
     else:
         await message.edit("Reply to a photo to save custom thumbnail", del_in=3)
@@ -49,6 +46,7 @@ async def save_thumb_nail(message: Message):
 @userge.on_cmd('dthumb', about="__Delete thumbnail__")
 async def clear_thumb_nail(message: Message):
     await message.edit("`processing ...`")
+
     if os.path.exists(THUMB_PATH):
         os.remove(THUMB_PATH)
 
