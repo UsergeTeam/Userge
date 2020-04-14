@@ -82,7 +82,7 @@ async def check_update(message: Message):
 
     try:
         repo.create_head(branch, getattr(ups_rem.refs, branch))
-        #getattr(repo.heads, branch).checkout(True)
+        repo.heads.master.checkout(True)
     except OSError:
         pass
 
