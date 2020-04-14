@@ -7,11 +7,11 @@
 # All rights reserved.
 
 
-from userge import userge, Message, Config
+from userge import userge, Message
 
 
 @userge.on_cmd("repo", about="__get repo link__")
 async def getplugins(message: Message):
     await message.edit(
-        f"**Hey**, __I am using__ 🥳 [Userge]({Config.OFFICIAL_REPO_LINK}) 😎",
+        f"**Hey**, __I am using__ 🥳 [Userge](https://github.com/UsergeTeam/Userge) 😎",
         disable_web_page_preview=True)

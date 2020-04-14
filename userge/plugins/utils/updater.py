@@ -54,7 +54,7 @@ async def check_update(message: Message):
         return
 
     try:
-        repo.create_remote('upstream', Config.OFFICIAL_REPO_LINK)
+        repo.create_remote('upstream', Config.UPSTREAM_REPO)
     except GitCommandError:
         pass
 
@@ -82,7 +82,7 @@ async def check_update(message: Message):
 
     try:
         repo.create_head(branch, getattr(ups_rem.refs, branch))
-        getattr(repo.heads, branch).checkout(True)
+        #getattr(repo.heads, branch).checkout(True)
     except OSError:
         pass
 
