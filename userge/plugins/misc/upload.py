@@ -31,8 +31,13 @@ __upload files to telegram__
 
     `.upload [file or folder path]`""")
 async def uploadtotg(message: Message):
+    path_ = message.input_str
+    if not path_:
+        await message.edit("invalid input!, check `.help .upload`", del_in=5)
+        return
+
     try:
-        string = Path(message.input_str)
+        string = Path(path_)
 
     except IndexError:
         await message.edit("wrong syntax\n`.upload [path]`")
