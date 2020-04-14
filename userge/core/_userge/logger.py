@@ -34,7 +34,7 @@ class CLogger(BaseCLogger):
             None
         """
 
-        LOG.info(
+        LOG.debug(
             LOG_STR.format(f"logging text : {text} to channel : {Config.LOG_CHANNEL_ID}"))
 
         if Config.LOG_CHANNEL_ID:
@@ -63,7 +63,7 @@ class CLogger(BaseCLogger):
             None
         """
 
-        LOG.info(
+        LOG.debug(
             LOG_STR.format(f"logging msg : {message} to channel : {Config.LOG_CHANNEL_ID}"))
 
         if Config.LOG_CHANNEL_ID:

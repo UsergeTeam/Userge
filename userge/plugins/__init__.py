@@ -17,7 +17,7 @@ ROOT = dirname(__file__)
 def get_all_plugins():
     plugins = get_import_path(ROOT, "/**/")
 
-    LOG.info(f"all plugins: {plugins}")
+    LOG.debug(f"Plugins to Load: {plugins}")
 
     return plugins
 

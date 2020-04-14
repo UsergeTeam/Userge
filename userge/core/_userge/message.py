@@ -164,7 +164,7 @@ class Message(BaseMessage):
 
             self.__filtered_input_str = self.__filtered_input_str.strip()
 
-            LOG.info(
+            LOG.debug(
                 LOG_STR.format(
                     f"Filtered Input String => [ {self.__filtered_input_str}, {self.__flags} ]"))
 
@@ -203,7 +203,7 @@ class Message(BaseMessage):
         reply_to_id = self.reply_to_message.message_id if self.reply_to_message \
             else self.message_id
 
-        LOG.info(
+        LOG.debug(
             LOG_STR.format(f"Uploading {filename} To Telegram"))
 
         msg = await self._client.send_document(chat_id=self.chat.id,

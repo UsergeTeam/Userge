@@ -42,16 +42,17 @@ async def check_update(message: Message):
             f'{ERROR_TEXT}\n`directory {error} is not found`', del_in=5, log=True)
         return
 
-    except InvalidGitRepositoryError as error:
-        LOG.warn(
-            f'{ERROR_TEXT}\n`directory {error} does not seems to be a git repository`')
-
-        repo = Repo.init()
-
     except GitCommandError as error:
         await message.edit(
             f'{ERROR_TEXT}\n`Early failure! {error}`', del_in=5, log=True)
         return
+
+    except InvalidGitRepositoryError:
+        repo = Repo.init()
+        origin = repo.create_remote('upstream', Config.UPSTREAM_REPO)
+        origin.fetch()
+        repo.create_head('master', origin.refs.master)
+        repo.heads.master.checkout(True)
 
     try:
         repo.create_remote('upstream', Config.UPSTREAM_REPO)
@@ -80,15 +81,10 @@ async def check_update(message: Message):
         await message.edit(f'{ERROR_TEXT}\n`{error}`', del_in=5, log=True)
         return
 
-    try:
-        repo.create_head(branch, getattr(ups_rem.refs, branch))
-        # repo.heads.master.checkout(True)
-    except OSError:
-        pass
-
     out = ''
     for i in repo.iter_commits(f'HEAD..upstream/{branch}'):
-        out += f'•[{i.committed_datetime.strftime("%d/%m/%y")}]: {i.summary} <{i.author}>\n'
+        out += f"🔨 **#{i.count()}** : [{i.summary}]({Config.UPSTREAM_REPO.rstrip('/')}/commit/{i}) " + \
+                f"👷 __{i.committer}__\n\n"
 
     if not out:
         await message.edit(
@@ -96,8 +92,9 @@ async def check_update(message: Message):
         return
 
     if not run_updater:
-        changelog_str = f'**New UPDATE available for [{branch}]:\n\nCHANGELOG:**\n\n`{out}`'
-        await message.edit_or_send_as_file(changelog_str, log=True)
+        changelog_str = f'**New UPDATE available for [{branch}]:\n\n📄 CHANGELOG 📄**\n\n'
+        await message.edit_or_send_as_file(
+            changelog_str + out, log=True, disable_web_page_preview=True)
 
     else:
         await message.edit(f'`New update found for [{branch}], trying to update...`')
@@ -115,12 +112,12 @@ async def check_update(message: Message):
 
             remote.push(refspec=f"HEAD:refs/heads/{branch}")
 
-        await CHANNEL.log(f"**UPDATED Userge from [{branch}]:\n\nCHANGELOG:**\n\n`{out}`")
+        await CHANNEL.log(f"**UPDATED Userge from [{branch}]:\n\n📄 CHANGELOG 📄**\n\n{out}")
 
         await message.edit(
             '**Userge Successfully Updated!**\n __Now restarting... Wait for a while!__`', del_in=3)
 
-        asyncio.create_task(restart(userge))
+        asyncio.get_event_loop().create_task(restart(userge))
 
 
 async def restart(client: userge):
