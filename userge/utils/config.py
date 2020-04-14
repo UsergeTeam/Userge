@@ -66,7 +66,7 @@ class Config:
 
     HEROKU_GIT_URL = None
 
-    MSG_DELETE_TIMEOUT = 10
+    MSG_DELETE_TIMEOUT = 120
 
 
 if not os.path.isdir(Config.DOWN_PATH):

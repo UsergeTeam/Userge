@@ -10,7 +10,7 @@
 from userge import userge, Message, Config
 
 
-@userge.on_cmd("sdelto (\\d+)", about="""\
+@userge.on_cmd("sdelto (\\d+|-1)", about="""\
 __Set auto message delete timeout__
 
 **Userge:**
@@ -19,7 +19,8 @@ __Set auto message delete timeout__
 
 **Example:**
 
-    `.setdelto 15`""")
+    `.sdelto 15`
+    `.sdelto -1` : for disable deletion""")
 async def set_delete_timeout(message: Message):
     """set delete timeout"""
 
