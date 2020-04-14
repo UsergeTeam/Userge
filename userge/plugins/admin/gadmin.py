@@ -336,8 +336,8 @@ __use this to mute group members__
 
 **Example:**
 
-    `.mute -flag [username | userid] or [reply to user] <reason (optional)>`
-    `.mute -d1 @someusername/userid/replytouser spam<reason optional>` (mute for one day)""")
+    `.mute -flag [username | userid] or [reply to user] :reason (optional)`
+    `.mute -d1 @someusername/userid/replytouser spam` (mute for one day)""")
 
 async def mute_usr(message: Message):
     """
@@ -378,7 +378,7 @@ async def mute_usr(message: Message):
             mute_period = minutes * 60
 
             try:
-                userge.restrict_chat_member(chat_id, user_id,
+                await userge.restrict_chat_member(chat_id, user_id,
                                             ChatPermissions(),
                                             int(time.time() + mute_period))
                 await message.edit(
@@ -400,7 +400,7 @@ async def mute_usr(message: Message):
             mute_period = hours * 3600
 
             try:
-                userge.restrict_chat_member(chat_id, user_id,
+                await userge.restrict_chat_member(chat_id, user_id,
                                             ChatPermissions(),
                                             int(time.time() + mute_period))
                 await message.edit(
@@ -422,7 +422,7 @@ async def mute_usr(message: Message):
             mute_period = hours * 86400
 
             try:
-                userge.restrict_chat_member(chat_id, user_id,
+                await userge.restrict_chat_member(chat_id, user_id,
                                             ChatPermissions(),
                                             int(time.time() + mute_period))
                 await message.edit(
@@ -443,7 +443,7 @@ async def mute_usr(message: Message):
             get_mem = await userge.get_chat_member(chat_id, user_id)
 
             try:
-                userge.restrict_chat_member(chat_id, user_id, ChatPermissions())
+                await userge.restrict_chat_member(chat_id, user_id, ChatPermissions())
                 await message.edit(
                     f"#MUTE\n\n"
                     f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
@@ -457,6 +457,8 @@ async def mute_usr(message: Message):
                     text=f"`something went wrong 🤔,`"
                     f"`do .help mute for more info`\n"
                     f"**ERROR**: {e}", del_in=5)
+
+            return
 
     else:
         await message.edit(
