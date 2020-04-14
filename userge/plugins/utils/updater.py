@@ -9,7 +9,6 @@
 
 import asyncio
 
-import heroku3
 from git import Repo
 from git.exc import GitCommandError, InvalidGitRepositoryError, NoSuchPathError
 
@@ -39,8 +38,8 @@ async def check_update(message: Message):
         repo = Repo()
 
     except NoSuchPathError as error:
-        await CHANNEL.log(f'{ERROR_TEXT}\n`directory {error} is not found`')
-        await message.edit(f'{ERROR_TEXT}\n`directory {error} is not found`', del_in=5)
+        await message.edit(
+            f'{ERROR_TEXT}\n`directory {error} is not found`', del_in=5, log=True)
         return
 
     except InvalidGitRepositoryError as error:
@@ -50,12 +49,12 @@ async def check_update(message: Message):
         repo = Repo.init()
 
     except GitCommandError as error:
-        await CHANNEL.log(f'{ERROR_TEXT}\n`Early failure! {error}`')
-        await message.edit(f'{ERROR_TEXT}\n`Early failure! {error}`', del_in=5)
+        await message.edit(
+            f'{ERROR_TEXT}\n`Early failure! {error}`', del_in=5, log=True)
         return
 
     try:
-        repo.create_remote('upstream', Config.OFFICIAL_REPO_LINK)
+        repo.create_remote('upstream', Config.UPSTREAM_REPO)
     except GitCommandError:
         pass
 
@@ -78,13 +77,12 @@ async def check_update(message: Message):
     try:
         ups_rem.fetch(branch)
     except GitCommandError as error:
-        await CHANNEL.log(f'{ERROR_TEXT}\n`{error}`')
-        await message.edit(f'{ERROR_TEXT}\n`{error}`', del_in=5)
+        await message.edit(f'{ERROR_TEXT}\n`{error}`', del_in=5, log=True)
         return
 
     try:
         repo.create_head(branch, getattr(ups_rem.refs, branch))
-        getattr(repo.heads, branch).checkout(True)
+        # repo.heads.master.checkout(True)
     except OSError:
         pass
 
@@ -93,48 +91,29 @@ async def check_update(message: Message):
         out += f'•[{i.committed_datetime.strftime("%d/%m/%y")}]: {i.summary} <{i.author}>\n'
 
     if not out:
-        await CHANNEL.log(f'**Userge is up-to-date with [{branch}]**')
-        await message.edit(f'**Userge is up-to-date with [{branch}]**', del_in=5)
+        await message.edit(
+            f'**Userge is up-to-date with [{branch}]**', del_in=5, log=True)
         return
 
     if not run_updater:
         changelog_str = f'**New UPDATE available for [{branch}]:\n\nCHANGELOG:**\n\n`{out}`'
-        await CHANNEL.log(changelog_str)
-        await message.edit_or_send_as_file(changelog_str)
+        await message.edit_or_send_as_file(changelog_str, log=True)
 
     else:
         await message.edit(f'`New update found for [{branch}], trying to update...`')
         repo.git.reset('--hard', 'FETCH_HEAD')
 
-        if Config.HEROKU_API_KEY:
-            heroku = heroku3.from_key(Config.HEROKU_API_KEY)
-            heroku_app = None
+        if Config.HEROKU_GIT_URL:
+            await message.edit('`Heroku app found, trying to push update...`')
 
-            for heroku_app in heroku.apps():
-                if heroku_app and Config.HEROKU_APP_NAME and \
-                    heroku_app.name == Config.HEROKU_APP_NAME:
-                    break
-
-            if heroku_app:
-                await message.edit('`Heroku app found, trying to push update...`')
-
-                heroku_git_url = heroku_app.git_url.replace(
-                    "https://",
-                    "https://api:" + Config.HEROKU_API_KEY + "@")
-
-                if "heroku" in repo.remotes:
-                    remote = repo.remote("heroku")
-                    remote.set_url(heroku_git_url)
-
-                else:
-                    remote = repo.create_remote("heroku", heroku_git_url)
-
-                remote.push(refspec=f"HEAD:refs/heads/{branch}")
+            if "heroku" in repo.remotes:
+                remote = repo.remote("heroku")
+                remote.set_url(Config.HEROKU_GIT_URL)
 
             else:
-                await CHANNEL.log("please check your heroku app name")
-                await message.reply(
-                    "no heroku application found for given name, but a key is given? 😕", del_in=3)
+                remote = repo.create_remote("heroku", Config.HEROKU_GIT_URL)
+
+            remote.push(refspec=f"HEAD:refs/heads/{branch}")
 
         await CHANNEL.log(f"**UPDATED Userge from [{branch}]:\n\nCHANGELOG:**\n\n`{out}`")
 

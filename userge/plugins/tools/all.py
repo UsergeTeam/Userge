@@ -20,4 +20,4 @@ async def getplugins(message: Message):
     for plugin in all_plugins:
         out_str += f"    `{plugin}.py`\n"
 
-    await message.edit(text=out_str, del_in=15)
+    await message.edit(text=out_str, del_in=0)

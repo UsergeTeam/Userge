@@ -16,7 +16,7 @@ from pyrogram import InlineKeyboardMarkup
 from pyrogram.errors.exceptions import MessageAuthorRequired, MessageTooLong
 from pyrogram.errors.exceptions.bad_request_400 import MessageNotModified
 
-from userge.utils import logging
+from userge.utils import logging, Config
 from .base import BaseClient, BaseMessage
 
 CANCEL_LIST: List[int] = []
@@ -73,7 +73,7 @@ class Message(BaseMessage):
 
         input_ = self.input_str
 
-        if self.reply_to_message:
+        if not input_ and self.reply_to_message:
             input_ = (self.reply_to_message.text or '').strip()
 
         return input_
@@ -286,6 +286,8 @@ class Message(BaseMessage):
         if log:
             await self.__channel.fwd_msg(msg)
 
+        del_in = del_in or Config.MSG_DELETE_TIMEOUT
+
         if del_in > 0:
             await asyncio.sleep(del_in)
             return await msg.delete()
@@ -337,6 +339,8 @@ class Message(BaseMessage):
 
         if log:
             await self.__channel.fwd_msg(msg)
+
+        del_in = del_in or Config.MSG_DELETE_TIMEOUT
 
         if del_in > 0:
             await asyncio.sleep(del_in)

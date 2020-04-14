@@ -94,8 +94,8 @@ async def down_load_media(message: Message):
                 current_message += f"ETA: {estimated_total_time}"
 
                 if round(diff % 10.00) == 0 and current_message != display_message:
-                    await message.edit(text=current_message,
-                                       disable_web_page_preview=True)
+                    await message.try_to_edit(text=current_message,
+                                              disable_web_page_preview=True)
 
                     # display_message = current_message
                     await asyncio.sleep(10)
@@ -108,6 +108,9 @@ async def down_load_media(message: Message):
             ms = (end_t - start_t).seconds
 
             await message.edit(f"Downloaded to `{download_file_path}` in {ms} seconds", log=True)
+
+        else:
+            await message.edit(f"`Something went wrong!`", del_in=3, log=True)
 
     else:
         await message.edit(

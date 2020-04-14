@@ -134,6 +134,7 @@ class Zip:
                 self.__output = "`process canceled!`"
 
             except Exception as z_e:
+                LOGGER.exception(z_e)
                 self.__output = z_e
 
             finally:
@@ -168,6 +169,7 @@ class Zip:
                     pass
 
                 except Exception as z_e:
+                    LOGGER.exception(z_e)
                     error = z_e
                     break
 

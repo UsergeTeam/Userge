@@ -6,8 +6,9 @@
 #
 # All rights reserved.
 
-
+import time
 from userge import userge, Message
+from pyrogram import ChatPermissions
 
 CHANNEL = userge.getCLogger(__name__)
 
@@ -57,7 +58,8 @@ async def promote_usr(message: Message):
 
                 await CHANNEL.log(
                     f"#PROMOTE\n\n"
-                    f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id})\n"
+                    f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
+                    f"(`{get_mem.user.id}`)\n"
                     f"CHAT: `{get_group.title}` (`{chat_id}`)")
 
             except:
@@ -70,7 +72,7 @@ async def promote_usr(message: Message):
             get_mem = await userge.get_chat_member(chat_id, message.reply_to_message.from_user.id)
 
             try:
-                await userge.promote_chat_member(chat_id, message.reply_to_message.from_user.id,
+                await userge.promote_chat_member(chat_id, get_mem.user.id,
                                                  can_change_info=True,
                                                  can_delete_messages=True,
                                                  can_restrict_members=True,
@@ -81,7 +83,8 @@ async def promote_usr(message: Message):
 
                 await CHANNEL.log(
                     f"#PROMOTE\n\n"
-                    f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id})\n"
+                    f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
+                    f"(`{get_mem.user.id}`)\n"
                     f"CHAT: `{get_group.title}` (`{chat_id}`)")
 
             except:
@@ -145,7 +148,8 @@ async def demote_usr(message: Message):
                 await message.edit("**🛡 Demoted Successfully**", del_in=5)
                 await CHANNEL.log(
                     f"#DEMOTE\n\n"
-                    f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id})\n"
+                    f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
+                    f"(`{get_mem.user.id}`)\n"
                     f"CHAT: `{get_group.title}` (`{chat_id}`)")
 
             except:
@@ -158,7 +162,7 @@ async def demote_usr(message: Message):
             get_mem = await userge.get_chat_member(chat_id, message.reply_to_message.from_user.id)
 
             try:
-                await userge.promote_chat_member(chat_id, message.reply_to_message.from_user.id,
+                await userge.promote_chat_member(chat_id, get_mem.user.id,
                                                  can_change_info=False,
                                                  can_delete_messages=False,
                                                  can_restrict_members=False,
@@ -168,7 +172,8 @@ async def demote_usr(message: Message):
                 await message.edit("**🛡 Demoted Successfully**", del_in=5)
                 await CHANNEL.log(
                     f"#DEMOTE\n\n"
-                    f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id})\n"
+                    f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
+                    f"(`{get_mem.user.id}`)\n"
                     f"CHAT: `{get_group.title}` (`{chat_id}`)")
 
             except:
@@ -199,8 +204,7 @@ __use this to ban group members__
 
 **Example:**
 
-    `.ban <username/userid> : <reason (optional)> (or) 
-    reply to a message with .ban <reason (optional)>`""")
+    `.ban [username | userid] or [reply to user] <reason (optional)>`""")
 
 async def ban_usr(message: Message):
     """
@@ -226,17 +230,235 @@ async def ban_usr(message: Message):
             else:
                 await message.edit(
                     text="`no valid user_id or message specified,`"
-                    "`do .help ban for more info`",del_in=5)
+                    "`do .help ban for more info`", del_in=5)
                 return
         if user_id:
             get_mem = await userge.get_chat_member(chat_id, user_id)
             await userge.kick_chat_member(chat_id, user_id)
             await message.edit(
                 f"#BAN\n\n"
-                f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id})"
+                f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
                 f"(`{get_mem.user.id}`)\n"
                 f"CHAT: `{get_group.title}` (`{chat_id}`)\n"
-                f"Reason: `{reason}`", log=True)
+                f"REASON: `{reason}`", log=True)
+
+    else:
+        await message.edit(
+            text="`Looks like i don't have proper admin permission to do that ⚠`", del_in=5)
+
+@userge.on_cmd("unban", about="""\
+__use this to unban group members__
+
+**Usage:**
+
+`Unban member form supergroup.`
+
+[NOTE: Requires proper admin rights in the chat!!!]
+
+
+**Example:**
+
+    `.unban <username/userid> (or) reply to a message with .unban`""")
+
+async def unban_usr(message: Message):
+    """
+    this function can unban user from tg group
+    """
+    chat_id = message.chat.id
+    check_admin = await userge.get_chat_member(chat_id, message.from_user.id)
+    get_group = await userge.get_chat(chat_id)
+    unban_perm = check_admin.can_restrict_members
+
+    if unban_perm:
+
+        user_id = message.input_str
+
+        if user_id:
+            get_mem = await userge.get_chat_member(chat_id, user_id)
+
+            try:
+                await userge.unban_chat_member(chat_id, user_id)
+                await message.edit("**🛡 Successfully Unbanned**", del_in=5)
+                await CHANNEL.log(
+                    f"#UNBAN\n\n"
+                    f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
+                    f"(`{get_mem.user.id}`)\n"
+                    f"CHAT: `{get_group.title}` (`{chat_id}`)")
+
+            except:
+                await message.edit(
+                    text="`something went wrong 🤔,`"
+                    "`do .help unban for more info`", del_in=5)
+
+        elif message.reply_to_message:
+
+            get_mem = await userge.get_chat_member(chat_id, message.reply_to_message.from_user.id)
+
+            try:
+                await userge.unban_chat_member(chat_id, get_mem.user.id)
+                await message.edit("**🛡 Successfully Unbanned**", del_in=5)
+                await CHANNEL.log(
+                    f"#UNBAN\n\n"
+                    f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
+                    f"(`{get_mem.user.id}`)\n"
+                    f"CHAT: `{get_group.title}` (`{chat_id}`)")
+
+            except:
+                await message.edit(
+                    text="`something went wrong 🤔,`"
+                    "`do .help unabn for more info`", del_in=5)
+
+        else:
+            await message.edit(
+                text="`no valid user_id or message specified,`"
+                "`do .help unban for more info`", del_in=5)
+
+            return
+
+    else:
+        await message.edit(
+            text="`Looks like i don't have proper admin permission to do that ⚠`", del_in=5)
+
+@userge.on_cmd("mute", about="""\
+__use this to mute group members__
+
+**Usage:**
+
+`Mute member in the supergroup. you can only use one flag for command`
+
+[NOTE: Requires proper admin rights in the chat!!!]
+
+**Available Flags:**
+`-m` : __minutes__
+`-h` : __hours__
+`-d` : __days__
+
+
+**Example:**
+
+    `.mute -flag [username | userid] or [reply to user] :reason (optional)`
+    `.mute -d1 @someusername/userid/replytouser spam` (mute for one day)""")
+
+async def mute_usr(message: Message):
+    """
+    this function can mute user from tg group
+    """
+    reason = ""
+    chat_id = message.chat.id
+    flags = message.flags
+    check_admin = await userge.get_chat_member(chat_id, message.from_user.id)
+    get_group = await userge.get_chat(chat_id)
+    mute_perm = check_admin.can_restrict_members
+
+    minutes = int(flags.get('-m', 0))
+    hours = int(flags.get('-h', 0))
+    days = int(flags.get('-d', 0))
+
+    await message.edit("`Trying to Mute User.. Hang on!`")
+
+    if mute_perm:
+
+        if message.reply_to_message:
+            user_id = message.reply_to_message.from_user.id
+            reason = message.filtered_input_str
+        else:
+            args = message.filtered_input_str.split(maxsplit=1)
+            if len(args) == 2:
+                user_id, reason = args
+            elif len(args) == 1:
+                user_id = args[0]
+            else:
+                await message.edit(
+                    text="`no valid user_id or message specified,`"
+                    "`do .help mute for more info`", del_in=5)
+                return
+
+        if minutes:
+            get_mem = await userge.get_chat_member(chat_id, user_id)
+            mute_period = minutes * 60
+
+            try:
+                await userge.restrict_chat_member(chat_id, user_id,
+                                            ChatPermissions(),
+                                            int(time.time() + mute_period))
+                await message.edit(
+                    f"#MUTE\n\n"
+                    f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
+                    f"(`{get_mem.user.id}`)\n"
+                    f"CHAT: `{get_group.title}` (`{chat_id}`)\n"
+                    f"MUTE UNTIL: `{minutes} minutes`\n"
+                    f"REASON: `{reason}`", log=True)
+
+            except Exception as e:
+                await message.edit(
+                    text=f"`something went wrong 🤔,`"
+                    f"`do .help mute for more info`\n"
+                    f"**ERROR**: {e}", del_in=5)
+
+        elif hours:
+            get_mem = await userge.get_chat_member(chat_id, user_id)
+            mute_period = hours * 3600
+
+            try:
+                await userge.restrict_chat_member(chat_id, user_id,
+                                            ChatPermissions(),
+                                            int(time.time() + mute_period))
+                await message.edit(
+                    f"#MUTE\n\n"
+                    f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
+                    f"(`{get_mem.user.id}`)\n"
+                    f"CHAT: `{get_group.title}` (`{chat_id}`)\n"
+                    f"MUTE UNTIL: `{hours} hours`\n"
+                    f"REASON: `{reason}`", log=True)
+
+            except Exception as e:
+                await message.edit(
+                    text=f"`something went wrong 🤔,`"
+                    f"`do .help mute for more info`\n"
+                    f"**ERROR**: {e}", del_in=5)
+
+        elif days:
+            get_mem = await userge.get_chat_member(chat_id, user_id)
+            mute_period = hours * 86400
+
+            try:
+                await userge.restrict_chat_member(chat_id, user_id,
+                                            ChatPermissions(),
+                                            int(time.time() + mute_period))
+                await message.edit(
+                    f"#MUTE\n\n"
+                    f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
+                    f"(`{get_mem.user.id}`)\n"
+                    f"CHAT: `{get_group.title}` (`{chat_id}`)\n"
+                    f"MUTE UNTIL: `{days} days`\n"
+                    f"REASON: `{reason}`", log=True)
+
+            except Exception as e:
+                await message.edit(
+                    text=f"`something went wrong 🤔,`"
+                    f"`do .help mute for more info`\n"
+                    f"**ERROR**: {e}", del_in=5)
+
+        else:
+            get_mem = await userge.get_chat_member(chat_id, user_id)
+
+            try:
+                await userge.restrict_chat_member(chat_id, user_id, ChatPermissions())
+                await message.edit(
+                    f"#MUTE\n\n"
+                    f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
+                    f"(`{get_mem.user.id}`)\n"
+                    f"CHAT: `{get_group.title}` (`{chat_id}`)\n"
+                    f"MUTE UNTIL: `forever`\n"
+                    f"REASON: `{reason}`", log=True)
+
+            except Exception as e:
+                await message.edit(
+                    text=f"`something went wrong 🤔,`"
+                    f"`do .help mute for more info`\n"
+                    f"**ERROR**: {e}", del_in=5)
+
+            return
 
     else:
         await message.edit(

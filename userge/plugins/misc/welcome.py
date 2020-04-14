@@ -194,7 +194,7 @@ async def raw_view(message: Message, name, collection):
         liststr += f"**Active:** `{found['on']}`"
 
     await message.edit(
-        text=liststr or f'`NO {name.upper()} STARTED`', del_in=15, log=True)
+        text=liststr or f'`NO {name.upper()} STARTED`', del_in=0, log=True)
 
 
 async def raw_ls(message: Message, name, collection):
@@ -206,7 +206,7 @@ async def raw_ls(message: Message, name, collection):
         liststr += f"**Active:** `{c['on']}`\n\n"
 
     await message.edit(
-        text=liststr or f'`NO {name.upper()}S STARTED`', del_in=15, log=True)
+        text=liststr or f'`NO {name.upper()}S STARTED`', del_in=0, log=True)
 
 
 async def raw_say(message: Message, name, collection):

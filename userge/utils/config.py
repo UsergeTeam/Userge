@@ -8,6 +8,7 @@
 
 
 import os
+import heroku3
 from dotenv import load_dotenv
 from .logger import logging
 
@@ -55,12 +56,34 @@ class Config:
 
     LOG_CHANNEL_ID = int(os.environ.get("LOG_CHANNEL_ID", 0))
 
-    OFFICIAL_REPO_LINK = "https://github.com/UsergeTeam/Userge"
+    UPSTREAM_REPO = os.environ.get("UPSTREAM_REPO", "https://github.com/UsergeTeam/Userge")
 
     HEROKU_API_KEY = os.environ.get("HEROKU_API_KEY", None)
 
     HEROKU_APP_NAME = os.environ.get("HEROKU_APP_NAME", None)
 
+    HEROKU_APP = None
+
+    HEROKU_GIT_URL = None
+
+    MSG_DELETE_TIMEOUT = 120
+
 
 if not os.path.isdir(Config.DOWN_PATH):
+    LOG.info("Creating Download Path...")
     os.makedirs(Config.DOWN_PATH)
+
+
+if Config.HEROKU_API_KEY:
+    LOG.info("Checking Heroku App...")
+
+    for heroku_app in heroku3.from_key(Config.HEROKU_API_KEY).apps():
+        if heroku_app and Config.HEROKU_APP_NAME and \
+            heroku_app.name == Config.HEROKU_APP_NAME:
+
+            LOG.info(f"Heroku App : {heroku_app.name} Found...")
+
+            Config.HEROKU_APP = heroku_app
+            Config.HEROKU_GIT_URL = heroku_app.git_url.replace(
+                "https://", "https://api:" + Config.HEROKU_API_KEY + "@")
+            break

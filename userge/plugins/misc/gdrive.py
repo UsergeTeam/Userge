@@ -66,7 +66,8 @@ class DBase:
                 LOG.info("Refreshing Creds...")
                 CREDS.refresh(Http())
 
-            except HttpAccessTokenRefreshError:
+            except HttpAccessTokenRefreshError as h_e:
+                LOG.exception(h_e)
                 self._clear_creds()
 
     def _set_creds(self, creds) -> str:
@@ -359,6 +360,7 @@ class GDrive(DBase):
                 self.__output = G_DRIVE_FOLDER_LINK.format(dir_id, folder_name)
 
         except HttpError as h_e:
+            LOG.exception(h_e)
             self.__output = h_e
 
         except ProcessCanceled:
@@ -487,6 +489,7 @@ class GDrive(DBase):
             self.__output = os.path.join(Config.DOWN_PATH, drive_file['name'])
 
         except HttpError as h_e:
+            LOG.exception(h_e)
             self.__output = h_e
 
         except ProcessCanceled:
@@ -577,6 +580,7 @@ class GDrive(DBase):
                 self.__output = G_DRIVE_FILE_LINK.format(file_id, file_name, file_size)
 
         except HttpError as h_e:
+            LOG.exception(h_e)
             self.__output = h_e
 
         except ProcessCanceled:
@@ -778,6 +782,7 @@ class Worker(GDrive):
             cred = AUTH_FLOW.step2_exchange(self.__message.input_str)
 
         except FlowExchangeError as c_i:
+            LOG.exception(c_i)
             await self.__message.err(c_i)
 
         else:
@@ -832,6 +837,7 @@ class Worker(GDrive):
                     self.__message.filtered_input_str, self.__message.flags)
 
             except HttpError as h_e:
+                LOG.exception(h_e)
                 await self.__message.err(h_e)
                 return
 
@@ -866,6 +872,7 @@ class Worker(GDrive):
                 out = await self._search('*', self.__message.flags, file_id, root)
 
             except HttpError as h_e:
+                LOG.exception(h_e)
                 await self.__message.err(h_e)
                 return
 
@@ -1018,6 +1025,7 @@ class Worker(GDrive):
                 link = await self._move(file_id)
 
             except HttpError as h_e:
+                LOG.exception(h_e)
                 await self.__message.err(h_e)
 
             else:
@@ -1041,6 +1049,7 @@ class Worker(GDrive):
                 await self._delete(file_id)
 
             except HttpError as h_e:
+                LOG.exception(h_e)
                 await self.__message.err(h_e)
 
             else:
@@ -1061,6 +1070,7 @@ class Worker(GDrive):
                 await self._empty_trash()
 
             except HttpError as h_e:
+                LOG.exception(h_e)
                 await self.__message.err(h_e)
 
             else:
@@ -1084,6 +1094,7 @@ class Worker(GDrive):
                 meta_data = await self._get(file_id)
 
             except HttpError as h_e:
+                LOG.exception(h_e)
                 await self.__message.err(h_e)
                 return
 
@@ -1110,6 +1121,7 @@ class Worker(GDrive):
                 out = await self._get_perms(file_id)
 
             except HttpError as h_e:
+                LOG.exception(h_e)
                 await self.__message.err(h_e)
                 return
 
@@ -1136,6 +1148,7 @@ class Worker(GDrive):
                 link = await self._set_perms(file_id)
 
             except HttpError as h_e:
+                LOG.exception(h_e)
                 await self.__message.err(h_e)
 
             else:
@@ -1159,6 +1172,7 @@ class Worker(GDrive):
                 out = await self._del_perms(file_id)
 
             except HttpError as h_e:
+                LOG.exception(h_e)
                 await self.__message.err(h_e)
                 return
 

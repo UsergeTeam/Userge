@@ -55,6 +55,10 @@
         "HEROKU_API_KEY": {
             "description": "get a Heroku API key from http://dashboard.heroku.com/account",
             "required": false
+        },
+        "UPSTREAM_REPO": {
+            "description": "set this to your USERGE fork on GitHub",
+            "required": false
         }
     },
     "addons": [

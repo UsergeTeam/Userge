@@ -46,7 +46,7 @@ async def gsearch(message: Message):
         gresults = g_search.search(query, page)
 
     except Exception as e:
-        await message.err(text=e)
+        await message.err(text=e, log=True)
         return
 
     output = ""

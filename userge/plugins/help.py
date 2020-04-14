@@ -45,4 +45,4 @@ async def helpme(message: Message):
         for i in out:
             out_str += f"    `{i}`\n"
 
-    await message.edit(text=out_str, del_in=15)
+    await message.edit(text=out_str, del_in=0)

@@ -7,11 +7,23 @@
 # All rights reserved.
 
 
+import os
 import logging
+from logging.handlers import RotatingFileHandler
+
+
+if not os.path.isdir("./logs/"):
+    os.makedirs("./logs/")
+
 
 logging.basicConfig(level=logging.INFO,
                     format='[%(asctime)s - %(levelname)s] - %(name)s - %(message)s',
-                    datefmt='%d-%b-%y %H:%M:%S')
+                    datefmt='%d-%b-%y %H:%M:%S',
+                    handlers=[
+                        RotatingFileHandler(
+                            "./logs/userge.log", maxBytes=(102400), backupCount=7),
+                        logging.StreamHandler()
+                    ])
 
 
 logging.getLogger("pyrogram").setLevel(logging.WARNING)

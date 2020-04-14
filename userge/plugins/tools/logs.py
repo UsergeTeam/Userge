@@ -7,17 +7,13 @@
 # All rights reserved.
 
 
-from datetime import datetime
 from userge import userge, Message
 
 
-@userge.on_cmd("ping", about="__check how long it takes to ping your userbot__")
-async def pingme(message: Message):
-    start = datetime.now()
-
-    await message.edit('`Pong!`')
-
-    end = datetime.now()
-    m_s = (end - start).microseconds / 1000
-
-    await message.edit(f"**Pong!**\n`{m_s} ms`")
+@userge.on_cmd("logs", about="__check userge logs__")
+async def check_logs(message: Message):
+    """check logs"""
+    await message.edit("`checking logs ...`")
+    with open("./logs/userge.log", "r") as l_f:
+        await message.edit_or_send_as_file(
+            l_f.read(), filename='userge.log', caption='userge.log', log=True)
