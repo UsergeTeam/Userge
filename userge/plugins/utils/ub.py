@@ -37,17 +37,15 @@ async def urban_dict(message: Message):
         await message.err(text=f"Sorry, couldn't find any results for: `{query}``")
         return
 
-    meanlen = len(mean[0]["def"]) + len(mean[0]["example"])
+    output = ''
+    for i, mean_ in enumerate(mean, start=1):
+        output += f"**DEF {i}** : __{mean_['def']}__\n" + \
+            f"**EX {i}** : __{mean_['example'] or 'not found'}__\n\n"
 
-    if meanlen == 0:
+    if not output:
         await message.err(text=f"No result found for **{query}**")
         return
 
-    meaning = '\n'.join([i['def'] for i in mean])
-    example = '\n'.join([i['example'] for i in mean])
-
-    output = f"**Query:** `{query}`\n\n\
-**Meaning:**\n__{meaning}__\n\n\
-**Example:**\n__{example}__"
+    output = f"**Query:** `{query}`\n\n{output}"
 
     await message.edit_or_send_as_file(text=output, caption=query, log=True)

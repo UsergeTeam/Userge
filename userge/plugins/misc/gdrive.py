@@ -55,7 +55,7 @@ class DBase:
         global CREDS
 
         self.__id = id_
-        LOG.info("Setting GDrive DBase...")
+        LOG.debug("Setting GDrive DBase...")
 
         if not CREDS:
             result = GDRIVE_COLLECTION.find_one({'_id': self.__id}, {'creds': 1})
@@ -63,7 +63,7 @@ class DBase:
 
         if CREDS:
             try:
-                LOG.info("Refreshing Creds...")
+                LOG.debug("Refreshing Creds...")
                 CREDS.refresh(Http())
 
             except HttpAccessTokenRefreshError as h_e:
@@ -110,7 +110,7 @@ class GDrive(DBase):
         self.__is_canceled = False
         self.__is_finished = False
 
-        LOG.info("Setting GDrive...")
+        LOG.debug("Setting GDrive...")
         super().__init__(id_)
 
     def _cancel(self) -> None:
@@ -361,7 +361,7 @@ class GDrive(DBase):
 
         except HttpError as h_e:
             LOG.exception(h_e)
-            self.__output = h_e
+            self.__output = h_e._get_reason()
 
         except ProcessCanceled:
             self.__output = "`Process Canceled!`"
@@ -490,7 +490,7 @@ class GDrive(DBase):
 
         except HttpError as h_e:
             LOG.exception(h_e)
-            self.__output = h_e
+            self.__output = h_e._get_reason()
 
         except ProcessCanceled:
             self.__output = "`Process Canceled!`"
@@ -581,7 +581,7 @@ class GDrive(DBase):
 
         except HttpError as h_e:
             LOG.exception(h_e)
-            self.__output = h_e
+            self.__output = h_e._get_reason()
 
         except ProcessCanceled:
             self.__output = "`Process Canceled!`"
@@ -783,7 +783,7 @@ class Worker(GDrive):
 
         except FlowExchangeError as c_i:
             LOG.exception(c_i)
-            await self.__message.err(c_i)
+            await self.__message.err(c_i, log=True)
 
         else:
             self._set_creds(cred)
@@ -838,7 +838,7 @@ class Worker(GDrive):
 
             except HttpError as h_e:
                 LOG.exception(h_e)
-                await self.__message.err(h_e)
+                await self.__message.err(h_e._get_reason(), log=True)
                 return
 
             await self.__message.edit_or_send_as_file(
@@ -873,7 +873,7 @@ class Worker(GDrive):
 
             except HttpError as h_e:
                 LOG.exception(h_e)
-                await self.__message.err(h_e)
+                await self.__message.err(h_e._get_reason(), log=True)
                 return
 
             await self.__message.edit_or_send_as_file(
@@ -1026,7 +1026,7 @@ class Worker(GDrive):
 
             except HttpError as h_e:
                 LOG.exception(h_e)
-                await self.__message.err(h_e)
+                await self.__message.err(h_e._get_reason(), log=True)
 
             else:
                 await self.__message.edit(
@@ -1050,7 +1050,7 @@ class Worker(GDrive):
 
             except HttpError as h_e:
                 LOG.exception(h_e)
-                await self.__message.err(h_e)
+                await self.__message.err(h_e._get_reason(), log=True)
 
             else:
                 await self.__message.edit(
@@ -1071,7 +1071,7 @@ class Worker(GDrive):
 
             except HttpError as h_e:
                 LOG.exception(h_e)
-                await self.__message.err(h_e)
+                await self.__message.err(h_e._get_reason(), log=True)
 
             else:
                 await self.__message.edit(
@@ -1095,7 +1095,7 @@ class Worker(GDrive):
 
             except HttpError as h_e:
                 LOG.exception(h_e)
-                await self.__message.err(h_e)
+                await self.__message.err(h_e._get_reason(), log=True)
                 return
 
             out = f"**I Found these Details for** `{file_id}`\n\n{meta_data}"
@@ -1122,7 +1122,7 @@ class Worker(GDrive):
 
             except HttpError as h_e:
                 LOG.exception(h_e)
-                await self.__message.err(h_e)
+                await self.__message.err(h_e._get_reason(), log=True)
                 return
 
             out = f"**I Found these Permissions for** `{file_id}`\n\n{out}"
@@ -1149,7 +1149,7 @@ class Worker(GDrive):
 
             except HttpError as h_e:
                 LOG.exception(h_e)
-                await self.__message.err(h_e)
+                await self.__message.err(h_e._get_reason(), log=True)
 
             else:
                 out = f"**Set Permissions successfully for** `{file_id}`\n\n{link}"
@@ -1173,7 +1173,7 @@ class Worker(GDrive):
 
             except HttpError as h_e:
                 LOG.exception(h_e)
-                await self.__message.err(h_e)
+                await self.__message.err(h_e._get_reason(), log=True)
                 return
 
             out = f"**Removed These Permissions successfully from** `{file_id}`\n\n{out}"

@@ -24,10 +24,10 @@ async def speedtst(message: Message):
         test = speedtest.Speedtest()
         test.get_best_server()
 
-        await message.edit("`Performing download test . . .`")
+        await message.try_to_edit("`Performing download test . . .`")
         test.download()
 
-        await message.edit("`Performing upload test . . .`")
+        await message.try_to_edit("`Performing upload test . . .`")
         test.upload()
 
         test.results.share()
