@@ -68,7 +68,7 @@ class Message(BaseMessage):
     @property
     def input_or_reply_str(self) -> str:
         """
-        Returns the input string without command or replied msg text.
+        Returns the input string  or replied msg text without command.
         """
 
         input_ = self.input_str

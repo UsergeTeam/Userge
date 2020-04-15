@@ -237,7 +237,6 @@ class Userge(BaseClient):
 
         filters_ = Filters.regex(pattern=pattern) & Filters.me if only_me \
             else Filters.regex(pattern=pattern)
-
         return self.__build_decorator(log=f"On {pattern}",
                                       filters=filters_,
                                       group=group,
