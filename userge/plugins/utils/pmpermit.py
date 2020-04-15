@@ -65,7 +65,7 @@ async def denyToPm(message: Message):
 
 async def get_id(message):
     userid = None
-    if message.chat.type is 'private':
+    if message.chat.type in ['private', 'bot']:
         userid = message.chat.id
     if message.reply_to_message:
         userid = message.reply_to_message.from_user.id
@@ -89,8 +89,9 @@ async def uninvitedPmHandler(_, message):
             allowed.add(message.from_user.id)
             await message.from_user.block()
             await asyncio.sleep(1)
-            await CHANNEL.log(f"<a href='tg://user?id={message.from_user.id}'>"
-                              f"{user_dict['uname'] or user_dict['flname']}</a> has been blocked !! ")
+            await CHANNEL.log(f"#BLOCKED\n<a href='tg://user?id={message.from_user.id}'>"
+                              f"{user_dict['uname'] or user_dict['flname']}</a> has been blocked due to spamming in "
+                              f"pm !! ")
         else:
             pmCounter[message.from_user.id] += 1
             await message.reply(f"You have {pmCounter[message.from_user.id]} out of 4 **Warnings**\n"
@@ -100,5 +101,18 @@ async def uninvitedPmHandler(_, message):
         pmCounter.update({message.from_user.id: 1})
         await message.reply("Hello i am userge\nPlease wait untill you get approved to direct message")
         await asyncio.sleep(1)
-        await CHANNEL.log(f"<a href='tg://user?id={message.from_user.id}'>"
+        await CHANNEL.log(f"#NEW_MESSAGE\n<a href='tg://user?id={message.from_user.id}'>"
                           f"{user_dict['uname'] or user_dict['flname']}</a> has messaged you")
+
+
+@userge.on_message(Filters.private & ~allowed & Filters.outgoing)
+async def outgoing_auto_approve(_, message):
+    message = Message(userge, message)
+    userID = message.chat.id
+    if message.from_user.id in pmCounter:
+        del pmCounter[message.from_user.id]
+    allowed.add(userID)
+    ALLOWED_COLLECTION.update_one({'_id': userID}, {"$set": {'status': 'allowed'}}, upsert=True)
+    user_dict = await userge.get_user_dict(userID)
+    await CHANNEL.log(f"**#AUTO_APPROVED**\n<a href='tg://user?id={userID}'>"
+                      f"{user_dict['uname'] or user_dict['flname']}</a>")
