@@ -16,6 +16,8 @@ ALLOWED_COLLECTION = get_collection("PM_PERMIT")
 for chat in ALLOWED_COLLECTION.find({"status": 'allowed'}):
     allowed.add(chat.get("_id"))
 pmCounter: Dict[int, int] = {}
+allowAllPms = True
+allowAllFilter = Filters.create(lambda _, query: bool(allowAllPms))
 
 
 @userge.on_cmd("allow", about="""__allows someone to contact__
@@ -41,7 +43,7 @@ async def allow(message: Message):
         await message.edit("I need to reply to a user or provide the username/id or be in a private chat")
 
 
-@userge.on_cmd("nopm", about="""__allows someone to contact__
+@userge.on_cmd("nopm", about="""__Activates guarding on inbox__
 Ones someone is allowed, Userge will not interfere or handle such private chats
 **syntax:**
     `.nopm <@username>`
@@ -78,7 +80,7 @@ async def get_id(message):
     return userid
 
 
-@userge.on_message(Filters.private & ~allowed & ~Filters.outgoing)
+@userge.on_message(Filters.private & ~allowed & ~Filters.outgoing & ~allowAllFilter)
 async def uninvitedPmHandler(_, message):
     message = Message(userge, message)
     user_dict = await userge.get_user_dict(message.from_user.id)
@@ -116,3 +118,19 @@ async def outgoing_auto_approve(_, message):
     user_dict = await userge.get_user_dict(userID)
     await CHANNEL.log(f"**#AUTO_APPROVED**\n<a href='tg://user?id={userID}'>"
                       f"{user_dict['uname'] or user_dict['flname']}</a>")
+
+
+@userge.on_cmd("pmguard", about="""__Switchs the pm permiting module on__
+This is switched off in default
+You can switch pmguard On or Off with this command
+When you turn on this next time, the previously allowed chats will be there !
+""")
+async def allow(message: Message):
+    global allowAllPms, pmCounter
+    if allowAllPms:
+        allowAllPms = False
+        await message.edit("`PM_guard activated`", del_in=0, log=True)
+    else:
+        allowAllPms = True
+        await message.edit("`PM_guard deactivated`", del_in=0, log=True)
+        pmCounter = {}
