@@ -15,11 +15,14 @@ async def see_repo(message: Message):
     """see repo"""
 
     output = f"""
-**Hey**, __I am using__ 🥳 [Userge]({Config.UPSTREAM_REPO}) 😎
+**Hey**, __I am using__ 🔥 **Userge** 🔥
+
+    __Durable as a Serge__
 
 • **userge version** : `{versions.__version__}`
 • **license** : {versions.__license__}
 • **copyright** : {versions.__copyright__}
+• **repo** : [Userge]({Config.UPSTREAM_REPO})
 """
 
-    await message.edit(output, disable_web_page_preview=True)
+    await message.edit(output)

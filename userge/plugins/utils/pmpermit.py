@@ -5,29 +5,40 @@
 # Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
+
+
 import asyncio
 from typing import Dict
+
 from pyrogram import Filters
 from userge import userge, Message, get_collection
 
 CHANNEL = userge.getCLogger(__name__)  # channel logger object
-allowed: Filters.chat = Filters.chat([])
 ALLOWED_COLLECTION = get_collection("PM_PERMIT")
+
+allowed: Filters.chat = Filters.chat([])
+
 for chat in ALLOWED_COLLECTION.find({"status": 'allowed'}):
     allowed.add(chat.get("_id"))
+
 pmCounter: Dict[int, int] = {}
+
 allowAllPms = True
 allowAllFilter = Filters.create(lambda _, query: bool(allowAllPms))
 
 
-@userge.on_cmd("allow", about="""__allows someone to contact__
-Ones someone is allowed, Userge will not interfere or handle such private chats
+@userge.on_cmd("allow", about="""\
+__allows someone to contact__
+
+    Ones someone is allowed, Userge will not interfere or handle such private chats
+
 **syntax:**
+
     `.allow <@username>`
     `.allow <userID>`
+
     reply `.allow` to a message
-    do `.allow` in the private chat    
-""")
+    do `.allow` in the private chat""")
 async def allow(message: Message):
     userid = await get_id(message)
     if userid:
@@ -43,14 +54,18 @@ async def allow(message: Message):
         await message.edit("I need to reply to a user or provide the username/id or be in a private chat")
 
 
-@userge.on_cmd("nopm", about="""__Activates guarding on inbox__
-Ones someone is allowed, Userge will not interfere or handle such private chats
+@userge.on_cmd("nopm", about="""\
+__Activates guarding on inbox__
+
+    Ones someone is allowed, Userge will not interfere or handle such private chats
+
 **syntax:**
+
     `.nopm <@username>`
     `.nopm <userID>`
+
     reply `.nopm` to a message
-    do `.nopm` in the private chat    
-""")
+    do `.nopm` in the private chat""")
 async def denyToPm(message: Message):
     userid = await get_id(message)
     if userid:
@@ -65,7 +80,7 @@ async def denyToPm(message: Message):
         await message.edit("I need to reply to a user or provide the username/id or be in a private chat")
 
 
-async def get_id(message):
+async def get_id(message: Message):
     userid = None
     if message.chat.type in ['private', 'bot']:
         userid = message.chat.id
@@ -80,9 +95,8 @@ async def get_id(message):
     return userid
 
 
-@userge.on_message(Filters.private & ~allowed & ~Filters.outgoing & ~allowAllFilter)
-async def uninvitedPmHandler(_, message):
-    message = Message(userge, message)
+@userge.on_filters(Filters.private & ~allowed & ~Filters.outgoing & ~allowAllFilter)
+async def uninvitedPmHandler(message: Message):
     user_dict = await userge.get_user_dict(message.from_user.id)
     if message.from_user.id in pmCounter:
         if pmCounter[message.from_user.id] > 3:
@@ -107,9 +121,8 @@ async def uninvitedPmHandler(_, message):
                           f"{user_dict['uname'] or user_dict['flname']}</a> has messaged you")
 
 
-@userge.on_message(Filters.private & ~allowed & Filters.outgoing)
-async def outgoing_auto_approve(_, message):
-    message = Message(userge, message)
+@userge.on_filters(Filters.private & ~allowed & Filters.outgoing)
+async def outgoing_auto_approve(message: Message):
     userID = message.chat.id
     if message.from_user.id in pmCounter:
         del pmCounter[message.from_user.id]
@@ -120,12 +133,14 @@ async def outgoing_auto_approve(_, message):
                       f"{user_dict['uname'] or user_dict['flname']}</a>")
 
 
-@userge.on_cmd("pmguard", about="""__Switchs the pm permiting module on__
-This is switched off in default
-You can switch pmguard On or Off with this command
-When you turn on this next time, the previously allowed chats will be there !
-""")
-async def allow(message: Message):
+@userge.on_cmd("pmguard", about="""\
+__Switchs the pm permiting module on__
+
+    This is switched off in default.
+    You can switch pmguard On or Off with this command.
+    When you turn on this next time,
+    the previously allowed chats will be there !""")
+async def pmguard(message: Message):
     global allowAllPms, pmCounter
     if allowAllPms:
         allowAllPms = False

@@ -242,6 +242,17 @@ class Userge(BaseClient):
                                       group=group,
                                       **kwargs)
 
+    def on_filters(self,
+                   filters: Filters,
+                   group: int = 0) -> Callable[[PYROFUNC], PYROFUNC]:
+        """
+        Decorator for handling filters.
+        """
+
+        return self.__build_decorator(log=f"On Filters {filters}",
+                                      filters=filters,
+                                      group=group)
+
     def on_new_member(self,
                       welcome_chats: Filters.chat,
                       group: int = 0) -> Callable[[PYROFUNC], PYROFUNC]:

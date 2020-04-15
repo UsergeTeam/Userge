@@ -35,6 +35,8 @@ async def alive(message: Message):
     output = f"""
 **USERGE is Up and Running**
 
+       __Durable as a Serge__
+
 • **python version** : `{versions.__python_version__}`
 • **pyrogram version** : `{versions.__pyro_version__}`
 • **userge version** : `{versions.__version__}`
@@ -43,7 +45,7 @@ async def alive(message: Message):
 • **repo** : [Userge]({Config.UPSTREAM_REPO})
 """
 
-    await userge.send_message(message.chat.id, output)
+    await userge.send_message(message.chat.id, output, disable_web_page_preview=True)
 
 
 async def refresh_id():

@@ -14,12 +14,14 @@ from pyrogram import __version__ as __pyro_version__
 
 __version_mjaor__ = 0
 __version_minor__ = 1
-__version_micro__ = 0
+__version_micro__ = 1
+__version_beta__ = 7
 
 
 __version__ = "{}.{}.{}".format(__version_mjaor__,
                                 __version_minor__,
-                                __version_micro__)
+                                f"{__version_micro__}-beta.{__version_beta__}" \
+                                    if __version_beta__ else __version_micro__)
 
 __license__ = "[GNU General Public License v3.0](https://github.com/UsergeTeam/Userge/blob/master/LICENSE)"
 
