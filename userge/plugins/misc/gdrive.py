@@ -765,7 +765,7 @@ class Worker(GDrive):
             reply_string += "<code>.gconf [auth_code]</code>"
 
             await self.__message.edit(
-                text=reply_string, disable_web_page_preview=True, log=True)
+                text=reply_string, disable_web_page_preview=True)
 
     async def confirm_setup(self) -> None:
         """
@@ -783,7 +783,7 @@ class Worker(GDrive):
 
         except FlowExchangeError as c_i:
             LOG.exception(c_i)
-            await self.__message.err(c_i, log=True)
+            await self.__message.err(c_i)
 
         else:
             self._set_creds(cred)
@@ -813,7 +813,7 @@ class Worker(GDrive):
             PARENT_ID = file_id
 
             await self.__message.edit(
-                f"Parents set as `{file_id}` successfully", del_in=5, log=True)
+                f"Parents set as `{file_id}` successfully", del_in=5)
 
     async def reset_parent(self) -> None:
         """
@@ -823,7 +823,7 @@ class Worker(GDrive):
 
         PARENT_ID = ""
 
-        await self.__message.edit("`Parents Reset successfully`", del_in=5, log=True)
+        await self.__message.edit("`Parents Reset successfully`", del_in=5)
 
     async def search(self) -> None:
         """
@@ -838,12 +838,12 @@ class Worker(GDrive):
 
             except HttpError as h_e:
                 LOG.exception(h_e)
-                await self.__message.err(h_e._get_reason(), log=True)
+                await self.__message.err(h_e._get_reason())
                 return
 
             await self.__message.edit_or_send_as_file(
                 out, disable_web_page_preview=True,
-                caption=f"search results for `{self.__message.filtered_input_str}`", log=True)
+                caption=f"search results for `{self.__message.filtered_input_str}`")
 
         else:
             await self.__message.edit("Please run `.gsetup` first", del_in=5)
@@ -873,7 +873,7 @@ class Worker(GDrive):
 
             except HttpError as h_e:
                 LOG.exception(h_e)
-                await self.__message.err(h_e._get_reason(), log=True)
+                await self.__message.err(h_e._get_reason())
                 return
 
             await self.__message.edit_or_send_as_file(
@@ -1026,7 +1026,7 @@ class Worker(GDrive):
 
             except HttpError as h_e:
                 LOG.exception(h_e)
-                await self.__message.err(h_e._get_reason(), log=True)
+                await self.__message.err(h_e._get_reason())
 
             else:
                 await self.__message.edit(
@@ -1050,7 +1050,7 @@ class Worker(GDrive):
 
             except HttpError as h_e:
                 LOG.exception(h_e)
-                await self.__message.err(h_e._get_reason(), log=True)
+                await self.__message.err(h_e._get_reason())
 
             else:
                 await self.__message.edit(
@@ -1071,7 +1071,7 @@ class Worker(GDrive):
 
             except HttpError as h_e:
                 LOG.exception(h_e)
-                await self.__message.err(h_e._get_reason(), log=True)
+                await self.__message.err(h_e._get_reason())
 
             else:
                 await self.__message.edit(
@@ -1095,14 +1095,14 @@ class Worker(GDrive):
 
             except HttpError as h_e:
                 LOG.exception(h_e)
-                await self.__message.err(h_e._get_reason(), log=True)
+                await self.__message.err(h_e._get_reason())
                 return
 
             out = f"**I Found these Details for** `{file_id}`\n\n{meta_data}"
 
             await self.__message.edit_or_send_as_file(
                 out, disable_web_page_preview=True,
-                caption=f"metadata for `{file_id}`", log=True)
+                caption=f"metadata for `{file_id}`")
 
         else:
             await self.__message.edit("Please run `.gsetup` first", del_in=5)
@@ -1122,14 +1122,14 @@ class Worker(GDrive):
 
             except HttpError as h_e:
                 LOG.exception(h_e)
-                await self.__message.err(h_e._get_reason(), log=True)
+                await self.__message.err(h_e._get_reason())
                 return
 
             out = f"**I Found these Permissions for** `{file_id}`\n\n{out}"
 
             await self.__message.edit_or_send_as_file(
                 out, disable_web_page_preview=True,
-                caption=f"view perm results for `{file_id}`", log=True)
+                caption=f"view perm results for `{file_id}`")
 
         else:
             await self.__message.edit("Please run `.gsetup` first", del_in=5)
@@ -1149,11 +1149,11 @@ class Worker(GDrive):
 
             except HttpError as h_e:
                 LOG.exception(h_e)
-                await self.__message.err(h_e._get_reason(), log=True)
+                await self.__message.err(h_e._get_reason())
 
             else:
                 out = f"**Set Permissions successfully for** `{file_id}`\n\n{link}"
-                await self.__message.edit(out, disable_web_page_preview=True, log=True)
+                await self.__message.edit(out, disable_web_page_preview=True)
 
         else:
             await self.__message.edit("Please run `.gsetup` first", del_in=5)
@@ -1173,14 +1173,14 @@ class Worker(GDrive):
 
             except HttpError as h_e:
                 LOG.exception(h_e)
-                await self.__message.err(h_e._get_reason(), log=True)
+                await self.__message.err(h_e._get_reason())
                 return
 
             out = f"**Removed These Permissions successfully from** `{file_id}`\n\n{out}"
 
             await self.__message.edit_or_send_as_file(
                 out, disable_web_page_preview=True,
-                caption=f"removed perm results for `{file_id}`", log=True)
+                caption=f"removed perm results for `{file_id}`")
 
         else:
             await self.__message.edit("Please run `.gsetup` first", del_in=5)

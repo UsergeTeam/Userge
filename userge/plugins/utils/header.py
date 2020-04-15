@@ -48,7 +48,7 @@ async def req_head(message: Message):
                            timeout=tout)
 
     except Exception as i_e:
-        await message.err(i_e, log=True)
+        await message.err(i_e)
         return
 
     output = f"**URL**: `{link}`\n\n**STATUS CODE**: __{cd.status_code}__\n\n**HEADERS**:\n\n"
@@ -57,4 +57,4 @@ async def req_head(message: Message):
         output += f"   🏷 __{k.lower()}__ : `{v}`\n\n"
 
     await message.edit_or_send_as_file(text=output, caption=link,
-                                       disable_web_page_preview=True, log=True)
+                                       disable_web_page_preview=True)

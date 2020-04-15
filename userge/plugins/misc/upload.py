@@ -70,7 +70,7 @@ async def upload(path: Path, chat_id: int):
 
 async def doc_upload(chat_id, path):
     message: Message = await userge.send_message(
-        chat_id, f"`Uploading {path.name} ...`", log=True)
+        chat_id, f"`Uploading {path.name} ...`")
 
     start_t = datetime.now()
     c_time = time.time()
@@ -93,7 +93,7 @@ async def doc_upload(chat_id, path):
     await userge.send_chat_action(chat_id, "cancel")
 
     if message.process_is_canceled:
-        await message.edit("`Process Canceled!`", del_in=5, log=True)
+        await message.edit("`Process Canceled!`", del_in=5)
 
     else:
         end_t = datetime.now()
@@ -107,7 +107,7 @@ async def vid_upload(chat_id, path):
     metadata = extractMetadata(createParser(strpath))
 
     message: Message = await userge.send_message(
-        chat_id, f"`Uploading {path.name} ...` as a video", log=True)
+        chat_id, f"`Uploading {path.name} ...` as a video")
 
     start_t = datetime.now()
     c_time = time.time()
@@ -131,7 +131,7 @@ async def vid_upload(chat_id, path):
     await remove_thumb(thumb)
 
     if message.process_is_canceled:
-        await message.edit("`Process Canceled!`", del_in=5, log=True)
+        await message.edit("`Process Canceled!`", del_in=5)
 
     else:
         end_t = datetime.now()

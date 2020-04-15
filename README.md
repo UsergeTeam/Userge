@@ -5,17 +5,17 @@
     <br>
     <b>Pluggable Telegram UserBot</b>
     <br>
-    <a href="https://github.com/UsergeTeam/Userge#inspiration">Inspiration</a>
+    <a href="https://github.com/UsergeTeam/Userge#inspiration-">Inspiration</a>
     &nbsp•&nbsp
-    <a href="https://github.com/UsergeTeam/Userge#features">Features</a>
+    <a href="https://github.com/UsergeTeam/Userge#features-">Features</a>
     &nbsp•&nbsp
-    <a href="https://github.com/UsergeTeam/Userge#example-plugin">Example</a>
+    <a href="https://github.com/UsergeTeam/Userge#example-plugin-">Example</a>
     &nbsp•&nbsp
-    <a href="https://github.com/UsergeTeam/Userge#requirements">Requirements</a>
+    <a href="https://github.com/UsergeTeam/Userge#requirements-">Requirements</a>
     &nbsp•&nbsp
-    <a href="https://github.com/UsergeTeam/Userge#project-credits">Project Credits</a>
+    <a href="https://github.com/UsergeTeam/Userge#project-credits-">Project Credits</a>
     &nbsp•&nbsp
-    <a href="https://github.com/UsergeTeam/Userge#copyright--license">Copyright & License</a>
+    <a href="https://github.com/UsergeTeam/Userge#copyright--license-">Copyright & License</a>
 </p>
 
 # Userge 🔥
@@ -148,7 +148,7 @@ async def testing(message: Message):
   bash run
   ```
 
-* **[More Detailed Guide](https://docs.google.com/document/d/15uoiOn2NkN518MMkx9h5UaMEWMp8aNZqJocXvS0uI6E/edit?usp=sharing)** 📝
+* **[More Detailed Guide](https://docs.google.com/document/d/15uoiOn2NkN518MMkx9h5UaMEWMp8aNZqJocXvS0uI6E)** 📝
 
 > TODO: add Docker Support.
 
@@ -158,7 +158,7 @@ async def testing(message: Message):
 
 ### Project Credits 💆‍♂️
 
-* [Specially to these projects](https://github.com/UsergeTeam/Userge#inspiration) 🥰
+* [Specially to these projects](https://github.com/UsergeTeam/Userge#inspiration-) 🥰
 * [@uaudIth](https://t.me/uaudIth)
 * [@K_E_N_W_A_Y](https://t.me/K_E_N_W_A_Y)
 * [@nawwasl](https://t.me/nawwasl)

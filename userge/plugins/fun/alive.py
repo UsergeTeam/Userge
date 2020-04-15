@@ -8,7 +8,7 @@
 
 
 from pyrogram.errors.exceptions import FileIdInvalid, FileReferenceEmpty
-from userge import userge, Message
+from userge import userge, Message, Config, versions
 
 LOGO_STICKER_ID, LOGO_STICKER_REF = None, None
 
@@ -32,7 +32,18 @@ async def alive(message: Message):
         await refresh_id()
         await sendit(LOGO_STICKER_ID, message)
 
-    await userge.send_message(message.chat.id, "`USERGE is Up and Running`")
+    output = f"""
+**USERGE is Up and Running**
+
+• **python version** : `{versions.__python_version__}`
+• **pyrogram version** : `{versions.__pyro_version__}`
+• **userge version** : `{versions.__version__}`
+• **license** : {versions.__license__}
+• **copyright** : {versions.__copyright__}
+• **repo** : [Userge]({Config.UPSTREAM_REPO})
+"""
+
+    await userge.send_message(message.chat.id, output)
 
 
 async def refresh_id():

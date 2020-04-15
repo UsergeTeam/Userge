@@ -18,7 +18,7 @@ async def cancel_(message: Message):
     if replied:
         replied.cancel_the_process()
         await message.edit(
-            "`added your request to the cancel list`", del_in=5, log=True)
+            "`added your request to the cancel list`", del_in=5)
 
     else:
         await message.edit(

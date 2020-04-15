@@ -75,7 +75,7 @@ async def eval_(message: Message):
 
     await message.edit_or_send_as_file(text=output,
                                        filename="eval.txt",
-                                       caption=cmd, log=True)
+                                       caption=cmd)
 
 
 @userge.on_cmd("exec", about="""\
@@ -107,7 +107,7 @@ __Command:__\n`{cmd}`\n__PID:__\n`{pid}`\n__RETURN:__\n`{ret}`\n\n\
 
     await message.edit_or_send_as_file(text=output,
                                        filename="exec.txt",
-                                       caption=cmd, log=True)
+                                       caption=cmd)
 
 
 @userge.on_cmd("term", about="""\
@@ -143,7 +143,7 @@ async def term_(message: Message):
 
     await message.edit_or_send_as_file(text=output,
                                        filename="term.txt",
-                                       caption=cmd, log=True)
+                                       caption=cmd)
 
 
 async def init_func(message: Message):

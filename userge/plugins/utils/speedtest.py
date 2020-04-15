@@ -34,7 +34,7 @@ async def speedtst(message: Message):
         result = test.results.dict()
 
     except Exception as e:
-        await message.err(text=e, log=True)
+        await message.err(text=e)
         return
 
     path = wget.download(result['share'])

@@ -20,7 +20,7 @@ async def webss(message: Message):
     if Config.SCREENSHOT_API is None:
         await message.edit(
             "Damn!\nI forgot to get the api from (here)[https://screenshotlayer.com]",
-            del_in=0, log=True)
+            del_in=0)
         return
     await message.edit("`Processing`")
     suc, data = await getimg(message.input_str)
@@ -36,7 +36,7 @@ async def webss(message: Message):
         if os.path.isfile(data):
             os.remove(data)
     else:
-        await message.err(data, del_in=6, log=True)
+        await message.err(data, del_in=6)
 
 
 async def getimg(url):

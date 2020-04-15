@@ -39,12 +39,12 @@ async def check_update(message: Message):
 
     except NoSuchPathError as error:
         await message.edit(
-            f'{ERROR_TEXT}\n`directory {error} is not found`', del_in=5, log=True)
+            f'{ERROR_TEXT}\n`directory {error} is not found`', del_in=5)
         return
 
     except GitCommandError as error:
         await message.edit(
-            f'{ERROR_TEXT}\n`Early failure! {error}`', del_in=5, log=True)
+            f'{ERROR_TEXT}\n`Early failure! {error}`', del_in=5)
         return
 
     except InvalidGitRepositoryError:
@@ -78,7 +78,7 @@ async def check_update(message: Message):
     try:
         ups_rem.fetch(branch)
     except GitCommandError as error:
-        await message.edit(f'{ERROR_TEXT}\n`{error}`', del_in=5, log=True)
+        await message.edit(f'{ERROR_TEXT}\n`{error}`', del_in=5)
         return
 
     out = ''
@@ -88,13 +88,13 @@ async def check_update(message: Message):
 
     if not out:
         await message.edit(
-            f'**Userge is up-to-date with [{branch}]**', del_in=5, log=True)
+            f'**Userge is up-to-date with [{branch}]**', del_in=5)
         return
 
     if not run_updater:
         changelog_str = f'**New UPDATE available for [{branch}]:\n\n📄 CHANGELOG 📄**\n\n'
         await message.edit_or_send_as_file(
-            changelog_str + out, log=True, disable_web_page_preview=True)
+            changelog_str + out, disable_web_page_preview=True)
 
     else:
         await message.edit(f'`New update found for [{branch}], trying to update...`')

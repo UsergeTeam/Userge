@@ -46,7 +46,7 @@ async def gsearch(message: Message):
         gresults = g_search.search(query, page)
 
     except Exception as e:
-        await message.err(text=e, log=True)
+        await message.err(text=e)
         return
 
     output = ""
@@ -65,4 +65,4 @@ async def gsearch(message: Message):
     output = f"**Google Search:**\n`{query}`\n\n**Results:**\n{output}"
 
     await message.edit_or_send_as_file(text=output, caption=query,
-                                       disable_web_page_preview=True, log=True)
+                                       disable_web_page_preview=True)

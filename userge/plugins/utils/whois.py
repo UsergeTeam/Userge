@@ -75,4 +75,4 @@ async def who_is(message: Message):
 
         else:
             message_out_str = "<b>📷 NO DP Found 📷</b>\n\n" + message_out_str
-            await message.edit(message_out_str, log=True)
+            await message.edit(message_out_str)

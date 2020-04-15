@@ -41,7 +41,7 @@ async def save_thumb_nail(message: Message):
         end_t = datetime.now()
         m_s = (end_t - start_t).seconds
 
-        await message.edit(f"thumbnail saved in {m_s} seconds.", del_in=3, log=True)
+        await message.edit(f"thumbnail saved in {m_s} seconds.", del_in=3)
 
     else:
         await message.edit("Reply to a photo to save custom thumbnail", del_in=3)
@@ -54,7 +54,7 @@ async def clear_thumb_nail(message: Message):
     if os.path.exists(THUMB_PATH):
         os.remove(THUMB_PATH)
 
-    await message.edit("✅ Custom thumbnail deleted succesfully.", del_in=3, log=True)
+    await message.edit("✅ Custom thumbnail deleted succesfully.", del_in=3)
 
 
 @userge.on_cmd('vthumb', about="__View thumbnail__")

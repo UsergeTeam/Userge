@@ -24,7 +24,7 @@ async def notes_active(message: Message):
         else:
             out += " 🔹 `{}`\n".format(note['name'])
 
-    await message.edit(out, log=True)
+    await message.edit(out)
 
 
 @userge.on_cmd("delnote", about="""\
@@ -45,7 +45,7 @@ async def remove_notes(message: Message):
     else:
         out = "`Couldn't find note:` **{}**".format(notename)
 
-    await message.edit(text=out, del_in=3, log=True)
+    await message.edit(text=out, del_in=3)
 
 
 @userge.on_cmd(r"(\w[\w_]*)",
@@ -66,7 +66,7 @@ async def note(message: Message):
     if found:
         out = "**--{}--**\n\n{}".format(notename, found['content'])
 
-        await message.force_edit(text=out, log=True)
+        await message.force_edit(text=out)
 
 
 @userge.on_cmd("addnote (\\w[\\w_]*)(?:\\s([\\s\\S]+))?",

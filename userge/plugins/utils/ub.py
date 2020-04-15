@@ -48,4 +48,4 @@ async def urban_dict(message: Message):
 
     output = f"**Query:** `{query}`\n\n{output}"
 
-    await message.edit_or_send_as_file(text=output, caption=query, log=True)
+    await message.edit_or_send_as_file(text=output, caption=query)

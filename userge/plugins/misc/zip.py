@@ -287,7 +287,7 @@ async def zip_(message: Message):
         await sleep(3)
 
     if z_obj.output:
-        await message.err(z_obj.output, log=True)
+        await message.err(z_obj.output)
 
     else:
         end_t = datetime.now()
@@ -341,7 +341,7 @@ async def unzip_(message: Message):
         await sleep(3)
 
     if z_obj.output:
-        await message.err(z_obj.output, log=True)
+        await message.err(z_obj.output)
 
     else:
         end_t = datetime.now()
@@ -378,4 +378,4 @@ async def zipinfo_(message: Message):
     for file_ in infos:
         output += f"📄 {file_.filename} __({humanbytes(file_.file_size)})__\n"
 
-    await message.edit_or_send_as_file(text=output, caption=file_path, log=True)
+    await message.edit_or_send_as_file(text=output, caption=file_path)
