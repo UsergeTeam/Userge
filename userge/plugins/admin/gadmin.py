@@ -54,7 +54,7 @@ async def promote_usr(message: Message):
                                                  can_invite_users=True,
                                                  can_pin_messages=True)
 
-                await message.edit("**👑 Promoted Successfully**", del_in=5)
+                await message.edit("**👑 Promoted Successfully**", del_in=0)
 
                 await CHANNEL.log(
                     f"#PROMOTE\n\n"
@@ -65,7 +65,7 @@ async def promote_usr(message: Message):
             except:
                 await message.edit(
                     text="`something went wrong 🤔,`"
-                    "`do .help promote for more info`", del_in=5)
+                    "`do .help promote for more info`", del_in=0)
 
         elif message.reply_to_message:
 
@@ -79,7 +79,7 @@ async def promote_usr(message: Message):
                                                  can_invite_users=True,
                                                  can_pin_messages=True)
 
-                await message.edit("**👑 Promoted Successfully**", del_in=5)
+                await message.edit("**👑 Promoted Successfully**", del_in=0)
 
                 await CHANNEL.log(
                     f"#PROMOTE\n\n"
@@ -90,18 +90,18 @@ async def promote_usr(message: Message):
             except:
                 await message.edit(
                     text="`something went wrong 🤔,`"
-                    "`do .help promote for more info`", del_in=5)
+                    "`do .help promote for more info`", del_in=0)
 
         else:
             await message.edit(
                 text="`no valid user_id or message specified,`"
-                "`do .help promote for more info`", del_in=5)
+                "`do .help promote for more info`", del_in=0)
 
             return
 
     else:
         await message.edit(
-            text="`Looks like i don't have proper admin permission to do that ⚠`", del_in=5)
+            text="`Looks like i don't have proper admin permission to do that ⚠`", del_in=0)
 
 
 @userge.on_cmd("demote", about="""\
@@ -145,7 +145,7 @@ async def demote_usr(message: Message):
                                                  can_invite_users=False,
                                                  can_pin_messages=False)
 
-                await message.edit("**🛡 Demoted Successfully**", del_in=5)
+                await message.edit("**🛡 Demoted Successfully**", del_in=0)
                 await CHANNEL.log(
                     f"#DEMOTE\n\n"
                     f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
@@ -155,7 +155,7 @@ async def demote_usr(message: Message):
             except:
                 await message.edit(
                     text="`something went wrong 🤔,`"
-                    "`do .help demote for more info`", del_in=5)
+                    "`do .help demote for more info`", del_in=0)
 
         elif message.reply_to_message:
 
@@ -169,7 +169,7 @@ async def demote_usr(message: Message):
                                                  can_invite_users=False,
                                                  can_pin_messages=False)
 
-                await message.edit("**🛡 Demoted Successfully**", del_in=5)
+                await message.edit("**🛡 Demoted Successfully**", del_in=0)
                 await CHANNEL.log(
                     f"#DEMOTE\n\n"
                     f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
@@ -179,18 +179,18 @@ async def demote_usr(message: Message):
             except:
                 await message.edit(
                     text="`something went wrong 🤔,`"
-                    "`do .help demote for more info`", del_in=5)
+                    "`do .help demote for more info`", del_in=0)
 
         else:
             await message.edit(
                 text="`no valid user_id or message specified,`"
-                "`do .help demote for more info`", del_in=5)
+                "`do .help demote for more info`", del_in=0)
 
             return
 
     else:
         await message.edit(
-            text="`Looks like i don't have proper admin permission to do that ⚠`", del_in=5)
+            text="`Looks like i don't have proper admin permission to do that ⚠`", del_in=0)
 
 @userge.on_cmd("ban", about="""\
 __use this to ban group members__
@@ -230,7 +230,7 @@ async def ban_usr(message: Message):
             else:
                 await message.edit(
                     text="`no valid user_id or message specified,`"
-                    "`do .help ban for more info`", del_in=5)
+                    "`do .help ban for more info`", del_in=0)
                 return
         if user_id:
             get_mem = await userge.get_chat_member(chat_id, user_id)
@@ -244,7 +244,7 @@ async def ban_usr(message: Message):
 
     else:
         await message.edit(
-            text="`Looks like i don't have proper admin permission to do that ⚠`", del_in=5)
+            text="`Looks like i don't have proper admin permission to do that ⚠`", del_in=0)
 
 @userge.on_cmd("unban", about="""\
 __use this to unban group members__
@@ -278,7 +278,7 @@ async def unban_usr(message: Message):
 
             try:
                 await userge.unban_chat_member(chat_id, user_id)
-                await message.edit("**🛡 Successfully Unbanned**", del_in=5)
+                await message.edit("**🛡 Successfully Unbanned**", del_in=0)
                 await CHANNEL.log(
                     f"#UNBAN\n\n"
                     f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
@@ -288,7 +288,7 @@ async def unban_usr(message: Message):
             except:
                 await message.edit(
                     text="`something went wrong 🤔,`"
-                    "`do .help unban for more info`", del_in=5)
+                    "`do .help unban for more info`", del_in=0)
 
         elif message.reply_to_message:
 
@@ -296,7 +296,7 @@ async def unban_usr(message: Message):
 
             try:
                 await userge.unban_chat_member(chat_id, get_mem.user.id)
-                await message.edit("**🛡 Successfully Unbanned**", del_in=5)
+                await message.edit("**🛡 Successfully Unbanned**", del_in=0)
                 await CHANNEL.log(
                     f"#UNBAN\n\n"
                     f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
@@ -306,12 +306,12 @@ async def unban_usr(message: Message):
             except:
                 await message.edit(
                     text="`something went wrong 🤔,`"
-                    "`do .help unabn for more info`", del_in=5)
+                    "`do .help unabn for more info`", del_in=0)
 
         else:
             await message.edit(
                 text="`no valid user_id or message specified,`"
-                "`do .help unban for more info`", del_in=5)
+                "`do .help unban for more info`", del_in=0)
 
             return
 
@@ -370,7 +370,7 @@ async def mute_usr(message: Message):
             else:
                 await message.edit(
                     text="`no valid user_id or message specified,`"
-                    "`do .help mute for more info`", del_in=5)
+                    "`do .help mute for more info`", del_in=0)
                 return
 
         if minutes:
@@ -379,8 +379,8 @@ async def mute_usr(message: Message):
 
             try:
                 await userge.restrict_chat_member(chat_id, user_id,
-                                            ChatPermissions(),
-                                            int(time.time() + mute_period))
+                                                  ChatPermissions(),
+                                                  int(time.time() + mute_period))
                 await message.edit(
                     f"#MUTE\n\n"
                     f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
@@ -393,7 +393,7 @@ async def mute_usr(message: Message):
                 await message.edit(
                     text=f"`something went wrong 🤔,`"
                     f"`do .help mute for more info`\n"
-                    f"**ERROR**: {e}", del_in=5)
+                    f"**ERROR**: {e}", del_in=0)
 
         elif hours:
             get_mem = await userge.get_chat_member(chat_id, user_id)
@@ -401,8 +401,8 @@ async def mute_usr(message: Message):
 
             try:
                 await userge.restrict_chat_member(chat_id, user_id,
-                                            ChatPermissions(),
-                                            int(time.time() + mute_period))
+                                                  ChatPermissions(),
+                                                  int(time.time() + mute_period))
                 await message.edit(
                     f"#MUTE\n\n"
                     f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
@@ -415,7 +415,7 @@ async def mute_usr(message: Message):
                 await message.edit(
                     text=f"`something went wrong 🤔,`"
                     f"`do .help mute for more info`\n"
-                    f"**ERROR**: {e}", del_in=5)
+                    f"**ERROR**: {e}", del_in=0)
 
         elif days:
             get_mem = await userge.get_chat_member(chat_id, user_id)
@@ -423,8 +423,8 @@ async def mute_usr(message: Message):
 
             try:
                 await userge.restrict_chat_member(chat_id, user_id,
-                                            ChatPermissions(),
-                                            int(time.time() + mute_period))
+                                                  ChatPermissions(),
+                                                  int(time.time() + mute_period))
                 await message.edit(
                     f"#MUTE\n\n"
                     f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
@@ -437,7 +437,7 @@ async def mute_usr(message: Message):
                 await message.edit(
                     text=f"`something went wrong 🤔,`"
                     f"`do .help mute for more info`\n"
-                    f"**ERROR**: {e}", del_in=5)
+                    f"**ERROR**: {e}", del_in=0)
 
         else:
             get_mem = await userge.get_chat_member(chat_id, user_id)
@@ -456,10 +456,121 @@ async def mute_usr(message: Message):
                 await message.edit(
                     text=f"`something went wrong 🤔,`"
                     f"`do .help mute for more info`\n"
-                    f"**ERROR**: {e}", del_in=5)
+                    f"**ERROR**: {e}", del_in=0)
 
             return
 
     else:
         await message.edit(
             text="`Looks like i don't have proper admin permission to do that ⚠`", del_in=5)
+
+@userge.on_cmd("unmute", about="""\
+__use this to unmute group members__
+
+**Usage:**
+
+`Unmute member form supergroup.`
+
+[NOTE: Requires proper admin rights in the chat!!!]
+
+
+**Example:**
+
+    `.unmute <username/userid> (or) reply to a message with .unmute`""")
+
+async def unmute_usr(message: Message):
+    """
+    this function can unmute user from tg group
+    """
+    chat_id = message.chat.id
+    check_admin = await userge.get_chat_member(chat_id, message.from_user.id)
+    get_group = await userge.get_chat(chat_id)
+    unmute_perm = check_admin.can_restrict_members
+
+    amsg = get_group.permissions.can_send_messages
+    amedia = get_group.permissions.can_send_media_messages
+    astickers = get_group.permissions.can_send_stickers
+    aanimations = get_group.permissions.can_send_animations
+    agames = get_group.permissions.can_send_games
+    ainlinebots = get_group.permissions.can_use_inline_bots
+    awebprev = get_group.permissions.can_add_web_page_previews
+    apolls = get_group.permissions.can_send_polls
+    ainfo = get_group.permissions.can_change_info
+    ainvite = get_group.permissions.can_invite_users
+    apin = get_group.permissions.can_pin_messages
+
+    if unmute_perm:
+
+        user_id = message.input_str
+
+        if user_id:
+            get_mem = await userge.get_chat_member(chat_id, user_id)
+
+            try:
+                await userge.restrict_chat_member(chat_id, user_id,
+                                                  ChatPermissions(
+                                                      can_send_messages=amsg,
+                                                      can_send_media_messages=amedia,
+                                                      can_send_stickers=astickers,
+                                                      can_send_animations=aanimations,
+                                                      can_send_games=agames,
+                                                      can_use_inline_bots=ainlinebots,
+                                                      can_add_web_page_previews=awebprev,
+                                                      can_send_polls=apolls,
+                                                      can_change_info=ainfo,
+                                                      can_invite_users=ainvite,
+                                                      can_pin_messages=apin))
+
+                await message.edit("**🛡 Successfully Unmuted**", del_in=0)
+                await CHANNEL.log(
+                    f"#UNMUTE\n\n"
+                    f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
+                    f"(`{get_mem.user.id}`)\n"
+                    f"CHAT: `{get_group.title}` (`{chat_id}`)")
+
+            except:
+                await message.edit(
+                    text="`something went wrong 🤔,`"
+                    "`do .help unmute for more info`", del_in=0)
+
+        elif message.reply_to_message:
+
+            get_mem = await userge.get_chat_member(chat_id, message.reply_to_message.from_user.id)
+
+            try:
+                await userge.restrict_chat_member(chat_id, get_mem.user.id,
+                                                  ChatPermissions(
+                                                      can_send_messages=amsg,
+                                                      can_send_media_messages=amedia,
+                                                      can_send_stickers=astickers,
+                                                      can_send_animations=aanimations,
+                                                      can_send_games=agames,
+                                                      can_use_inline_bots=ainlinebots,
+                                                      can_add_web_page_previews=awebprev,
+                                                      can_send_polls=apolls,
+                                                      can_change_info=ainfo,
+                                                      can_invite_users=ainvite,
+                                                      can_pin_messages=apin))
+
+                await message.edit("**🛡 Successfully Unmuted**", del_in=0)
+                await CHANNEL.log(
+                    f"#UNMUTE\n\n"
+                    f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
+                    f"(`{get_mem.user.id}`)\n"
+                    f"CHAT: `{get_group.title}` (`{chat_id}`)")
+
+            except:
+                await message.edit(
+                    text="`something went wrong 🤔,`"
+                    "`do .help unmute for more info`", del_in=0)
+
+        else:
+            await message.edit(
+                text="`no valid user_id or message specified,`"
+                "`do .help unmute for more info`", del_in=0)
+
+            return
+
+    else:
+        await message.edit(
+            text="`Looks like i don't have proper admin permission to do that ⚠`", del_in=0)
