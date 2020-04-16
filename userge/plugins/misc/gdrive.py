@@ -30,7 +30,9 @@ CREDS: object = None
 AUTH_FLOW: object = None
 PARENT_ID = ""
 
-OAUTH_SCOPE = "https://www.googleapis.com/auth/drive"
+OAUTH_SCOPE = ["https://www.googleapis.com/auth/drive",
+               "https://www.googleapis.com/auth/drive.file",
+               "https://www.googleapis.com/auth/drive.metadata"]
 REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob"
 G_DRIVE_DIR_MIME_TYPE = "application/vnd.google-apps.folder"
 G_DRIVE_FILE_LINK = "📄 <a href='https://drive.google.com/open?id={}'>{}</a> __({})__"
@@ -361,7 +363,7 @@ class GDrive(DBase):
 
         except HttpError as h_e:
             LOG.exception(h_e)
-            self.__output = h_e._get_reason()
+            self.__output = h_e
 
         except ProcessCanceled:
             self.__output = "`Process Canceled!`"
@@ -490,7 +492,7 @@ class GDrive(DBase):
 
         except HttpError as h_e:
             LOG.exception(h_e)
-            self.__output = h_e._get_reason()
+            self.__output = h_e
 
         except ProcessCanceled:
             self.__output = "`Process Canceled!`"
@@ -581,7 +583,7 @@ class GDrive(DBase):
 
         except HttpError as h_e:
             LOG.exception(h_e)
-            self.__output = h_e._get_reason()
+            self.__output = h_e
 
         except ProcessCanceled:
             self.__output = "`Process Canceled!`"
@@ -911,7 +913,10 @@ class Worker(GDrive):
             end_t = datetime.now()
             m_s = (end_t - start_t).seconds
 
-            if self._output is not None and not self._is_canceled:
+            if isinstance(self._output, HttpError):
+                out = f"**ERROR** : `{self._output._get_reason()}`"
+
+            elif self._output is not None and not self._is_canceled:
                 out = f"**Uploaded Successfully** __in {m_s} seconds__\n\n{self._output}"
 
             elif self._output is not None and self._is_canceled:
@@ -950,7 +955,10 @@ class Worker(GDrive):
             end_t = datetime.now()
             m_s = (end_t - start_t).seconds
 
-            if self._output is not None and not self._is_canceled:
+            if isinstance(self._output, HttpError):
+                out = f"**ERROR** : `{self._output._get_reason()}`"
+
+            elif self._output is not None and not self._is_canceled:
                 out = f"**Downloaded Successfully** __in {m_s} seconds__\n\n`{self._output}`"
 
             elif self._output is not None and self._is_canceled:
@@ -993,7 +1001,10 @@ class Worker(GDrive):
             end_t = datetime.now()
             m_s = (end_t - start_t).seconds
 
-            if self._output is not None and not self._is_canceled:
+            if isinstance(self._output, HttpError):
+                out = f"**ERROR** : `{self._output._get_reason()}`"
+
+            elif self._output is not None and not self._is_canceled:
                 out = f"**Copied Successfully** __in {m_s} seconds__\n\n{self._output}"
 
             elif self._output is not None and self._is_canceled:

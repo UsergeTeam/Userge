@@ -8,14 +8,20 @@
 
 
 from pyrogram.errors.exceptions import FileIdInvalid, FileReferenceEmpty
+from pyrogram.errors.exceptions.bad_request_400 import BadRequest
 from userge import userge, Message, Config, versions
 
 LOGO_STICKER_ID, LOGO_STICKER_REF = None, None
 
 
+class FileIdNotFound(FileIdInvalid, FileReferenceEmpty, BadRequest):
+    pass
+
+
 @userge.on_cmd("alive", about="__This command is just for fun XD__")
 async def alive(message: Message):
     await message.delete()
+
     try:
         if LOGO_STICKER_ID:
             await sendit(LOGO_STICKER_ID, message)
@@ -24,11 +30,7 @@ async def alive(message: Message):
             await refresh_id()
             await sendit(LOGO_STICKER_ID, message)
 
-    except FileIdInvalid:
-        await refresh_id()
-        await sendit(LOGO_STICKER_ID, message)
-
-    except FileReferenceEmpty:
+    except FileIdNotFound:
         await refresh_id()
         await sendit(LOGO_STICKER_ID, message)
 
