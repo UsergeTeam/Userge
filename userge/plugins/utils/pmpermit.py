@@ -51,8 +51,8 @@ __allows someone to contact__
 async def allow(message: Message):
     userid = await get_id(message)
     if userid:
-        if message.from_user.id in pmCounter:
-            del pmCounter[message.from_user.id]
+        if userid in pmCounter:
+            del pmCounter[userid]
         allowed.add(userid)
         a = ALLOWED_COLLECTION.update_one({'_id': userid}, {"$set": {'status': 'allowed'}}, upsert=True)
         if a.matched_count:
@@ -141,8 +141,8 @@ async def uninvitedPmHandler(message: Message):
 @userge.on_filters(Filters.private & ~allowed & Filters.outgoing)
 async def outgoing_auto_approve(message: Message):
     userID = message.chat.id
-    if message.from_user.id in pmCounter:
-        del pmCounter[message.chat.id]
+    if userID in pmCounter:
+        del pmCounter[userID]
     allowed.add(userID)
     ALLOWED_COLLECTION.update_one({'_id': userID}, {"$set": {'status': 'allowed'}}, upsert=True)
     user_dict = await userge.get_user_dict(userID)
