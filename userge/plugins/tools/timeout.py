@@ -7,7 +7,16 @@
 # All rights reserved.
 
 
-from userge import userge, Message, Config
+from userge import userge, Message, Config, get_collection
+
+SAVED_SETTINGS = get_collection("CONFIGS")
+
+__tmp__ = SAVED_SETTINGS.find_one({'_id': 'MSG_DELETE_TIMEOUT'})
+
+if __tmp__:
+    Config.MSG_DELETE_TIMEOUT = __tmp__['data']
+
+del __tmp__
 
 
 @userge.on_cmd("sdelto (\\d+)", about="""\
@@ -28,6 +37,9 @@ async def set_delete_timeout(message: Message):
 
     t_o = int(message.matches[0].group(1))
     Config.MSG_DELETE_TIMEOUT = t_o
+
+    SAVED_SETTINGS.update_one(
+        {'_id': 'MSG_DELETE_TIMEOUT'}, {"$set": {'data': t_o}}, upsert=True)
 
     await message.edit(
         f"`Set auto message delete timeout as {t_o} seconds!`",
