@@ -98,7 +98,7 @@ async def doc_upload(chat_id, path):
     else:
         end_t = datetime.now()
         ms = (end_t - start_t).seconds
-        await message.edit(f"Uploaded in {ms} seconds", log=True)
+        await message.edit(f"Uploaded in {ms} seconds")
 
 
 async def vid_upload(chat_id, path):
@@ -136,7 +136,7 @@ async def vid_upload(chat_id, path):
     else:
         end_t = datetime.now()
         ms = (end_t - start_t).seconds
-        await message.edit(f"Uploaded in {ms} seconds", log=True)
+        await message.edit(f"Uploaded in {ms} seconds")
 
 
 async def get_thumb(path: str = '') -> str:

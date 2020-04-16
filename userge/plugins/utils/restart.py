@@ -27,15 +27,9 @@ async def restart_cmd_handler(message: Message):
 
     if Config.HEROKU_APP and '-h' in message.flags:
         await message.edit(
-            '`Heroku app found, trying to restart dyno...`', del_in=3)
+            '`Heroku app found, trying to restart dyno...\nthis will take upto 30 sec`', del_in=3)
         Config.HEROKU_APP.restart()
 
     else:
-        asyncio.get_event_loop().create_task(restart(userge))
-        await message.delete()
-
-
-async def restart(client: userge):
-    await client.restart()
-    await CHANNEL.log("USERGE Services have been Restarted!")
-    LOG.info("USERGE - Restarted")
+        await message.edit("finalizing...", del_in=2)
+        asyncio.get_event_loop().create_task(userge.restart())

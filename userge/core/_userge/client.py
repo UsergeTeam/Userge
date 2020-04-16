@@ -8,6 +8,9 @@
 
 
 import re
+import os
+import sys
+import psutil
 import asyncio
 import importlib
 from types import ModuleType
@@ -420,11 +423,17 @@ class Userge(BaseClient):
             LOG_STR.format("Restarting Userge"))
 
         await self.stop()
-        await self.reload_plugins()
-        await self.start()
 
-        LOG.info(
-            LOG_STR.format("Restarted Userge"))
+        try:
+            p = psutil.Process(os.getpid())
+            for handler in p.open_files() + p.connections():
+                os.close(handler.fd)
+
+        except Exception as e:
+            LOG.error(
+                LOG_STR.format(e))
+
+        os.execl(sys.executable, sys.executable, '-m', 'userge')
 
     def begin(self) -> None:
         """
