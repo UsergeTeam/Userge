@@ -8,7 +8,10 @@
 
 
 import os
+import shutil
+
 import heroku3
+from git import Repo
 from dotenv import load_dotenv
 from .logger import logging
 
@@ -86,4 +89,14 @@ if Config.HEROKU_API_KEY:
             Config.HEROKU_APP = heroku_app
             Config.HEROKU_GIT_URL = heroku_app.git_url.replace(
                 "https://", "https://api:" + Config.HEROKU_API_KEY + "@")
+
+            if not os.path.isdir(os.path.join(os.getcwd(), '.git')):
+                tmp_heroku_git_path = os.path.join(os.getcwd(), 'tmp_heroku_git')
+
+                LOG.info("Cloning Heroku GIT...")
+
+                Repo.clone_from(Config.HEROKU_GIT_URL, tmp_heroku_git_path)
+                shutil.move(os.path.join(tmp_heroku_git_path, '.git'), os.getcwd())
+                shutil.rmtree(tmp_heroku_git_path)
+
             break
