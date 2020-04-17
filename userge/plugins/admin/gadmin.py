@@ -204,7 +204,7 @@ __use this to ban group members__
 
 **Example:**
 
-    `.ban [username | userid] or [reply to user] <reason (optional)>`""")
+    `.ban [username | userid] or [reply to user] :reason (optional)`""")
 
 async def ban_usr(message: Message):
     """
@@ -317,7 +317,77 @@ async def unban_usr(message: Message):
 
     else:
         await message.edit(
-            text="`Looks like i don't have proper admin permission to do that ⚠`", del_in=5)
+            text="`Looks like i don't have proper admin permission to do that ⚠`", del_in=0)
+
+@userge.on_cmd("kick", about="""\
+__use this to kick group members__
+
+**Usage:**
+
+`Kick member form supergroup. member can rejoin the group again if they want.`
+
+[NOTE: Requires proper admin rights in the chat!!!]
+
+
+**Example:**
+
+    `.kick [username | userid] or [reply to user]""")
+
+async def kick_usr(message: Message):
+    """
+    this function can kick user from tg group
+    """
+    chat_id = message.chat.id
+    check_admin = await userge.get_chat_member(chat_id, message.from_user.id)
+    get_group = await userge.get_chat(chat_id)
+    kick_perm = check_admin.can_restrict_members
+
+    if kick_perm:
+
+        user_id = message.input_str
+
+        if user_id:
+            get_mem = await userge.get_chat_member(chat_id, user_id)
+
+            try:
+                await userge.kick_chat_member(chat_id, user_id, int(time.time() + 45))
+                await message.edit(
+                    f"#KICK\n\n"
+                    f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
+                    f"(`{get_mem.user.id}`)\n"
+                    f"CHAT: `{get_group.title}` (`{chat_id}`)", log=True)
+
+            except:
+                await message.edit(
+                    text="`something went wrong 🤔,`"
+                    "`do .help kick for more info`", del_in=0)
+
+        elif message.reply_to_message:
+            get_mem = await userge.get_chat_member(chat_id, message.reply_to_message.from_user.id)
+
+            try:
+                await userge.kick_chat_member(chat_id, get_mem.user.id, int(time.time() + 45))
+                await message.edit(
+                    f"#KICK\n\n"
+                    f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
+                    f"(`{get_mem.user.id}`)\n"
+                    f"CHAT: `{get_group.title}` (`{chat_id}`)", log=True)
+
+            except:
+                await message.edit(
+                    text="`something went wrong 🤔,`"
+                    "`do .help kick for more info`", del_in=0)
+
+        else:
+            await message.edit(
+                text="`no valid user_id or message specified,`"
+                "`do .help unban for more info`", del_in=0)
+
+            return
+
+    else:
+        await message.edit(
+            text="`Looks like i don't have proper admin permission to do that ⚠`", del_in=0)
 
 @userge.on_cmd("mute", about="""\
 __use this to mute group members__
@@ -462,7 +532,7 @@ async def mute_usr(message: Message):
 
     else:
         await message.edit(
-            text="`Looks like i don't have proper admin permission to do that ⚠`", del_in=5)
+            text="`Looks like i don't have proper admin permission to do that ⚠`", del_in=0)
 
 @userge.on_cmd("unmute", about="""\
 __use this to unmute group members__
@@ -476,7 +546,7 @@ __use this to unmute group members__
 
 **Example:**
 
-    `.unmute <username/userid> (or) reply to a message with .unmute`""")
+    `.unmute [username/userid] (or) reply to a message with .unmute`""")
 
 async def unmute_usr(message: Message):
     """

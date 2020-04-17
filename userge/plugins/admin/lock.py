@@ -306,7 +306,7 @@ async def unlock_perm(message: Message):
         await CHANNEL.log(
             f"#UNLOCK\n\n"
             f"CHAT: `{get_uperm.title}` (`{chat_id}`)\n"
-            f"PERMISSIONS: `{perm} Permission`"
+            f"PERMISSIONS: `{uperm} Permission`"
         )
 
     except:
