@@ -71,6 +71,8 @@ class Config:
 
     MSG_DELETE_TIMEOUT = 120
 
+    WELCOME_DELETE_TIMEOUT = 120
+
 
 if not os.path.isdir(Config.DOWN_PATH):
     LOG.info("Creating Download Path...")
