@@ -298,6 +298,15 @@ async def Oof_(message: Message):
         await message.edit(Oof)
 
 
+@userge.on_cmd("Hmm$", about="__Hmmmmm__", trigger='')
+async def Hmm_(message: Message):
+    """Hmm"""
+    Hmm = "Hm "
+    for _ in range(15):
+        Hmm = Hmm[:-1] + "mm"
+        await message.edit(Hmm)
+
+
 @userge.on_cmd("fp$", about="__Facepalm :P__")
 async def facepalm_(message: Message):
     """facepalm_"""
@@ -566,7 +575,10 @@ async def slap_(message: Message):
     throw = choice(THROW)
     where = choice(WHERE)
 
-    caption = "..." + temp.format(victim=info_dict['uname'],
+    mention = f"<a href='tg://user?id={u_id}'>" + \
+            f"{info_dict['uname'] or info_dict['flname']}</a>"
+
+    caption = "..." + temp.format(victim=mention,
                                   item=item, hits=hit,
                                   throws=throw, where=where)
 

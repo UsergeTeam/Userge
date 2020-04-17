@@ -437,12 +437,12 @@ async def send_proper_type(message: Message,
                                         file_ref=file_ref,
                                         reply_to_message_id=message.message_id)
 
+        if caption:
+            tmp_msgs.append(await message.reply(caption))
+
         file_id = msg.sticker.file_id
         file_ref = msg.sticker.file_ref
         tmp_msgs.append(msg)
-
-        if caption:
-            tmp_msgs.append(await message.reply(caption))
 
     elif file_type == 'voice':
         duration = 0
@@ -475,12 +475,12 @@ async def send_proper_type(message: Message,
                                            thumb=thumb,
                                            reply_to_message_id=message.message_id)
 
+        if caption:
+            tmp_msgs.append(await message.reply(caption))
+
         file_id = msg.video_note.file_id
         file_ref = msg.video_note.file_ref
         tmp_msgs.append(msg)
-
-        if caption:
-            tmp_msgs.append(await message.reply(caption))
 
     elif file_type == 'video':
         duration = 0

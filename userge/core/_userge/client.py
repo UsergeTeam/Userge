@@ -425,13 +425,13 @@ class Userge(BaseClient):
         await self.stop()
 
         try:
-            p = psutil.Process(os.getpid())
-            for handler in p.open_files() + p.connections():
+            c_p = psutil.Process(os.getpid())
+            for handler in c_p.open_files() + c_p.connections():
                 os.close(handler.fd)
 
-        except Exception as e:
+        except Exception as c_e:
             LOG.error(
-                LOG_STR.format(e))
+                LOG_STR.format(c_e))
 
         os.execl(sys.executable, sys.executable, '-m', 'userge')
 

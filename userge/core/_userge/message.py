@@ -122,7 +122,8 @@ class Message(BaseMessage):
         kwargs_ = vars(message)
         del message
 
-        del kwargs_['_client']
+        if '_client' in kwargs_:
+            del kwargs_['_client']
 
         if '_Message__channel' in kwargs_:
             del kwargs_['_Message__channel']
