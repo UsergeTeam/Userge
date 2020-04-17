@@ -29,9 +29,13 @@ __upload files to telegram__
 
 **Usage:**
 
-    `.upload [file or folder path]`""")
+    `.upload [file or folder path] -<Flags>`
+    Available flags ::
+        -d  upload as document""",
+               del_pre=True)
 async def uploadtotg(message: Message):
-    path_ = message.input_str
+    flags = message.flags
+    path_ = message.filtered_input_str
     if not path_:
         await message.edit("invalid input!, check `.help .upload`", del_in=5)
         return
@@ -44,24 +48,24 @@ async def uploadtotg(message: Message):
 
     else:
         await message.delete()
-        await explorer(string, message.chat.id)
+        await explorer(string, message.chat.id, flags)
 
 
-async def explorer(path: Path, chatid):
+async def explorer(path: Path, chatid, flags):
     if path.is_file():
         try:
-            await upload(path, chatid)
+            await upload(path, chatid, flags)
 
         except FloodWait as x:
             time.sleep(x.x)  # asyncio sleep ?
 
     elif path.is_dir():
         for i in path.iterdir():
-            await explorer(i, chatid)
+            await explorer(i, chatid, flags)
 
 
-async def upload(path: Path, chat_id: int):
-    if path.name.endswith((".mkv", ".mp4", ".webm")):
+async def upload(path: Path, chat_id: int, flags):
+    if path.name.endswith((".mkv", ".mp4", ".webm")) and ('d' not in flags):
         await vid_upload(chat_id, path)
 
     else:
@@ -155,6 +159,6 @@ async def get_thumb(path: str = '') -> str:
 
 async def remove_thumb(thumb: str) -> None:
     if os.path.exists(thumb) and \
-        thumb != LOGO_PATH and \
+            thumb != LOGO_PATH and \
             thumb != THUMB_PATH:
         os.remove(thumb)

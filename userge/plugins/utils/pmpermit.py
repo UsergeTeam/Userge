@@ -34,6 +34,7 @@ if _pmMsg:
 else:
     noPmMessage = "Hello {fname} this is an automated message\nPlease wait untill you get approved to direct message " \
                   "And please dont spam untill then "
+del _pm, _pmMsg
 
 
 @userge.on_cmd("allow", about="""\
