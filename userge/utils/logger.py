@@ -12,8 +12,8 @@ import logging
 from logging.handlers import RotatingFileHandler
 
 
-if not os.path.isdir("./logs/"):
-    os.makedirs("./logs/")
+if not os.path.isdir("logs"):
+    os.makedirs("logs")
 
 
 logging.basicConfig(level=logging.INFO,
@@ -21,7 +21,7 @@ logging.basicConfig(level=logging.INFO,
                     datefmt='%d-%b-%y %H:%M:%S',
                     handlers=[
                         RotatingFileHandler(
-                            "./logs/userge.log", maxBytes=(20480), backupCount=10),
+                            "logs/userge.log", maxBytes=(20480), backupCount=10),
                         logging.StreamHandler()
                     ])
 

@@ -35,7 +35,7 @@ async def down_load_media(message: Message):
         start_t = datetime.now()
         c_time = time.time()
 
-        the_real_download_location = await userge.download_media(
+        dl_loc = await userge.download_media(
             message=message.reply_to_message,
             file_name=Config.DOWN_PATH,
             progress=progress,
@@ -49,10 +49,13 @@ async def down_load_media(message: Message):
             await message.edit("`Process Canceled!`", del_in=5)
 
         else:
+            dl_loc = os.path.join(Config.DOWN_PATH, os.path.basename(dl_loc))
+
             end_t = datetime.now()
             ms = (end_t - start_t).seconds
+
             await message.edit(
-                f"Downloaded to `{the_real_download_location}` in {ms} seconds")
+                f"Downloaded to `{dl_loc}` in {ms} seconds")
 
     elif message.input_str:
         start_t = datetime.now()
@@ -76,13 +79,14 @@ async def down_load_media(message: Message):
             now = time.time()
             diff = now - c_time
             percentage = downloader.get_progress() * 100
-            # speed = downloader.get_speed()
             # elapsed_time = round(diff) * 1000
 
             progress_str = "[{0}{1}]\nProgress: {2}%".format(
                 ''.join(["█" for i in range(math.floor(percentage / 5))]),
                 ''.join(["░" for i in range(20 - math.floor(percentage / 5))]),
                 round(percentage, 2))
+
+            speed = downloader.get_speed(human=True)
             estimated_total_time = downloader.get_eta(human=True)
 
             try:
@@ -91,6 +95,7 @@ async def down_load_media(message: Message):
                 current_message += f"File Name: {custom_file_name}\n"
                 current_message += f"{progress_str}\n"
                 current_message += f"{humanbytes(downloaded)} of {humanbytes(total_length)}\n"
+                current_message += f"Speed: {speed}\n"
                 current_message += f"ETA: {estimated_total_time}"
 
                 if round(diff % 10.00) == 0 and current_message != display_message:

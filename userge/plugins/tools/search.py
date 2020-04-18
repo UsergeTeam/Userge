@@ -18,12 +18,13 @@ async def search(message: Message):
         await message.err(text="Enter any keyword to search in commands")
         return
 
-    found = '\n '.join([i for i in userge.get_help(all_cmds=True)[0] if cmd in i])
+    found = [i for i in userge.get_help(all_cmds=True)[0] if cmd in i]
+    out_str = '    '.join(found)
 
     if found:
-        out = f"**--I found these commands:--**\n\n` {found}`"
+        out = f"**--I found ({len(found)}) commands for-- : `{cmd}`**\n\n`{out_str}`"
 
     else:
-        out = "__command not found!__"
+        out = f"__command not found for__ : `{cmd}`"
 
     await message.edit(text=out, del_in=0)

@@ -15,7 +15,7 @@ from .. import __all__
 async def getplugins(message: Message):
     all_plugins = ['/'.join(i.split('.')) for i in __all__]
 
-    out_str = f"**--{len(__all__)} Plugins Loaded!--**\n\n"
+    out_str = f"**--({len(__all__)}) Plugins Loaded!--**\n\n"
 
     for plugin in all_plugins:
         out_str += f"    `{plugin}.py`\n"
