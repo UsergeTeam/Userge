@@ -43,8 +43,9 @@ for flt in FILTERS_COLLECTION.find():
 @userge.on_cmd("filters", about="__List all saved filters__")
 async def filters_active(message: Message):
     out = ''
-    for filter_ in FILTERS_DATA[message.chat.id]:
-        out += " 🔍 `{}`\n".format(filter_)
+    if message.chat.id in FILTERS_DATA:
+        for filter_ in FILTERS_DATA[message.chat.id]:
+            out += " 🔍 `{}`\n".format(filter_)
 
     if out:
         await message.edit("**--Filters saved in this chat:--**\n\n" + out, del_in=0)
@@ -89,8 +90,6 @@ async def add_filter(message: Message):
     if message.reply_to_message:
         content = message.reply_to_message.text
 
-    print(filter_, content)
-
     if not content:
         await message.err(text="No Content Found!")
         return
@@ -111,9 +110,18 @@ async def add_filter(message: Message):
     await message.edit(text=out, del_in=3, log=True)
 
 
-@userge.on_filters(FILTERS_CHATS)
+@userge.on_filters(FILTERS_CHATS & ~Filters.me)
 async def chat_filter(message: Message):
+    if not message.text:
+        return
+
     for name in FILTERS_DATA[message.chat.id]:
-        if name in message.text:
+        input_text = message.text.strip()
+
+        if input_text == name or \
+            input_text.startswith(f"{name} ") or \
+                input_text.endswith(f" {name}") or \
+                    f" {name} " in input_text:
             await message.reply(FILTERS_DATA[message.chat.id][name])
+
     message.continue_propagation()
