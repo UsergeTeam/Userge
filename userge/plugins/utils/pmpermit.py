@@ -108,7 +108,7 @@ async def get_id(message: Message):
     return userid
 
 
-@userge.on_filters(Filters.private & ~allowed & ~Filters.outgoing & ~allowAllFilter)
+@userge.on_filters(Filters.private & ~allowed & ~Filters.outgoing & ~allowAllFilter & ~Filters.service)
 async def uninvitedPmHandler(message: Message):
     user_dict = await userge.get_user_dict(message.from_user.id)
     kwargs = {
@@ -196,3 +196,10 @@ async def set_custom_nopm_message(message: Message):
     if string:
         noPmMessage = string
         SAVED_SETTINGS.update_one({'_id': 'CUSTOM NOPM MESSAGE'}, {"$set": {'data': string}}, upsert=True)
+
+
+@userge.on_cmd("vpmmsg", about="""\
+__Displays the reply message for uninvited PMs__
+""")
+async def view_current_noPM_msg(message: Message):
+    await message.edit(noPmMessage)
