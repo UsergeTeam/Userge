@@ -197,7 +197,7 @@ __use this to ban group members__
 
 **Usage:**
 
-`Ban member form supergroup.`
+`Ban member from supergroup.`
 
 [NOTE: Requires proper admin rights in the chat!!!]
 
@@ -251,7 +251,7 @@ __use this to unban group members__
 
 **Usage:**
 
-`Unban member form supergroup.`
+`Unban member from supergroup.`
 
 [NOTE: Requires proper admin rights in the chat!!!]
 
@@ -324,7 +324,7 @@ __use this to kick group members__
 
 **Usage:**
 
-`Kick member form supergroup. member can rejoin the group again if they want.`
+`Kick member from supergroup. member can rejoin the group again if they want.`
 
 [NOTE: Requires proper admin rights in the chat!!!]
 
@@ -539,7 +539,7 @@ __use this to unmute group members__
 
 **Usage:**
 
-`Unmute member form supergroup.`
+`Unmute member from supergroup.`
 
 [NOTE: Requires proper admin rights in the chat!!!]
 
