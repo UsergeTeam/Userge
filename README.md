@@ -74,39 +74,6 @@ async def testing(message: Message):
 * Telegram [API Keys](https://my.telegram.org/apps)
 * Google Drive [API Keys](https://console.developers.google.com/)
 * MongoDB [Database URL](https://cloud.mongodb.com/)
-  * Step 1 👀
-
-    ![mongo help 1](resources/mongo_help/1.jpg)
-
-  * Step 2 👀
-
-    ![mongo help 2](resources/mongo_help/2.jpg)
-
-  * Step 3 👀
-
-    ![mongo help 3](resources/mongo_help/3.jpg)
-
-  * Step 4 👀
-
-    ![mongo help 4](resources/mongo_help/4.jpg)
-
-  * Step 5 👀
-
-    ![mongo help 5](resources/mongo_help/5.jpg)
-
-  * Step 6 👀
-
-    ![mongo help 6](resources/mongo_help/6.jpg)
-
-  * Step 7 👀
-
-    ![mongo help 7](resources/mongo_help/7.jpg)
-
-  * Final Step 🙈
-
-    ![mongo help 8](resources/mongo_help/8.jpg)
-
-    **REMEMBER the password** 😜
 
 ## How To Deploy 👷
 
