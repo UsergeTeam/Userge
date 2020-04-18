@@ -39,10 +39,6 @@ for i in LEFT_LIST:
     LEFT_CHATS.add(i.get('_id'))
 
 
-class FileIdNotFound(FileIdInvalid, FileReferenceEmpty, BadRequest):
-    pass
-
-
 @userge.on_cmd("setwelcome", about="""\
 __Creates a welcome message in current chat :)__
 
@@ -325,13 +321,7 @@ async def raw_say(message: Message, name, collection):
     user = message.new_chat_members[0] if name == "Welcome" \
         else message.left_chat_member
     user_dict = await userge.get_user_dict(user.id)
-
-    kwargs = {
-        **user_dict,
-        'chat': message.chat.title if message.chat.title else "this group",
-        'mention': f"<a href='tg://user?id={user.id}'>" + \
-            f"{user_dict['uname'] or user_dict['flname']}</a>",
-    }
+    user_dict.update({'chat': message.chat.title if message.chat.title else "this group"})
 
     found = collection.find_one({'_id': message.chat.id}, {'media': 0, 'name': 0})
 
@@ -341,13 +331,13 @@ async def raw_say(message: Message, name, collection):
     file_ref = found['fref'] if 'fref' in found else ''
 
     if caption:
-        caption = caption.format_map(SafeDict(**kwargs))
+        caption = caption.format_map(SafeDict(**user_dict))
 
     if file_id:
         try:
             await send_proper_type(message, caption, file_type, file_id, file_ref)
 
-        except FileIdNotFound:
+        except (FileIdInvalid, FileReferenceEmpty, BadRequest):
             found = collection.find_one({'_id': message.chat.id}, {'media': 1, 'name': 1})
 
             file_name = found['name']
@@ -368,6 +358,8 @@ async def raw_say(message: Message, name, collection):
 
     else:
         await message.reply(caption, del_in=Config.WELCOME_DELETE_TIMEOUT)
+
+    message.stop_propagation()
 
 
 async def send_proper_type(message: Message,

@@ -575,10 +575,7 @@ async def slap_(message: Message):
     throw = choice(THROW)
     where = choice(WHERE)
 
-    mention = f"<a href='tg://user?id={u_id}'>" + \
-            f"{info_dict['uname'] or info_dict['flname']}</a>"
-
-    caption = "..." + temp.format(victim=mention,
+    caption = "..." + temp.format(victim=info_dict['mention'],
                                   item=item, hits=hit,
                                   throws=throw, where=where)
 

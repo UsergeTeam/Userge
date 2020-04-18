@@ -13,6 +13,8 @@ import shutil
 import heroku3
 from git import Repo
 from dotenv import load_dotenv
+from pyrogram import Filters
+
 from .logger import logging
 
 LOG = logging.getLogger(__name__)
@@ -72,6 +74,8 @@ class Config:
     MSG_DELETE_TIMEOUT = 120
 
     WELCOME_DELETE_TIMEOUT = 120
+
+    ALLOWED_CHATS = Filters.chat([])
 
 
 if not os.path.isdir(Config.DOWN_PATH):

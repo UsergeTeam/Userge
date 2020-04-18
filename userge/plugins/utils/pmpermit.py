@@ -9,31 +9,33 @@ import asyncio
 from typing import Dict
 
 from pyrogram import Filters
-from userge import userge, Message, get_collection
+from userge import userge, Message, Config, get_collection
 from userge.utils import SafeDict
 
 CHANNEL = userge.getCLogger(__name__)  # channel logger object
 SAVED_SETTINGS = get_collection("CONFIGS")
 ALLOWED_COLLECTION = get_collection("PM_PERMIT")
 
-allowed: Filters.chat = Filters.chat([])
-
 for chat in ALLOWED_COLLECTION.find({"status": 'allowed'}):
-    allowed.add(chat.get("_id"))
+    Config.ALLOWED_CHATS.add(chat.get("_id"))
+
 _pm = SAVED_SETTINGS.find_one({'_id': 'PM GUARD STATUS'})
 _pmMsg = SAVED_SETTINGS.find_one({'_id': 'CUSTOM NOPM MESSAGE'})
+
 if _pm:
     allowAllPms = bool(_pm.get('data'))
 else:
     allowAllPms = True
-pmCounter: Dict[int, int] = {}
 
+pmCounter: Dict[int, int] = {}
 allowAllFilter = Filters.create(lambda _, query: bool(allowAllPms))
+
 if _pmMsg:
     noPmMessage = _pmMsg.get('data')
 else:
     noPmMessage = "Hello {fname} this is an automated message\nPlease wait untill you get approved to direct message " \
                   "And please dont spam untill then "
+
 del _pm, _pmMsg
 
 
@@ -54,7 +56,7 @@ async def allow(message: Message):
     if userid:
         if userid in pmCounter:
             del pmCounter[userid]
-        allowed.add(userid)
+        Config.ALLOWED_CHATS.add(userid)
         a = ALLOWED_COLLECTION.update_one({'_id': userid}, {"$set": {'status': 'allowed'}}, upsert=True)
         if a.matched_count:
             await message.edit("`Already approved to direct message`")
@@ -82,8 +84,8 @@ __Activates guarding on inbox__
 async def denyToPm(message: Message):
     userid = await get_id(message)
     if userid:
-        if userid in allowed:
-            allowed.remove(userid)
+        if userid in Config.ALLOWED_CHATS:
+            Config.ALLOWED_CHATS.remove(userid)
         a = ALLOWED_COLLECTION.delete_one({'_id': userid})
         if a.deleted_count:
             await message.edit("`Prohibitted to direct message`")
@@ -108,23 +110,20 @@ async def get_id(message: Message):
     return userid
 
 
-@userge.on_filters(Filters.private & ~allowed & ~Filters.outgoing & ~allowAllFilter & ~Filters.service)
+@userge.on_filters(Filters.private & ~Config.ALLOWED_CHATS & \
+    ~Filters.outgoing & ~allowAllFilter & ~Filters.service)
 async def uninvitedPmHandler(message: Message):
     user_dict = await userge.get_user_dict(message.from_user.id)
-    kwargs = {
-        **user_dict,
-        'chat': message.chat.title if message.chat.title else "this group",
-        'mention': f"<a href='tg://user?id={message.from_user.id}'>"
-                   f"{user_dict['uname'] or user_dict['fname']}</a>",
-    }
+    user_dict.update({'chat': message.chat.title if message.chat.title else "this group"})
+
     if message.from_user.id in pmCounter:
         if pmCounter[message.from_user.id] > 3:
             del pmCounter[message.from_user.id]
             await message.reply("**You were automatically blocked**")
-            allowed.add(message.from_user.id)
+            Config.ALLOWED_CHATS.add(message.from_user.id)
             await message.from_user.block()
             await asyncio.sleep(1)
-            await CHANNEL.log(f"#BLOCKED\n{kwargs['mention']} has been blocked due to spamming in "
+            await CHANNEL.log(f"#BLOCKED\n{user_dict['mention']} has been blocked due to spamming in "
                               f"pm !! ")
         else:
             pmCounter[message.from_user.id] += 1
@@ -134,21 +133,20 @@ async def uninvitedPmHandler(message: Message):
     else:
         pmCounter.update({message.from_user.id: 1})
 
-        await message.reply(noPmMessage.format_map(SafeDict(**kwargs)) + '\n`- Protected by userge`')
+        await message.reply(noPmMessage.format_map(SafeDict(**user_dict)) + '\n`- Protected by userge`')
         await asyncio.sleep(1)
-        await CHANNEL.log(f"#NEW_MESSAGE\n{kwargs['mention']} has messaged you")
+        await CHANNEL.log(f"#NEW_MESSAGE\n{user_dict['mention']} has messaged you")
 
 
-@userge.on_filters(Filters.private & ~allowed & Filters.outgoing)
+@userge.on_filters(Filters.private & ~Config.ALLOWED_CHATS & Filters.outgoing)
 async def outgoing_auto_approve(message: Message):
     userID = message.chat.id
     if userID in pmCounter:
         del pmCounter[userID]
-    allowed.add(userID)
+    Config.ALLOWED_CHATS.add(userID)
     ALLOWED_COLLECTION.update_one({'_id': userID}, {"$set": {'status': 'allowed'}}, upsert=True)
     user_dict = await userge.get_user_dict(userID)
-    await CHANNEL.log(f"**#AUTO_APPROVED**\n<a href='tg://user?id={userID}'>"
-                      f"{user_dict['uname'] or user_dict['flname']}</a>")
+    await CHANNEL.log(f"**#AUTO_APPROVED**\n{user_dict['mention']}")
 
 
 @userge.on_cmd("pmguard", about="""\
@@ -176,7 +174,7 @@ __Sets the reply message__
     You can change the default message which userge gives on
     un-invited PMs
     
-    **Available options:**
+**Available options:**
 
     `{fname}` : __add first name__
     `{lname}` : __add last name__

@@ -11,20 +11,16 @@ from userge import userge, Message, Filters, get_collection
 
 FILTERS_COLLECTION = get_collection("filters")
 
-FILTERS_CHATS = Filters.chat([])
 FILTERS_DATA = {}
+FILTERS_CHATS = Filters.create(lambda _, query: query.chat.id in FILTERS_DATA)
 
 
 def _filter_updater(chat_id: int, name: str, content: str) -> None:
-    dict_ = {}
-    dict_[name] = content
-
     if chat_id in FILTERS_DATA:
-        FILTERS_DATA[chat_id].update(dict_)
+        FILTERS_DATA[chat_id].update({name: content})
 
     else:
-        FILTERS_DATA[chat_id] = dict_
-        FILTERS_CHATS.add(chat_id)
+        FILTERS_DATA[chat_id] = {name: content}
 
 
 def _filter_deleter(chat_id: int, name: str) -> None:
@@ -33,7 +29,6 @@ def _filter_deleter(chat_id: int, name: str) -> None:
 
         if not FILTERS_DATA[chat_id]:
             FILTERS_DATA.pop(chat_id)
-            FILTERS_CHATS.remove(chat_id)
 
 
 for flt in FILTERS_COLLECTION.find():
@@ -110,18 +105,13 @@ async def add_filter(message: Message):
     await message.edit(text=out, del_in=3, log=True)
 
 
-@userge.on_filters(FILTERS_CHATS & ~Filters.me)
+@userge.on_filters(~Filters.me & Filters.text & FILTERS_CHATS, group=-1)
 async def chat_filter(message: Message):
-    if not message.text:
-        return
+    input_text = message.text.strip()
 
     for name in FILTERS_DATA[message.chat.id]:
-        input_text = message.text.strip()
-
         if input_text == name or \
             input_text.startswith(f"{name} ") or \
                 input_text.endswith(f" {name}") or \
                     f" {name} " in input_text:
             await message.reply(FILTERS_DATA[message.chat.id][name])
-
-    message.continue_propagation()

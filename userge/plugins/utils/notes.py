@@ -54,6 +54,7 @@ __Gets a note by name__
 
     `#[notename]`
     `get notename`""",
+               group=-1,
                name="note",
                trigger='',
                only_me=False)

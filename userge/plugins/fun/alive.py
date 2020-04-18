@@ -14,10 +14,6 @@ from userge import userge, Message, Config, versions
 LOGO_STICKER_ID, LOGO_STICKER_REF = None, None
 
 
-class FileIdNotFound(FileIdInvalid, FileReferenceEmpty, BadRequest):
-    pass
-
-
 @userge.on_cmd("alive", about="__This command is just for fun XD__")
 async def alive(message: Message):
     await message.delete()
@@ -30,7 +26,7 @@ async def alive(message: Message):
             await refresh_id()
             await sendit(LOGO_STICKER_ID, message)
 
-    except FileIdNotFound:
+    except (FileIdInvalid, FileReferenceEmpty, BadRequest):
         await refresh_id()
         await sendit(LOGO_STICKER_ID, message)
 

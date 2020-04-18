@@ -112,10 +112,13 @@ class Userge(BaseClient):
         else:
             full_name = "user"
 
+        mention = f"[{username or full_name}](tg://user?id={user_id})"
+
         return {'fname': fname,
                 'lname': lname,
                 'flname': full_name,
-                'uname': username}
+                'uname': username,
+                'mention': mention}
 
     async def send_message(self,
                            chat_id: Union[int, str],
@@ -258,7 +261,7 @@ class Userge(BaseClient):
 
     def on_new_member(self,
                       welcome_chats: Filters.chat,
-                      group: int = 0) -> Callable[[PYROFUNC], PYROFUNC]:
+                      group: int = -2) -> Callable[[PYROFUNC], PYROFUNC]:
         """
         Decorator for handling new members.
         """
@@ -269,7 +272,7 @@ class Userge(BaseClient):
 
     def on_left_member(self,
                        leaving_chats: Filters.chat,
-                       group: int = 0) -> Callable[[PYROFUNC], PYROFUNC]:
+                       group: int = -2) -> Callable[[PYROFUNC], PYROFUNC]:
         """
         Decorator for handling left members.
         """
