@@ -13,6 +13,24 @@ from userge import userge, Message
 
 CHANNEL = userge.getCLogger(__name__)
 
+async def is_admin(message: Message):
+    check_user = await userge.get_chat_member(message.chat.id, message.from_user.id)
+    user_type = check_user.status
+
+    if user_type == "member":
+        return False
+
+    elif user_type == "administrator":
+        rm_perm = check_user.can_restrict_members
+
+        if rm_perm:
+            return True
+        else:
+            return False
+
+    else:
+        return True
+
 
 @userge.on_cmd("promote", about="""\
 __use this to promote group members__
@@ -33,13 +51,25 @@ async def promote_usr(message: Message):
     this function can promote members in tg group
     """
     chat_id = message.chat.id
-    check_admin = await userge.get_chat_member(chat_id, message.from_user.id)
+    check_user = await userge.get_chat_member(chat_id, message.from_user.id)
+    user_type = check_user.status
     get_group = await userge.get_chat(chat_id)
-    promote_perm = check_admin.can_promote_members
 
     await message.edit("`Trying to Promote User.. Hang on!`")
 
-    if promote_perm:
+    if user_type:
+        if user_type == "member":
+            can_promo = False
+        elif user_type == "administrator":
+            promote_perm = check_user.can_promote_members
+            if promote_perm:
+                can_promo = True
+            else:
+                can_promo = False
+        else:
+            can_promo = True
+
+    if can_promo:
 
         user_id = message.input_str
 
@@ -124,13 +154,43 @@ async def demote_usr(message: Message):
     this function can demote members in tg group
     """
     chat_id = message.chat.id
-    check_admin = await userge.get_chat_member(chat_id, message.from_user.id)
+    check_user = await userge.get_chat_member(chat_id, message.from_user.id)
+    user_type = check_user.status
     get_group = await userge.get_chat(chat_id)
-    demote_perm = check_admin.can_promote_members
 
     await message.edit("`Trying to Demote User.. Hang on!`")
 
-    if demote_perm:
+    if user_type:
+        if user_type == "member":
+            can_demote = False
+
+        elif user_type == "administrator":
+            admin_data = await userge.get_chat_member(message.chat.id, message.from_user.id)
+            admin_id = admin_data.user.id
+            user_id = message.input_str
+
+            if user_id:
+                user_data = await userge.get_chat_member(message.chat.id, user_id)
+                promo_admin = user_data.promoted_by.id
+
+                if admin_id == promo_admin:
+                    can_demote = True
+                else:
+                    can_demote = False
+
+            else:
+                user_data = await userge.get_chat_member(message.chat.id, message.reply_to_message)
+                promo_admin = user_data.promoted_by.id
+
+                if admin_id == promo_admin:
+                    can_demote = True
+                else:
+                    can_demote = False
+
+        else:
+            can_demote = True
+
+    if can_demote:
 
         user_id = message.input_str
 
@@ -213,11 +273,10 @@ async def ban_usr(message: Message):
     """
     reason = ""
     chat_id = message.chat.id
-    check_admin = await userge.get_chat_member(chat_id, message.from_user.id)
     get_group = await userge.get_chat(chat_id)
-    ban_perm = check_admin.can_restrict_members
+    can_ban = await is_admin(message)
 
-    if ban_perm:
+    if can_ban:
 
         if message.reply_to_message:
             user_id = message.reply_to_message.from_user.id
@@ -266,11 +325,10 @@ async def unban_usr(message: Message):
     this function can unban user from tg group
     """
     chat_id = message.chat.id
-    check_admin = await userge.get_chat_member(chat_id, message.from_user.id)
     get_group = await userge.get_chat(chat_id)
-    unban_perm = check_admin.can_restrict_members
+    can_unban = await is_admin(message)
 
-    if unban_perm:
+    if can_unban:
 
         user_id = message.input_str
 
@@ -339,11 +397,10 @@ async def kick_usr(message: Message):
     this function can kick user from tg group
     """
     chat_id = message.chat.id
-    check_admin = await userge.get_chat_member(chat_id, message.from_user.id)
     get_group = await userge.get_chat(chat_id)
-    kick_perm = check_admin.can_restrict_members
+    can_kick =  await is_admin(message)
 
-    if kick_perm:
+    if can_kick:
 
         user_id = message.input_str
 
@@ -417,9 +474,8 @@ async def mute_usr(message: Message):
     reason = ""
     chat_id = message.chat.id
     flags = message.flags
-    check_admin = await userge.get_chat_member(chat_id, message.from_user.id)
     get_group = await userge.get_chat(chat_id)
-    mute_perm = check_admin.can_restrict_members
+    can_mute =  await is_admin(message)
 
     minutes = int(flags.get('-m', 0))
     hours = int(flags.get('-h', 0))
@@ -427,7 +483,7 @@ async def mute_usr(message: Message):
 
     await message.edit("`Trying to Mute User.. Hang on!`")
 
-    if mute_perm:
+    if can_mute:
 
         if message.reply_to_message:
             user_id = message.reply_to_message.from_user.id
@@ -554,9 +610,8 @@ async def unmute_usr(message: Message):
     this function can unmute user from tg group
     """
     chat_id = message.chat.id
-    check_admin = await userge.get_chat_member(chat_id, message.from_user.id)
     get_group = await userge.get_chat(chat_id)
-    unmute_perm = check_admin.can_restrict_members
+    can_unmute =  await is_admin(message)
 
     amsg = get_group.permissions.can_send_messages
     amedia = get_group.permissions.can_send_media_messages
@@ -570,7 +625,7 @@ async def unmute_usr(message: Message):
     ainvite = get_group.permissions.can_invite_users
     apin = get_group.permissions.can_pin_messages
 
-    if unmute_perm:
+    if can_unmute:
 
         user_id = message.input_str
 
@@ -647,7 +702,7 @@ async def unmute_usr(message: Message):
             text="`Looks like i don't have proper admin permission to do that ⚠`", del_in=0)
 
 @userge.on_cmd("zombie", about="""\
-__use this to unmute group members__
+__use this to clean zombie accounts__
 
 **Usage:**
 
@@ -669,14 +724,14 @@ async def zombie_clean(message: Message):
     this function can remove deleted accounts from tg group
     """
     chat_id = message.chat.id
-    check_admin = await userge.get_chat_member(chat_id, message.from_user.id)
     get_group = await userge.get_chat(chat_id)
-    rm_perm = check_admin.can_restrict_members
     flags = message.flags
 
     rm_delaccs = '-c' in flags
 
-    if rm_perm:
+    can_clean =  await is_admin(message)
+
+    if can_clean:
 
         del_users = 0
         del_stats = r"`Zero zombie accounts found in this chat... WOOHOO group is clean.. \^o^/`"
@@ -684,7 +739,7 @@ async def zombie_clean(message: Message):
         if rm_delaccs:
 
             await message.edit("`Hang on!! cleaning zombie accounts from this chat..`")
-            async for member in userge.iter_chat_members(message.chat.id):
+            async for member in userge.iter_chat_members(chat_id):
 
                 if member.user.is_deleted:
 
@@ -708,7 +763,7 @@ async def zombie_clean(message: Message):
         else:
 
             await message.edit("`Searching for zombie accounts in this chat..`")
-            async for member in userge.iter_chat_members(message.chat.id):
+            async for member in userge.iter_chat_members(chat_id):
 
                 if member.user.is_deleted:
                     del_users += 1
