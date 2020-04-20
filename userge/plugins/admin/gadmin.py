@@ -691,7 +691,7 @@ async def zombie_clean(message: Message):
 
                     try:
                         await userge.kick_chat_member(
-                            chat_id, 
+                            chat_id,
                             member.user.id, int(time.time() + 45))
 
                     except FloodWait as e:
@@ -699,7 +699,7 @@ async def zombie_clean(message: Message):
                     del_users += 1
 
             del_stats = f"**Cleaned** `{del_users}` **zombie accounts from this chat**"
-            await message.edit(f"{del_stats}")
+            await message.edit(f"{del_stats}", del_in=0)
             await CHANNEL.log(
                 f"#ZOMBIE_CLEAN\n\n"
                 f"CHAT: `{get_group.title}` (`{chat_id}`)\n"
@@ -716,7 +716,7 @@ async def zombie_clean(message: Message):
 
             if del_users > 0:
                 del_stats = f"**Found** `{del_users}` **zombie accounts in this chat**"
-                await message.edit(f"{del_stats}")
+                await message.edit(f"{del_stats}", del_in=0)
                 await CHANNEL.log(
                     f"#ZOMBIE_CHECK\n\n"
                     f"CHAT: `{get_group.title}` (`{chat_id}`)\n"
@@ -724,7 +724,7 @@ async def zombie_clean(message: Message):
                 )
 
             else:
-                await message.edit(f"{del_stats}")
+                await message.edit(f"{del_stats}", del_in=0)
                 await CHANNEL.log(
                     f"#ZOMBIE_CHECK\n\n"
                     f"CHAT: `{get_group.title}` (`{chat_id}`)\n"
