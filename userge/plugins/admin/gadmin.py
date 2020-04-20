@@ -7,8 +7,10 @@
 # All rights reserved.
 
 import time
+from asyncio import sleep
 from userge import userge, Message
 from pyrogram import ChatPermissions
+from pyrogram.errors import FloodWait
 
 CHANNEL = userge.getCLogger(__name__)
 
@@ -644,3 +646,90 @@ async def unmute_usr(message: Message):
     else:
         await message.edit(
             text="`Looks like i don't have proper admin permission to do that ⚠`", del_in=0)
+
+@userge.on_cmd("zombie", about="""\
+__use this to unmute group members__
+
+**Usage:**
+
+`check & remove zombie (deleted) accounts from supergroup.`
+
+[NOTE: Requires proper admin rights in the chat!!!]
+
+**Available Flags:**
+
+`-c` : __clean__
+
+**Example:**
+
+    `.zombie [check deleted accounts in group]`
+    `.zombie -c [remove deleted accounts from group`""")
+
+async def zombie_clean(message: Message):
+    """
+    this function can remove deleted accounts from tg group
+    """
+    chat_id = message.chat.id
+    check_admin = await userge.get_chat_member(chat_id, message.from_user.id)
+    get_group = await userge.get_chat(chat_id)
+    rm_perm = check_admin.can_restrict_members
+    flags = message.flags
+
+    rm_delaccs = '-c' in flags
+
+    if rm_perm:
+
+        del_users = 0
+        del_stats = r"`Zero zombie accounts found in this chat... WOOHOO group is clean.. \^o^/`"
+
+        if rm_delaccs:
+
+            await message.edit("`Hang on!! cleaning zombie accounts from this chat..`")
+            async for member in userge.iter_chat_members(message.chat.id):
+
+                if member.user.is_deleted:
+
+                    try:
+                        await userge.kick_chat_member(
+                            chat_id, 
+                            member.user.id, int(time.time() + 45))
+
+                    except FloodWait as e:
+                        await time.sleep(e.x)
+                    del_users += 1
+
+            del_stats = f"**Cleaned** `{del_users}` **zombie accounts from this chat**"
+            await message.edit(f"{del_stats}")
+            await CHANNEL.log(
+                f"#ZOMBIE_CLEAN\n\n"
+                f"CHAT: `{get_group.title}` (`{chat_id}`)\n"
+                f"ZOMBIE COUNT: `{del_users}`"
+            )
+
+        else:
+
+            await message.edit("`Searching for zombie accounts in this chat..`")
+            async for member in userge.iter_chat_members(message.chat.id):
+
+                if member.user.is_deleted:
+                    del_users += 1
+
+            if del_users > 0:
+                del_stats = f"**Found** `{del_users}` **zombie accounts in this chat**"
+                await message.edit(f"{del_stats}")
+                await CHANNEL.log(
+                    f"#ZOMBIE_CHECK\n\n"
+                    f"CHAT: `{get_group.title}` (`{chat_id}`)\n"
+                    f"ZOMBIE COUNT: `{del_users}`"
+                )
+
+            else:
+                await message.edit(f"{del_stats}")
+                await CHANNEL.log(
+                    f"#ZOMBIE_CHECK\n\n"
+                    f"CHAT: `{get_group.title}` (`{chat_id}`)\n"
+                    r"ZOMBIE COUNT: `WOOHOO group is clean.. \^o^/`"
+                )
+
+    else:
+        await message.edit("`Looks like i don't have proper permission to do that`")
