@@ -80,9 +80,10 @@ async def del_sudo(message: Message):
         await message.err(f'user: `{user_id}` not found!')
         return
 
-    if user_id.isdigit():
+    if isinstance(user_id, str) and user_id.isdigit():
         user_id = int(user_id)
-    else:
+
+    if not isinstance(user_id, int):
         await message.err(f'invalid type!')
         return
 

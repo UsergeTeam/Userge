@@ -7,6 +7,7 @@
 # All rights reserved.
 
 
+from pyrogram import Message as RawMessage
 from userge.utils import Config, logging
 from .base import BaseCLogger, BaseClient, BaseMessage
 
@@ -66,7 +67,7 @@ class CLogger(BaseCLogger):
         LOG.debug(
             LOG_STR.format(f"logging msg : {message} to channel : {Config.LOG_CHANNEL_ID}"))
 
-        if Config.LOG_CHANNEL_ID:
+        if Config.LOG_CHANNEL_ID and isinstance(message, RawMessage):
             await self.__client.forward_messages(chat_id=Config.LOG_CHANNEL_ID,
                                                  from_chat_id=message.chat.id,
                                                  message_ids=(message.message_id),
