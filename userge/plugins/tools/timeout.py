@@ -97,7 +97,7 @@ async def set_welcome_timeout(message: Message):
             del_in=3)
     else:
         await message.edit(
-            f"`Auto message deletion disabled!`",
+            f"`Auto welcome/left message deletion disabled!`",
             del_in=3)
 
 
@@ -111,5 +111,5 @@ async def view_welcome_timeout(message: Message):
             del_in=5)
     else:
         await message.edit(
-            f"`Auto message deletion disabled!`",
+            f"`Auto welcome/left message deletion disabled!`",
             del_in=3)

@@ -32,7 +32,7 @@ async def load_cmd_handler(message: Message):
             try:
                 userge.load_plugin(plugin)
 
-            except ImportError as i_e:
+            except (ImportError, SyntaxError) as i_e:
                 os.remove(path)
                 await message.err(i_e)
 

@@ -12,9 +12,10 @@ import os
 import asyncio
 from typing import List, Dict, Union, Optional, Sequence
 
-from pyrogram import InlineKeyboardMarkup
+from pyrogram import InlineKeyboardMarkup, Message as RawMessage
 from pyrogram.errors.exceptions import MessageAuthorRequired, MessageTooLong
-from pyrogram.errors.exceptions.bad_request_400 import MessageNotModified
+from pyrogram.errors.exceptions.bad_request_400 import MessageNotModified, MessageIdInvalid
+
 
 from userge.utils import logging, Config
 from .base import BaseClient, BaseMessage
@@ -301,6 +302,7 @@ class Message(BaseMessage):
                    text: str,
                    del_in: int = -1,
                    log: bool = False,
+                   sudo: bool = True,
                    parse_mode: Union[str, object] = object,
                    disable_web_page_preview: Optional[bool] = None,
                    reply_markup: InlineKeyboardMarkup = None) -> Union[BaseMessage, bool]:
@@ -315,6 +317,8 @@ class Message(BaseMessage):
                 Time in Seconds for delete that message.
             log (``bool``, *optional*):
                 If ``True``, the message will be forwarded to the log channel.
+            sudo (``bool``, *optional*):
+                If ``True``, sudo users supported.
             parse_mode (``str``, *optional*):
                 By default, texts are parsed using both Markdown and HTML styles.
                 You can combine both syntaxes together.
@@ -331,21 +335,37 @@ class Message(BaseMessage):
             RPCError: In case of a Telegram RPC error.
         """
 
-        msg = await self._client.edit_message_text(chat_id=self.chat.id,
-                                                   message_id=self.message_id,
-                                                   text=text,
-                                                   parse_mode=parse_mode,
-                                                   disable_web_page_preview=disable_web_page_preview,
-                                                   reply_markup=reply_markup)
+        try:
+            msg = await self._client.edit_message_text(chat_id=self.chat.id,
+                                                       message_id=self.message_id,
+                                                       text=text,
+                                                       parse_mode=parse_mode,
+                                                       disable_web_page_preview=disable_web_page_preview,
+                                                       reply_markup=reply_markup)
 
-        if log:
+        except (MessageAuthorRequired, MessageIdInvalid) as m_er:
+            if sudo:
+                msg = await self.reply(text=text,
+                                       del_in=del_in,
+                                       log=log,
+                                       parse_mode=parse_mode,
+                                       disable_web_page_preview=disable_web_page_preview,
+                                       reply_markup=reply_markup)
+
+                if isinstance(msg, RawMessage):
+                    self.message_id = msg.message_id
+
+            else:
+                raise m_er
+
+        if log and isinstance(msg, RawMessage):
             await self.__channel.fwd_msg(msg)
 
         del_in = del_in or Config.MSG_DELETE_TIMEOUT
 
         if del_in > 0:
             await asyncio.sleep(del_in)
-            return await msg.delete()
+            return await msg.delete() if isinstance(msg, RawMessage) else msg
 
         return Message(self._client, msg)
 
@@ -360,8 +380,8 @@ class Message(BaseMessage):
                          reply_markup: InlineKeyboardMarkup = None,
                          **kwargs) -> Union[BaseMessage, bool]:
         """
-        This will first try to message.edit. If it raise MessageAuthorRequired error,
-        run message.reply.
+        This will first try to message.edit.
+        If it raise MessageAuthorRequired or MessageIdInvalid error, run message.reply.
 
         Example:
                 message.force_edit(text='force_edit', del_in=3)
@@ -396,7 +416,7 @@ class Message(BaseMessage):
                                    disable_web_page_preview=disable_web_page_preview,
                                    reply_markup=reply_markup)
 
-        except MessageAuthorRequired:
+        except (MessageAuthorRequired, MessageIdInvalid):
             return await self.reply(text=text,
                                     del_in=del_in,
                                     log=log,
@@ -409,6 +429,7 @@ class Message(BaseMessage):
                   text: str,
                   del_in: int = -1,
                   log: bool = False,
+                  sudo: bool = True,
                   parse_mode: Union[str, object] = object,
                   disable_web_page_preview: Optional[bool] = None,
                   reply_markup: InlineKeyboardMarkup = None) -> Union[BaseMessage, bool]:
@@ -425,6 +446,8 @@ class Message(BaseMessage):
                 Time in Seconds for delete that message.
             log (``bool``, *optional*):
                 If ``True``, the message will be forwarded to the log channel.
+            sudo (``bool``, *optional*):
+                If ``True``, sudo users supported.
             parse_mode (``str``, *optional*):
                 By default, texts are parsed using both Markdown and HTML styles.
                 You can combine both syntaxes together.
@@ -445,6 +468,7 @@ class Message(BaseMessage):
         return await self.edit(text=ERROR_STRING.format(text),
                                del_in=del_in,
                                log=log,
+                               sudo=sudo,
                                parse_mode=parse_mode,
                                disable_web_page_preview=disable_web_page_preview,
                                reply_markup=reply_markup)
@@ -458,8 +482,8 @@ class Message(BaseMessage):
                         reply_markup: InlineKeyboardMarkup = None,
                         **kwargs) -> Union[BaseMessage, bool]:
         """
-        This will first try to message.edit. If it raise MessageAuthorRequired error,
-        run message.reply.
+        This will first try to message.edit.
+        If it raise MessageAuthorRequired or MessageIdInvalid error, run message.reply.
 
         Example:
                 message.force_err(text='force_err', del_in=3)
@@ -501,6 +525,7 @@ class Message(BaseMessage):
                           text: str,
                           del_in: int = -1,
                           log: bool = False,
+                          sudo: bool = True,
                           parse_mode: Union[str, object] = object,
                           disable_web_page_preview: Optional[bool] = None,
                           reply_markup: InlineKeyboardMarkup = None) -> Union[BaseMessage, bool]:
@@ -519,6 +544,8 @@ class Message(BaseMessage):
                 Time in Seconds for delete that message.
             log (``bool``, *optional*):
                 If ``True``, the message will be forwarded to the log channel.
+            sudo (``bool``, *optional*):
+                If ``True``, sudo users supported.
             parse_mode (``str``, *optional*):
                 By default, texts are parsed using both Markdown and HTML styles.
                 You can combine both syntaxes together.
@@ -539,6 +566,7 @@ class Message(BaseMessage):
             return await self.edit(text=text,
                                    del_in=del_in,
                                    log=log,
+                                   sudo=sudo,
                                    parse_mode=parse_mode,
                                    disable_web_page_preview=disable_web_page_preview,
                                    reply_markup=reply_markup)
@@ -550,6 +578,7 @@ class Message(BaseMessage):
                                    text: str,
                                    del_in: int = -1,
                                    log: bool = False,
+                                   sudo: bool = True,
                                    parse_mode: Union[str, object] = object,
                                    disable_web_page_preview: Optional[bool] = None,
                                    reply_markup: InlineKeyboardMarkup = None,
@@ -569,6 +598,8 @@ class Message(BaseMessage):
                 Time in Seconds for delete that message.
             log (``bool``, *optional*):
                 If ``True``, the message will be forwarded to the log channel.
+            sudo (``bool``, *optional*):
+                If ``True``, sudo users supported.
             parse_mode (``str``, *optional*):
                 By default, texts are parsed using both Markdown and HTML styles.
                 You can combine both syntaxes together.
@@ -590,6 +621,7 @@ class Message(BaseMessage):
             return await self.edit(text=text,
                                    del_in=del_in,
                                    log=log,
+                                   sudo=sudo,
                                    parse_mode=parse_mode,
                                    disable_web_page_preview=disable_web_page_preview,
                                    reply_markup=reply_markup)
@@ -674,8 +706,8 @@ class Message(BaseMessage):
                                          **kwargs) -> Union[BaseMessage, bool]:
 
         """
-        This will first try to message.edit_or_send_as_file. If it raise MessageAuthorRequired error,
-        run message.reply_or_send_as_file.
+        This will first try to message.edit_or_send_as_file.
+        If it raise MessageAuthorRequired or MessageIdInvalid error, run message.reply_or_send_as_file.
 
         Example:
                 message.force_edit_or_send_as_file("some huge text")
@@ -711,7 +743,7 @@ class Message(BaseMessage):
                                                    reply_markup=reply_markup,
                                                    **kwargs)
 
-        except MessageAuthorRequired:
+        except (MessageAuthorRequired, MessageIdInvalid):
             return await self.reply_or_send_as_file(text=text,
                                                     del_in=del_in,
                                                     log=log,

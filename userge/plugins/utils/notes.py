@@ -57,7 +57,7 @@ __Gets a note by name__
                group=-1,
                name="note",
                trigger='',
-               only_me=False)
+               filter_me=False)
 async def note(message: Message):
     notename = message.matches[0].group(1)
     found = NOTES_COLLECTION.find_one(

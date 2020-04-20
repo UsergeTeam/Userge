@@ -77,6 +77,16 @@ class Config:
 
     ALLOWED_CHATS = Filters.chat([])
 
+    SUDO_TRIGGER = os.environ.get("SUDO_TRIGGER", '!')
+
+    SUDO_USERS = set()
+
+    ALLOWED_COMMANDS = set()
+
+
+if Config.SUDO_TRIGGER == '.':
+    raise Exception("Invalid SUDO_TRIGGER!")
+
 
 if not os.path.isdir(Config.DOWN_PATH):
     LOG.info("Creating Download Path...")

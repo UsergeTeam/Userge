@@ -14,6 +14,8 @@ from userge import userge, Message
 async def check_logs(message: Message):
     """check logs"""
     await message.edit("`checking logs ...`")
-    with open("./logs/userge.log", "r") as l_f:
-        await message.edit_or_send_as_file(
-            l_f.read(), filename='userge.log', caption='userge.log')
+
+    with open("logs/userge.log", "r") as l_f:
+        await message.edit_or_send_as_file(f"**USERGE LOGS** :\n\n`{l_f.read()}`",
+                                           filename='userge.log',
+                                           caption='userge.log')

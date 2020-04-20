@@ -45,7 +45,12 @@ async def check_update(message: Message):
     else:
         ups_rem = repo.create_remote(UPSTREAM_REMOTE, Config.UPSTREAM_REPO)
 
-    ups_rem.fetch()
+    try:
+        ups_rem.fetch()
+
+    except GitCommandError as error:
+        await message.err(error, del_in=5)
+        return
 
     for ref in ups_rem.refs:
         branch = str(ref).split('/')[-1]

@@ -114,7 +114,8 @@ class Userge(BaseClient):
 
         mention = f"[{username or full_name}](tg://user?id={user_id})"
 
-        return {'fname': fname,
+        return {'id': user_obj.id,
+                'fname': fname,
                 'lname': lname,
                 'flname': full_name,
                 'uname': username,
@@ -199,7 +200,7 @@ class Userge(BaseClient):
                group: int = 0,
                name: str = '',
                trigger: str = '.',
-               only_me: bool = True,
+               filter_me: bool = True,
                **kwargs: Union[str, bool]) -> Callable[[PYROFUNC], PYROFUNC]:
         """
         Decorator for handling messages.
@@ -218,7 +219,7 @@ class Userge(BaseClient):
                 name for command.
             trigger (``str``, *optional*):
                 trigger to start command, defaults to '.'.
-            only_me (``bool``, *optional*):
+            filter_me (``bool``, *optional*):
                 If ``True``, Filters.me = True,  defaults to True.
             kwargs:
                 prefix (``str``, *optional*):
@@ -227,7 +228,8 @@ class Userge(BaseClient):
                     If ``True``, flags returns without prefix,  defaults to False.
         """
 
-        pattern = f"^\\{trigger}{command.lstrip('^')}" if trigger else f"^{command.lstrip('^')}"
+        pattern = f"^(?:\\{trigger}|\\{Config.SUDO_TRIGGER}){command.lstrip('^')}" if trigger \
+            else f"^{command.lstrip('^')}"
 
         if [i for i in '^()[]+*.\\|?:$' if i in command]:
             match = re.match("(\\w[\\w_]*)", command)
@@ -241,8 +243,22 @@ class Userge(BaseClient):
 
         kwargs.update({'cname': cname, 'chelp': about})
 
-        filters_ = Filters.regex(pattern=pattern) & Filters.me if only_me \
-            else Filters.regex(pattern=pattern)
+        filters_ = Filters.regex(pattern=pattern)
+
+        filter_my_trigger = Filters.create(lambda _, query: \
+            query.text.startswith(trigger) if trigger else True)
+
+        sudo_filter = Filters.create(lambda _, query: \
+            query.from_user.id in Config.SUDO_USERS and \
+                query.text.startswith(Config.SUDO_TRIGGER) if trigger else True)
+
+        sudo_cmd_filter = Filters.create(lambda _, __: \
+            cname.lstrip(trigger) in Config.ALLOWED_COMMANDS)
+
+        if filter_me:
+            filters_ = filters_ & (
+                (Filters.me & filter_my_trigger) | (sudo_filter & sudo_cmd_filter))
+
         return self.__build_decorator(log=f"On {pattern}",
                                       filters=filters_,
                                       group=group,

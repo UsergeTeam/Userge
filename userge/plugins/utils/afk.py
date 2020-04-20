@@ -35,7 +35,7 @@ del __tmp__
 for _user in AFK_COLLECTION.find():
     USERS.update({_user['_id']:  [_user['pcount'], _user['gcount'], _user['men']]})
 
-IS_AFK_FILTER = Filters.create(lambda _, query: bool(IS_AFK))
+IS_AFK_FILTER = Filters.create(lambda _, __: bool(IS_AFK))
 
 
 @userge.on_cmd("afk", about="""\
@@ -180,8 +180,8 @@ AFK_REASONS = (
     "Hello, welcome to my away message, how may I ignore you today?",
     "I'm away over 7 seas and 7 countries,\n7 waters and 7 continents,\n7 mountains and 7 hills,\n7 plains and 7 mounds,\n7 pools and 7 lakes,\n7 springs and 7 meadows,\n7 cities and 7 neighborhoods,\n7 blocks and 7 houses...\n\nWhere not even your messages can reach me!",
     "I'm away from the keyboard at the moment, but if you'll scream loud enough at your screen, I might just hear you.",
-    "I went that way\n---->",
-    "I went this way\n<----",
+    "I went that way\n>>>>>",
+    "I went this way\n<<<<<",
     "Please leave a message and make me feel even more important than I already am.",
     "I am not here so stop writing to me,\nor else you will find yourself with a screen full of your own messages.",
     "If I were here,\nI'd tell you where I am.\n\nBut I'm not,\nso ask me when I return...",
