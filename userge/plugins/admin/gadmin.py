@@ -8,7 +8,7 @@
 
 import time
 from pyrogram import ChatPermissions
-from pyrogram.errors import FloodWait
+from pyrogram.errors import FloodWait, BadRequest
 from userge import userge, Message
 
 CHANNEL = userge.getCLogger(__name__)
@@ -734,6 +734,8 @@ async def zombie_clean(message: Message):
     if rm_delaccs:
 
         del_users = 0
+        del_admins = 0
+        del_total = 0
         del_stats = r"`Zero zombie accounts found in this chat... WOOHOO group is clean.. \^o^/`"
 
         if can_clean:
@@ -748,16 +750,31 @@ async def zombie_clean(message: Message):
                             chat_id,
                             member.user.id, int(time.time() + 45))
 
+                    except BadRequest:
+                        del_users -= 1
+                        del_admins += 1
+
                     except FloodWait as e:
                         time.sleep(e.x)
                     del_users += 1
+                    del_total += 1
 
-            del_stats = f"**Cleaned** `{del_users}` **zombie accounts from this chat**"
+            if del_admins > 0:
+                del_stats = f"**Found** `{del_total}` total zombies..👻\
+                \n**Cleaned** `{del_users}` **zombie (deleted) accounts from this chat**\
+                \n🛡 `{del_admins}` **deleted admin accounts are skipped**"
+
+            else:
+                del_stats = f"**Found** `{del_total}` total zombies..👻\
+                \n**Cleaned** `{del_users}` **zombie (deleted) accounts from this chat**"
+
             await message.edit(f"🗑 {del_stats}", del_in=0)
             await CHANNEL.log(
                 f"#ZOMBIE_CLEAN\n\n"
                 f"CHAT: `{get_group.title}` (`{chat_id}`)\n"
-                f"ZOMBIE COUNT: `{del_users}`"
+                f"TOTAL ZOMBIE COUNT: `{del_total}`"
+                f"CLEANED ZOMBIE COUNT: `{del_users}`"
+                f"ZOMBIE ADMIN COUNT: `{del_admins}`"
             )
 
         else:
@@ -766,6 +783,7 @@ async def zombie_clean(message: Message):
     else:
 
         del_users = 0
+        del_stats = r"`Zero zombie accounts found in this chat... WOOHOO group is clean.. \^o^/`"
         await message.edit("`Searching for zombie accounts in this chat..`")
         async for member in userge.iter_chat_members(chat_id):
 
