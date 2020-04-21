@@ -8,14 +8,15 @@
 
 
 from userge import userge, Message
-from .. import __all__
+from .. import get_all_plugins
 
 
 @userge.on_cmd("all", about="__list all plugins in plugins/ path__")
 async def getplugins(message: Message):
-    all_plugins = ['/'.join(i.split('.')) for i in __all__]
+    raw_ = get_all_plugins()
+    all_plugins = ['/'.join(i.split('.')) for i in raw_]
 
-    out_str = f"**--({len(__all__)}) Plugins Loaded!--**\n\n"
+    out_str = f"**--({len(raw_)}) Plugins Loaded!--**\n\n"
 
     for plugin in all_plugins:
         out_str += f"    `{plugin}.py`\n"

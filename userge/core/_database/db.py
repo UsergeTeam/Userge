@@ -9,25 +9,22 @@
 
 from pymongo import MongoClient
 from pymongo.collection import Collection
-from userge.utils import Config, logging
+
+from userge import logging, Config
 
 LOG = logging.getLogger(__name__)
+LOG_STR = "$$$>>> __%s__ <<<$$$"
 
-LOG_STR = "$$$>>> __{}__ <<<$$$"
-
-LOG.info(
-    LOG_STR.format("Connecting to Database..."))
+LOG.info(LOG_STR, "Connecting to Database...")
 
 MGCLIENT = MongoClient(Config.DB_URI)
 
 
 if "Userge" in MGCLIENT.list_database_names():
-    LOG.info(
-        LOG_STR.format("Userge Database Found :) => Now Logging to it..."))
+    LOG.info(LOG_STR, "Userge Database Found :) => Now Logging to it...")
 
 else:
-    LOG.info(
-        LOG_STR.format("Userge Database Not Found :( => Creating New Database..."))
+    LOG.info(LOG_STR, "Userge Database Not Found :( => Creating New Database...")
 
 
 DATABASE = MGCLIENT["Userge"]
@@ -39,11 +36,9 @@ def get_collection(name: str) -> Collection:
     """
 
     if name in DATABASE.list_collection_names():
-        LOG.debug(
-            LOG_STR.format(f"{name} Collection Found :) => Now Logging to it..."))
+        LOG.debug(LOG_STR, f"{name} Collection Found :) => Now Logging to it...")
 
     else:
-        LOG.debug(
-            LOG_STR.format(f"{name} Collection Not Found :( => Creating New Collection..."))
+        LOG.debug(LOG_STR, f"{name} Collection Not Found :( => Creating New Collection...")
 
     return DATABASE[name]

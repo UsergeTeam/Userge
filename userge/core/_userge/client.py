@@ -10,7 +10,6 @@
 import re
 import os
 import sys
-import psutil
 import asyncio
 import importlib
 from types import ModuleType
@@ -18,25 +17,25 @@ from typing import (
     Dict, List, Tuple, Optional, Union, Any, Callable)
 from concurrent.futures import ThreadPoolExecutor
 
+import psutil
 import nest_asyncio
 from pyrogram import (
+    Client as RawClient, Message as RawMessage,
     Filters, MessageHandler, InlineKeyboardMarkup,
     ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply)
 
-from userge.utils import Config, logging
+from userge import logging, Config
 from userge.plugins import get_all_plugins
-from .base import BaseClient
 from .message import Message
 from .logger import CLogger
 
 PYROFUNC = Callable[[Message], Any]
-PLUGINS_PATH = "userge.plugins.{}"
 
 LOG = logging.getLogger(__name__)
-LOG_STR = "<<<!  #####  ___{}___  #####  !>>>"
+LOG_STR = "<<<!  #####  ___%s___  #####  !>>>"
 
 
-class Userge(BaseClient):
+class Userge(RawClient):
     """
     Userge: userbot
     """
@@ -46,8 +45,7 @@ class Userge(BaseClient):
         self.__help_dict: Dict[str, Dict[str, str]] = {}
         self.__imported: List[ModuleType] = []
 
-        LOG.info(
-            LOG_STR.format("Setting Userge Configs"))
+        LOG.info(LOG_STR, "Setting Userge Configs")
 
         super().__init__(Config.HU_STRING_SESSION,
                          api_id=Config.API_ID,
@@ -59,8 +57,7 @@ class Userge(BaseClient):
         This will return new logger object.
         """
 
-        LOG.debug(
-            LOG_STR.format(f"Creating Logger => {name}"))
+        LOG.debug(LOG_STR, f"Creating Logger => {name}")
 
         return logging.getLogger(name)
 
@@ -69,8 +66,7 @@ class Userge(BaseClient):
         This will return new channel logger object.
         """
 
-        LOG.debug(
-            LOG_STR.format(f"Creating CLogger => {name}"))
+        LOG.debug(LOG_STR, f"Creating CLogger => {name}")
 
         return CLogger(self, name)
 
@@ -83,8 +79,7 @@ class Userge(BaseClient):
         async def thread(*args: Any) -> Any:
             loop = asyncio.get_event_loop()
 
-            LOG.debug(
-                LOG_STR.format("Creating new thread"))
+            LOG.debug(LOG_STR, "Creating new thread")
 
             with ThreadPoolExecutor() as pool:
                 return await loop.run_in_executor(pool, func, *args)
@@ -334,8 +329,7 @@ class Userge(BaseClient):
                    chelp: str = '',
                    **_: Union[str, bool]) -> None:
         if cname:
-            LOG.debug(
-                LOG_STR.format(f"Updating Help Dict => [ {cname} : {chelp} ]"))
+            LOG.debug(LOG_STR, f"Updating Help Dict => [ {cname} : {chelp} ]")
 
             mname = module.split('.')[-1]
 
@@ -353,13 +347,12 @@ class Userge(BaseClient):
 
         def __decorator(func: PYROFUNC) -> PYROFUNC:
 
-            async def __template(_: BaseClient, message: Message) -> None:
+            async def __template(_: RawClient, message: RawMessage) -> None:
 
                 await func(Message(self, message, **kwargs))
 
-            LOG.debug(
-                LOG_STR.format(f"Loading => [ async def {func.__name__}(message) ] " + \
-                    f"from {func.__module__} `{log}`"))
+            LOG.debug(LOG_STR, f"Loading => [ async def {func.__name__}(message) ] " + \
+                f"from {func.__module__} `{log}`")
 
             self.__add_help(func.__module__, **kwargs)
 
@@ -374,15 +367,12 @@ class Userge(BaseClient):
         Load plugin to Userge.
         """
 
-        LOG.debug(
-            LOG_STR.format(f"Importing {name}"))
+        LOG.debug(LOG_STR, f"Importing {name}")
 
         self.__imported.append(
-            importlib.import_module(PLUGINS_PATH.format(name)))
+            importlib.import_module(f"userge.plugins.{name}"))
 
-        LOG.debug(
-            LOG_STR.format(
-                f"Imported {self.__imported[-1].__name__} Plugin Successfully"))
+        LOG.debug(LOG_STR, f"Imported {self.__imported[-1].__name__} Plugin Successfully")
 
     def load_plugins(self) -> None:
         """
@@ -391,20 +381,17 @@ class Userge(BaseClient):
 
         self.__imported.clear()
 
-        LOG.info(
-            LOG_STR.format("Importing All Plugins"))
+        LOG.info(LOG_STR, "Importing All Plugins")
 
         for name in get_all_plugins():
             try:
                 self.load_plugin(name)
 
             except ImportError as i_e:
-                LOG.error(i_e)
+                LOG.error(LOG_STR, i_e)
 
-        LOG.info(
-            LOG_STR.format(
-                f"Imported ({len(self.__imported)}) Plugins => " + \
-                    str([i.__name__ for i in self.__imported])))
+        LOG.info(LOG_STR, f"Imported ({len(self.__imported)}) Plugins => " + \
+            str([i.__name__ for i in self.__imported]))
 
     async def reload_plugins(self) -> int:
         """
@@ -414,22 +401,19 @@ class Userge(BaseClient):
         self.__help_dict.clear()
         reloaded: List[str] = []
 
-        LOG.info(
-            LOG_STR.format("Reloading All Plugins"))
+        LOG.info(LOG_STR, "Reloading All Plugins")
 
         for imported in self.__imported:
             try:
                 reloaded_ = importlib.reload(imported)
 
             except ImportError as i_e:
-                LOG.error(i_e)
+                LOG.error(LOG_STR, i_e)
 
             else:
                 reloaded.append(reloaded_.__name__)
 
-        LOG.info(
-            LOG_STR.format(
-                f"Reloaded {len(reloaded)} Plugins => {reloaded}"))
+        LOG.info(LOG_STR, f"Reloaded {len(reloaded)} Plugins => {reloaded}")
 
         return len(reloaded)
 
@@ -438,8 +422,7 @@ class Userge(BaseClient):
         Restart the Userge.
         """
 
-        LOG.info(
-            LOG_STR.format("Restarting Userge"))
+        LOG.info(LOG_STR, "Restarting Userge")
 
         await self.stop()
 
@@ -449,8 +432,7 @@ class Userge(BaseClient):
                 os.close(handler.fd)
 
         except Exception as c_e:
-            LOG.error(
-                LOG_STR.format(c_e))
+            LOG.error(LOG_STR, c_e)
 
         os.execl(sys.executable, sys.executable, '-m', 'userge')
 
@@ -459,11 +441,9 @@ class Userge(BaseClient):
         This will start the Userge.
         """
 
-        LOG.info(
-            LOG_STR.format("Starting Userge"))
+        LOG.info(LOG_STR, "Starting Userge")
 
         nest_asyncio.apply()
         self.run()
 
-        LOG.info(
-            LOG_STR.format("Exiting Userge"))
+        LOG.info(LOG_STR, "Exiting Userge")

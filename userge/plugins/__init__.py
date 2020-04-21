@@ -8,17 +8,20 @@
 
 
 from os.path import dirname
-from userge.utils import get_import_path, logging
+from typing import List
+
+from userge import logging
+from userge.utils import get_import_path
 
 LOG = logging.getLogger(__name__)
 ROOT = dirname(__file__)
 
 
-def get_all_plugins():
+def get_all_plugins() -> List[str]:
+    """list all plugins"""
+
     plugins = get_import_path(ROOT, "/**/")
 
-    LOG.debug(f"Plugins to Load: {plugins}")
+    LOG.debug("All Available Plugins: %s", plugins)
 
-    return plugins
-
-__all__ = get_all_plugins()
+    return list(plugins)

@@ -7,8 +7,6 @@
 # All rights reserved.
 
 
-from .config import Config
-from .logger import logging
 from .progress import progress
 
 from .tools import (

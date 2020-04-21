@@ -8,42 +8,53 @@
 
 
 import time
+from math import floor
+
 from pyrogram.errors.exceptions import FloodWait
 
-from userge.core._userge.base import BaseClient, BaseMessage
+import userge
 from .tools import humanbytes, time_formatter
 
 
 async def progress(current: int,
                    total: int,
                    ud_type: str,
-                   userge: BaseClient,
-                   message: BaseMessage,
+                   client: 'userge.Userge',
+                   message: 'userge.Message',
                    start: int) -> None:
+    """display upload/download progress"""
 
     if message.process_is_canceled:
-        await userge.stop_transmission()
+        await client.stop_transmission()
 
     now = time.time()
     diff = now - start
 
     if diff % 10 < 0.5 or current == total:
-        percentage = current * 100 // total
-        speed = current // diff
-        time_to_completion = (total - current) // speed
-        time_to_completion = time_formatter(seconds=int(time_to_completion))
-        progress_str = "Progress :: {}%\n".format(int(percentage))
+        percentage = current * 100 / total
+        speed = current / diff
+        time_to_completion = time_formatter(int((total - current) / speed))
 
-        out = progress_str + "{0}\n{1} of {2}\nSpeed: {3}/s\nETA: {4}\n".format(
+        progress_str = \
+            "__{}__\n" + \
+            "```[{}{}]```\n" + \
+            "**Progress** : `{}%`\n" + \
+            "**Completed** : `{}`\n" + \
+            "**Total** : `{}`\n" + \
+            "**Speed** : `{}/s`\n" + \
+            "**ETA** : `{}`"
+
+        progress_str = progress_str.format(
             ud_type,
+            ''.join(["█" for i in range(floor(percentage / 5))]),
+            ''.join(["░" for i in range(20 - floor(percentage / 5))]),
+            round(percentage, 2),
             humanbytes(current),
             humanbytes(total),
             humanbytes(speed),
-            time_to_completion if time_to_completion != '' else "0 s"
-        )
+            time_to_completion if time_to_completion else "0 s")
 
-        if message.text != out:
-            try:
-                await message.edit(out)
-            except FloodWait:
-                pass
+        try:
+            await message.try_to_edit(progress_str)
+        except FloodWait:
+            pass

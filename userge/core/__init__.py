@@ -7,5 +7,5 @@
 # All rights reserved.
 
 
-from ._userge import Userge, Filters, Message
 from ._database import get_collection
+from ._userge import Userge, Filters, Message

@@ -9,20 +9,21 @@
 
 import os
 import shutil
+from typing import Set
 
 import heroku3
 from git import Repo
 from dotenv import load_dotenv
 from pyrogram import Filters
 
-from .logger import logging
+from userge import logging
 
 LOG = logging.getLogger(__name__)
 
 CONFIG_FILE = "config.env"
 
 if os.path.isfile(CONFIG_FILE):
-    LOG.info(f"{CONFIG_FILE} Found and loading ...")
+    LOG.info("%s Found and loading ...", CONFIG_FILE)
     load_dotenv(CONFIG_FILE)
 
 if os.environ.get("_____REMOVE_____THIS_____LINE_____", None):
@@ -79,9 +80,9 @@ class Config:
 
     SUDO_TRIGGER = os.environ.get("SUDO_TRIGGER", '!')
 
-    SUDO_USERS = set()
+    SUDO_USERS: Set[int] = set()
 
-    ALLOWED_COMMANDS = set()
+    ALLOWED_COMMANDS: Set[str] = set()
 
 
 if Config.SUDO_TRIGGER == '.':
@@ -100,7 +101,7 @@ if Config.HEROKU_API_KEY:
         if heroku_app and Config.HEROKU_APP_NAME and \
             heroku_app.name == Config.HEROKU_APP_NAME:
 
-            LOG.info(f"Heroku App : {heroku_app.name} Found...")
+            LOG.info("Heroku App : %s Found...", heroku_app.name)
 
             Config.HEROKU_APP = heroku_app
             Config.HEROKU_GIT_URL = heroku_app.git_url.replace(

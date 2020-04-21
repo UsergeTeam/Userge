@@ -7,10 +7,11 @@
 # All rights reserved.
 
 
+from userge.logger import logging
+from userge.config import Config
+
 from userge.core import (
     Userge, Filters, Message, get_collection)
-
-from userge.utils import Config, logging
 
 
 userge = Userge()  # userge is the client name

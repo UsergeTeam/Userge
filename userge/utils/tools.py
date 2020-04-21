@@ -7,29 +7,38 @@
 # All rights reserved.
 
 
-import asyncio
 import shlex
-from os.path import isfile, relpath
+import asyncio
 from glob import glob
-from .logger import logging
+from os.path import isfile, relpath
+from typing import Tuple, Dict, List, Union, Optional
+
+from userge import logging
 
 LOG = logging.getLogger(__name__)
 
 
-def humanbytes(size: int) -> str:
+def humanbytes(size: float) -> str:
+    """humanize size"""
+
     if not size:
         return ""
+
     power = 1024
-    n = 0
-    Dic_powerN = {0: ' ', 1: 'Ki', 2: 'Mi', 3: 'Gi', 4: 'Ti'}
+    t_n = 0
+    power_dict = {0: ' ', 1: 'Ki', 2: 'Mi', 3: 'Gi', 4: 'Ti'}
+
     while size > power:
         size /= power
-        n += 1
-    return "{:.2f} {}B".format(size, Dic_powerN[n])
+        t_n += 1
+
+    return "{:.2f} {}B".format(size, power_dict[t_n])
 
 
-def time_formatter(seconds: int) -> str:
-    minutes, seconds = divmod(seconds, 60)
+def time_formatter(seconds: float) -> str:
+    """humanize time"""
+
+    minutes, seconds = divmod(int(seconds), 60)
     hours, minutes = divmod(minutes, 60)
     days, hours = divmod(hours, 24)
 
@@ -41,9 +50,10 @@ def time_formatter(seconds: int) -> str:
     return tmp[:-2]
 
 
-async def runcmd(cmd: str):
-    args = shlex.split(cmd)
+async def runcmd(cmd: str) -> Tuple[str, str, int, int]:
+    """run command in terminal"""
 
+    args = shlex.split(cmd)
     process = await asyncio.create_subprocess_exec(*args,
                                                    stdout=asyncio.subprocess.PIPE,
                                                    stderr=asyncio.subprocess.PIPE)
@@ -56,8 +66,10 @@ async def runcmd(cmd: str):
             process.pid)
 
 
-async def take_screen_shot(video_file: str, duration: int):
-    LOG.info(f'[[[Extracting a frame from {video_file} ||| Video duration => {duration}]]]')
+async def take_screen_shot(video_file: str, duration: int) -> Optional[str]:
+    """take a screenshot"""
+
+    LOG.info('[[[Extracting a frame from %s ||| Video duration => %s]]]', video_file, duration)
 
     ttl = duration // 2
     thumb_image_path = f"{video_file}.jpg"
@@ -71,12 +83,16 @@ async def take_screen_shot(video_file: str, duration: int):
     return thumb_image_path if thumb_image_path else None
 
 
-class SafeDict(dict):
-    def __missing__(self, key):
+class SafeDict(Dict[str, str]):
+    """modded dict"""
+
+    def __missing__(self, key: str) -> str:
         return '{' + key + '}'
 
 
-def get_import_path(root: str, path: str):
+def get_import_path(root: str, path: str) -> Union[str, List[str]]:
+    """return import path"""
+
     seperator = '\\' if '\\' in root else '/'
 
     if isfile(path):

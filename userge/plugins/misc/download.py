@@ -73,40 +73,41 @@ async def down_load_media(message: Message):
         c_time = time.time()
 
         while not downloader.isFinished():
-            total_length = downloader.filesize if downloader.filesize else None
+            diff = time.time() - c_time
+
+            total_length = downloader.filesize if downloader.filesize else 0
             downloaded = downloader.get_dl_size()
-            display_message = ""
-            now = time.time()
-            diff = now - c_time
             percentage = downloader.get_progress() * 100
-            # elapsed_time = round(diff) * 1000
-
-            progress_str = "[{0}{1}]\nProgress: {2}%".format(
-                ''.join(["█" for i in range(math.floor(percentage / 5))]),
-                ''.join(["░" for i in range(20 - math.floor(percentage / 5))]),
-                round(percentage, 2))
-
             speed = downloader.get_speed(human=True)
             estimated_total_time = downloader.get_eta(human=True)
 
-            try:
-                current_message = f"trying to download\n"
-                current_message += f"URL: {url}\n"
-                current_message += f"File Name: {custom_file_name}\n"
-                current_message += f"{progress_str}\n"
-                current_message += f"{humanbytes(downloaded)} of {humanbytes(total_length)}\n"
-                current_message += f"Speed: {speed}\n"
-                current_message += f"ETA: {estimated_total_time}"
+            progress_str = \
+                "__{}__\n" + \
+                "```[{}{}]```\n" + \
+                "**Progress** : `{}%`\n" + \
+                "**URL** : `{}`\n" + \
+                "**FILENAME** : `{}`\n" + \
+                "**Completed** : `{}`\n" + \
+                "**Total** : `{}`\n" + \
+                "**Speed** : `{}/s`\n" + \
+                "**ETA** : `{}`"
 
-                if round(diff % 10.00) == 0 and current_message != display_message:
-                    await message.try_to_edit(text=current_message,
-                                              disable_web_page_preview=True)
+            progress_str.format(
+                "trying to download",
+                ''.join(["█" for i in range(math.floor(percentage / 5))]),
+                ''.join(["░" for i in range(20 - math.floor(percentage / 5))]),
+                round(percentage, 2),
+                url,
+                custom_file_name,
+                humanbytes(downloaded),
+                humanbytes(total_length),
+                speed,
+                estimated_total_time)
 
-                    # display_message = current_message
-                    await asyncio.sleep(10)
+            await message.try_to_edit(
+                text=progress_str, disable_web_page_preview=True)
 
-            except Exception as e:
-                LOGGER.info(e)
+            await asyncio.sleep(10)
 
         if os.path.exists(download_file_path):
             end_t = datetime.now()

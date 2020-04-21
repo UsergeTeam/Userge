@@ -12,36 +12,35 @@ import os
 import asyncio
 from typing import List, Dict, Union, Optional, Sequence
 
-from pyrogram import InlineKeyboardMarkup, Message as RawMessage
+from pyrogram import Client as RawClient, Message as RawMessage, InlineKeyboardMarkup
 from pyrogram.errors.exceptions import MessageAuthorRequired, MessageTooLong
 from pyrogram.errors.exceptions.bad_request_400 import MessageNotModified, MessageIdInvalid
 
-
-from userge.utils import logging, Config
-from .base import BaseClient, BaseMessage
+from userge import logging, Config
 
 CANCEL_LIST: List[int] = []
 ERROR_MSG_DELETE_TIMEOUT = 5
 ERROR_STRING = "**ERROR**: `{}`"
 
 LOG = logging.getLogger(__name__)
-LOG_STR = "<<<!  [[[[[  ___{}___  ]]]]]  !>>>"
+LOG_STR = "<<<!  [[[[[  ___%s___  ]]]]]  !>>>"
 
 
-class Message(BaseMessage):
+class Message(RawMessage):
     """
     Modded Message Class For Userge
     """
 
     def __init__(self,
-                 client: BaseClient,
-                 message: BaseMessage,
+                 client: RawClient,
+                 message: RawMessage,
                  **kwargs: Union[str, bool]) -> None:
 
         super().__init__(client=client,
                          **self.__msg_to_dict(message))
 
-        self.reply_to_message: BaseMessage
+        self.message_id: int
+        self.reply_to_message: RawMessage
 
         if self.reply_to_message:
             self.reply_to_message = self.__class__(self._client, self.reply_to_message)
@@ -118,7 +117,8 @@ class Message(BaseMessage):
 
         CANCEL_LIST.append(self.message_id)
 
-    def __msg_to_dict(self, message: BaseMessage) -> Dict[str, object]:
+    @staticmethod
+    def __msg_to_dict(message: RawMessage) -> Dict[str, object]:
 
         kwargs_ = vars(message)
         del message
@@ -167,8 +167,8 @@ class Message(BaseMessage):
             self.__filtered_input_str = self.__filtered_input_str.strip()
 
             LOG.debug(
-                LOG_STR.format(
-                    f"Filtered Input String => [ {self.__filtered_input_str}, {self.__flags} ]"))
+                LOG_STR,
+                f"Filtered Input String => [ {self.__filtered_input_str}, {self.__flags} ]")
 
             self.__filtered = True
 
@@ -177,7 +177,7 @@ class Message(BaseMessage):
                            filename: str = "output.txt",
                            caption: str = '',
                            log: bool = False,
-                           delete_message: bool = True) -> BaseMessage:
+                           delete_message: bool = True) -> 'Message':
         """
         You can send large outputs as file
 
@@ -205,8 +205,7 @@ class Message(BaseMessage):
         reply_to_id = self.reply_to_message.message_id if self.reply_to_message \
             else self.message_id
 
-        LOG.debug(
-            LOG_STR.format(f"Uploading {filename} To Telegram"))
+        LOG.debug(LOG_STR, f"Uploading {filename} To Telegram")
 
         msg = await self._client.send_document(chat_id=self.chat.id,
                                                document=filename,
@@ -233,7 +232,7 @@ class Message(BaseMessage):
                     disable_web_page_preview: Optional[bool] = None,
                     disable_notification: Optional[bool] = None,
                     reply_to_message_id: Optional[int] = None,
-                    reply_markup: InlineKeyboardMarkup = None) -> Union[BaseMessage, bool]:
+                    reply_markup: InlineKeyboardMarkup = None) -> Union['Message', bool]:
         """
         Example:
                 message.reply("hello")
@@ -292,7 +291,7 @@ class Message(BaseMessage):
 
         if del_in > 0:
             await asyncio.sleep(del_in)
-            return await msg.delete()
+            return bool(await msg.delete())
 
         return Message(self._client, msg)
 
@@ -305,7 +304,7 @@ class Message(BaseMessage):
                    sudo: bool = True,
                    parse_mode: Union[str, object] = object,
                    disable_web_page_preview: Optional[bool] = None,
-                   reply_markup: InlineKeyboardMarkup = None) -> Union[BaseMessage, bool]:
+                   reply_markup: InlineKeyboardMarkup = None) -> Union['Message', bool]:
         """
         Example:
                 message.edit_text("hello")
@@ -336,12 +335,12 @@ class Message(BaseMessage):
         """
 
         try:
-            msg = await self._client.edit_message_text(chat_id=self.chat.id,
-                                                       message_id=self.message_id,
-                                                       text=text,
-                                                       parse_mode=parse_mode,
-                                                       disable_web_page_preview=disable_web_page_preview,
-                                                       reply_markup=reply_markup)
+            msg_ = await self._client.edit_message_text(chat_id=self.chat.id,
+                                                        message_id=self.message_id,
+                                                        text=text,
+                                                        parse_mode=parse_mode,
+                                                        disable_web_page_preview=disable_web_page_preview,
+                                                        reply_markup=reply_markup)
 
         except (MessageAuthorRequired, MessageIdInvalid) as m_er:
             if sudo:
@@ -352,22 +351,24 @@ class Message(BaseMessage):
                                        disable_web_page_preview=disable_web_page_preview,
                                        reply_markup=reply_markup)
 
-                if isinstance(msg, RawMessage):
+                if isinstance(msg, Message):
                     self.message_id = msg.message_id
 
-            else:
-                raise m_er
+                return msg
 
-        if log and isinstance(msg, RawMessage):
-            await self.__channel.fwd_msg(msg)
+            raise m_er
 
-        del_in = del_in or Config.MSG_DELETE_TIMEOUT
+        else:
+            if log:
+                await self.__channel.fwd_msg(msg_)
 
-        if del_in > 0:
-            await asyncio.sleep(del_in)
-            return await msg.delete() if isinstance(msg, RawMessage) else msg
+            del_in = del_in or Config.MSG_DELETE_TIMEOUT
 
-        return Message(self._client, msg)
+            if del_in > 0:
+                await asyncio.sleep(del_in)
+                return bool(await msg_.delete())
+
+            return Message(self._client, msg_)
 
     edit_text = edit
 
@@ -378,7 +379,7 @@ class Message(BaseMessage):
                          parse_mode: Union[str, object] = object,
                          disable_web_page_preview: Optional[bool] = None,
                          reply_markup: InlineKeyboardMarkup = None,
-                         **kwargs) -> Union[BaseMessage, bool]:
+                         **kwargs) -> Union['Message', bool]:
         """
         This will first try to message.edit.
         If it raise MessageAuthorRequired or MessageIdInvalid error, run message.reply.
@@ -412,6 +413,7 @@ class Message(BaseMessage):
             return await self.edit(text=text,
                                    del_in=del_in,
                                    log=log,
+                                   sudo=False,
                                    parse_mode=parse_mode,
                                    disable_web_page_preview=disable_web_page_preview,
                                    reply_markup=reply_markup)
@@ -432,7 +434,7 @@ class Message(BaseMessage):
                   sudo: bool = True,
                   parse_mode: Union[str, object] = object,
                   disable_web_page_preview: Optional[bool] = None,
-                  reply_markup: InlineKeyboardMarkup = None) -> Union[BaseMessage, bool]:
+                  reply_markup: InlineKeyboardMarkup = None) -> Union['Message', bool]:
         """
         You can send error messages using this method
 
@@ -480,7 +482,7 @@ class Message(BaseMessage):
                         parse_mode: Union[str, object] = object,
                         disable_web_page_preview: Optional[bool] = None,
                         reply_markup: InlineKeyboardMarkup = None,
-                        **kwargs) -> Union[BaseMessage, bool]:
+                        **kwargs) -> Union['Message', bool]:
         """
         This will first try to message.edit.
         If it raise MessageAuthorRequired or MessageIdInvalid error, run message.reply.
@@ -528,7 +530,7 @@ class Message(BaseMessage):
                           sudo: bool = True,
                           parse_mode: Union[str, object] = object,
                           disable_web_page_preview: Optional[bool] = None,
-                          reply_markup: InlineKeyboardMarkup = None) -> Union[BaseMessage, bool]:
+                          reply_markup: InlineKeyboardMarkup = None) -> Union['Message', bool]:
 
         """
         This will first try to message.edit. If it raise MessageNotModified error,
@@ -582,7 +584,7 @@ class Message(BaseMessage):
                                    parse_mode: Union[str, object] = object,
                                    disable_web_page_preview: Optional[bool] = None,
                                    reply_markup: InlineKeyboardMarkup = None,
-                                   **kwargs) -> Union[BaseMessage, bool]:
+                                   **kwargs) -> Union['Message', bool]:
 
         """
         This will first try to message.edit. If it raise MessageTooLong error,
@@ -639,7 +641,7 @@ class Message(BaseMessage):
                                     disable_notification: Optional[bool] = None,
                                     reply_to_message_id: Optional[int] = None,
                                     reply_markup: InlineKeyboardMarkup = None,
-                                    **kwargs) -> Union[BaseMessage, bool]:
+                                    **kwargs) -> Union['Message', bool]:
 
         """
         This will first try to message.reply. If it raise MessageTooLong error,
@@ -703,7 +705,7 @@ class Message(BaseMessage):
                                          parse_mode: Union[str, object] = object,
                                          disable_web_page_preview: Optional[bool] = None,
                                          reply_markup: InlineKeyboardMarkup = None,
-                                         **kwargs) -> Union[BaseMessage, bool]:
+                                         **kwargs) -> Union['Message', bool]:
 
         """
         This will first try to message.edit_or_send_as_file.
@@ -738,6 +740,7 @@ class Message(BaseMessage):
             return await self.edit_or_send_as_file(text=text,
                                                    del_in=del_in,
                                                    log=log,
+                                                   sudo=False,
                                                    parse_mode=parse_mode,
                                                    disable_web_page_preview=disable_web_page_preview,
                                                    reply_markup=reply_markup,
