@@ -765,6 +765,7 @@ async def zombie_clean(message: Message):
 
     else:
 
+        del_users = 0
         await message.edit("`Searching for zombie accounts in this chat..`")
         async for member in userge.iter_chat_members(chat_id):
 
@@ -772,10 +773,10 @@ async def zombie_clean(message: Message):
                 del_users += 1
 
         if del_users > 0:
-            
-            del_stats = f"**Found** `{del_users}` **zombie accounts in this chat**"
+
+            del_stats = f"**Found** `{del_users}` **zombie accounts in this chat.**"
             await message.edit(
-                f"🕵️‍♂️ {del_stats}"
+                f"🕵️‍♂️ {del_stats} "
                 "**you can clean them using** `.zombie -c`", del_in=0)
             await CHANNEL.log(
                 f"#ZOMBIE_CHECK\n\n"
