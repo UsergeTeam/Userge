@@ -398,7 +398,7 @@ async def kick_usr(message: Message):
     """
     chat_id = message.chat.id
     get_group = await userge.get_chat(chat_id)
-    can_kick =  await is_admin(message)
+    can_kick = await is_admin(message)
 
     if can_kick:
 
@@ -475,7 +475,7 @@ async def mute_usr(message: Message):
     chat_id = message.chat.id
     flags = message.flags
     get_group = await userge.get_chat(chat_id)
-    can_mute =  await is_admin(message)
+    can_mute = await is_admin(message)
 
     minutes = int(flags.get('-m', 0))
     hours = int(flags.get('-h', 0))
@@ -611,7 +611,7 @@ async def unmute_usr(message: Message):
     """
     chat_id = message.chat.id
     get_group = await userge.get_chat(chat_id)
-    can_unmute =  await is_admin(message)
+    can_unmute = await is_admin(message)
 
     amsg = get_group.permissions.can_send_messages
     amedia = get_group.permissions.can_send_media_messages
@@ -729,7 +729,7 @@ async def zombie_clean(message: Message):
 
     rm_delaccs = '-c' in flags
 
-    can_clean =  await is_admin(message)
+    can_clean = await is_admin(message)
 
     if rm_delaccs:
 
@@ -771,21 +771,21 @@ async def zombie_clean(message: Message):
             if member.user.is_deleted:
                 del_users += 1
 
-            if del_users > 0:
+        if del_users > 0:
+            
+            del_stats = f"**Found** `{del_users}` **zombie accounts in this chat**"
+            await message.edit(
+                f"🕵️‍♂️ {del_stats}"
+                "**you can clean them using** `.zombie -c`", del_in=0)
+            await CHANNEL.log(
+                f"#ZOMBIE_CHECK\n\n"
+                f"CHAT: `{get_group.title}` (`{chat_id}`)\n"
+                )
 
-                del_stats = f"**Found** `{del_users}` **zombie accounts in this chat**"
-                await message.edit(
-                    f"🕵️‍♂️ {del_stats}"
-                    "**you can clean them using** `.zombie -c`", del_in=0)
-                await CHANNEL.log(
-                    f"#ZOMBIE_CHECK\n\n"
-                    f"CHAT: `{get_group.title}` (`{chat_id}`)\n"
-                    )
-
-            else:
-                await message.edit(f"{del_stats}", del_in=0)
-                await CHANNEL.log(
-                    f"#ZOMBIE_CHECK\n\n"
-                    f"CHAT: `{get_group.title}` (`{chat_id}`)\n"
-                    r"ZOMBIE COUNT: `WOOHOO group is clean.. \^o^/`"
-                    )
+        else:
+            await message.edit(f"{del_stats}", del_in=0)
+            await CHANNEL.log(
+                f"#ZOMBIE_CHECK\n\n"
+                f"CHAT: `{get_group.title}` (`{chat_id}`)\n"
+                r"ZOMBIE COUNT: `WOOHOO group is clean.. \^o^/`"
+                )
