@@ -8,7 +8,7 @@
 
 import time
 from pyrogram import ChatPermissions
-from pyrogram.errors import FloodWait, BadRequest
+from pyrogram.errors import FloodWait, UserAdminInvalid
 from userge import userge, Message
 
 CHANNEL = userge.getCLogger(__name__)
@@ -750,7 +750,7 @@ async def zombie_clean(message: Message):
                             chat_id,
                             member.user.id, int(time.time() + 45))
 
-                    except BadRequest:
+                    except UserAdminInvalid:
                         del_users -= 1
                         del_admins += 1
 
@@ -799,6 +799,7 @@ async def zombie_clean(message: Message):
             await CHANNEL.log(
                 f"#ZOMBIE_CHECK\n\n"
                 f"CHAT: `{get_group.title}` (`{chat_id}`)\n"
+                f"ZOMBIE COUNT: `{del_users}`"
                 )
 
         else:
