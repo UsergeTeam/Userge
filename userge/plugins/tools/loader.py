@@ -8,6 +8,7 @@
 
 
 import os
+
 from userge import userge, Message
 from userge.utils import get_import_path
 from userge.plugins import ROOT
@@ -25,7 +26,7 @@ async def load_cmd_handler(message: Message):
     if replied and replied.document:
         file_ = replied.document
 
-        if file_.file_name.endswith('.py') and file_.file_size < 1024 ** 1024:
+        if file_.file_name.endswith('.py') and file_.file_size < 2 ** 20:
             path = await replied.download(file_name="userge/plugins/temp/")
             plugin = get_import_path(ROOT, path)
 

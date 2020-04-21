@@ -32,6 +32,10 @@
             "description": "Set True if it is TeamDrive",
             "value": "True"
         },
+        "DOWN_PATH": {
+            "description": "Set your working directory (name or path)",
+            "required": false
+        },
         "PREFERRED_LANGUAGE": {
             "description": "Your Languge ( ex: if english => 'en' )",
             "required": false

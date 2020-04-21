@@ -8,17 +8,23 @@
 
 
 import os
+import sys
 import shutil
 from typing import Set
 
 import heroku3
 from git import Repo
+from pySmartDL import SmartDL
 from dotenv import load_dotenv
 from pyrogram import Filters
 
 from userge import logging
 
 LOG = logging.getLogger(__name__)
+
+if sys.version_info[0] < 3 or sys.version_info[1] < 6:
+    LOG.info("You MUST have a python version of at least 3.6 !")
+    sys.exit()
 
 CONFIG_FILE = "config.env"
 
@@ -28,7 +34,7 @@ if os.path.isfile(CONFIG_FILE):
 
 if os.environ.get("_____REMOVE_____THIS_____LINE_____", None):
     LOG.error("Please remove the line mentioned in the first hashtag from the config.env file")
-    quit(1)
+    sys.exit()
 
 
 class Config:
@@ -48,7 +54,7 @@ class Config:
 
     LANG = os.environ.get("PREFERRED_LANGUAGE", "en")
 
-    DOWN_PATH = "downloads/"
+    DOWN_PATH = os.environ.get("DOWN_PATH", "downloads/")
 
     SCREENSHOT_API = os.environ.get("SCREENSHOT_API", None)
 
@@ -86,13 +92,12 @@ class Config:
 
 
 if Config.SUDO_TRIGGER == '.':
-    raise Exception("Invalid SUDO_TRIGGER!")
-
+    LOG.info("Invalid SUDO_TRIGGER!, You can't use `.` as SUDO_TRIGGER")
+    sys.exit()
 
 if not os.path.isdir(Config.DOWN_PATH):
     LOG.info("Creating Download Path...")
-    os.makedirs(Config.DOWN_PATH)
-
+    os.mkdir(Config.DOWN_PATH)
 
 if Config.HEROKU_API_KEY:
     LOG.info("Checking Heroku App...")
@@ -117,3 +122,21 @@ if Config.HEROKU_API_KEY:
                 shutil.rmtree(tmp_heroku_git_path)
 
             break
+
+if not os.path.exists('bin'):
+    LOG.info("Creating BIN...")
+    os.mkdir('bin')
+
+BINS = {
+    "https://raw.githubusercontent.com/yshalsager/megadown/master/megadown":
+    "bin/megadown",
+    "https://raw.githubusercontent.com/yshalsager/cmrudl.py/master/cmrudl.py":
+    "bin/cmrudl"}
+
+LOG.info("Downloading BINs...")
+
+for binary, path in BINS.items():
+    LOG.debug(f"Downloading {binary}...")
+    downloader = SmartDL(binary, path, progress_bar=False)
+    downloader.start()
+    os.chmod(path, 0o755)

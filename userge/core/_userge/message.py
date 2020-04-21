@@ -40,7 +40,7 @@ class Message(RawMessage):
                          **self.__msg_to_dict(message))
 
         self.message_id: int
-        self.reply_to_message: RawMessage
+        self.reply_to_message: Optional[RawMessage]
 
         if self.reply_to_message:
             self.reply_to_message = self.__class__(self._client, self.reply_to_message)
@@ -191,8 +191,9 @@ class Message(RawMessage):
                 file_name for output file.
             caption (``str``, *optional*):
                 caption for output file.
-            log (``bool``, *optional*):
+            log (``bool`` | ``str``, *optional*):
                 If ``True``, the message will be forwarded to the log channel.
+                If ``str``, the logger name will be updated.
             delete_message (``bool``, *optional*):
                 If ``True``, the message will be deleted after sending the file.
         Returns:
@@ -216,6 +217,9 @@ class Message(RawMessage):
         os.remove(filename)
 
         if log:
+            if isinstance(log, str):
+                self.__channel.update(log)
+
             await self.__channel.fwd_msg(msg)
 
         if delete_message:
@@ -242,8 +246,9 @@ class Message(RawMessage):
                 Text of the message to be sent.
             del_in (``int``):
                 Time in Seconds for delete that message.
-            log (``bool``, *optional*):
+            log (``bool`` | ``str``, *optional*):
                 If ``True``, the message will be forwarded to the log channel.
+                If ``str``, the logger name will be updated.
             quote (``bool``, *optional*):
                 If ``True``, the message will be sent as a reply to this message.
                 If *reply_to_message_id* is passed, this parameter will be ignored.
@@ -285,6 +290,9 @@ class Message(RawMessage):
                                               reply_markup=reply_markup)
 
         if log:
+            if isinstance(log, str):
+                self.__channel.update(log)
+
             await self.__channel.fwd_msg(msg)
 
         del_in = del_in or Config.MSG_DELETE_TIMEOUT
@@ -314,8 +322,9 @@ class Message(RawMessage):
                 New text of the message.
             del_in (``int``):
                 Time in Seconds for delete that message.
-            log (``bool``, *optional*):
+            log (``bool`` | ``str``, *optional*):
                 If ``True``, the message will be forwarded to the log channel.
+                If ``str``, the logger name will be updated.
             sudo (``bool``, *optional*):
                 If ``True``, sudo users supported.
             parse_mode (``str``, *optional*):
@@ -360,6 +369,9 @@ class Message(RawMessage):
 
         else:
             if log:
+                if isinstance(log, str):
+                    self.__channel.update(log)
+
                 await self.__channel.fwd_msg(msg_)
 
             del_in = del_in or Config.MSG_DELETE_TIMEOUT
@@ -392,8 +404,9 @@ class Message(RawMessage):
                 New text of the message.
             del_in (``int``):
                 Time in Seconds for delete that message.
-            log (``bool``, *optional*):
+            log (``bool`` | ``str``, *optional*):
                 If ``True``, the message will be forwarded to the log channel.
+                If ``str``, the logger name will be updated.
             parse_mode (``str``, *optional*):
                 By default, texts are parsed using both Markdown and HTML styles.
                 You can combine both syntaxes together.
@@ -446,8 +459,9 @@ class Message(RawMessage):
                 New text of the message.
             del_in (``int``):
                 Time in Seconds for delete that message.
-            log (``bool``, *optional*):
+            log (``bool`` | ``str``, *optional*):
                 If ``True``, the message will be forwarded to the log channel.
+                If ``str``, the logger name will be updated.
             sudo (``bool``, *optional*):
                 If ``True``, sudo users supported.
             parse_mode (``str``, *optional*):
@@ -495,8 +509,9 @@ class Message(RawMessage):
                 New text of the message.
             del_in (``int``):
                 Time in Seconds for delete that message.
-            log (``bool``, *optional*):
+            log (``bool`` | ``str``, *optional*):
                 If ``True``, the message will be forwarded to the log channel.
+                If ``str``, the logger name will be updated.
             parse_mode (``str``, *optional*):
                 By default, texts are parsed using both Markdown and HTML styles.
                 You can combine both syntaxes together.
@@ -544,8 +559,9 @@ class Message(RawMessage):
                 New text of the message.
             del_in (``int``):
                 Time in Seconds for delete that message.
-            log (``bool``, *optional*):
+            log (``bool`` | ``str``, *optional*):
                 If ``True``, the message will be forwarded to the log channel.
+                If ``str``, the logger name will be updated.
             sudo (``bool``, *optional*):
                 If ``True``, sudo users supported.
             parse_mode (``str``, *optional*):
@@ -598,8 +614,9 @@ class Message(RawMessage):
                 New text of the message.
             del_in (``int``):
                 Time in Seconds for delete that message.
-            log (``bool``, *optional*):
+            log (``bool`` | ``str``, *optional*):
                 If ``True``, the message will be forwarded to the log channel.
+                If ``str``, the logger name will be updated.
             sudo (``bool``, *optional*):
                 If ``True``, sudo users supported.
             parse_mode (``str``, *optional*):
@@ -655,8 +672,9 @@ class Message(RawMessage):
                 Text of the message to be sent.
             del_in (``int``):
                 Time in Seconds for delete that message.
-            log (``bool``, *optional*):
+            log (``bool`` | ``str``, *optional*):
                 If ``True``, the message will be forwarded to the log channel.
+                If ``str``, the logger name will be updated.
             quote (``bool``, *optional*):
                 If ``True``, the message will be sent as a reply to this message.
                 If *reply_to_message_id* is passed, this parameter will be ignored.
@@ -719,8 +737,9 @@ class Message(RawMessage):
                 New text of the message.
             del_in (``int``):
                 Time in Seconds for delete that message.
-            log (``bool``, *optional*):
+            log (``bool`` | ``str``, *optional*):
                 If ``True``, the message will be forwarded to the log channel.
+                If ``str``, the logger name will be updated.
             parse_mode (``str``, *optional*):
                 By default, texts are parsed using both Markdown and HTML styles.
                 You can combine both syntaxes together.

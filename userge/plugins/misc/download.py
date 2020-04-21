@@ -31,6 +31,10 @@ __download files to server__
     `.download https://speed.hetzner.de/100MB.bin | testing upload.bin`""")
 async def down_load_media(message: Message):
     await message.edit("Trying to Download...")
+
+    if not os.path.isdir(Config.DOWN_PATH):
+        os.mkdir(Config.DOWN_PATH)
+
     if message.reply_to_message is not None:
         start_t = datetime.now()
         c_time = time.time()

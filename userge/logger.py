@@ -13,7 +13,7 @@ from logging.handlers import RotatingFileHandler
 
 
 if not os.path.isdir("logs"):
-    os.makedirs("logs")
+    os.mkdir("logs")
 
 
 logging.basicConfig(level=logging.INFO,

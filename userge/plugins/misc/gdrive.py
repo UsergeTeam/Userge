@@ -938,6 +938,9 @@ class Worker(GDrive):
         if CREDS:
             await self.__message.edit("`Loading GDrive Download...`")
 
+            if not os.path.isdir(Config.DOWN_PATH):
+                os.mkdir(Config.DOWN_PATH)
+
             file_id, _ = self.__get_file_id()
 
             Thread(target=self._download, args=(file_id,)).start()

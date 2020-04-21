@@ -347,9 +347,9 @@ class Userge(RawClient):
 
         def __decorator(func: PYROFUNC) -> PYROFUNC:
 
-            async def __template(_: RawClient, message: RawMessage) -> None:
+            async def __template(_: RawClient, __: RawMessage) -> None:
 
-                await func(Message(self, message, **kwargs))
+                await func(Message(_, __, **kwargs))
 
             LOG.debug(LOG_STR, f"Loading => [ async def {func.__name__}(message) ] " + \
                 f"from {func.__module__} `{log}`")

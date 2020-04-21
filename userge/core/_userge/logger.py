@@ -21,7 +21,24 @@ class CLogger:
 
     def __init__(self, client_: 'client.Userge', name: str) -> None:
         self.__client = client_
-        self.__string = "**logger** : #" + name.split('.')[-1].upper() + "\n\n{}"
+        self.__string = self.__gen_string(name)
+
+    @staticmethod
+    def __gen_string(name: str) -> str:
+        return "**logger** : #" + name.split('.')[-1].upper() + "\n\n{}"
+
+    def update(self, name: str) -> None:
+        """
+        update current logger name.
+
+        Parameters:
+            name (``str``):
+                New name to logger.
+        Returns:
+            None
+        """
+
+        self.__string = self.__gen_string(name)
 
     async def log(self, text: str) -> None:
         """
@@ -63,11 +80,18 @@ class CLogger:
         """
 
         LOG.debug(
-            LOG_STR, f"logging msg : {message_} to channel : {Config.LOG_CHANNEL_ID}")
+            LOG_STR, f"forwarding msg : {message_} to channel : {Config.LOG_CHANNEL_ID}")
 
         if Config.LOG_CHANNEL_ID:
-            await self.__client.forward_messages(chat_id=Config.LOG_CHANNEL_ID,
-                                                 from_chat_id=message_.chat.id,
-                                                 message_ids=(message_.message_id),
-                                                 as_copy=as_copy,
-                                                 remove_caption=remove_caption)
+            if message_.media:
+                await self.log("**Forwarding Message...**")
+
+                await self.__client.forward_messages(chat_id=Config.LOG_CHANNEL_ID,
+                                                     from_chat_id=message_.chat.id,
+                                                     message_ids=(
+                                                         message_.message_id),
+                                                     as_copy=as_copy,
+                                                     remove_caption=remove_caption)
+
+            else:
+                await self.log(message_.text)
