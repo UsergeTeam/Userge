@@ -731,12 +731,12 @@ async def zombie_clean(message: Message):
 
     can_clean =  await is_admin(message)
 
-    if can_clean:
+    if rm_delaccs:
 
         del_users = 0
         del_stats = r"`Zero zombie accounts found in this chat... WOOHOO group is clean.. \^o^/`"
 
-        if rm_delaccs:
+        if can_clean:
 
             await message.edit("`Hang on!! cleaning zombie accounts from this chat..`")
             async for member in userge.iter_chat_members(chat_id):
@@ -761,21 +761,26 @@ async def zombie_clean(message: Message):
             )
 
         else:
+            await message.edit("`Looks like i don't have proper permission to do that! ⚠`")
 
-            await message.edit("`Searching for zombie accounts in this chat..`")
-            async for member in userge.iter_chat_members(chat_id):
+    else:
 
-                if member.user.is_deleted:
-                    del_users += 1
+        await message.edit("`Searching for zombie accounts in this chat..`")
+        async for member in userge.iter_chat_members(chat_id):
+
+            if member.user.is_deleted:
+                del_users += 1
 
             if del_users > 0:
+
                 del_stats = f"**Found** `{del_users}` **zombie accounts in this chat**"
-                await message.edit(f"🕵️‍♂️ {del_stats}", del_in=0)
+                await message.edit(
+                    f"🕵️‍♂️ {del_stats}"
+                    "**you can clean them using** `.zombie -c`", del_in=0)
                 await CHANNEL.log(
                     f"#ZOMBIE_CHECK\n\n"
                     f"CHAT: `{get_group.title}` (`{chat_id}`)\n"
-                    f"ZOMBIE COUNT: `{del_users}`"
-                )
+                    )
 
             else:
                 await message.edit(f"{del_stats}", del_in=0)
@@ -783,7 +788,4 @@ async def zombie_clean(message: Message):
                     f"#ZOMBIE_CHECK\n\n"
                     f"CHAT: `{get_group.title}` (`{chat_id}`)\n"
                     r"ZOMBIE COUNT: `WOOHOO group is clean.. \^o^/`"
-                )
-
-    else:
-        await message.edit("`Looks like i don't have proper permission to do that! ⚠`")
+                    )
