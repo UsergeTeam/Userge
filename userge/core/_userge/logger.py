@@ -7,6 +7,7 @@
 # All rights reserved.
 
 
+from pyrogram import Message as RawMessage
 from userge import logging, Config
 from . import client, message
 
@@ -82,7 +83,7 @@ class CLogger:
         LOG.debug(
             LOG_STR, f"forwarding msg : {message_} to channel : {Config.LOG_CHANNEL_ID}")
 
-        if Config.LOG_CHANNEL_ID:
+        if Config.LOG_CHANNEL_ID and isinstance(message_, RawMessage):
             if message_.media:
                 await self.log("**Forwarding Message...**")
 

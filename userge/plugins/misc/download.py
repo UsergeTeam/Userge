@@ -72,55 +72,64 @@ async def down_load_media(message: Message):
             custom_file_name = custom_file_name.strip()
 
         download_file_path = os.path.join(Config.DOWN_PATH, custom_file_name)
-        downloader = SmartDL(url, download_file_path, progress_bar=False)
-        downloader.start(blocking=False)
-        c_time = time.time()
 
-        while not downloader.isFinished():
-            diff = time.time() - c_time
+        try:
+            downloader = SmartDL(url, download_file_path, progress_bar=False)
+            downloader.start(blocking=False)
+            c_time = time.time()
 
-            total_length = downloader.filesize if downloader.filesize else 0
-            downloaded = downloader.get_dl_size()
-            percentage = downloader.get_progress() * 100
-            speed = downloader.get_speed(human=True)
-            estimated_total_time = downloader.get_eta(human=True)
+            while not downloader.isFinished():
+                if message.process_is_canceled:
+                    downloader.stop()
+                    raise Exception('Process Canceled!')
 
-            progress_str = \
-                "__{}__\n" + \
-                "```[{}{}]```\n" + \
-                "**Progress** : `{}%`\n" + \
-                "**URL** : `{}`\n" + \
-                "**FILENAME** : `{}`\n" + \
-                "**Completed** : `{}`\n" + \
-                "**Total** : `{}`\n" + \
-                "**Speed** : `{}/s`\n" + \
-                "**ETA** : `{}`"
+                diff = time.time() - c_time
 
-            progress_str = progress_str.format(
-                "trying to download",
-                ''.join(["█" for i in range(math.floor(percentage / 5))]),
-                ''.join(["░" for i in range(20 - math.floor(percentage / 5))]),
-                round(percentage, 2),
-                url,
-                custom_file_name,
-                humanbytes(downloaded),
-                humanbytes(total_length),
-                speed,
-                estimated_total_time)
+                total_length = downloader.filesize if downloader.filesize else 0
+                downloaded = downloader.get_dl_size()
+                percentage = downloader.get_progress() * 100
+                speed = downloader.get_speed(human=True)
+                estimated_total_time = downloader.get_eta(human=True)
 
-            await message.try_to_edit(
-                text=progress_str, disable_web_page_preview=True)
+                progress_str = \
+                    "__{}__\n" + \
+                    "```[{}{}]```\n" + \
+                    "**Progress** : `{}%`\n" + \
+                    "**URL** : `{}`\n" + \
+                    "**FILENAME** : `{}`\n" + \
+                    "**Completed** : `{}`\n" + \
+                    "**Total** : `{}`\n" + \
+                    "**Speed** : `{}/s`\n" + \
+                    "**ETA** : `{}`"
 
-            await asyncio.sleep(10)
+                progress_str = progress_str.format(
+                    "trying to download",
+                    ''.join(["█" for i in range(math.floor(percentage / 5))]),
+                    ''.join(["░" for i in range(20 - math.floor(percentage / 5))]),
+                    round(percentage, 2),
+                    url,
+                    custom_file_name,
+                    humanbytes(downloaded),
+                    humanbytes(total_length),
+                    speed,
+                    estimated_total_time)
 
-        if os.path.exists(download_file_path):
+                await message.try_to_edit(
+                    text=progress_str, disable_web_page_preview=True)
+
+                await asyncio.sleep(3)
+
+        except Exception as e:
+            if os.path.exists(download_file_path):
+                os.remove(download_file_path)
+
+            await message.err(e)
+
+        else:
             end_t = datetime.now()
             ms = (end_t - start_t).seconds
 
             await message.edit(f"Downloaded to `{download_file_path}` in {ms} seconds")
-
-        else:
-            await message.edit(f"`Something went wrong!`", del_in=3)
 
     else:
         await message.edit(
