@@ -40,14 +40,14 @@ async def eval_(message: Message):
 
     stdout, stderr, exc = None, None, None
 
-    async def aexec(code, userge, message):
+    async def aexec(code):
         exec("async def __aexec(userge, message):\n " + \
                 '\n '.join(line for line in code.split('\n')))
 
         return await locals()['__aexec'](userge, message)
 
     try:
-        await aexec(cmd, userge, message)
+        await aexec(cmd)
 
     except Exception:
         exc = traceback.format_exc()

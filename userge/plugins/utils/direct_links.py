@@ -50,37 +50,37 @@ async def direct_(message: Message):
     reply = "**Direct Links** :\n\n"
     for link in links:
         if 'drive.google.com' in link:
-            reply += f" * {gdrive(link)}\n"
+            reply += f" 👉 {gdrive(link)}\n"
 
         elif 'zippyshare.com' in link:
-            reply += f" * {zippy_share(link)}\n"
+            reply += f" 👉 {zippy_share(link)}\n"
 
         elif 'mega.' in link:
-            reply += f" * {mega_dl(link)}\n"
+            reply += f" 👉 {mega_dl(link)}\n"
 
         elif 'yadi.sk' in link:
-            reply += f" * {yandex_disk(link)}\n"
+            reply += f" 👉 {yandex_disk(link)}\n"
 
         elif 'cloud.mail.ru' in link:
-            reply += f" * {cm_ru(link)}\n"
+            reply += f" 👉 {cm_ru(link)}\n"
 
         elif 'mediafire.com' in link:
-            reply += f" * {mediafire(link)}\n"
+            reply += f" 👉 {mediafire(link)}\n"
 
         elif 'sourceforge.net' in link:
-            reply += f" * {sourceforge(link)}\n"
+            reply += f" 👉 {sourceforge(link)}\n"
 
         elif 'osdn.net' in link:
-            reply += f" * {osdn(link)}\n"
+            reply += f" 👉 {osdn(link)}\n"
 
         elif 'github.com' in link:
-            reply += f" * {github(link)}\n"
+            reply += f" 👉 {github(link)}\n"
 
         elif 'androidfilehost.com' in link:
-            reply += f" * {androidfilehost(link)}\n"
+            reply += f" 👉 {androidfilehost(link)}\n"
 
         else:
-            reply += f" # {link} is not supported!\n"
+            reply += f" 👀 {link} is not supported!\n"
 
     await message.edit(reply)
 
@@ -164,10 +164,10 @@ def zippy_share(url: str) -> str:
                                 script.text).group('url')
             math = re.search(r'= (?P<url>\".+\" \+ (?P<math>\(.+\)) .+);',
                              script.text).group('math')
-            dl_url = url_raw.replace(math, '"' + str(eval(math)) + '"')
+            dl_url = url_raw.replace(math, f"\"{eval(math)}\"")
             break
 
-    dl_url = base_url + eval(dl_url)
+    dl_url = f"{base_url}{eval(dl_url)}"
     name = urllib.parse.unquote(dl_url.split('/')[-1])
     reply += f'[{name}]({dl_url})\n'
 
@@ -218,7 +218,6 @@ def mega_dl(url: str) -> str:
 
     try:
         data = json.loads(result)
-        print(data)
 
     except json.JSONDecodeError:
         reply += "`Error: Can't extract the link`\n"

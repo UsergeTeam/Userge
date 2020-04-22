@@ -96,7 +96,7 @@ async def down_load_media(message: Message):
                 "**Speed** : `{}/s`\n" + \
                 "**ETA** : `{}`"
 
-            progress_str.format(
+            progress_str = progress_str.format(
                 "trying to download",
                 ''.join(["█" for i in range(math.floor(percentage / 5))]),
                 ''.join(["░" for i in range(20 - math.floor(percentage / 5))]),
