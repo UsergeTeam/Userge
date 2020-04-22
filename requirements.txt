@@ -1,5 +1,5 @@
 git+https://github.com/pyrogram/pyrogram.git@asyncio-dev
-BeautifulSoup
+bs4
 cowpy
 dnspython
 emoji

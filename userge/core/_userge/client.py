@@ -44,6 +44,7 @@ class Userge(RawClient):
 
         self.__help_dict: Dict[str, Dict[str, str]] = {}
         self.__imported: List[ModuleType] = []
+        self.__channel = self.getCLogger(__name__)
 
         LOG.info(LOG_STR, "Setting Userge Configs")
 
@@ -145,8 +146,9 @@ class Userge(RawClient):
                 Text of the message to be sent.
             del_in (``int``):
                 Time in Seconds for delete that message.
-            log (``bool``, *optional*):
+            log (``bool`` | ``str``, *optional*):
                 If ``True``, the message will be forwarded to the log channel.
+                If ``str``, the logger name will be updated.
             parse_mode (``str``, *optional*):
                 By default, texts are parsed using both Markdown and HTML styles.
                 You can combine both syntaxes together.
@@ -179,7 +181,10 @@ class Userge(RawClient):
                                          reply_markup=reply_markup)
 
         if log:
-            await self.getCLogger(__name__).fwd_msg(msg)
+            if isinstance(log, str):
+                self.__channel.update(log)
+
+            await self.__channel.fwd_msg(msg)
 
         del_in = del_in or Config.MSG_DELETE_TIMEOUT
 
