@@ -7,14 +7,14 @@
 # All rights reserved.
 
 import time
-from userge import userge, Message
 from pyrogram import ChatPermissions
 from pyrogram.errors import (FloodWait,
-UserAdminInvalid,
-UsernameInvalid,
-ChatAdminRequired,
-PeerIdInvalid,
-UserIdInvalid)
+                             UserAdminInvalid,
+                             UsernameInvalid,
+                             ChatAdminRequired,
+                             PeerIdInvalid,
+                             UserIdInvalid)
+from userge import userge, Message
 
 CHANNEL = userge.getCLogger(__name__)
 
@@ -104,7 +104,7 @@ async def promote_usr(message: Message):
 
             except UsernameInvalid:
                 await message.edit(
-                    text="`invalid username or userid, try again with valid info ⚠`", del_in=0
+                    text="`invalid username, try again with valid info ⚠`", del_in=0
                     )
                 return
 
@@ -116,19 +116,19 @@ async def promote_usr(message: Message):
 
             except UserIdInvalid:
                 await message.edit(
-                    text="`invalid username or userid, try again with valid info ⚠`", del_in=0
+                    text="`invalid userid, try again with valid info ⚠`", del_in=0
                     )
                 return
 
             except ChatAdminRequired:
                 await message.edit(
-                    text=r"`i don't have permission to do that` ＞︿＜", del_in=0
+                    text=r"`i don't have permission to do that ＞︿＜`", del_in=0
                     )
                 return
 
             except Exception as e:
                 await message.edit(
-                    text="something went wrong! 🤔\n"
+                    text="something went wrong! 🤔\n\n"
                     f"**ERROR:** `{e}`"
                 )
                 return
@@ -157,7 +157,7 @@ async def promote_usr(message: Message):
 
             except ChatAdminRequired:
                 await message.edit(
-                    text=r"`i don't have permission to do that` ＞︿＜", del_in=0
+                    text=r"`i don't have permission to do that ＞︿＜`", del_in=0
                     )
                 return
 
@@ -227,7 +227,7 @@ async def demote_usr(message: Message):
 
             except UsernameInvalid:
                 await message.edit(
-                    text="`invalid username or userid, try again with valid info ⚠`", del_in=0
+                    text="`invalid username, try again with valid info ⚠`", del_in=0
                     )
                 return
 
@@ -239,13 +239,13 @@ async def demote_usr(message: Message):
 
             except UserIdInvalid:
                 await message.edit(
-                    text="`invalid username or userid, try again with valid info ⚠`", del_in=0
+                    text="`invalid userid, try again with valid info ⚠`", del_in=0
                     )
                 return
 
             except ChatAdminRequired:
                 await message.edit(
-                    text=r"`i don't have permission to do that` ＞︿＜", del_in=0
+                    text=r"`i don't have permission to do that ＞︿＜`", del_in=0
                     )
                 return
 
@@ -279,7 +279,7 @@ async def demote_usr(message: Message):
 
             except ChatAdminRequired:
                 await message.edit(
-                    text=r"`i don't have permission to do that` ＞︿＜", del_in=0
+                    text=r"`i don't have permission to do that ＞︿＜`", del_in=0
                     )
                 return
 
@@ -355,7 +355,7 @@ async def ban_usr(message: Message):
 
             except UsernameInvalid:
                 await message.edit(
-                    text="`invalid username or userid, try again with valid info ⚠`", del_in=0
+                    text="`invalid username, try again with valid info ⚠`", del_in=0
                     )
                 return
 
@@ -367,13 +367,13 @@ async def ban_usr(message: Message):
 
             except UserIdInvalid:
                 await message.edit(
-                    text="`invalid username or userid, try again with valid info ⚠`", del_in=0
+                    text="`invalid userid, try again with valid info ⚠`", del_in=0
                     )
                 return
 
             except ChatAdminRequired:
                 await message.edit(
-                    text=r"`i don't have permission to do that` ＞︿＜", del_in=0
+                    text=r"`i don't have permission to do that ＞︿＜`", del_in=0
                     )
                 return
 
@@ -428,7 +428,7 @@ async def unban_usr(message: Message):
 
             except UsernameInvalid:
                 await message.edit(
-                    text="`invalid username or userid, try again with valid info ⚠`", del_in=0
+                    text="`invalid username, try again with valid info ⚠`", del_in=0
                     )
                 return
 
@@ -440,7 +440,7 @@ async def unban_usr(message: Message):
 
             except UserIdInvalid:
                 await message.edit(
-                    text="`invalid username or userid, try again with valid info ⚠`", del_in=0
+                    text="`invalid userid, try again with valid info ⚠`", del_in=0
                     )
                 return
 
@@ -523,7 +523,7 @@ async def kick_usr(message: Message):
 
             except UsernameInvalid:
                 await message.edit(
-                    text="`invalid username or userid, try again with valid info ⚠`", del_in=0
+                    text="`invalid username, try again with valid info ⚠`", del_in=0
                     )
                 return
 
@@ -535,19 +535,19 @@ async def kick_usr(message: Message):
 
             except UserIdInvalid:
                 await message.edit(
-                    text="`invalid username or userid, try again with valid info ⚠`", del_in=0
+                    text="`invalid userid, try again with valid info ⚠`", del_in=0
                     )
                 return
 
             except ChatAdminRequired:
                 await message.edit(
-                    text=r"`i don't have permission to do that` ＞︿＜", del_in=0
+                    text=r"`i don't have permission to do that ＞︿＜`", del_in=0
                     )
                 return
 
             except Exception as e:
                 await message.edit(
-                    text="something went wrong! 🤔\n"
+                    text="something went wrong! 🤔\n\n"
                     f"**ERROR:** `{e}`", del_in=0
                 )
                 return
@@ -568,7 +568,7 @@ async def kick_usr(message: Message):
 
             except ChatAdminRequired:
                 await message.edit(
-                    text=r"`i don't have permission to do that` ＞︿＜", del_in=0
+                    text=r"`i don't have permission to do that ＞︿＜`", del_in=0
                     )
                 return
 
@@ -661,7 +661,7 @@ async def mute_usr(message: Message):
 
             except UsernameInvalid:
                 await message.edit(
-                    text="`invalid username or userid, try again with valid info ⚠`", del_in=0
+                    text="`invalid username, try again with valid info ⚠`", del_in=0
                     )
                 return
 
@@ -673,13 +673,13 @@ async def mute_usr(message: Message):
 
             except UserIdInvalid:
                 await message.edit(
-                    text="`invalid username or userid, try again with valid info ⚠`", del_in=0
+                    text="`invalid userid, try again with valid info ⚠`", del_in=0
                     )
                 return
 
             except ChatAdminRequired:
                 await message.edit(
-                    text=r"`i don't have permission to do that` ＞︿＜", del_in=0
+                    text=r"`i don't have permission to do that ＞︿＜`", del_in=0
                     )
                 return
 
@@ -708,7 +708,7 @@ async def mute_usr(message: Message):
 
             except UsernameInvalid:
                 await message.edit(
-                    text="`invalid username or userid, try again with valid info ⚠`", del_in=0
+                    text="`invalid username, try again with valid info ⚠`", del_in=0
                     )
                 return
 
@@ -720,13 +720,13 @@ async def mute_usr(message: Message):
 
             except UserIdInvalid:
                 await message.edit(
-                    text="`invalid username or userid, try again with valid info ⚠`", del_in=0
+                    text="`invalid userid, try again with valid info ⚠`", del_in=0
                     )
                 return
 
             except ChatAdminRequired:
                 await message.edit(
-                    text=r"`i don't have permission to do that` ＞︿＜", del_in=0
+                    text=r"`i don't have permission to do that ＞︿＜`", del_in=0
                     )
                 return
 
@@ -755,7 +755,7 @@ async def mute_usr(message: Message):
 
             except UsernameInvalid:
                 await message.edit(
-                    text="`invalid username or userid, try again with valid info ⚠`", del_in=0
+                    text="`invalid username, try again with valid info ⚠`", del_in=0
                     )
                 return
 
@@ -767,13 +767,13 @@ async def mute_usr(message: Message):
 
             except UserIdInvalid:
                 await message.edit(
-                    text="`invalid username or userid, try again with valid info ⚠`", del_in=0
+                    text="`invalid userid, try again with valid info ⚠`", del_in=0
                     )
                 return
 
             except ChatAdminRequired:
                 await message.edit(
-                    text=r"`i don't have permission to do that` ＞︿＜", del_in=0
+                    text=r"`i don't have permission to do that ＞︿＜`", del_in=0
                     )
                 return
 
@@ -799,7 +799,7 @@ async def mute_usr(message: Message):
 
             except UsernameInvalid:
                 await message.edit(
-                    text="`invalid username or userid, try again with valid info ⚠`", del_in=0
+                    text="`invalid username, try again with valid info ⚠`", del_in=0
                     )
                 return
 
@@ -811,13 +811,13 @@ async def mute_usr(message: Message):
 
             except UserIdInvalid:
                 await message.edit(
-                    text="`invalid username or userid, try again with valid info ⚠`", del_in=0
+                    text="`invalid userid, try again with valid info ⚠`", del_in=0
                     )
                 return
 
             except ChatAdminRequired:
                 await message.edit(
-                    text=r"`i don't have permission to do that` ＞︿＜", del_in=0
+                    text=r"`i don't have permission to do that ＞︿＜`", del_in=0
                     )
                 return
 
@@ -898,8 +898,9 @@ async def unmute_usr(message: Message):
 
             except UsernameInvalid:
                 await message.edit(
-                    text="`something went wrong 🤔,`"
-                    "`do .help unmute for more info`", del_in=0)
+                    text="`invalid username, try again with valid info ⚠`", del_in=0
+                    )
+                return
 
             except PeerIdInvalid:
                 await message.edit(
@@ -909,7 +910,7 @@ async def unmute_usr(message: Message):
 
             except UserIdInvalid:
                 await message.edit(
-                    text="`invalid username or userid, try again with valid info ⚠`", del_in=0
+                    text="`invalid userid, try again with valid info ⚠`", del_in=0
                     )
                 return
 

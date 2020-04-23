@@ -50,7 +50,7 @@ async def lock_perm(message: Message):
     chat_id = message.chat.id
 
     if not lock_type:
-        await message.edit(text=r"I Can't Lock Nothing! (－‸ლ)", del_in=0)
+        await message.edit(text=r"`I Can't Lock Nothing! (－‸ლ)`", del_in=0)
         return
 
     get_perm = await userge.get_chat(chat_id)
@@ -80,7 +80,7 @@ async def lock_perm(message: Message):
 
         except Exception as e:
             await message.edit(
-                text=r"`i don't have permission to do that` ＞︿＜ \n"
+                text=r"`i don't have permission to do that ＞︿＜`\n\n"
                 f"**ERROR:** `{e}`", del_in=0)
 
         return
@@ -156,7 +156,7 @@ async def lock_perm(message: Message):
 
     except:
         await message.edit(
-            text=r"`i don't have permission to do that` ＞︿＜", del_in=0)
+            text=r"`i don't have permission to do that ＞︿＜`", del_in=0)
 
 
 @userge.on_cmd("unlock", about="""\
@@ -236,10 +236,10 @@ async def unlock_perm(message: Message):
                 f"PERMISSIONS: `All Permissions`"
             )
 
-        except:
+        except Exception as e:
             await message.edit(
-                text=f"**Do I have proper Admin rights for that 🤔**", del_in=0)
-        return
+                text=r"`i don't have permission to do that ＞︿＜`\n\n"
+                f"**ERROR:** `{e}`", del_in=0)
 
     if unlock_type == "msg":
         umsg = True
@@ -311,7 +311,8 @@ async def unlock_perm(message: Message):
         )
 
     except:
-        await message.edit(text=r"`i don't have permission to do that` ＞︿＜", del_in=0)
+        await message.edit(
+            text=r"`i don't have permission to do that ＞︿＜`", del_in=0)
 
 
 @userge.on_cmd("vperm", about="""\
@@ -397,5 +398,5 @@ async def view_perm(message: Message):
 
         except Exception as e:
             await message.edit(
-                text="**Something went wrong! 🤔\n"
+                text="`Something went wrong!` 🤔\n"
                 f"**ERROR:** `{e}`", del_in=0)
