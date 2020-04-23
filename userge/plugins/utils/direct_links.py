@@ -20,18 +20,12 @@ from userge import userge, Message
 from userge.utils import humanbytes
 
 
-@userge.on_cmd("direct", about="""\
-__Generate a direct download link__
-
-**Supported Links**:
-
-    `Google Drive` , `MEGA.nz` , `Cloud Mail`
-    `Yandex.Disk` , `AFH` , `ZippyShare`
-    `MediaFire` , `SourceForge` , `OSDN` , `GitHub`
-
-**Usage**:
-
-    `.direct [link]`""")
+@userge.on_cmd("direct", about={
+    'header': "Generate a direct download link",
+    'supported links': [
+        'Google Drive', 'MEGA.nz', 'Cloud Mail', 'Yandex.Disk', 'AFH',
+        'ZippyShare', 'MediaFire', 'SourceForge', 'OSDN', 'GitHub'],
+    'usage': ".direct [link]"})
 async def direct_(message: Message):
     """direct links generator"""
 

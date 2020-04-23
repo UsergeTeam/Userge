@@ -16,6 +16,7 @@ from os.path import join, splitext, basename, dirname, relpath, exists
 from zipfile import ZipFile
 from threading import Thread
 from multiprocessing import Pool, Lock
+
 from userge import userge, Message, Config
 from userge.utils import humanbytes
 
@@ -245,12 +246,9 @@ class Zip:
             return z_f.infolist()
 
 
-@userge.on_cmd('zip', about="""\
-__Zip file / folder__
-
-**Usage:**
-
-    `.zip [file path]`""")
+@userge.on_cmd('zip', about={
+    'header': "Zip file / folder",
+    'usage': ".zip [file path]"})
 async def zip_(message: Message):
     """zip"""
 
@@ -258,9 +256,11 @@ async def zip_(message: Message):
 
     if not file_path:
         await message.err("missing file path!")
+        return
 
     if not exists(file_path):
         await message.err("file path not exists!")
+        return
 
     start_t = datetime.now()
     z_obj = Zip(file_path)
@@ -296,12 +296,9 @@ async def zip_(message: Message):
             f"**zipped** `{file_path}` into `{z_obj.final_file_path}` in {m_s} seconds.", log=True)
 
 
-@userge.on_cmd('unzip', about="""\
-__UnZip zip file__
-
-**Usage:**
-
-    `.unzip [zip file path]`""")
+@userge.on_cmd('unzip', about={
+    'header': "UnZip zip file",
+    'usage': ".unzip [zip file path]"})
 async def unzip_(message: Message):
     """unzip"""
 
@@ -309,12 +306,15 @@ async def unzip_(message: Message):
 
     if not file_path:
         await message.err("missing file path!")
+        return
 
     if not exists(file_path):
         await message.err("file path not exists!")
+        return
 
     if not file_path.endswith(".zip"):
         await message.err("unsupported file type!")
+        return
 
     start_t = datetime.now()
     z_obj = Zip(file_path)
@@ -350,12 +350,9 @@ async def unzip_(message: Message):
             f"**unzipped** `{file_path}` into `{z_obj.final_file_path}` in {m_s} seconds.", log=True)
 
 
-@userge.on_cmd('zipinfo', about="""\
-__File content of Zip file__
-
-**Usage:**
-
-    `.zipinfo [zip file]`""")
+@userge.on_cmd('zipinfo', about={
+    'header': "File content of Zip file",
+    'usage': ".zipinfo [zip file]"})
 async def zipinfo_(message: Message):
     """zipinfo"""
 
@@ -363,12 +360,15 @@ async def zipinfo_(message: Message):
 
     if not file_path:
         await message.err("missing file path!")
+        return
 
     if not exists(file_path):
         await message.err("file path not exists!")
+        return
 
     if not file_path.endswith(".zip"):
         await message.err("unsupported file type!")
+        return
 
     z_obj = Zip(file_path)
     infos = z_obj.get_info()

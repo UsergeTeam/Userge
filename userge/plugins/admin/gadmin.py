@@ -6,6 +6,7 @@
 #
 # All rights reserved.
 
+
 import time
 from pyrogram import ChatPermissions
 from pyrogram.errors import (FloodWait,
@@ -17,6 +18,7 @@ from pyrogram.errors import (FloodWait,
 from userge import userge, Message
 
 CHANNEL = userge.getCLogger(__name__)
+
 
 async def is_admin(message: Message):
     check_user = await userge.get_chat_member(message.chat.id, message.from_user.id)
@@ -35,6 +37,7 @@ async def is_admin(message: Message):
 
     else:
         return True
+
 
 async def is_sudoadmin(message: Message):
     check_user = await userge.get_chat_member(message.chat.id, message.from_user.id)
@@ -55,20 +58,11 @@ async def is_sudoadmin(message: Message):
         return True
 
 
-@userge.on_cmd("promote", about="""\
-__use this to promote group members__
-
-**Usage:**
-
-`Provides admin rights to the person in the supergroup.`
-
-[NOTE: Requires proper admin rights in the chat!!!]
-
-
-**Example:**
-
-    `.promote [username | userid] or [reply to user]`""")
-
+@userge.on_cmd("promote", about={
+    'header': "use this to promote group members",
+    'description': "Provides admin rights to the person in the supergroup.\n"
+                   "[NOTE: Requires proper admin rights in the chat!!!]",
+    'examples': ".promote [username | userid] or [reply to user]"})
 async def promote_usr(message: Message):
     """
     this function can promote members in tg group
@@ -179,20 +173,11 @@ async def promote_usr(message: Message):
             text=r"`i don't have proper permission to do that! ¯\_(ツ)_/¯`", del_in=0)
 
 
-@userge.on_cmd("demote", about="""\
-__use this to demote group members__
-
-**Usage:**
-
-`Remove admin rights from admin in the supergroup.`
-
-[NOTE: Requires proper admin rights in the chat!!!]
-
-
-**Example:**
-
-    `.demote [username | userid] or [reply to user]`""")
-
+@userge.on_cmd("demote", about={
+    'header': "use this to demote group members",
+    'description': "Remove admin rights from admin in the supergroup.\n"
+                   "[NOTE: Requires proper admin rights in the chat!!!]",
+    'examples': ".demote [username | userid] or [reply to user]"})
 async def demote_usr(message: Message):
     """
     this function can demote members in tg group
@@ -301,20 +286,12 @@ async def demote_usr(message: Message):
         await message.edit(
             text=r"`i don't have proper permission to do that! ¯\_(ツ)_/¯`", del_in=0)
 
-@userge.on_cmd("ban", about="""\
-__use this to ban group members__
 
-**Usage:**
-
-`Ban member from supergroup.`
-
-[NOTE: Requires proper admin rights in the chat!!!]
-
-
-**Example:**
-
-    `.ban [username | userid] or [reply to user] :reason (optional)`""")
-
+@userge.on_cmd("ban", about={
+    'header': "use this to ban group members",
+    'description': "Ban member from supergroup.\n"
+                   "[NOTE: Requires proper admin rights in the chat!!!]",
+    'examples': ".ban [username | userid] or [reply to user] :reason (optional)"})
 async def ban_usr(message: Message):
     """
     this function can ban user from tg group
@@ -388,20 +365,12 @@ async def ban_usr(message: Message):
         await message.edit(
             text=r"`i don't have proper permission to do that! ¯\_(ツ)_/¯`", del_in=0)
 
-@userge.on_cmd("unban", about="""\
-__use this to unban group members__
 
-**Usage:**
-
-`Unban member from supergroup.`
-
-[NOTE: Requires proper admin rights in the chat!!!]
-
-
-**Example:**
-
-    `.unban [username | userid] or [reply to user]`""")
-
+@userge.on_cmd("unban", about={
+    'header': "use this to unban group members",
+    'description': "Unban member from supergroup.\n"
+                   "[NOTE: Requires proper admin rights in the chat!!!]",
+    'examples': ".unban [username | userid] or [reply to user]"})
 async def unban_usr(message: Message):
     """
     this function can unban user from tg group
@@ -484,20 +453,12 @@ async def unban_usr(message: Message):
         await message.edit(
             text=r"`i don't have proper permission to do that! ¯\_(ツ)_/¯`", del_in=0)
 
-@userge.on_cmd("kick", about="""\
-__use this to kick group members__
 
-**Usage:**
-
-`Kick member from supergroup. member can rejoin the group again if they want.`
-
-[NOTE: Requires proper admin rights in the chat!!!]
-
-
-**Example:**
-
-    `.kick [username | userid] or [reply to user]""")
-
+@userge.on_cmd("kick", about={
+    'header': "use this to kick group members",
+    'description': "Kick member from supergroup. member can rejoin the group again if they want.\n"
+                   "[NOTE: Requires proper admin rights in the chat!!!]",
+    'examples': ".kick [username | userid] or [reply to user]"})
 async def kick_usr(message: Message):
     """
     this function can kick user from tg group
@@ -590,26 +551,18 @@ async def kick_usr(message: Message):
         await message.edit(
             text=r"`i don't have proper permission to do that! ¯\_(ツ)_/¯`", del_in=0)
 
-@userge.on_cmd("mute", about="""\
-__use this to mute group members__
 
-**Usage:**
-
-`Mute member in the supergroup. you can only use one flag for command`
-
-[NOTE: Requires proper admin rights in the chat!!!]
-
-**Available Flags:**
-`-m` : __minutes__
-`-h` : __hours__
-`-d` : __days__
-
-
-**Example:**
-
-    `.mute -flag [username | userid] or [reply to user] :reason (optional)`
-    `.mute -d1 @someusername/userid/replytouser SPAM` (mute for one day:reason SPAM)""")
-
+@userge.on_cmd("mute", about={
+    'header': "use this to mute group members",
+    'description': "Mute member in the supergroup. you can only use one flag for command.\n"
+                   "[NOTE: Requires proper admin rights in the chat!!!]",
+    'flags': {
+        '-m': "minutes",
+        '-h': "hours",
+        '-d': "days"},
+    'examples': [
+        ".mute -flag [username | userid] or [reply to user] :reason (optional)",
+        ".mute -d1 @someusername/userid/replytouser SPAM (mute for one day:reason SPAM)"]})
 async def mute_usr(message: Message):
     """
     this function can mute user from tg group
@@ -833,20 +786,12 @@ async def mute_usr(message: Message):
         await message.edit(
             text=r"`i don't have proper permission to do that! ¯\_(ツ)_/¯`", del_in=0)
 
-@userge.on_cmd("unmute", about="""\
-__use this to unmute group members__
 
-**Usage:**
-
-`Unmute member from supergroup.`
-
-[NOTE: Requires proper admin rights in the chat!!!]
-
-
-**Example:**
-
-    `.unmute [username | userid]  or [reply to user]`""")
-
+@userge.on_cmd("unmute", about={
+    'header': "use this to unmute group members",
+    'description': "Unmute member from supergroup.\n"
+                   "[NOTE: Requires proper admin rights in the chat!!!]",
+    'examples': ".unmute [username | userid]  or [reply to user]"})
 async def unmute_usr(message: Message):
     """
     this function can unmute user from tg group
@@ -967,24 +912,15 @@ async def unmute_usr(message: Message):
         await message.edit(
             text=r"`i don't have proper permission to do that! ¯\_(ツ)_/¯`", del_in=0)
 
-@userge.on_cmd("zombies", about="""\
-__use this to clean zombie accounts__
 
-**Usage:**
-
-`check & remove zombie (deleted) accounts from supergroup.`
-
-[NOTE: Requires proper admin rights in the chat!!!]
-
-**Available Flags:**
-
-`-c` : __clean__
-
-**Example:**
-
-    `.zombies [check deleted accounts in group]`
-    `.zombies -c [remove deleted accounts from group]`""")
-
+@userge.on_cmd("zombies", about={
+    'header': "use this to clean zombie accounts",
+    'description': "check & remove zombie (deleted) accounts from supergroup.\n"
+                   "[NOTE: Requires proper admin rights in the chat!!!]",
+    'flags': {'-c': "clean"},
+    'examples': [
+        ".zombies [check deleted accounts in group]",
+        ".zombies -c [remove deleted accounts from group]"]})
 async def zombie_clean(message: Message):
     """
     this function can remove deleted accounts from tg group

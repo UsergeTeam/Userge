@@ -10,7 +10,7 @@
 from userge import userge, Message
 
 
-@userge.on_cmd("help", about="__to know how to use **USERGE** commands__")
+@userge.on_cmd("help", about={'header': "Guide to use USERGE commands"})
 async def helpme(message: Message):
     out, is_mdl_or_key = userge.get_help(message.input_str)
     cmd = message.input_str

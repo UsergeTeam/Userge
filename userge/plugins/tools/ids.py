@@ -10,12 +10,9 @@
 from userge import userge, Message
 
 
-@userge.on_cmd("ids", about="""\
-__display ids__
-
-**Usage:**
-
-reply `.ids` any message, file or just send this command""")
+@userge.on_cmd("ids", about={
+    'header': "display ids",
+    'usage': "reply .ids any message, file or just send this command"})
 async def getids(message: Message):
     out_str = f"💁 Current Chat ID: `{message.chat.id}`"
 

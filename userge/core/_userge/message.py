@@ -126,23 +126,12 @@ class Message(RawMessage):
         if '_client' in kwargs_:
             del kwargs_['_client']
 
-        if '_Message__channel' in kwargs_:
-            del kwargs_['_Message__channel']
+        for key_ in ['channel', 'filtered', 'process_canceled',
+                     'filtered_input_str', 'flags', 'kwargs']:
+            tmp_ = '_Message__' + key_
 
-        if '_Message__filtered' in kwargs_:
-            del kwargs_['_Message__filtered']
-
-        if '_Message__process_canceled' in kwargs_:
-            del kwargs_['_Message__process_canceled']
-
-        if '_Message__filtered_input_str' in kwargs_:
-            del kwargs_['_Message__filtered_input_str']
-
-        if '_Message__flags' in kwargs_:
-            del kwargs_['_Message__flags']
-
-        if '_Message__kwargs' in kwargs_:
-            del kwargs_['_Message__kwargs']
+            if tmp_ in kwargs_:
+                del kwargs_[tmp_]
 
         return kwargs_
 

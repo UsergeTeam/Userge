@@ -39,18 +39,12 @@ else:
 del _pm, _pmMsg
 
 
-@userge.on_cmd("allow", about="""\
-__allows someone to contact__
-
-    Ones someone is allowed, Userge will not interfere or handle such private chats
-
-**syntax:**
-
-    `.allow <@username>`
-    `.allow <userID>`
-
-    reply `.allow` to a message
-    do `.allow` in the private chat""")
+@userge.on_cmd("allow", about={
+    'header': "allows someone to contact",
+    'description': "Ones someone is allowed, "
+                   "Userge will not interfere or handle such private chats",
+    'usage': ".allow [username | userID]\nreply .allow to a message, "
+             "do .allow in the private chat"})
 async def allow(message: Message):
     userid = await get_id(message)
     if userid:
@@ -69,18 +63,12 @@ async def allow(message: Message):
         await message.edit("I need to reply to a user or provide the username/id or be in a private chat")
 
 
-@userge.on_cmd("nopm", about="""\
-__Activates guarding on inbox__
-
-    Ones someone is allowed, Userge will not interfere or handle such private chats
-
-**syntax:**
-
-    `.nopm <@username>`
-    `.nopm <userID>`
-
-    reply `.nopm` to a message
-    do `.nopm` in the private chat""")
+@userge.on_cmd("nopm", about={
+    'header': "Activates guarding on inbox",
+    'description': "Ones someone is allowed, "
+                   "Userge will not interfere or handle such private chats",
+    'usage': ".nopm [username | userID]\nreply .nopm to a message, "
+             "do .nopm in the private chat"})
 async def denyToPm(message: Message):
     userid = await get_id(message)
     if userid:
@@ -149,13 +137,12 @@ async def outgoing_auto_approve(message: Message):
     await CHANNEL.log(f"**#AUTO_APPROVED**\n{user_dict['mention']}")
 
 
-@userge.on_cmd("pmguard", about="""\
-__Switchs the pm permiting module on__
-
-    This is switched off in default.
-    You can switch pmguard On or Off with this command.
-    When you turn on this next time,
-    the previously allowed chats will be there !""")
+@userge.on_cmd("pmguard", about={
+    'header': "Switchs the pm permiting module on",
+    'description': "This is switched off in default. "
+                   "You can switch pmguard On or Off with this command. "
+                   "When you turn on this next time, "
+                   "the previously allowed chats will be there !"})
 async def pmguard(message: Message):
     global allowAllPms, pmCounter
     if allowAllPms:
@@ -168,21 +155,16 @@ async def pmguard(message: Message):
     SAVED_SETTINGS.update_one({'_id': 'PM GUARD STATUS'}, {"$set": {'data': allowAllPms}}, upsert=True)
 
 
-@userge.on_cmd("setpmmsg", about="""\
-__Sets the reply message__
-
-    You can change the default message which userge gives on
-    un-invited PMs
-    
-**Available options:**
-
-    `{fname}` : __add first name__
-    `{lname}` : __add last name__
-    `{flname}` : __add full name__
-    `{uname}` : __username__
-    `{chat}` : __chat name__
-    `{mention}` : __mention user__
-""")
+@userge.on_cmd("setpmmsg", about={
+    'header': "Sets the reply message",
+    'description': "You can change the default message which userge gives on un-invited PMs",
+    'options': {
+        '{fname}': "add first name",
+        '{lname}': "add last name",
+        '{flname}': "add full name",
+        '{uname}': "username",
+        '{chat}': "chat name",
+        '{mention}': "mention user"}})
 async def set_custom_nopm_message(message: Message):
     global noPmMessage
     await message.edit('`Custom NOpm message saved`', log=True)
@@ -196,8 +178,6 @@ async def set_custom_nopm_message(message: Message):
         SAVED_SETTINGS.update_one({'_id': 'CUSTOM NOPM MESSAGE'}, {"$set": {'data': string}}, upsert=True)
 
 
-@userge.on_cmd("vpmmsg", about="""\
-__Displays the reply message for uninvited PMs__
-""")
+@userge.on_cmd("vpmmsg", about={'header': "Displays the reply message for uninvited PMs"})
 async def view_current_noPM_msg(message: Message):
     await message.edit(noPmMessage)

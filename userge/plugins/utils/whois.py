@@ -11,16 +11,10 @@ import os
 from userge import userge, Message
 
 
-@userge.on_cmd("whois", about="""\
-__use this to get any user details__
-
-**Usage:**
-
-`just reply to any user message or add user_id or username`
-
-**Example:**
-
-    `.whois [user_id | username]`""")
+@userge.on_cmd("whois", about={
+    'header': "use this to get any user details",
+    'usage': "just reply to any user message or add user_id or username",
+    'examples': ".whois [user_id | username]"})
 async def who_is(message: Message):
     await message.edit("`Collecting Whois Info.. Hang on!`")
     user_id = message.input_str

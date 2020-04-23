@@ -11,21 +11,13 @@ from search_engine_parser import GoogleSearch
 from userge import userge, Message
 
 
-@userge.on_cmd("google", about="""\
-__do a Google search__
-
-**Available Flags:**
-
-    `-p` : __page of results to return (default to 1)__
-    `-l` : __limit the number of returned results (defaults to 5)(max 10)__
-    
-**Usage:**
-
-    `.google [flags] [query | reply to msg]`
-    
-**Example:**
-
-    `.google -p4 -l10 github-userge`""")
+@userge.on_cmd("google", about={
+    'header': "do a Google search",
+    'flags': {
+        '-p': "page of results to return (default to 1)",
+        '-l': "limit the number of returned results (defaults to 5)(max 10)"},
+    'usage': ".google [flags] [query | reply to msg]",
+    'examples': ".google -p4 -l10 github-userge"})
 async def gsearch(message: Message):
     await message.edit("Processing ...")
 

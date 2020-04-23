@@ -10,17 +10,13 @@
 from userge import userge, Message
 
 
-@userge.on_cmd("admins", about="""\
-__View or mention admins in chat__
-
-**Available Flags:**
-`-m` : __mention all admins__
-`-mc` : __only mention creator__
-`-id` : __show ids__
-
-**Usage:**
-
-    `.admins [any flag] [chatid]`""")
+@userge.on_cmd("admins", about={
+    'header': "View or mention admins in chat",
+    'flags': {
+        '-m': "mention all admins",
+        '-mc': "only mention creator",
+        '-id': "show ids"},
+    'usage': ".admins [any flag] [chatid]"})
 async def mentionadmins(message: Message):
     mentions = "🛡 **Admin List** 🛡\n"
     chat_id = message.filtered_input_str

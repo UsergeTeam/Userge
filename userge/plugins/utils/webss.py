@@ -15,7 +15,7 @@ from userge import userge, Message, Config
 CHANNEL = userge.getCLogger(__name__)
 
 
-@userge.on_cmd("webss", about="__Get snapshot of a website__")
+@userge.on_cmd("webss", about={'header': "Get snapshot of a website"})
 async def webss(message: Message):
     if Config.SCREENSHOT_API is None:
         await message.edit(

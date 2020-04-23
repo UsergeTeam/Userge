@@ -11,22 +11,14 @@ import requests
 from userge import userge, Message
 
 
-@userge.on_cmd("head", about="""\
-__View headers in URL__
-
-**Available Flags:**
-
-    `-r` : __allow redirects__
-    `-s` : __allow streams__
-    `-t` : __request timeout__
-
-**Usage:**
-
-    `.head [flags] [url]`
-    
-**Example:**
-
-    `.head -r -s -t5 https://www.google.com`""")
+@userge.on_cmd("head", about={
+    'header': "View headers in URL",
+    'flags': {
+        '-r': "allow redirects",
+        '-s': "allow streams",
+        '-t': "request timeout"},
+    'usage': ".head [flags] [url]",
+    'examples': ".head -r -s -t5 https://www.google.com"})
 async def req_head(message: Message):
     await message.edit("Processing ...")
 

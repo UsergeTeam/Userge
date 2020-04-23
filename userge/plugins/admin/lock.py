@@ -13,22 +13,15 @@ from userge import userge, Message
 
 CHANNEL = userge.getCLogger(__name__)
 
-@userge.on_cmd("lock", about="""\
-__use this to lock group permissions__
 
-**Usage:**
-
-`Allows you to lock some common permission types in the chat.`
-
-[NOTE: Requires proper admin rights in the chat!!!]
-
-**Available types to Lock Permissions:**
-
-`all, msg, media, polls, invite, pin, info, webprev, animations, games, stickers, inlinebots`
-
-**Example:**
-
-    `.lock [all | type]`""")
+@userge.on_cmd("lock", about={
+    'header': "use this to lock group permissions",
+    'description': "Allows you to lock some common permission types in the chat.\n"
+                   "[NOTE: Requires proper admin rights in the chat!!!]",
+    'types': [
+        'all', 'msg', 'media', 'polls', 'invite', 'pin', 'info',
+        'webprev', 'inlinebots', 'animations', 'games', 'stickers'],
+    'examples': ".lock [all | type]"})
 async def lock_perm(message: Message):
     """
     this function can lock chat permissions from tg group
@@ -159,22 +152,14 @@ async def lock_perm(message: Message):
             text=r"`i don't have permission to do that ＞︿＜`", del_in=0)
 
 
-@userge.on_cmd("unlock", about="""\
-__use this to unlock group permissions__
-
-**Usage:**
-
-`Allows you to unlock some common permission types in the chat.`
-
-[NOTE: Requires proper admin rights in the chat!!!]
-
-**Available types to Unlock Permissions:**
-
-`all, msg, media, polls, invite, pin, info, web preview, other [animations, games, stickers, inline bots]`
-
-**Example:**
-
-    `.unlock [all | type]`""")
+@userge.on_cmd("unlock", about={
+    'header': "use this to unlock group permissions",
+    'description': "Allows you to unlock some common permission types in the chat.\n"
+                   "[NOTE: Requires proper admin rights in the chat!!!]",
+    'types': [
+        'all', 'msg', 'media', 'polls', 'invite', 'pin', 'info',
+        'webprev', 'inlinebots', 'animations', 'games', 'stickers'],
+    'examples': ".unlock [all | type]"})
 async def unlock_perm(message: Message):
     """
     this function can unlock chat permissions from tg group
@@ -315,12 +300,9 @@ async def unlock_perm(message: Message):
             text=r"`i don't have permission to do that ＞︿＜`", del_in=0)
 
 
-@userge.on_cmd("vperm", about="""\
-__use this to view group permissions__
-
-**Usage:**
-
-`Allows you to view permission types on/off status in the chat.`""")
+@userge.on_cmd("vperm", about={
+    'header': "use this to view group permissions",
+    'description': "Allows you to view permission types on/off status in the chat."})
 async def view_perm(message: Message):
     """
     this function can check chat permissions from tg group

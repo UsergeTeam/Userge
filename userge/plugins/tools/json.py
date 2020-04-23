@@ -10,12 +10,9 @@
 from userge import userge, Message
 
 
-@userge.on_cmd("json", about="""\
-__message object to json__
-
-**Usage:**
-
-    reply `.json` to any message""")
+@userge.on_cmd("json", about={
+    'header': "message object to json",
+    'usage': "reply .json to any message"})
 async def jsonify(message: Message):
     the_real_message = str(message.reply_to_message) if message.reply_to_message \
         else str(message)

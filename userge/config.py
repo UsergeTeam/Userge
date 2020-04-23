@@ -78,6 +78,8 @@ class Config:
 
     HEROKU_GIT_URL = None
 
+    PUSHING = False
+
     MSG_DELETE_TIMEOUT = 120
 
     WELCOME_DELETE_TIMEOUT = 120
@@ -136,7 +138,7 @@ BINS = {
 LOG.info("Downloading BINs...")
 
 for binary, path in BINS.items():
-    LOG.debug(f"Downloading {binary}...")
+    LOG.debug("Downloading %s...", binary)
     downloader = SmartDL(binary, path, progress_bar=False)
     downloader.start()
     os.chmod(path, 0o755)

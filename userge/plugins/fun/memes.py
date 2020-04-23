@@ -258,81 +258,79 @@ FACEREACTS = (
     "(ノಠ ∩ಠ)ノ彡( \\o°o)\\", "“ヽ(´▽｀)ノ”",)
 
 
-@userge.on_cmd(":/$", about="__Check yourself, hint: `:/`__", name="kek", trigger='')
+@userge.on_cmd(r"(?:\.kek|:/)$",
+               about={'header': "Check yourself, hint: `:/`"}, name=".kek", trigger='')
 async def kek_(message: Message):
     """kek"""
     kek = ["/", "\\"]
-    for i in range(1, 15):
+    for i in range(1, 9):
         time.sleep(0.3)
         await message.edit(":" + kek[i % 2])
 
 
-@userge.on_cmd("-_-$", about="__Check yourself, hint: `-_-`__", name="lol", trigger='')
+@userge.on_cmd(r"(?:\.lol|-_-)$",
+               about={'header': "Check yourself, hint: `-_-`"}, name=".lol", trigger='')
 async def lol_(message: Message):
     """lol"""
     lol = "-_ "
-    for i in range(15):
+    for i in range(9):
         if i % 3 == 0:
             lol = "-_ "
         lol = lol[:-1] + "_-"
         await message.edit(lol, parse_mode="html")
 
 
-@userge.on_cmd(";_;$", about="__Like `-_-` but crying, hint: `;_;`__", name="fun", trigger='')
+@userge.on_cmd(r"(?:\.fun|;_;)$",
+               about={'header': "Check yourself, hint: `;_;`"}, name=".fun", trigger='')
 async def fun_(message: Message):
     """fun"""
     fun = ";_ "
-    for i in range(15):
+    for i in range(9):
         if i % 3 == 0:
             fun = ";_ "
         fun = fun[:-1] + "_;"
         await message.edit(fun, parse_mode="html")
 
 
-@userge.on_cmd("Oof$", about="__Ooooof__", trigger='')
+@userge.on_cmd("Oof$", about={'header': "Ooooof"}, trigger='')
 async def Oof_(message: Message):
     """Oof"""
     Oof = "Oo "
-    for _ in range(15):
+    for _ in range(6):
         Oof = Oof[:-1] + "of"
         await message.edit(Oof)
 
 
-@userge.on_cmd("Hmm$", about="__Hmmmmm__", trigger='')
+@userge.on_cmd("Hmm$", about={'header': "Hmmmmm"}, trigger='')
 async def Hmm_(message: Message):
     """Hmm"""
     Hmm = "Hm "
-    for _ in range(15):
+    for _ in range(4):
         Hmm = Hmm[:-1] + "mm"
         await message.edit(Hmm)
 
 
-@userge.on_cmd("fp$", about="__Facepalm :P__")
+@userge.on_cmd("fp$", about={'header': "Facepalm :P"})
 async def facepalm_(message: Message):
     """facepalm_"""
     await message.edit("🤦‍♂")
 
 
-@userge.on_cmd("cry$", about="__y u du dis, i cri__")
+@userge.on_cmd("cry$", about={'header': "y u du dis, i cri"})
 async def cry_(message: Message):
     """cry"""
     await message.edit(choice(CRI), parse_mode="html")
 
 
-@userge.on_cmd("insult$", about="__Check yourself ;)__")
+@userge.on_cmd("insult$", about={'header': "Check yourself ;)"})
 async def insult_(message: Message):
     """insult"""
     await message.edit(choice(INSULT_STRINGS), parse_mode="html")
 
 
-@userge.on_cmd("hi", about="""\
-__Greet everyone!__
-
-**Usage:**
-
-    `.hi`
-    `.hi [emoji | character]`
-    `.hi [emoji | character] [emoji | character]`""")
+@userge.on_cmd("hi", about={
+    'header': "Greet everyone!",
+    'usage': ".hi\n.hi [emoji | character]\n.hi [emoji | character] [emoji | character]"})
 async def hi_(message: Message):
     """hi"""
     input_str = message.input_str
@@ -365,43 +363,43 @@ async def hi_(message: Message):
         await message.edit(pay)
 
 
-@userge.on_cmd("react$", about="__Make your userbot react to everything__")
+@userge.on_cmd("react$", about={'header': "Make your userbot react to everything"})
 async def react_(message: Message):
     """react"""
     await message.edit(choice(FACEREACTS), parse_mode="html")
 
 
-@userge.on_cmd("shg$", about="__Shrug at it !!__")
+@userge.on_cmd("shg$", about={'header': "Shrug at it !!"})
 async def shrugger(message: Message):
     """shrugger"""
     await message.edit(choice(SHGS), parse_mode="html")
 
 
-@userge.on_cmd("chase$", about="__You better start running__")
+@userge.on_cmd("chase$", about={'header': "You better start running"})
 async def chase_(message: Message):
     """chase"""
     await message.edit(choice(CHASE_STR), parse_mode="html")
 
 
-@userge.on_cmd("run$", about="__Let Me Run, run, RUNNN!__")
+@userge.on_cmd("run$", about={'header': "Let Me Run, run, RUNNN!"})
 async def run_(message: Message):
     """run"""
     await message.edit(choice(RUNS_STR), parse_mode="html")
 
 
-@userge.on_cmd("metoo$", about="__Haha yes__")
+@userge.on_cmd("metoo$", about={'header': "Haha yes"})
 async def metoo_(message: Message):
     """metoo"""
     await message.edit(choice(METOOSTR), parse_mode="html")
 
 
-@userge.on_cmd("10iq$", about="__You retard !!__", name="10iq")
+@userge.on_cmd("10iq$", about={'header': "You retard !!"}, name="10iq")
 async def iqless(message: Message):
     """iqless"""
     await message.edit("♿")
 
 
-@userge.on_cmd("moon$", about="__kensar moon animation__")
+@userge.on_cmd("moon$", about={'header': "kensar moon animation"})
 async def moon_(message: Message):
     """moon"""
     deq = deque(list("🌗🌘🌑🌒🌓🌔🌕🌖"))
@@ -416,7 +414,7 @@ async def moon_(message: Message):
         await message.delete()
 
 
-@userge.on_cmd("clock$", about="__kensar clock animation__")
+@userge.on_cmd("clock$", about={'header': "kensar clock animation"})
 async def clock_(message: Message):
     """clock"""
     deq = deque(list("🕙🕘🕗🕖🕕🕔🕓🕒🕑🕐🕛"))
@@ -431,12 +429,9 @@ async def clock_(message: Message):
         await message.delete()
 
 
-@userge.on_cmd("bt$", about="""\
-__Believe me, you will find this useful__
-
-**Usage:**
-
-    `.bt [reply to msg]`""")
+@userge.on_cmd("bt$", about={
+    'header': "Believe me, you will find this useful",
+    'usage': ".bt [reply to msg]"})
 async def bluetext(message: Message):
     """bluetext"""
     if message.reply_to_message:
@@ -445,12 +440,9 @@ async def bluetext(message: Message):
             "/ARE /YOU /A /STUPID /ANIMAL /WHICH /IS /ATTRACTED /TO /COLOURS?")
 
 
-@userge.on_cmd("f (.+)", about="""\
-__Pay Respects__
-
-**Usage:**
-
-    `.f [emoji | character]`""")
+@userge.on_cmd("f (.+)", about={
+    'header': "Pay Respects",
+    'usage': ".f [emoji | character]"})
 async def payf_(message: Message):
     """payf"""
     paytext = message.input_str
@@ -463,12 +455,9 @@ async def payf_(message: Message):
     await message.edit(pay)
 
 
-@userge.on_cmd("clap", about="""\
-__Praise people!__
-
-**Usage:**
-
-    .clap [input | reply to msg]""")
+@userge.on_cmd("clap", about={
+    'header': "Praise people!",
+    'usage': ".clap [input | reply to msg]"})
 async def clap_(message: Message):
     """clap"""
     input_str = message.input_or_reply_str
@@ -484,14 +473,10 @@ async def clap_(message: Message):
     await message.edit(reply_text)
 
 
-@userge.on_cmd("(\\w+)say (.+)", about=f"""\
-__cow which says things__
-
-**Usage:**
-
-    `.[any cowacter]say [text]`
-
-    __cowacters:__ `{'`, `'.join(cow.COWACTERS)}`""", name="cowsay")
+@userge.on_cmd("(\\w+)say (.+)", about={
+    'header': "cow which says things",
+    'usage': ".[any cowacter]say [text]",
+    'cowacters': f"`{'`,    `'.join(cow.COWACTERS)}`"}, name="cowsay")
 async def cowsay_(message: Message):
     """cowsay"""
     arg = message.matches[0].group(1).lower()
@@ -510,12 +495,9 @@ async def cowsay_(message: Message):
     await message.edit(f"`{cheese.milk(text).replace('`', '´')}`")
 
 
-@userge.on_cmd("coinflip", about="""\
-__Flip a coin !!__
-
-**Usage:**
-
-    `.coinflip [heads | tails]`""")
+@userge.on_cmd("coinflip", about={
+    'header': "Flip a coin !!",
+    'usage': ".coinflip [heads | tails]"})
 async def coin_(message: Message):
     """coin"""
     r = choice(["heads", "tails"])
@@ -551,12 +533,9 @@ async def coin_(message: Message):
             await message.edit("The coin landed on: **Tails**.")
 
 
-@userge.on_cmd("slap", about="""\
-__reply to slap them with random objects !!__
-
-**Usage:**
-
-    .slap [input | reply to msg]""")
+@userge.on_cmd("slap", about={
+    'header': "reply to slap them with random objects !!",
+    'usage': ".slap [input | reply to msg]"})
 async def slap_(message: Message):
     """slap"""
     u_id = message.input_str
@@ -587,15 +566,9 @@ async def slap_(message: Message):
             "`Can't slap this person, need to fetch some sticks and stones !!`")
 
 
-@userge.on_cmd("(yes|no|maybe|decide)$", about="""\
-__Make a quick decision__
-
-**Usage:**
-
-    `.decide`
-    `.yes`
-    `.no`
-    `.maybe`""", name="decide")
+@userge.on_cmd("(yes|no|maybe|decide)$", about={
+    'header': "Make a quick decision",
+    'examples': ['.decide', '.yes', '.no', '.maybe']}, name="decide")
 async def decide_(message: Message):
     """decide"""
     decision = message.matches[0].group(1).lower()
@@ -623,12 +596,9 @@ async def decide_(message: Message):
     os.remove(path)
 
 
-@userge.on_cmd("cp", about="""\
-__Copypasta the famous meme__
-
-**Usage:**
-
-    .cp [input | reply to msg]""")
+@userge.on_cmd("cp", about={
+    'header': "Copypasta the famous meme",
+    'usage': ".cp [input | reply to msg]"})
 async def copypasta(message: Message):
     """copypasta"""
     input_str = message.input_or_reply_str
@@ -663,12 +633,9 @@ async def copypasta(message: Message):
     await message.edit(reply_text)
 
 
-@userge.on_cmd("vapor", about="""\
-__Vaporize everything!__
-
-**Usage:**
-
-    .vapor [input | reply to msg]""")
+@userge.on_cmd("vapor", about={
+    'header': "Vaporize everything!",
+    'usage': ".vapor [input | reply to msg]"})
 async def vapor_(message: Message):
     """vapor"""
     input_str = message.input_or_reply_str
@@ -692,12 +659,9 @@ async def vapor_(message: Message):
     await message.edit("".join(reply_text))
 
 
-@userge.on_cmd("str", about="""\
-__Stretch it__
-
-**Usage:**
-
-    .str [input | reply to msg]""")
+@userge.on_cmd("str", about={
+    'header': "Stretch it",
+    'usage': ".str [input | reply to msg]"})
 async def stretch(message: Message):
     """stretch"""
     input_str = message.input_or_reply_str
@@ -710,12 +674,9 @@ async def stretch(message: Message):
         sub(r"([aeiouAEIOUａｅｉｏｕＡＥＩＯＵаеиоуюяыэё])", (r"\1" * randint(3, 10)), input_str))
 
 
-@userge.on_cmd("zal", about="""\
-__Invoke the feeling of chaos__
-
-**Usage:**
-
-    .zal [input | reply to msg]""")
+@userge.on_cmd("zal", about={
+    'header': "Invoke the feeling of chaos",
+    'usage': ".zal [input | reply to msg]"})
 async def zal_(message: Message):
     """zal"""
     input_str = message.input_or_reply_str
@@ -747,12 +708,9 @@ async def zal_(message: Message):
     await message.edit("".join(reply_text))
 
 
-@userge.on_cmd("owo", about="""\
-__UwU__
-
-**Usage:**
-
-    .owo [input | reply to msg]""")
+@userge.on_cmd("owo", about={
+    'header': "UwU",
+    'usage': ".owo [input | reply to msg]"})
 async def owo_(message: Message):
     """owo"""
     input_str = message.input_or_reply_str
@@ -772,12 +730,9 @@ async def owo_(message: Message):
     await message.edit(reply_text)
 
 
-@userge.on_cmd("mock", about="""\
-__Do it and find the real fun__
-
-**Usage:**
-
-    .mock [input | reply to msg]""")
+@userge.on_cmd("mock", about={
+    'header': "Do it and find the real fun",
+    'usage': ".mock [input | reply to msg]"})
 async def mock_(message: Message):
     """mock"""
     input_str = message.input_or_reply_str
@@ -799,12 +754,9 @@ async def mock_(message: Message):
     await message.edit("".join(reply_text))
 
 
-@userge.on_cmd("lfy", about="""\
-__Let me Google that for you real quick !!__
-
-**Usage:**
-
-    `.lfy [query | reply to msg]`""")
+@userge.on_cmd("lfy", about={
+    'header': "Let me Google that for you real quick !!",
+    'usage': ".lfy [query | reply to msg]"})
 async def lfy_(message: Message):
     """lfy_"""
     query = message.input_or_reply_str
@@ -822,24 +774,14 @@ async def lfy_(message: Message):
     await message.edit(f"Here you are, help yourself.\n[{query}]({r.json()['shorturl']})")
 
 
-@userge.on_cmd("scam", about="""\
-__Create fake chat actions, for fun.__
-
-**Available Actions:**
-
-    `typing` (default), `playing`,
-    `upload_photo`, `upload_video`,
-    `upload_audio`, `upload_document`,
-    `upload_video_note`, `record_video`,
-    `record_audio`, `record_video_note`,
-    `find_location`, `choose_contact`
-
-**Usage:**
-
-    `.scam`
-    `.scam [action]`
-    `.scam [time]`
-    `.scam [action] [time]`""")
+@userge.on_cmd("scam", about={
+    'header': "Create fake chat actions, for fun.",
+    'available actions': [
+        'typing (default)', 'playing', 'upload_photo', 'upload_video',
+        'upload_audio', 'upload_document', 'upload_video_note',
+        'record_video', 'record_audio', 'record_video_note',
+        'find_location', 'choose_contact'],
+    'usage': ".scam\n.scam [action]\n.scam [time]\n.scam [action] [time]"})
 async def scam_(message: Message):
     """scam"""
     options = ('typing', 'upload_photo', 'record_video', 'upload_video', 'record_audio',

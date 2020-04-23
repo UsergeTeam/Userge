@@ -35,7 +35,7 @@ for flt in FILTERS_COLLECTION.find():
     _filter_updater(flt['chat_id'], flt['name'], flt['content'])
 
 
-@userge.on_cmd("filters", about="__List all saved filters__")
+@userge.on_cmd("filters", about={'header': "List all saved filters"})
 async def filters_active(message: Message):
     out = ''
     if message.chat.id in FILTERS_DATA:
@@ -49,12 +49,9 @@ async def filters_active(message: Message):
         await message.err("There are no saved filters in this chat")
 
 
-@userge.on_cmd("delfilter", about="""\
-__Deletes a filter by name__
-
-**Usage:**
-
-    `.delfilter [filter name]`""")
+@userge.on_cmd("delfilter", about={
+    'header': "Deletes a filter by name",
+    'usage': ".delfilter [filter name]"})
 async def delete_filters(message: Message):
     filter_ = message.input_str
 
@@ -72,12 +69,9 @@ async def delete_filters(message: Message):
 
 
 @userge.on_cmd(r"addfilter (\w[^\|]*)(?:\s?\|\s?([\s\S]+))?",
-               about="""\
-__Adds a filter by name__
-
-**Usage:**
-
-    `.addfilter [filter name] | [content | reply to msg]`""")
+               about={
+    'header': "Adds a filter by name",
+    'usage': ".addfilter [filter name] | [content | reply to msg]"})
 async def add_filter(message: Message):
     filter_ = message.matches[0].group(1).strip()
     content = message.matches[0].group(2)

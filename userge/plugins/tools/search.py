@@ -10,7 +10,9 @@
 from userge import userge, Message
 
 
-@userge.on_cmd("s", about="__to search commands in **USERGE**__")
+@userge.on_cmd("s", about={
+    'header': "search commands in USERGE",
+    'examples': ".s wel"})
 async def search(message: Message):
     cmd = message.input_str
 

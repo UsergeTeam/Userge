@@ -12,16 +12,10 @@ import urbandict
 from userge import userge, Message
 
 
-@userge.on_cmd("ud", about="""\
-__Searches Urban Dictionary for the query__
-
-**Usage:**
-
-    `.ud [query]`
-    
-**Exaple:**
-
-    `.ud userge`""")
+@userge.on_cmd("ud", about={
+    'header': "Searches Urban Dictionary for the query",
+    'usage': ".ud [query]",
+    'examples': ".ud userge"})
 async def urban_dict(message: Message):
     await message.edit("Processing...")
     query = message.input_str

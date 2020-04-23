@@ -7,29 +7,31 @@
 # All rights reserved.
 
 
+import time
 import asyncio
 from userge import userge, Message, Config
 
 LOG = userge.getLogger(__name__)
-CHANNEL = userge.getCLogger(__name__)
 
 
-@userge.on_cmd('restart', about="""\
-__Restarts the bot and reload all plugins__
-
-**Usage:**
-
-    `.restart` : normal restart.
-    `.restart -h` : use this only if you are using heroku.""")
+@userge.on_cmd('restart', about={
+    'header': "Restarts the bot and reload all plugins",
+    'flags': {'-h': "restart heroku dyno"},
+    'usage': ".restart\n.restart -h"})
 async def restart_cmd_handler(message: Message):
-    await message.edit("Restarting Userge Services", log=True)
+    if Config.PUSHING:
+        await message.err("Can't Restart, Updation Found!")
+        return
+
+    await message.edit("Restarting Userge Services", log=__name__)
     LOG.info("USERGE Services - Restart initiated")
 
     if Config.HEROKU_APP and '-h' in message.flags:
         await message.edit(
             '`Heroku app found, trying to restart dyno...\nthis will take upto 30 sec`', del_in=3)
         Config.HEROKU_APP.restart()
+        time.sleep(30)
 
     else:
-        await message.edit("finalizing...", del_in=2)
+        await message.edit("finalizing...", del_in=1)
         asyncio.get_event_loop().create_task(userge.restart())

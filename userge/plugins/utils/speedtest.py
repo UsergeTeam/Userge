@@ -16,7 +16,7 @@ from userge.utils import humanbytes
 CHANNEL = userge.getCLogger(__name__)
 
 
-@userge.on_cmd("speedtest", about="__test your server speed__")
+@userge.on_cmd("speedtest", about={'header': "test your server speed"})
 async def speedtst(message: Message):
     await message.edit("`Running speed test . . .`")
 

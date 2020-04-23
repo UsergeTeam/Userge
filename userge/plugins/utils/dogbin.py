@@ -17,12 +17,9 @@ from userge import userge, Message, Config
 DOGBIN_URL = "https://del.dog/"
 
 
-@userge.on_cmd("paste", about="""\
-__Pastes text or text_file to dogbin__
-
-**Usage**:
-
-    `.paste [text | reply to msg]`""")
+@userge.on_cmd("paste", about={
+    'header': "Pastes text or text_file to dogbin",
+    'usage': ".paste [text | reply to msg]"})
 async def paste_(message: Message):
     """pastes the text directly to dogbin"""
 
@@ -68,12 +65,9 @@ async def paste_(message: Message):
         await message.err("Failed to reach Dogbin")
 
 
-@userge.on_cmd("getpaste", about="""\
-__Gets the content of a del.dog paste__
-
-**Usage**:
-
-    `.getpaste [del.dog link]`""")
+@userge.on_cmd("getpaste", about={
+    'header': "Gets the content of a del.dog paste",
+    'usage': ".getpaste [del.dog link]"})
 async def get_paste_(message: Message):
     """fetches the content of a dogbin URL"""
 

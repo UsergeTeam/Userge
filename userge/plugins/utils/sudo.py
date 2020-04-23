@@ -22,12 +22,9 @@ for i in SUDO_CMDS_COLLECTION.find():
     Config.ALLOWED_COMMANDS.add(i['_id'])
 
 
-@userge.on_cmd("addsudo", about="""\
-__add sudo user__
-
-**Usage** :
-
-    `.addsudo [username | reply to msg]`""")
+@userge.on_cmd("addsudo", about={
+    'header': "add sudo user",
+    'usage': ".addsudo [username | reply to msg]"})
 async def add_sudo(message: Message):
     user_id = message.input_str
     if message.reply_to_message:
@@ -54,17 +51,10 @@ async def add_sudo(message: Message):
         await message.edit(f"user : `{user['id']}` added to **SUDO**!", del_in=5)
 
 
-@userge.on_cmd("delsudo", about="""\
-__delete sudo user__
-
-**Available Flags** :
-
-    `-all` : __remove all sudo users__
-
-**Usage** :
-
-    `.delsudo [user_id | reply to msg]`
-    `.delsudo -all`""")
+@userge.on_cmd("delsudo", about={
+    'header': "delete sudo user",
+    'flags': {'-all': "remove all sudo users"},
+    'usage': ".delsudo [user_id | reply to msg]\n.delsudo -all"})
 async def del_sudo(message: Message):
     user_id = message.filtered_input_str
     if message.reply_to_message:
@@ -99,7 +89,7 @@ async def del_sudo(message: Message):
         await message.edit(f"user : `{user_id}` removed from **SUDO**!", del_in=5)
 
 
-@userge.on_cmd("vsudo", about="__view sudo users__")
+@userge.on_cmd("vsudo", about={'header': "view sudo users"})
 async def view_sudo(message: Message):
     if not Config.SUDO_USERS:
         await message.edit("**SUDO** users not found!", del_in=5)
@@ -112,12 +102,9 @@ async def view_sudo(message: Message):
     await message.edit(out_str, del_in=0)
 
 
-@userge.on_cmd("addscmd", about="""\
-__add sudo command__
-
-**Usage** :
-
-    `.addscmd [command name]`""")
+@userge.on_cmd("addscmd", about={
+    'header': "add sudo command",
+    'usage': ".addscmd [command name]"})
 async def add_sudo_cmd(message: Message):
     cmd = message.input_str
 
@@ -136,17 +123,10 @@ async def add_sudo_cmd(message: Message):
         await message.edit(f"cmd : `{cmd}` added to **SUDO**!", del_in=5)
 
 
-@userge.on_cmd("delscmd", about="""\
-__delete sudo commands__
-
-**Available Flags** :
-
-    `-all` : __remove all sudo commands__
-
-**Usage** :
-
-    `.delscmd [command name]`
-    `.delscmd -all`""")
+@userge.on_cmd("delscmd", about={
+    'header': "delete sudo commands",
+    'flags': {'-all': "remove all sudo commands"},
+    'usage': ".delscmd [command name]\n.delscmd -all"})
 async def del_sudo_cmd(message: Message):
     cmd = message.filtered_input_str
 
@@ -172,7 +152,7 @@ async def del_sudo_cmd(message: Message):
         await message.edit(f"cmd : `{cmd}` removed from **SUDO**!", del_in=5)
 
 
-@userge.on_cmd("vscmd", about="__view sudo cmds__")
+@userge.on_cmd("vscmd", about={'header': "view sudo cmds"})
 async def view_sudo_cmd(message: Message):
     if not Config.ALLOWED_COMMANDS:
         await message.edit("**SUDO** cmds not found!", del_in=5)

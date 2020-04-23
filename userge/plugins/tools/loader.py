@@ -14,12 +14,9 @@ from userge.utils import get_import_path
 from userge.plugins import ROOT
 
 
-@userge.on_cmd('load', about="""\
-__Load Userge plugin__
-
-**Usage:**
-
-    `.load [reply to userge plugin]`""")
+@userge.on_cmd('load', about={
+    'header': "Load Userge plugin",
+    'usage': ".load [reply to userge plugin]"})
 async def load_cmd_handler(message: Message):
     await message.edit("Loading...")
     replied = message.reply_to_message
@@ -47,7 +44,7 @@ async def load_cmd_handler(message: Message):
         await message.edit("`Reply to Plugin`")
 
 
-@userge.on_cmd('reload', about="__Reload all plugins__")
+@userge.on_cmd('reload', about={'header': "Reload all plugins"})
 async def reload_cmd_handler(message: Message):
     await message.edit("`Reloading All Plugins`")
 

@@ -10,7 +10,7 @@
 from userge import userge, Message
 
 
-@userge.on_cmd("del", about="__delete replied message__")
+@userge.on_cmd("del", about={'header': "delete replied message"})
 async def del_msg(message: Message):
     msg_ids = [message.message_id]
 

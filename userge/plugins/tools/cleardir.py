@@ -13,7 +13,7 @@ import shutil
 from userge import userge, Message, Config
 
 
-@userge.on_cmd("cleardir", about="__Clear the current working directory__")
+@userge.on_cmd("cleardir", about={'header': "Clear the current working directory"})
 async def clear_dir(message: Message):
     if not os.path.isdir(Config.DOWN_PATH):
         await message.edit(

@@ -1,13 +1,16 @@
 {
     "name": "Userge",
     "description": "telegram pluggable userbot",
+    "logo": "https://imgur.com/download/Inyeb1S",
     "keywords": [
         "userge",
         "telegram",
         "pluggable",
         "userbot"
     ],
-    "repository": "https://github.com/uaudith/Userge",
+    "repository": "https://github.com/UsergeTeam/Userge",
+    "website": "https://github.com/Userge",
+    "success_url": "https://t.me/theUserge",
     "env": {
         "APP_ID": {
             "description": "Get this value from https://my.telegram.org"

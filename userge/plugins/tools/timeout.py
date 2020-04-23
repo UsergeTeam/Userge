@@ -23,17 +23,10 @@ if __tmp_wel__:
 del __tmp_msg__, __tmp_wel__
 
 
-@userge.on_cmd("sdelto (\\d+)", about="""\
-__Set auto message delete timeout__
-
-**Userge:**
-
-    `.sdelto [timeout in seconds]`
-
-**Example:**
-
-    `.sdelto 15`
-    `.sdelto 0` : for disable deletion""")
+@userge.on_cmd("sdelto (\\d+)", about={
+    'header': "Set auto message delete timeout",
+    'usage': ".sdelto [timeout in seconds]",
+    'examples': ".sdelto 15\n.sdelto 0 : for disable deletion"})
 async def set_delete_timeout(message: Message):
     """set delete timeout"""
 
@@ -55,7 +48,7 @@ async def set_delete_timeout(message: Message):
             del_in=3)
 
 
-@userge.on_cmd("vdelto", about="__View auto message delete timeout__")
+@userge.on_cmd("vdelto", about={'header': "View auto message delete timeout"})
 async def view_delete_timeout(message: Message):
     """view delete timeout"""
 
@@ -69,17 +62,10 @@ async def view_delete_timeout(message: Message):
             del_in=3)
 
 
-@userge.on_cmd("swelto (\\d+)", about="""\
-__Set auto welcome/left message delete timeout__
-
-**Userge:**
-
-    `.swelto [timeout in seconds]`
-
-**Example:**
-
-    `.swelto 15`
-    `.swelto 0` : for disable deletion""")
+@userge.on_cmd("swelto (\\d+)", about={
+    'header': "Set auto welcome/left message delete timeout",
+    'usage': ".swelto [timeout in seconds]",
+    'examples': ".swelto 15\n.swelto 0 : for disable deletion"})
 async def set_welcome_timeout(message: Message):
     """set welcome/left timeout"""
 
@@ -101,7 +87,7 @@ async def set_welcome_timeout(message: Message):
             del_in=3)
 
 
-@userge.on_cmd("vwelto", about="__View auto welcome/left message delete timeout__")
+@userge.on_cmd("vwelto", about={'header': "View auto welcome/left message delete timeout"})
 async def view_welcome_timeout(message: Message):
     """view welcome/left timeout"""
 

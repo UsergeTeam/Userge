@@ -23,6 +23,6 @@ selenium
 setuptools>=40.3.0
 speedtest-cli
 tgcrypto
-urbandict
+urbandict==0.5
 wget
 wikipedia

@@ -10,7 +10,7 @@
 from userge import userge, Message, Config, versions
 
 
-@userge.on_cmd("repo", about="__get repo link and details__")
+@userge.on_cmd("repo", about={'header': "get repo link and details"})
 async def see_repo(message: Message):
     """see repo"""
 

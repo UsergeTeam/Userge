@@ -196,14 +196,14 @@ class Userge(RawClient):
 
     def on_cmd(self,
                command: str,
-               about: str,
+               about: Union[str, Dict[str, str]],
                group: int = 0,
                name: str = '',
                trigger: str = '.',
                filter_me: bool = True,
-               **kwargs: Union[str, bool]) -> Callable[[PYROFUNC], PYROFUNC]:
+               **kwargs: Union[str, bool, Dict[str, str]]) -> Callable[[PYROFUNC], PYROFUNC]:
         """
-        Decorator for handling messages.
+        \nDecorator for handling messages.
 
         Example:
                 @userge.on_cmd('test', about='for testing')
@@ -211,8 +211,19 @@ class Userge(RawClient):
         Parameters:
             command (``str``):
                 command name to execute (without trigger!).
-            about (``str``):
-                help string for command.
+            about (``str`` | ``dict``):
+                help string or dict for command.
+                {
+                    'header': ``str``,
+                    'description': ``str``,
+                    'flags': ``str`` | ``dict``,
+                    'options': ``str`` | ``dict``,
+                    'types': ``str`` | ``list``,
+                    'usage': ``str``,
+                    'examples': ``str`` | ``list``,
+                    'others': ``str``,
+                    'any_title': ``str`` | ``list`` | ``dict``
+                }
             group (``int``, *optional*):
                 The group identifier, defaults to 0.
             name (``str``, *optional*):
@@ -331,12 +342,92 @@ class Userge(RawClient):
     def __add_help(self,
                    module: str,
                    cname: str = '',
-                   chelp: str = '',
+                   chelp: Union[str, Dict[str, str]] = '',
                    **_: Union[str, bool]) -> None:
         if cname:
             LOG.debug(LOG_STR, f"Updating Help Dict => [ {cname} : {chelp} ]")
 
             mname = module.split('.')[-1]
+
+            if isinstance(chelp, dict):
+                tmp_chelp = ''
+
+                if 'header' in chelp:
+                    tmp_chelp += f"__**{chelp['header'].title()}**__"
+                    del chelp['header']
+
+                if 'description' in chelp:
+                    tmp_chelp += ("\n\n📝 --**Description**-- :\n\n    "
+                                  f"__{chelp['description'].capitalize()}__")
+                    del chelp['description']
+
+                if 'flags' in chelp:
+                    tmp_chelp += f"\n\n⛓ --**Available Flags**-- :\n"
+
+                    if isinstance(chelp['flags'], dict):
+                        for f_n, f_d in chelp['flags'].items():
+                            tmp_chelp += f"\n    ▫ `{f_n}` : __{f_d.lower()}__"
+                    else:
+                        tmp_chelp += f"\n    {chelp['flags']}"
+                    del chelp['flags']
+
+                if 'options' in chelp:
+                    tmp_chelp += f"\n\n🕶 --**Available Options**-- :\n"
+
+                    if isinstance(chelp['options'], dict):
+                        for o_n, o_d in chelp['options'].items():
+                            tmp_chelp += f"\n    ▫ `{o_n}` : __{o_d.lower()}__"
+                    else:
+                        tmp_chelp += f"\n    {chelp['options']}"
+                    del chelp['options']
+
+                if 'types' in chelp:
+                    tmp_chelp += f"\n\n🎨 --**Supported Types**-- :\n\n"
+
+                    if isinstance(chelp['types'], list):
+                        for _opt in chelp['types']:
+                            tmp_chelp += f"    `{_opt}` ,"
+                    else:
+                        tmp_chelp += f"    {chelp['types']}"
+                    del chelp['types']
+
+                if 'usage' in chelp:
+                    tmp_chelp += f"\n\n✒ --**Usage**-- :\n\n`{chelp['usage']}`"
+                    del chelp['usage']
+
+                if 'examples' in chelp:
+                    tmp_chelp += f"\n\n✏ --**Examples**-- :\n"
+
+                    if isinstance(chelp['examples'], list):
+                        for ex_ in chelp['examples']:
+                            tmp_chelp += f"\n    `{ex_}`\n"
+                    else:
+                        tmp_chelp += f"\n    `{chelp['examples']}`"
+                    del chelp['examples']
+
+                if 'others' in chelp:
+                    tmp_chelp += f"\n\n📎 --**Others**-- :\n\n{chelp['others']}"
+                    del chelp['others']
+
+                if chelp:
+                    for t_n, t_d in chelp.items():
+                        tmp_chelp += f"\n\n⚙ --**{t_n.title()}**-- :\n"
+
+                        if isinstance(t_d, dict):
+                            for o_n, o_d in t_d.items():
+                                tmp_chelp += f"\n    ▫ `{o_n}` : __{o_d.lower()}__"
+
+                        elif isinstance(t_d, list):
+                            tmp_chelp += '\n'
+                            for _opt in t_d:
+                                tmp_chelp += f"    `{_opt}` ,"
+
+                        else:
+                            tmp_chelp += '\n'
+                            tmp_chelp += t_d
+
+                chelp = tmp_chelp
+                del tmp_chelp
 
             if mname in self.__help_dict:
                 self.__help_dict[mname].update({cname: chelp})
@@ -348,7 +439,8 @@ class Userge(RawClient):
                           log: str,
                           filters: Filters,
                           group: int,
-                          **kwargs: Union[str, bool]) -> Callable[[PYROFUNC], PYROFUNC]:
+                          **kwargs: Union[
+                              str, bool, Dict[str, str]]) -> Callable[[PYROFUNC], PYROFUNC]:
 
         def __decorator(func: PYROFUNC) -> PYROFUNC:
 
@@ -440,6 +532,8 @@ class Userge(RawClient):
             LOG.error(LOG_STR, c_e)
 
         os.execl(sys.executable, sys.executable, '-m', 'userge')
+
+        sys.exit()
 
     def begin(self) -> None:
         """

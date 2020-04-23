@@ -13,12 +13,9 @@ from pyrogram.errors.exceptions import FloodWait
 from userge import userge, Message
 
 
-@userge.on_cmd("type", about="""\
-__Simulate a typewriter__
-
-**Usage:**
-
-    `.type [text | reply to msg]`""")
+@userge.on_cmd("type", about={
+    'header': "Simulate a typewriter",
+    'usage': ".type [text | reply to msg]"})
 async def type_(message: Message):
     text = message.input_or_reply_str
 
@@ -39,10 +36,10 @@ async def type_(message: Message):
         typing_text = old_text + typing_symbol
 
         try:
-            await message.try_to_edit(typing_text)
+            await message.try_to_edit(typing_text, sudo=False)
             time.sleep(s_t)
 
-            await message.try_to_edit(old_text)
+            await message.try_to_edit(old_text, sudo=False)
             time.sleep(s_t)
 
         except FloodWait as x_e:

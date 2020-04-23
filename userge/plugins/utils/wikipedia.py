@@ -11,20 +11,11 @@ import wikipedia
 from userge import userge, Message
 
 
-@userge.on_cmd("wiki", about="""\
-__do a Wikipedia search__
-
-**Available Flags:**
-
-    `-l` : __limit the number of returned results (defaults to 5)__
-
-**Usage:**
-
-    `.wiki [flags] [query | reply to msg]`
-    
-**Example:**
-
-    `.wiki -l5 userge`""")
+@userge.on_cmd("wiki", about={
+    'header': "do a Wikipedia search",
+    'flags': {'-l': "limit the number of returned results (defaults to 5)"},
+    'usage': ".wiki [flags] [query | reply to msg]",
+    'examples': ".wiki -l5 userge"})
 async def wiki_pedia(message: Message):
     await message.edit("Processing ...")
 

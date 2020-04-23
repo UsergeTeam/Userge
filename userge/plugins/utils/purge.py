@@ -13,20 +13,12 @@ from userge import userge, Message
 LOG = userge.getLogger(__name__)
 
 
-@userge.on_cmd("purge", about="""\
-__purge messages from user__
-
-**Usage:**
-
-    reply `.purge` to the start message to purge.
-    use `.purge [user_id | user_name]` to purge messages from that user
-    or use `-u` flag to get user_id from replied message.
-
-**Example:**
-
-    `.purge`
-    `.purge -u`
-    `.purge [user_id | user_name]`""")
+@userge.on_cmd("purge", about={
+    'header': "purge messages from user",
+    'flags': {'-u': "get user_id from replied message"},
+    'usage': "reply .purge to the start message to purge.\n"
+             "use .purge [user_id | user_name] to purge messages from that user or use flags",
+    'examples': ['.purge', '.purge -u', '.purge [user_id | user_name]']})
 async def purge_(message: Message):
     if message.reply_to_message:
         start_t = datetime.now()

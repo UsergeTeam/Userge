@@ -38,15 +38,11 @@ for _user in AFK_COLLECTION.find():
 IS_AFK_FILTER = Filters.create(lambda _, __: bool(IS_AFK))
 
 
-@userge.on_cmd("afk", about="""\
-__Set to AFK mode__
-
-    Sets your status as AFK. Responds to anyone who tags/PM's
-    you telling you are AFK. Switches off AFK when you type back anything.
-
-**Usage:**
-
-    `.afk` or `.afk [reason]`""")
+@userge.on_cmd("afk", about={
+    'header': "Set to AFK mode",
+    'description': "Sets your status as AFK. Responds to anyone who tags/PM's.\n"
+                   "you telling you are AFK. Switches off AFK when you type back anything.",
+    'usage': ".afk or .afk [reason]"})
 async def active_afk(message: Message):
     global REASON, IS_AFK, TIME
 
@@ -55,7 +51,7 @@ async def active_afk(message: Message):
     REASON = message.input_str
 
     await CHANNEL.log(f"You went AFK! : `{REASON}`")
-    await message.edit("You went AFK!", del_in=1)
+    await message.edit("`You went AFK!`", del_in=1)
 
     AFK_COLLECTION.drop()
     SAVED_SETTINGS.update_one(
@@ -68,11 +64,12 @@ async def handle_afk_incomming(message: Message):
     user_id = message.from_user.id
     chat = message.chat
     user_dict = await userge.get_user_dict(user_id)
+    afk_time = time_formatter(round(time.time() - TIME))
 
     if user_id in USERS:
-        if not (USERS[user_id][0] + USERS[user_id][1]) % randint(2, 5):
+        if not (USERS[user_id][0] + USERS[user_id][1]) % randint(2, 4):
             if REASON:
-                out_str = f"I'm still **AFK**.\nReason: `{REASON}`"
+                out_str = f"I'm still **AFK**.\nReason: `{REASON}`\nLast Seen: `{afk_time} ago`"
             else:
                 out_str = choice(AFK_REASONS)
 
@@ -86,7 +83,7 @@ async def handle_afk_incomming(message: Message):
 
     else:
         if REASON:
-            out_str = f"I'm **AFK** right now.\nReason: `{REASON}`"
+            out_str = f"I'm **AFK** right now.\nReason: `{REASON}`\nLast Seen: `{afk_time} ago`"
         else:
             out_str = choice(AFK_REASONS)
 
@@ -124,8 +121,7 @@ async def handle_afk_outgoing(message: Message):
     IS_AFK = False
     afk_time = time_formatter(round(time.time() - TIME))
 
-    await CHANNEL.log("I'm no longer AFK!")
-    replied: Message = await message.reply(f"I'm no longer AFK!")
+    replied: Message = await message.reply(f"`I'm no longer AFK!`", log=__name__)
 
     if USERS:
         p_msg = ''

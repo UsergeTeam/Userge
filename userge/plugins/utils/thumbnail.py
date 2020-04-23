@@ -17,12 +17,9 @@ THUMB_PATH = Config.DOWN_PATH + "thumb_image.jpg"
 CHANNEL = userge.getCLogger(__name__)
 
 
-@userge.on_cmd('sthumb', about="""\
-__Save thumbnail__
-
-**Usage:**
-
-    `.sthumb [reply to any photo]`""")
+@userge.on_cmd('sthumb', about={
+    'header': "Save thumbnail",
+    'usage': ".sthumb [reply to any photo]"})
 async def save_thumb_nail(message: Message):
     await message.edit("processing ...")
     if message.reply_to_message is not None and message.reply_to_message.photo:
@@ -47,7 +44,7 @@ async def save_thumb_nail(message: Message):
         await message.edit("Reply to a photo to save custom thumbnail", del_in=3)
 
 
-@userge.on_cmd('dthumb', about="__Delete thumbnail__")
+@userge.on_cmd('dthumb', about={'header': "Delete thumbnail"})
 async def clear_thumb_nail(message: Message):
     await message.edit("`processing ...`")
 
@@ -57,7 +54,7 @@ async def clear_thumb_nail(message: Message):
     await message.edit("✅ Custom thumbnail deleted succesfully.", del_in=3)
 
 
-@userge.on_cmd('vthumb', about="__View thumbnail__")
+@userge.on_cmd('vthumb', about={'header': "View thumbnail"})
 async def get_thumb_nail(message: Message):
     await message.edit("processing ...")
     if os.path.exists(THUMB_PATH):

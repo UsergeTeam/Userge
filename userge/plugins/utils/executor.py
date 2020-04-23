@@ -16,16 +16,10 @@ from userge import userge, Message
 from userge.utils import runcmd
 
 
-@userge.on_cmd("eval", about="""\
-__run python code line | lines__
-
-**Usage:**
-
-    `.eval [code lines]
-    
-**Example:**
-
-    `.eval print('Userge')`""")
+@userge.on_cmd("eval", about={
+    'header': "run python code line | lines",
+    'usage': ".eval [code lines]",
+    'examples': ".eval print('Userge')"})
 async def eval_(message: Message):
     cmd = await init_func(message)
 
@@ -78,16 +72,10 @@ async def eval_(message: Message):
                                        caption=cmd)
 
 
-@userge.on_cmd("exec", about="""\
-__run shell commands__
-
-**Usage:**
-
-    `.exec [commands]
-    
-**Example:**
-
-    `.exec echo "Userge"`""")
+@userge.on_cmd("exec", about={
+    'header': "run shell commands",
+    'usage': ".exec [commands]",
+    'examples': ".exec echo \"Userge\""})
 async def exec_(message: Message):
     cmd = await init_func(message)
 
@@ -110,16 +98,10 @@ __Command:__\n`{cmd}`\n__PID:__\n`{pid}`\n__RETURN:__\n`{ret}`\n\n\
                                        caption=cmd)
 
 
-@userge.on_cmd("term", about="""\
-__run terminal commands__
-
-**Usage:**
-
-    `.term [commands]
-    
-**Example:**
-
-    `.term echo "Userge"`""")
+@userge.on_cmd("term", about={
+    'header': "run terminal commands",
+    'usage': ".term [commands]",
+    'examples': ".term echo \"Userge\""})
 async def term_(message: Message):
     cmd = await init_func(message)
 

@@ -10,7 +10,7 @@
 from userge import userge, Message
 
 
-@userge.on_cmd("logs", about="__check userge logs__")
+@userge.on_cmd("logs", about={'header': "check userge logs"})
 async def check_logs(message: Message):
     """check logs"""
     await message.edit("`checking logs ...`")

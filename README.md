@@ -119,6 +119,10 @@ async def testing(message: Message):
 
 > TODO: add Docker Support.
 
+### Video Tutorial 🎥
+
+  [![Tutorial](resources/tutorial.jpg)](https://youtu.be/-XJj686zeiY)
+
 ### Support & Discussions 👥
 
 > Head over to the [Discussion Group](https://t.me/slbotsbugs) and [Update Channel](https://t.me/theUserge)

@@ -20,17 +20,21 @@ CHANNEL = userge.getCLogger(__name__)
 UPSTREAM_REMOTE = 'upstream'
 
 
-@userge.on_cmd("update", about="""\
-__Check Updates or Update Userge__
-
-**Usage:**
-
-    `.update` : check updates from default branch
-    `.update -dev` : check updates from dev branch
-    `.update -run` : run updater from default branch
-    `.update -run -dev` : run updater from dev branch""", del_pre=True)
+@userge.on_cmd("update", about={
+    'header': "Check Updates or Update Userge",
+    'flags': {
+        '-run': "run updater",
+        '-branch_name': "select branch"},
+    'usage': ".update : check updates from default branch\n"
+             ".update -dev : check updates from dev branch\n"
+             ".update -run : run updater from default branch\n"
+             ".update -run -dev : run updater from dev branch"}, del_pre=True)
 async def check_update(message: Message):
     """check or do updates"""
+
+    if Config.PUSHING:
+        await message.edit("`Please wait....\nAlready updating!`", del_in=3)
+        return
 
     await message.edit("`Checking for updates, please wait....`")
 
@@ -96,6 +100,8 @@ async def check_update(message: Message):
         await message.edit_or_send_as_file(changelog_str + out, disable_web_page_preview=True)
 
     else:
+        Config.PUSHING = True
+
         await message.edit(f'`New update found for [{branch}], trying to update...`')
         repo.git.reset('--hard', 'FETCH_HEAD')
 
@@ -103,7 +109,7 @@ async def check_update(message: Message):
 
         if Config.HEROKU_GIT_URL:
             await message.edit(
-                '`Heroku app found, pushing update...\nthis will take upto 1 min`', del_in=3)
+                '`Heroku app found, pushing update...\nthis will take upto 2 min`', del_in=3)
 
             if "heroku" in repo.remotes:
                 remote = repo.remote("heroku")
@@ -120,3 +126,5 @@ async def check_update(message: Message):
                 '__Now restarting... Wait for a while!__`', del_in=3)
 
             asyncio.get_event_loop().create_task(userge.restart())
+
+        Config.PUSHING = False
