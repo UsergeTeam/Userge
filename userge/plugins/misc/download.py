@@ -93,7 +93,7 @@ async def down_load_media(message: Message):
                     "**FILENAME** : `{}`\n" + \
                     "**Completed** : `{}`\n" + \
                     "**Total** : `{}`\n" + \
-                    "**Speed** : `{}/s`\n" + \
+                    "**Speed** : `{}`\n" + \
                     "**ETA** : `{}`"
 
                 progress_str = progress_str.format(

@@ -170,7 +170,7 @@ async def promote_usr(message: Message):
 
     else:
         await message.edit(
-            text=r"`i don't have proper permission to do that! ¯\_(ツ)_/¯`", del_in=0)
+            text=r"`i don't have proper permission to do that! (* ￣︿￣)`", del_in=0)
 
 
 @userge.on_cmd("demote", about={
@@ -284,7 +284,7 @@ async def demote_usr(message: Message):
 
     else:
         await message.edit(
-            text=r"`i don't have proper permission to do that! ¯\_(ツ)_/¯`", del_in=0)
+            text=r"`i don't have proper permission to do that! (* ￣︿￣)`", del_in=0)
 
 
 @userge.on_cmd("ban", about={
@@ -363,7 +363,7 @@ async def ban_usr(message: Message):
 
     else:
         await message.edit(
-            text=r"`i don't have proper permission to do that! ¯\_(ツ)_/¯`", del_in=0)
+            text=r"`i don't have proper permission to do that! (* ￣︿￣)`", del_in=0)
 
 
 @userge.on_cmd("unban", about={
@@ -451,7 +451,7 @@ async def unban_usr(message: Message):
 
     else:
         await message.edit(
-            text=r"`i don't have proper permission to do that! ¯\_(ツ)_/¯`", del_in=0)
+            text=r"`i don't have proper permission to do that! (* ￣︿￣)`", del_in=0)
 
 
 @userge.on_cmd("kick", about={
@@ -549,7 +549,7 @@ async def kick_usr(message: Message):
 
     else:
         await message.edit(
-            text=r"`i don't have proper permission to do that! ¯\_(ツ)_/¯`", del_in=0)
+            text=r"`i don't have proper permission to do that! (* ￣︿￣)`", del_in=0)
 
 
 @userge.on_cmd("mute", about={
@@ -640,7 +640,7 @@ async def mute_usr(message: Message):
                 await message.edit(
                     text=f"`something went wrong 🤔,`"
                     f"`do .help mute for more info`\n"
-                    f"**ERROR**: {e}", del_in=0)
+                    f"**ERROR**: `{e}`", del_in=0)
                 return
 
         elif hours:
@@ -687,7 +687,7 @@ async def mute_usr(message: Message):
                 await message.edit(
                     text=f"`something went wrong 🤔,`"
                     f"`do .help mute for more info`\n"
-                    f"**ERROR**: {e}", del_in=0)
+                    f"**ERROR**: `{e}`", del_in=0)
                 return
 
         elif days:
@@ -784,7 +784,7 @@ async def mute_usr(message: Message):
 
     else:
         await message.edit(
-            text=r"`i don't have proper permission to do that! ¯\_(ツ)_/¯`", del_in=0)
+            text=r"`i don't have proper permission to do that! (* ￣︿￣)`", del_in=0)
 
 
 @userge.on_cmd("unmute", about={
@@ -910,7 +910,7 @@ async def unmute_usr(message: Message):
 
     else:
         await message.edit(
-            text=r"`i don't have proper permission to do that! ¯\_(ツ)_/¯`", del_in=0)
+            text=r"`i don't have proper permission to do that! (* ￣︿￣)`", del_in=0)
 
 
 @userge.on_cmd("zombies", about={
@@ -980,7 +980,7 @@ async def zombie_clean(message: Message):
             )
 
         else:
-            await message.edit(r"`i don't have proper permission to do that! ¯\_(ツ)_/¯`", del_in=0)
+            await message.edit(r"`i don't have proper permission to do that! (* ￣︿￣)`", del_in=0)
 
     else:
 
@@ -1011,3 +1011,94 @@ async def zombie_clean(message: Message):
                 f"CHAT: `{get_group.title}` (`{chat_id}`)\n"
                 r"ZOMBIE COUNT: `WOOHOO group is clean.. \^o^/`"
                 )
+
+@userge.on_cmd("pin", about={
+    'header': "use this to pin & unpin messages",
+    'description': "pin & unpin messages in groups with or without notify to members.",
+    'flags': {
+        '-s': "silent",
+        '-u': "unpin"},
+    'examples': [
+        ".pin [reply to message]",
+        ".pin -s [reply to message]",
+        ".pin -u [reply to message]"]})
+async def pin_msgs(message: Message):
+    """
+    this function can pin & unpin message in groups
+    """
+    chat_id = message.chat.id
+    flags = message.flags
+    get_group = await userge.get_chat(chat_id)
+    check_user = await userge.get_chat_member(message.chat.id, message.from_user.id)
+    user_type = check_user.status
+    can_pin = None
+
+    silent_pin = '-s' in flags
+    unpin_pinned = '-u' in flags
+
+    if user_type == "member":
+        can_pin = get_group.permissions.can_pin_messages
+
+    elif user_type == "administrator":
+        can_pin = check_user.can_pin_messages
+
+    else:
+        can_pin = True
+
+    if can_pin:
+
+        if unpin_pinned:
+
+            try:
+                await userge.unpin_chat_message(chat_id)
+                await message.delete()
+                await CHANNEL.log(
+                    f"#UNPIN\n\n"
+                    f"CHAT: `{get_group.title}` (`{chat_id}`)"
+                    )
+
+            except:
+                await message.edit(
+                    r"`something went wrong! (⊙_⊙;)`"
+                    f"\n`do .help pin for more info..`"
+                    )
+            return
+
+        if silent_pin:
+
+            try:
+                message_id = message.reply_to_message.message_id
+                await userge.pin_chat_message(chat_id, message_id, disable_notification=True)
+                await message.delete()
+                await CHANNEL.log(
+                    f"#PIN-SILENT\n\n"
+                    f"CHAT: `{get_group.title}` (`{chat_id}`)"
+                    )
+
+            except:
+                await message.edit(
+                    r"`something went wrong! (⊙_⊙;)`"
+                    f"\n`do .help pin for more info..`"
+                    )
+            return
+
+        else:
+
+            try:
+                message_id = message.reply_to_message.message_id
+                await userge.pin_chat_message(chat_id, message_id)
+                await message.delete()
+                await CHANNEL.log(
+                    f"#PIN\n\n"
+                    f"CHAT: `{get_group.title}` (`{chat_id}`)"
+                    )
+
+            except:
+                await message.edit(
+                    r"`something went wrong! (⊙_⊙;)`"
+                    f"\n`do .help pin for more info..`"
+                    )
+            return
+
+    else:
+        await message.edit(r"`i don't have proper permission to do that! (* ￣︿￣)`", del_in=0)
