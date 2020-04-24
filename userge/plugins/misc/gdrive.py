@@ -978,9 +978,6 @@ class Worker(GDrive):
                     await asyncio.sleep(3)
 
             except Exception as e:
-                if os.path.exists(dl_loc):
-                    os.remove(dl_loc)
-
                 await self.__message.err(e)
                 return
 

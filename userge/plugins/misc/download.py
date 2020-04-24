@@ -111,9 +111,6 @@ async def down_load_media(message: Message):
                 await asyncio.sleep(3)
 
         except Exception as e:
-            if os.path.exists(download_file_path):
-                os.remove(download_file_path)
-
             await message.err(e)
 
         else:
