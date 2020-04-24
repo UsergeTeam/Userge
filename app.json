@@ -36,7 +36,7 @@
             "value": "True"
         },
         "DOWN_PATH": {
-            "description": "Set your working directory (name or path)",
+            "description": "Set name to your working directory",
             "required": false
         },
         "PREFERRED_LANGUAGE": {

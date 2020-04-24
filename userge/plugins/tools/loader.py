@@ -13,6 +13,8 @@ from userge import userge, Message
 from userge.utils import get_import_path
 from userge.plugins import ROOT
 
+TMP_PATH = "userge/plugins/temp/"
+
 
 @userge.on_cmd('load', about={
     'header': "Load Userge plugin",
@@ -24,14 +26,21 @@ async def load_cmd_handler(message: Message):
         file_ = replied.document
 
         if file_.file_name.endswith('.py') and file_.file_size < 2 ** 20:
-            path = await replied.download(file_name="userge/plugins/temp/")
-            plugin = get_import_path(ROOT, path)
+            if not os.path.isdir(TMP_PATH):
+                os.makedirs(TMP_PATH)
+
+            t_path = os.path.join(TMP_PATH, file_.file_name)
+            if os.path.isfile(t_path):
+                os.remove(t_path)
+
+            await replied.download(file_name=t_path)
+            plugin = get_import_path(ROOT, t_path)
 
             try:
                 userge.load_plugin(plugin)
 
             except (ImportError, SyntaxError) as i_e:
-                os.remove(path)
+                os.remove(t_path)
                 await message.err(i_e)
 
             else:

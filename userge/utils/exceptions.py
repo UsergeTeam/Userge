@@ -7,4 +7,7 @@
 # All rights reserved.
 
 
-# tmp path to save loaded plugins
+class ProcessCanceled(Exception):
+    """
+    Custom Exception to terminate threads.
+    """

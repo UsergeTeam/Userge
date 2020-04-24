@@ -30,7 +30,7 @@ async def progress(current: int,
     now = time.time()
     diff = now - start
 
-    if diff % 10 < 0.5 or current == total:
+    if diff % 10 < 0.25 or current == total:
         percentage = current * 100 / total
         speed = current / diff
         time_to_completion = time_formatter(int((total - current) / speed))
@@ -56,5 +56,6 @@ async def progress(current: int,
 
         try:
             await message.try_to_edit(progress_str)
-        except FloodWait:
-            pass
+
+        except FloodWait as f_e:
+            time.sleep(f_e.x)

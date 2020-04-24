@@ -121,7 +121,7 @@ async def testing(message: Message):
 
 ### Video Tutorial 🎥
 
-  [![Tutorial](resources/tutorial.jpg)](https://youtu.be/-XJj686zeiY)
+  [![Tutorial](resources/tutorial.jpg)](https://youtu.be/-XJj686zeiY "Tutorial")
 
 ### Support & Discussions 👥
 

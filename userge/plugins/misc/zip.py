@@ -19,15 +19,10 @@ from multiprocessing import Pool, Lock
 
 from userge import userge, Message, Config
 from userge.utils import humanbytes
+from userge.utils.exceptions import ProcessCanceled
 
 LOGGER = userge.getLogger(__name__)
 COUNTER_LOCK = Lock()
-
-
-class ProcessCanceled(Exception):
-    """
-    Custom Exception to terminate zipping / unzipping thread.
-    """
 
 
 class Zip:

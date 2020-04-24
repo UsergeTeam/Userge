@@ -121,7 +121,7 @@ class Userge(RawClient):
                            chat_id: Union[int, str],
                            text: str,
                            del_in: int = -1,
-                           log: bool = False,
+                           log: Union[bool, str] = False,
                            parse_mode: Union[str, object] = object,
                            disable_web_page_preview: Optional[bool] = None,
                            disable_notification: Optional[bool] = None,
@@ -320,7 +320,7 @@ class Userge(RawClient):
             return sorted(list(self.__help_dict)), True         # names of all modules
 
         if not key.startswith('.') and key in self.__help_dict and \
-            (len(self.__help_dict[key]) > 1 or list(self.__help_dict[key])[0] != key):
+            (len(self.__help_dict[key]) > 1 or list(self.__help_dict[key])[0].lstrip('.') != key):
             return sorted(list(self.__help_dict[key])), False   # all commands for that module
 
         dict_ = {x: y for _, i in self.__help_dict.items() for x, y in i.items()}

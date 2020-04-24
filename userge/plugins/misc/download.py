@@ -70,14 +70,11 @@ async def down_load_media(message: Message):
         try:
             downloader = SmartDL(url, download_file_path, progress_bar=False)
             downloader.start(blocking=False)
-            c_time = time.time()
 
             while not downloader.isFinished():
                 if message.process_is_canceled:
                     downloader.stop()
                     raise Exception('Process Canceled!')
-
-                diff = time.time() - c_time
 
                 total_length = downloader.filesize if downloader.filesize else 0
                 downloaded = downloader.get_dl_size()

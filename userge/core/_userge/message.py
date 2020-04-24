@@ -143,12 +143,12 @@ class Message(RawMessage):
             input_str = self.input_str
 
             for i in input_str.strip().split():
-                match = re.match(f"({prefix}[a-z]+)($|[0-9]+)?$", i)
+                match = re.match(f"({prefix}[a-zA-Z]+)($|[0-9]+)?$", i)
 
                 if match:
                     items: Sequence[str] = match.groups()
-                    self.__flags[items[0].lstrip(prefix) if del_pre \
-                        else items[0]] = items[1] or ''
+                    self.__flags[items[0].lstrip(prefix).lower() if del_pre \
+                        else items[0].lower()] = items[1] or ''
 
                 else:
                     self.__filtered_input_str += ' ' + i
@@ -165,7 +165,7 @@ class Message(RawMessage):
                            text: str,
                            filename: str = "output.txt",
                            caption: str = '',
-                           log: bool = False,
+                           log: Union[bool, str] = False,
                            delete_message: bool = True) -> 'Message':
         """
         You can send large outputs as file
@@ -219,7 +219,7 @@ class Message(RawMessage):
     async def reply(self,
                     text: str,
                     del_in: int = -1,
-                    log: bool = False,
+                    log: Union[bool, str] = False,
                     quote: Optional[bool] = None,
                     parse_mode: Union[str, object] = object,
                     disable_web_page_preview: Optional[bool] = None,
@@ -297,7 +297,7 @@ class Message(RawMessage):
     async def edit(self,
                    text: str,
                    del_in: int = -1,
-                   log: bool = False,
+                   log: Union[bool, str] = False,
                    sudo: bool = True,
                    parse_mode: Union[str, object] = object,
                    disable_web_page_preview: Optional[bool] = None,
@@ -376,7 +376,7 @@ class Message(RawMessage):
     async def force_edit(self,
                          text: str,
                          del_in: int = -1,
-                         log: bool = False,
+                         log: Union[bool, str] = False,
                          parse_mode: Union[str, object] = object,
                          disable_web_page_preview: Optional[bool] = None,
                          reply_markup: InlineKeyboardMarkup = None,
@@ -432,7 +432,7 @@ class Message(RawMessage):
     async def err(self,
                   text: str,
                   del_in: int = -1,
-                  log: bool = False,
+                  log: Union[bool, str] = False,
                   sudo: bool = True,
                   parse_mode: Union[str, object] = object,
                   disable_web_page_preview: Optional[bool] = None,
@@ -481,7 +481,7 @@ class Message(RawMessage):
     async def force_err(self,
                         text: str,
                         del_in: int = -1,
-                        log: bool = False,
+                        log: Union[bool, str] = False,
                         parse_mode: Union[str, object] = object,
                         disable_web_page_preview: Optional[bool] = None,
                         reply_markup: InlineKeyboardMarkup = None,
@@ -530,7 +530,7 @@ class Message(RawMessage):
     async def try_to_edit(self,
                           text: str,
                           del_in: int = -1,
-                          log: bool = False,
+                          log: Union[bool, str] = False,
                           sudo: bool = True,
                           parse_mode: Union[str, object] = object,
                           disable_web_page_preview: Optional[bool] = None,
@@ -584,7 +584,7 @@ class Message(RawMessage):
     async def edit_or_send_as_file(self,
                                    text: str,
                                    del_in: int = -1,
-                                   log: bool = False,
+                                   log: Union[bool, str] = False,
                                    sudo: bool = True,
                                    parse_mode: Union[str, object] = object,
                                    disable_web_page_preview: Optional[bool] = None,
@@ -640,7 +640,7 @@ class Message(RawMessage):
     async def reply_or_send_as_file(self,
                                     text: str,
                                     del_in: int = -1,
-                                    log: bool = False,
+                                    log: Union[bool, str] = False,
                                     quote: Optional[bool] = None,
                                     parse_mode: Union[str, object] = object,
                                     disable_web_page_preview: Optional[bool] = None,
@@ -708,7 +708,7 @@ class Message(RawMessage):
     async def force_edit_or_send_as_file(self,
                                          text: str,
                                          del_in: int = -1,
-                                         log: bool = False,
+                                         log: Union[bool, str] = False,
                                          parse_mode: Union[str, object] = object,
                                          disable_web_page_preview: Optional[bool] = None,
                                          reply_markup: InlineKeyboardMarkup = None,

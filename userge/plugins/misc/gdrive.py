@@ -9,6 +9,7 @@
 
 import os
 import io
+import re
 import time
 import math
 import pickle
@@ -20,6 +21,7 @@ from mimetypes import guess_type
 from functools import wraps
 from httplib2 import Http
 
+from pySmartDL import SmartDL
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
@@ -27,7 +29,8 @@ from oauth2client.client import OAuth2WebServerFlow
 from oauth2client.client import HttpAccessTokenRefreshError, FlowExchangeError
 
 from userge import userge, Message, Config, get_collection
-from userge.utils import humanbytes, time_formatter
+from userge.utils import progress, humanbytes, time_formatter
+from userge.utils.exceptions import ProcessCanceled
 
 CREDS: object = None
 AUTH_FLOW: object = None
@@ -43,12 +46,6 @@ G_DRIVE_FOLDER_LINK = "📁 <a href='https://drive.google.com/drive/folders/{}'>
 
 LOG = userge.getLogger(__name__)
 GDRIVE_COLLECTION = get_collection("gdrive")
-
-
-class ProcessCanceled(Exception):
-    """
-    Custom Exception to terminate uploading / downloading or copying thread.
-    """
 
 
 class DBase:
@@ -709,6 +706,7 @@ class GDrive(DBase):
 
 
 def creds_dec(func):
+    """decorator for check CREDS"""
 
     @wraps(func)
     async def wrapper(self):
@@ -900,7 +898,93 @@ class Worker(GDrive):
         Upload file/folder to GDrive.
         """
 
-        upload_file_name = self.__message.input_str
+        if not os.path.isdir(Config.DOWN_PATH):
+            os.mkdir(Config.DOWN_PATH)
+
+        replied = self.__message.reply_to_message
+        is_url = re.search(
+            r"(?:(?:https?|ftp):\/\/)?[\w/\-?=%.]+\.[\w/\-?=%.]+", self.__message.input_str)
+        dl_loc = None
+
+        if replied and replied.media:
+            await self.__message.edit("`Downloading From TG...`")
+            c_time = time.time()
+
+            dl_loc = await userge.download_media(
+                message=replied,
+                file_name=Config.DOWN_PATH,
+                progress=progress,
+                progress_args=(
+                    "trying to download", userge, self.__message, c_time
+                )
+            )
+
+            if self.__message.process_is_canceled:
+                await self.__message.edit("`Process Canceled!`", del_in=5)
+                return
+
+            else:
+                dl_loc = os.path.join(Config.DOWN_PATH, os.path.basename(dl_loc))
+
+        elif is_url:
+            await self.__message.edit("`Downloading From URL...`")
+
+            is_url = is_url[0]
+            file_name = os.path.basename(is_url)
+            dl_loc = os.path.join(Config.DOWN_PATH, file_name)
+
+            try:
+                downloader = SmartDL(is_url, dl_loc, progress_bar=False)
+                downloader.start(blocking=False)
+
+                while not downloader.isFinished():
+                    if self.__message.process_is_canceled:
+                        downloader.stop()
+                        await self.__message.edit("`Process Canceled!`", del_in=5)
+                        return
+
+                    total_length = downloader.filesize if downloader.filesize else 0
+                    downloaded = downloader.get_dl_size()
+                    percentage = downloader.get_progress() * 100
+                    speed = downloader.get_speed(human=True)
+                    estimated_total_time = downloader.get_eta(human=True)
+
+                    progress_str = \
+                        "__{}__\n" + \
+                        "```[{}{}]```\n" + \
+                        "**Progress** : `{}%`\n" + \
+                        "**URL** : `{}`\n" + \
+                        "**FILENAME** : `{}`\n" + \
+                        "**Completed** : `{}`\n" + \
+                        "**Total** : `{}`\n" + \
+                        "**Speed** : `{}`\n" + \
+                        "**ETA** : `{}`"
+
+                    progress_str = progress_str.format(
+                        "trying to download",
+                        ''.join(["█" for i in range(math.floor(percentage / 5))]),
+                        ''.join(["░" for i in range(20 - math.floor(percentage / 5))]),
+                        round(percentage, 2),
+                        is_url,
+                        file_name,
+                        humanbytes(downloaded),
+                        humanbytes(total_length),
+                        speed,
+                        estimated_total_time)
+
+                    await self.__message.try_to_edit(
+                        text=progress_str, disable_web_page_preview=True)
+
+                    await asyncio.sleep(3)
+
+            except Exception as e:
+                if os.path.exists(dl_loc):
+                    os.remove(dl_loc)
+
+                await self.__message.err(e)
+                return
+
+        upload_file_name = dl_loc if dl_loc else self.__message.input_str
 
         if not os.path.exists(upload_file_name):
             await self.__message.err("invalid file path provided?")
@@ -1248,7 +1332,7 @@ async def gls_(message: Message):
     'header': "Upload files to GDrive",
     'description': "set destination by setting parent_id, "
                    "use `.gset` to set parent_id (root path).",
-    'usage': ".gup [file | folder path]"})
+    'usage': ".gup [file / folder path | direct link | reply to telegram file]"})
 async def gup_(message: Message):
     """gup"""
     await Worker(message).upload()

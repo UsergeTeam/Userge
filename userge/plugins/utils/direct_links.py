@@ -158,10 +158,10 @@ def zippy_share(url: str) -> str:
                                 script.text).group('url')
             math = re.search(r'= (?P<url>\".+\" \+ (?P<math>\(.+\)) .+);',
                              script.text).group('math')
-            dl_url = url_raw.replace(math, f"\"{eval(math)}\"")
+            dl_url = url_raw.replace(math, '"' + str(eval(math)) + '"')
             break
 
-    dl_url = f"{base_url}{eval(dl_url)}"
+    dl_url = base_url + eval(dl_url)
     name = urllib.parse.unquote(dl_url.split('/')[-1])
     reply += f'[{name}]({dl_url})\n'
 
