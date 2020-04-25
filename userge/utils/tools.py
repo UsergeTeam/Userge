@@ -7,6 +7,7 @@
 # All rights reserved.
 
 
+import os
 import shlex
 import asyncio
 from glob import glob
@@ -80,7 +81,7 @@ async def take_screen_shot(video_file: str, duration: int) -> Optional[str]:
     if err:
         LOG.error(err)
 
-    return thumb_image_path if thumb_image_path else None
+    return thumb_image_path if os.path.exists(thumb_image_path) else None
 
 
 class SafeDict(Dict[str, str]):

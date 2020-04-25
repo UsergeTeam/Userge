@@ -216,7 +216,7 @@ class GDrive(DBase):
         self.__service.permissions().create(fileId=file_id, body=permissions,
                                             supportsTeamDrives=True).execute()
 
-        LOG.info(f"Set Permission : {permissions} for Google-Drive File : {file_id}")
+        LOG.info("Set Permission : %s for Google-Drive File : %s", permissions, file_id)
 
     def __upload_file(self, file_path: str, parent_id: str) -> str:
 
@@ -298,8 +298,7 @@ class GDrive(DBase):
         file_size = humanbytes(int(drive_file.get('size', 0)))
 
         LOG.info(
-            "Created Google-Drive File => Name: {} ID: {} Size: {}".format(
-                file_name, file_id, file_size))
+            "Created Google-Drive File => Name: %s ID: %s Size: %s", file_name, file_id, file_size)
 
         return G_DRIVE_FILE_LINK.format(file_id, file_name, file_size)
 
@@ -323,7 +322,7 @@ class GDrive(DBase):
 
         self.__completed += 1
 
-        LOG.info("Created Google-Drive Folder => Name: {} ID: {} ".format(file_name, file_id))
+        LOG.info("Created Google-Drive Folder => Name: %s ID: %s ", file_name, file_id)
 
         return file_id
 
@@ -419,7 +418,7 @@ class GDrive(DBase):
 
         self.__completed += 1
         LOG.info(
-            "Downloaded Google-Drive File => Name: {} ID: {} ".format(name, kwargs['id']))
+            "Downloaded Google-Drive File => Name: %s ID: %s", name, kwargs['id'])
 
     def __list_drive_dir(self, file_id: str) -> list:
 
@@ -454,7 +453,7 @@ class GDrive(DBase):
         if not os.path.exists(path):
             os.mkdir(path)
 
-        LOG.info("Created Folder => Name: {} ".format(folder_name))
+        LOG.info("Created Folder => Name: %s", folder_name)
         self.__completed += 1
 
         return path
@@ -529,8 +528,7 @@ class GDrive(DBase):
         self.__completed += 1
 
         LOG.info(
-            "Copied Google-Drive File => Name: {} ID: {} ".format(
-                drive_file['name'], drive_file['id']))
+            "Copied Google-Drive File => Name: %s ID: %s", drive_file['name'], drive_file['id'])
 
         return drive_file['id']
 
@@ -603,8 +601,9 @@ class GDrive(DBase):
                                                    fields="id, name, mimeType, size, parents",
                                                    supportsTeamDrives=True).execute()
 
-        LOG.info(f"Moved file : {file_id} => " + \
-                       f"from : {previous_parents} to : {drive_file['parents']} in Google-Drive")
+        LOG.info("Moved file : %s => "
+                 "from : %s to : {drive_file['parents']} in Google-Drive",
+                 file_id, previous_parents)
 
         mime_type = drive_file['mimeType']
         file_name = drive_file['name']
@@ -621,7 +620,7 @@ class GDrive(DBase):
 
         self.__service.files().delete(fileId=file_id, supportsTeamDrives=True).execute()
 
-        LOG.info(f"Deleted Google-Drive File : {file_id}")
+        LOG.info("Deleted Google-Drive File : %s", file_id)
 
     @userge.new_thread
     def _empty_trash(self) -> None:
@@ -640,7 +639,7 @@ class GDrive(DBase):
         drive_file['quotaBytesUsed'] = humanbytes(int(drive_file.get('quotaBytesUsed', 0)))
 
         drive_file = dumps(drive_file, sort_keys=True, indent=4)
-        LOG.info("Getting Google-Drive File Details => {}".format(drive_file))
+        LOG.info("Getting Google-Drive File Details => %s", drive_file)
 
         return drive_file
 
@@ -657,7 +656,7 @@ class GDrive(DBase):
             all_perms[perm_id] = perm
 
         all_perms = dumps(all_perms, sort_keys=True, indent=4)
-        LOG.info(f"All Permissions: {all_perms} for Google-Drive File : {file_id}")
+        LOG.info("All Permissions: %s for Google-Drive File : %s", all_perms, file_id)
 
         return all_perms
 
@@ -670,7 +669,7 @@ class GDrive(DBase):
                                                 fields="id, name, mimeType, size").execute()
 
         LOG.info(
-            f"Set Permission : for Google-Drive File : {file_id}\n{drive_file}")
+            "Set Permission : for Google-Drive File : %s\n%s", file_id, drive_file)
 
         mime_type = drive_file['mimeType']
         file_name = drive_file['name']
@@ -700,7 +699,7 @@ class GDrive(DBase):
 
         removed_perms = dumps(removed_perms, sort_keys=True, indent=4)
         LOG.info(
-            f"Remove Permission: {removed_perms} for Google-Drive File : {file_id}")
+            "Remove Permission: %s for Google-Drive File : %s", removed_perms, file_id)
 
         return removed_perms
 
@@ -734,31 +733,16 @@ class Worker(GDrive):
         if filter_str:
             link = self.__message.filtered_input_str
 
-        link = link.rstrip('export=download').rstrip('&')
+        found = re.search(r'https://drive.google.com/[\w\?\./&=]+([-\w]{33})', link)
 
-        if link.find("/folders/") != -1:
-            out = (link.split('/')[-1].strip(), "folder")
+        if found and 'folder' in link:
+            out = (found.group(1), "folder")
 
-        elif link.find("/folderview?id=") != -1:
-            out = (link.split('/folderview?id=')[-1].strip(), "folder")
-
-        elif link.find("open?id=") != -1:
-            out = (link.split("open?id=")[-1].strip(), "file")
-
-        elif link.find("uc?id=") != -1:
-            out = (link.split("uc?id=")[-1].strip(), "file")
-
-        elif link.find("file/d/") != -1:
-            out = (link.split("/")[-1].strip(), "file")
-
-        elif link.find("id=") != -1:
-            out = (link.split("=")[-1].strip(), "file")
-
-        elif link.find("view") != -1:
-            out = (link.split('/')[-2].strip(), "file")
+        elif found:
+            out = (found.group(1), "file")
 
         else:
-            out = (link.strip(), "unknown")
+            out = (link, "unknown")
 
         return out
 
@@ -895,7 +879,7 @@ class Worker(GDrive):
     @creds_dec
     async def upload(self) -> None:
         """
-        Upload file/folder to GDrive.
+        Upload from file/folder/link/tg file to GDrive.
         """
 
         if not os.path.isdir(Config.DOWN_PATH):
@@ -903,7 +887,7 @@ class Worker(GDrive):
 
         replied = self.__message.reply_to_message
         is_url = re.search(
-            r"(?:(?:https?|ftp):\/\/)?[\w/\-?=%.]+\.[\w/\-?=%.]+", self.__message.input_str)
+            r"(?:https?|ftp):\/\/[\w/\-?=%.]+\.[\w/\-?=%.]+", self.__message.input_str)
         dl_loc = None
 
         if replied and replied.media:
@@ -940,8 +924,7 @@ class Worker(GDrive):
                 while not downloader.isFinished():
                     if self.__message.process_is_canceled:
                         downloader.stop()
-                        await self.__message.edit("`Process Canceled!`", del_in=5)
-                        return
+                        raise Exception('Process Canceled!')
 
                     total_length = downloader.filesize if downloader.filesize else 0
                     downloaded = downloader.get_dl_size()
@@ -977,8 +960,8 @@ class Worker(GDrive):
 
                     await asyncio.sleep(3)
 
-            except Exception as e:
-                await self.__message.err(e)
+            except Exception as d_e:
+                await self.__message.err(d_e)
                 return
 
         upload_file_name = dl_loc if dl_loc else self.__message.input_str
@@ -1000,6 +983,9 @@ class Worker(GDrive):
                 await self.__message.try_to_edit(self._progress)
 
             await asyncio.sleep(3)
+
+        if dl_loc and os.path.exists(dl_loc):
+            os.remove(dl_loc)
 
         end_t = datetime.now()
         m_s = (end_t - start_t).seconds
@@ -1285,10 +1271,7 @@ async def gclear_(message: Message):
     'header': "Set parent id",
     'description': "set destination by setting parent_id (root path). "
                    "this path is like working directory :)",
-    'usage': ".gset [drive folder link]",
-    'others': "**drive folder link should be like this!**\n"
-              "```https://drive.google.com/drive/folders/{file_id}```"
-              "```https://drive.google.com/drive/folderview?id={file_id}```"})
+    'usage': ".gset [drive folder link]"})
 async def gset_(message: Message):
     """gset"""
     await Worker(message).set_parent()
@@ -1316,10 +1299,7 @@ async def gfind_(message: Message):
     'flags': {'-l': "add limit to list (default limit 20)"},
     'usage': ".gls for view content in root\n.gls -l10 add limit to it\n"
              ".gls [drive folder link] (default limit 20)\n"
-             ".gls -l10 [drive folder link] (add limit)",
-    'others': "**drive folder link should be like this!**\n"
-              "```https://drive.google.com/drive/folders/{file_id}```"
-              "```https://drive.google.com/drive/folderview?id={file_id}```"})
+             ".gls -l10 [drive folder link] (add limit)"})
 async def gls_(message: Message):
     """gls"""
     await Worker(message).list_folder()

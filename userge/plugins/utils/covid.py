@@ -51,7 +51,8 @@ async def covid(message: Message):
     else:
         flag = 0
         for i in range(len(set_count_country)):
-            if set_count_country[i]['country_name'] == input_:
+            if set_count_country[i]['country_name'] == input_ or \
+                set_count_country[i]['country_name'] == input_.upper():
                 set_country = set_count_country[i]
                 flag = 1
                 break

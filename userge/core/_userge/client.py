@@ -196,12 +196,15 @@ class Userge(RawClient):
 
     def on_cmd(self,
                command: str,
-               about: Union[str, Dict[str, str]],
+               about: Union[str, Dict[str, Union[str, List[str], Dict[str, str]]]],
                group: int = 0,
                name: str = '',
                trigger: str = '.',
                filter_me: bool = True,
-               **kwargs: Union[str, bool, Dict[str, str]]) -> Callable[[PYROFUNC], PYROFUNC]:
+               **kwargs: Union[
+                   str, bool, Dict[
+                       str, Union[
+                           str, List[str], Dict[str, str]]]]) -> Callable[[PYROFUNC], PYROFUNC]:
         """
         \nDecorator for handling messages.
 
@@ -342,7 +345,7 @@ class Userge(RawClient):
     def __add_help(self,
                    module: str,
                    cname: str = '',
-                   chelp: Union[str, Dict[str, str]] = '',
+                   chelp: Union[str, Dict[str, Union[str, List[str], Dict[str, str]]]] = '',
                    **_: Union[str, bool]) -> None:
         if cname:
             LOG.debug(LOG_STR, f"Updating Help Dict => [ {cname} : {chelp} ]")
@@ -352,11 +355,11 @@ class Userge(RawClient):
             if isinstance(chelp, dict):
                 tmp_chelp = ''
 
-                if 'header' in chelp:
+                if 'header' in chelp and isinstance(chelp['header'], str):
                     tmp_chelp += f"__**{chelp['header'].title()}**__"
                     del chelp['header']
 
-                if 'description' in chelp:
+                if 'description' in chelp and isinstance(chelp['description'], str):
                     tmp_chelp += ("\n\n📝 --**Description**-- :\n\n    "
                                   f"__{chelp['description'].capitalize()}__")
                     del chelp['description']
@@ -440,7 +443,10 @@ class Userge(RawClient):
                           filters: Filters,
                           group: int,
                           **kwargs: Union[
-                              str, bool, Dict[str, str]]) -> Callable[[PYROFUNC], PYROFUNC]:
+                              str, bool, Dict[
+                                  str, Union[
+                                      str, List[str], Dict[
+                                          str, str]]]]) -> Callable[[PYROFUNC], PYROFUNC]:
 
         def __decorator(func: PYROFUNC) -> PYROFUNC:
 

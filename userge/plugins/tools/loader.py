@@ -44,7 +44,7 @@ async def load_cmd_handler(message: Message):
                 await message.err(i_e)
 
             else:
-                await message.edit(f"`Loaded {plugin}`", del_in=3, log=True)
+                await message.edit(f"`Loaded {plugin}`", del_in=3, log=__name__)
 
         else:
             await message.edit("`Plugin Not Found`")
@@ -58,4 +58,4 @@ async def reload_cmd_handler(message: Message):
     await message.edit("`Reloading All Plugins`")
 
     await message.edit(
-        f"`Reloaded {await userge.reload_plugins()} Plugins`", del_in=3, log=True)
+        f"`Reloaded {await userge.reload_plugins()} Plugins`", del_in=3, log=__name__)

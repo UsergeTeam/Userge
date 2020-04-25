@@ -23,6 +23,8 @@ DOGBIN_URL = "https://del.dog/"
 async def paste_(message: Message):
     """pastes the text directly to dogbin"""
 
+    await message.edit("`Processing...`")
+
     text = message.input_str
     replied = message.reply_to_message
 

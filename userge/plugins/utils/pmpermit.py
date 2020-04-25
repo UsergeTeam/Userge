@@ -98,7 +98,7 @@ async def get_id(message: Message):
     return userid
 
 
-@userge.on_filters(Filters.private & ~Config.ALLOWED_CHATS & \
+@userge.on_filters(Filters.private & ~Filters.me & ~Config.ALLOWED_CHATS & \
     ~Filters.outgoing & ~allowAllFilter & ~Filters.service)
 async def uninvitedPmHandler(message: Message):
     user_dict = await userge.get_user_dict(message.from_user.id)
