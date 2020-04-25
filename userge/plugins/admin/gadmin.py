@@ -8,6 +8,7 @@
 
 
 import time
+from emoji import get_emoji_regexp
 from pyrogram import ChatPermissions
 from pyrogram.errors import (FloodWait,
                              UserAdminInvalid,
@@ -61,12 +62,16 @@ async def is_sudoadmin(message: Message):
 @userge.on_cmd("promote", about={
     'header': "use this to promote group members",
     'description': "Provides admin rights to the person in the supergroup.\n"
+                   "you can also add custom title while promoting new admin.\n"
                    "[NOTE: Requires proper admin rights in the chat!!!]",
-    'examples': ".promote [username | userid] or [reply to user]"})
+    'examples': [
+        ".promote [username | userid] or [reply to user] :custom title (optional)",
+        ".promote @someusername/userid/replytouser Staff (custom title)"]})
 async def promote_usr(message: Message):
     """
     this function can promote members in tg group
     """
+    custom_rank = ""
     chat_id = message.chat.id
     get_group = await userge.get_chat(chat_id)
     can_promo = await is_sudoadmin(message)
@@ -75,7 +80,31 @@ async def promote_usr(message: Message):
 
     if can_promo:
 
-        user_id = message.input_str
+        if message.reply_to_message:
+            user_id = message.reply_to_message.from_user.id
+            custom_rank = get_emoji_regexp().sub(u'', message.input_str)
+
+            if len(custom_rank) > 15:
+                custom_rank = custom_rank[:15]
+
+        else:
+            args = message.input_str.split(maxsplit=1)
+
+            if len(args) == 2:
+                user_id, custom_rank = args
+                custom_rank = get_emoji_regexp().sub(u'', custom_rank)
+
+                if len(custom_rank) > 15:
+                    custom_rank = custom_rank[:15]
+
+            elif len(args) == 1:
+                user_id = args[0]
+
+            else:
+                await message.edit(
+                    text="`no valid user_id or message specified,`"
+                    "`do .help mute for more info`", del_in=0)
+                return
 
         if user_id:
 
@@ -88,12 +117,15 @@ async def promote_usr(message: Message):
                                                  can_invite_users=True,
                                                  can_pin_messages=True)
 
+                await userge.set_administrator_title(chat_id, user_id, custom_rank)
+
                 await message.edit("**👑 Promoted Successfully**", del_in=0)
 
                 await CHANNEL.log(
                     f"#PROMOTE\n\n"
                     f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
                     f"(`{get_mem.user.id}`)\n"
+                    f"CUSTOM TITLE: `{custom_rank}`\n"
                     f"CHAT: `{get_group.title}` (`{chat_id}`)")
 
             except UsernameInvalid:
@@ -126,47 +158,6 @@ async def promote_usr(message: Message):
                     f"**ERROR:** `{e}`"
                 )
                 return
-
-        elif message.reply_to_message:
-
-            try:
-                get_mem = await userge.get_chat_member(
-                    chat_id,
-                    message.reply_to_message.from_user.id
-                    )
-                await userge.promote_chat_member(chat_id, get_mem.user.id,
-                                                 can_change_info=True,
-                                                 can_delete_messages=True,
-                                                 can_restrict_members=True,
-                                                 can_invite_users=True,
-                                                 can_pin_messages=True)
-
-                await message.edit("**👑 Promoted Successfully**", del_in=0)
-
-                await CHANNEL.log(
-                    f"#PROMOTE\n\n"
-                    f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
-                    f"(`{get_mem.user.id}`)\n"
-                    f"CHAT: `{get_group.title}` (`{chat_id}`)")
-
-            except ChatAdminRequired:
-                await message.edit(
-                    text=r"`i don't have permission to do that ＞︿＜`", del_in=0
-                    )
-                return
-
-            except Exception as e:
-                await message.edit(
-                    text="`something went wrong 🤔,`\n"
-                    f"**ERROR:** `{e}`", del_in=0)
-                return
-
-        else:
-            await message.edit(
-                text="`no valid user_id or message specified,`"
-                "`do .help promote for more info` ⚠", del_in=0)
-
-            return
 
     else:
         await message.edit(
@@ -962,15 +953,15 @@ async def zombie_clean(message: Message):
                     del_total += 1
 
             if del_admins > 0:
-                del_stats = f"**Found** `{del_total}` total zombies..👻\
-                \n🗑 **Cleaned** `{del_users}` **zombie (deleted) accounts from this chat**\
-                \n🛡 `{del_admins}` **deleted admin accounts are skipped**"
+                del_stats = f"**👻 Found** `{del_total}` **total zombies..**\
+                \n**🗑 Cleaned** `{del_users}` **zombie (deleted) accounts from this chat..**\
+                \n🛡 `{del_admins}` **deleted admin accounts are skipped!!**"
 
             else:
-                del_stats = f"**Found** `{del_total}` total zombies..👻\
-                \n🗑 **Cleaned** `{del_users}` **zombie (deleted) accounts from this chat**"
+                del_stats = f"**👻 Found** `{del_total}` **total zombies..**\
+                \n**🗑 Cleaned** `{del_users}` **zombie (deleted) accounts from this chat..**"
 
-            await message.edit(f"🗑 {del_stats}", del_in=0)
+            await message.edit(f"{del_stats}", del_in=0)
             await CHANNEL.log(
                 f"#ZOMBIE_CLEAN\n\n"
                 f"CHAT: `{get_group.title}` (`{chat_id}`)\n"
@@ -1019,9 +1010,9 @@ async def zombie_clean(message: Message):
         '-s': "silent",
         '-u': "unpin"},
     'examples': [
-        ".pin [reply to message]",
-        ".pin -s [reply to message]",
-        ".pin -u [reply to message]"]})
+        ".pin [reply to chat message]",
+        ".pin -s [reply to chat message]",
+        ".pin -u [send to chat]"]})
 async def pin_msgs(message: Message):
     """
     this function can pin & unpin message in groups
@@ -1098,6 +1089,87 @@ async def pin_msgs(message: Message):
                     r"`something went wrong! (⊙_⊙;)`"
                     f"\n`do .help pin for more info..`"
                     )
+            return
+
+    else:
+        await message.edit(r"`i don't have proper permission to do that! (* ￣︿￣)`", del_in=0)
+
+@userge.on_cmd("gpic", about={
+    'header': "use this to set or delete chat photo",
+    'description': "set new chat photo or delete current chat photo",
+    'flags': {
+        '-s': "set",
+        '-d': "delete"},
+    'examples': [
+        ".gpic -s [reply to chat image/media file]",
+        ".gpic -d [send to chat]"]})
+async def chatpic_func(message: Message):
+    """
+    this function can change chat photo
+    """
+    chat_id = message.chat.id
+    flags = message.flags
+    get_group = await userge.get_chat(chat_id)
+    check_user = await userge.get_chat_member(message.chat.id, message.from_user.id)
+    user_type = check_user.status
+    change_chatpic = None
+
+    gpic_set = '-s' in flags
+    gpic_del = '-d' in flags
+
+    if user_type == "member":
+        change_chatpic = False
+
+    elif user_type == "administrator":
+        change_chatpic = check_user.can_change_info
+
+    else:
+        change_chatpic = True
+
+    if change_chatpic:
+
+        if gpic_set:
+
+            if message.reply_to_message:
+
+                try:
+                    img_id = message.reply_to_message.photo.file_id
+                    img_ref = message.reply_to_message.photo.file_ref
+                    await userge.set_chat_photo(chat_id, img_id, img_ref)
+                    await CHANNEL.log(
+                        f"#GPIC-SET\n\n"
+                        f"CHAT: `{get_group.title}` (`{chat_id}`)"
+                        )
+
+                except Exception as e:
+                    await message.edit(
+                        r"`something went wrong!! (⊙ˍ⊙)`"
+                        f"\n`looks like invalid media type, do .help gpic for more info..`")
+                    return
+
+            else:
+                await message.edit(
+                    text="`no valid message/picture reply specified,`"
+                    " `do .help gpic for more info` ⚠", del_in=0)
+                return
+
+        if gpic_del:
+
+            try:
+                await userge.delete_chat_photo(chat_id)
+                await CHANNEL.log(
+                    f"#GPIC-DELETE\n\n"
+                    f"CHAT: `{get_group.title}` (`{chat_id}`)"
+                    )
+
+            except:
+                await message.edit(
+                    r"`something went wrong!! (⊙ˍ⊙)`")
+                return
+
+        else:
+            await message.edit(
+                text="`invalid flag type, do .help gpic for more info` ⚠", del_in=0)
             return
 
     else:
