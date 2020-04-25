@@ -17,14 +17,14 @@ from userge.utils import time_formatter, humanbytes
 
 def yt_getInfo(link):
     try:
-        x = ytdl.YoutubeDL().extract_info(link, download=False)
+        x = ytdl.YoutubeDL({'no-playlist': True}).extract_info(link, download=False)
         thumb = x.get('thumbnail', '')
         formats = x.get('formats', [x])
         out = "No formats found :("
         if formats:
             out = "--U-ID   |   Reso.  |   Extension--\n"
         for i in formats:
-            out += f"`{i['format_id']} | {i.get('format_note', None)} | {i.get('ext', None)}`\n"
+            out += f"`{i.get('format_id','')} | {i.get('format_note', None)} | {i.get('ext', None)}`\n"
     except ytdl.utils.YoutubeDLError as e:
         return e
     else:

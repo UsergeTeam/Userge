@@ -53,9 +53,9 @@ async def progress(current: int,
             humanbytes(total),
             humanbytes(speed),
             time_to_completion if time_to_completion else "0 s")
+        if message.text != progress_str:
+            try:
+                await message.edit(progress_str)
 
-        try:
-            await message.try_to_edit(progress_str)
-
-        except FloodWait as f_e:
-            time.sleep(f_e.x)
+            except FloodWait as f_e:
+                time.sleep(f_e.x)
