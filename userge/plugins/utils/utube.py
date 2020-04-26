@@ -45,7 +45,7 @@ def supported(url):
 
 def tubeDl(url: list, prog, uid=None):
     _opts = {'outtmpl': path.join('downloads', '%(title)s-%(format)s.%(ext)s')}
-    _quality = {'format': 'best' if not uid else str(uid)}
+    _quality = {'format': 'bestvideo+bestaudio/best' if not uid else str(uid)}
     _opts.update(_quality)
     try:
         x = ytdl.YoutubeDL(_opts)
@@ -109,7 +109,7 @@ async def ytDown(message: Message):
                 if not (eta and speed):
                     return
                 out = "**Speed** >> {}/s\n**ETA** >> {}\n".format(humanbytes(speed), time_formatter(eta))
-                out += f'**File Name** >> __{data["filename"]}__\n\n'
+                out += f'**File Name** >> `{data["filename"]}`\n\n'
                 current = data['downloaded_bytes']
                 total = data["total_bytes"]
                 if current and total:
