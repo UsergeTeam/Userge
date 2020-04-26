@@ -7,6 +7,7 @@
 # All rights reserved.
 
 
+import os
 import time
 from emoji import get_emoji_regexp
 from pyrogram import ChatPermissions
@@ -76,9 +77,9 @@ async def promote_usr(message: Message):
     get_group = await userge.get_chat(chat_id)
     can_promo = await is_sudoadmin(message)
 
-    await message.edit("`Trying to Promote User.. Hang on!`")
-
     if can_promo:
+
+        await message.edit("`Trying to Promote User.. Hang on!! ⏳`")
 
         if message.reply_to_message:
             user_id = message.reply_to_message.from_user.id
@@ -103,7 +104,7 @@ async def promote_usr(message: Message):
             else:
                 await message.edit(
                     text="`no valid user_id or message specified,`"
-                    "`do .help mute for more info`", del_in=0)
+                    "`do .help promote for more info`", del_in=0)
                 return
 
         if user_id:
@@ -119,7 +120,7 @@ async def promote_usr(message: Message):
 
                 await userge.set_administrator_title(chat_id, user_id, custom_rank)
 
-                await message.edit("**👑 Promoted Successfully**", del_in=0)
+                await message.edit("`👑 Promoted Successfully..`", del_in=0)
 
                 await CHANNEL.log(
                     f"#PROMOTE\n\n"
@@ -152,10 +153,10 @@ async def promote_usr(message: Message):
                     )
                 return
 
-            except Exception as e:
+            except Exception as e_f:
                 await message.edit(
-                    text="something went wrong! 🤔\n\n"
-                    f"**ERROR:** `{e}`"
+                    text="`something went wrong! 🤔`\n\n"
+                    f"**ERROR:** `{e_f}`"
                 )
                 return
 
@@ -177,9 +178,9 @@ async def demote_usr(message: Message):
     get_group = await userge.get_chat(chat_id)
     can_demote = await is_sudoadmin(message)
 
-    await message.edit("`Trying to Demote User.. Hang on!`")
-
     if can_demote:
+
+        await message.edit("`Trying to Demote User.. Hang on!! ⏳`")
 
         user_id = message.input_str
 
@@ -194,7 +195,7 @@ async def demote_usr(message: Message):
                                                  can_invite_users=False,
                                                  can_pin_messages=False)
 
-                await message.edit("**🛡 Demoted Successfully**", del_in=0)
+                await message.edit("`🛡 Demoted Successfully..`", del_in=0)
                 await CHANNEL.log(
                     f"#DEMOTE\n\n"
                     f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
@@ -225,10 +226,10 @@ async def demote_usr(message: Message):
                     )
                 return
 
-            except Exception as e:
+            except Exception as e_f:
                 await message.edit(
-                    text="something went wrong! 🤔\n"
-                    f"**ERROR:** `{e}`", del_in=0
+                    text="`something went wrong! 🤔`\n\n"
+                    f"**ERROR:** `{e_f}`", del_in=0
                 )
                 return
 
@@ -246,7 +247,7 @@ async def demote_usr(message: Message):
                                                  can_invite_users=False,
                                                  can_pin_messages=False)
 
-                await message.edit("**🛡 Demoted Successfully**", del_in=0)
+                await message.edit("`🛡 Demoted Successfully..`", del_in=0)
                 await CHANNEL.log(
                     f"#DEMOTE\n\n"
                     f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
@@ -259,10 +260,10 @@ async def demote_usr(message: Message):
                     )
                 return
 
-            except Exception as e:
+            except Exception as e_f:
                 await message.edit(
-                    text="something went wrong! 🤔\n"
-                    f"**ERROR:** `{e}`", del_in=0
+                    text="`something went wrong! 🤔`\n\n"
+                    f"**ERROR:** `{e_f}`", del_in=0
                 )
                 return
 
@@ -293,6 +294,8 @@ async def ban_usr(message: Message):
     can_ban = await is_admin(message)
 
     if can_ban:
+
+        await message.edit("`Trying to Ban User.. Hang on!! ⏳`")
 
         if message.reply_to_message:
             user_id = message.reply_to_message.from_user.id
@@ -345,10 +348,10 @@ async def ban_usr(message: Message):
                     )
                 return
 
-            except Exception as e:
+            except Exception as e_f:
                 await message.edit(
-                    text="something went wrong! 🤔\n"
-                    f"**ERROR:** `{e}`", del_in=0
+                    text="`something went wrong! 🤔`\n\n"
+                    f"**ERROR:** `{e_f}`", del_in=0
                 )
                 return
 
@@ -372,6 +375,8 @@ async def unban_usr(message: Message):
 
     if can_unban:
 
+        await message.edit("`Trying to Unban User.. Hang on!! ⏳`")
+
         user_id = message.input_str
 
         if user_id:
@@ -379,7 +384,7 @@ async def unban_usr(message: Message):
             try:
                 get_mem = await userge.get_chat_member(chat_id, user_id)
                 await userge.unban_chat_member(chat_id, user_id)
-                await message.edit("**🛡 Successfully Unbanned**", del_in=0)
+                await message.edit("`🛡 Successfully Unbanned..`", del_in=0)
                 await CHANNEL.log(
                     f"#UNBAN\n\n"
                     f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
@@ -404,10 +409,10 @@ async def unban_usr(message: Message):
                     )
                 return
 
-            except Exception as e:
+            except Exception as e_f:
                 await message.edit(
-                    text="something went wrong! 🤔\n"
-                    f"**ERROR:** `{e}`", del_in=0
+                    text="`something went wrong! 🤔`\n\n"
+                    f"**ERROR:** `{e_f}`", del_in=0
                 )
                 return
 
@@ -419,17 +424,17 @@ async def unban_usr(message: Message):
                     message.reply_to_message.from_user.id
                     )
                 await userge.unban_chat_member(chat_id, get_mem.user.id)
-                await message.edit("**🛡 Successfully Unbanned**", del_in=0)
+                await message.edit("`🛡 Successfully Unbanned..`", del_in=0)
                 await CHANNEL.log(
                     f"#UNBAN\n\n"
                     f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
                     f"(`{get_mem.user.id}`)\n"
                     f"CHAT: `{get_group.title}` (`{chat_id}`)")
 
-            except Exception as e:
+            except Exception as e_f:
                 await message.edit(
-                    text="`something went wrong 🤔,`"
-                    f"**ERROR:** `{e}`", del_in=0
+                    text="`something went wrong 🤔,`\n\n"
+                    f"**ERROR:** `{e_f}`", del_in=0
                     )
                 return
 
@@ -459,6 +464,8 @@ async def kick_usr(message: Message):
     can_kick = await is_admin(message)
 
     if can_kick:
+
+        await message.edit("`Trying to Kick User.. Hang on!! ⏳`")
 
         user_id = message.input_str
 
@@ -497,10 +504,10 @@ async def kick_usr(message: Message):
                     )
                 return
 
-            except Exception as e:
+            except Exception as e_f:
                 await message.edit(
-                    text="something went wrong! 🤔\n\n"
-                    f"**ERROR:** `{e}`", del_in=0
+                    text="`something went wrong! 🤔`\n\n"
+                    f"**ERROR:** `{e_f}`", del_in=0
                 )
                 return
 
@@ -524,10 +531,10 @@ async def kick_usr(message: Message):
                     )
                 return
 
-            except Exception as e:
+            except Exception as e_f:
                 await message.edit(
-                    text="something went wrong! 🤔\n"
-                    f"**ERROR:** `{e}`", del_in=0
+                    text="`something went wrong! 🤔`\n\n"
+                    f"**ERROR:** `{e_f}`", del_in=0
                 )
                 return
 
@@ -568,9 +575,9 @@ async def mute_usr(message: Message):
     hours = int(flags.get('-h', 0))
     days = int(flags.get('-d', 0))
 
-    await message.edit("`Trying to Mute User.. Hang on!`")
-
     if can_mute:
+
+        await message.edit("`Trying to Mute User.. Hang on!! ⏳`")
 
         if message.reply_to_message:
             user_id = message.reply_to_message.from_user.id
@@ -627,11 +634,11 @@ async def mute_usr(message: Message):
                     )
                 return
 
-            except Exception as e:
+            except Exception as e_f:
                 await message.edit(
                     text=f"`something went wrong 🤔,`"
-                    f"`do .help mute for more info`\n"
-                    f"**ERROR**: `{e}`", del_in=0)
+                    f"`do .help mute for more info`\n\n"
+                    f"**ERROR**: `{e_f}`", del_in=0)
                 return
 
         elif hours:
@@ -674,11 +681,11 @@ async def mute_usr(message: Message):
                     )
                 return
 
-            except Exception as e:
+            except Exception as e_f:
                 await message.edit(
                     text=f"`something went wrong 🤔,`"
-                    f"`do .help mute for more info`\n"
-                    f"**ERROR**: `{e}`", del_in=0)
+                    f"`do .help mute for more info`\n\n"
+                    f"**ERROR**: `{e_f}`", del_in=0)
                 return
 
         elif days:
@@ -721,11 +728,11 @@ async def mute_usr(message: Message):
                     )
                 return
 
-            except Exception as e:
+            except Exception as e_f:
                 await message.edit(
                     text=f"`something went wrong 🤔,`"
-                    f"`do .help mute for more info`\n"
-                    f"**ERROR**: {e}", del_in=0)
+                    f"`do .help mute for more info`\n\n"
+                    f"**ERROR**: {e_f}", del_in=0)
                 return
 
         else:
@@ -765,11 +772,11 @@ async def mute_usr(message: Message):
                     )
                 return
 
-            except Exception as e:
+            except Exception as e_f:
                 await message.edit(
                     text=f"`something went wrong 🤔,`"
-                    f"`do .help mute for more info`\n"
-                    f"**ERROR**: {e}", del_in=0)
+                    f"`do .help mute for more info`\n\n"
+                    f"**ERROR**: {e_f}", del_in=0)
 
                 return
 
@@ -805,6 +812,8 @@ async def unmute_usr(message: Message):
 
     if can_unmute:
 
+        await message.edit("`Trying to Unmute User.. Hang on!! ⏳`")
+
         user_id = message.input_str
 
         if user_id:
@@ -825,7 +834,7 @@ async def unmute_usr(message: Message):
                                                       can_invite_users=ainvite,
                                                       can_pin_messages=apin))
 
-                await message.edit("**🛡 Successfully Unmuted**", del_in=0)
+                await message.edit("`🛡 Successfully Unmuted..`", del_in=0)
                 await CHANNEL.log(
                     f"#UNMUTE\n\n"
                     f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
@@ -850,10 +859,10 @@ async def unmute_usr(message: Message):
                     )
                 return
 
-            except Exception as e:
+            except Exception as e_f:
                 await message.edit(
-                    text="something went wrong! 🤔\n"
-                    f"**ERROR:** `{e}`", del_in=0
+                    text="`something went wrong!` 🤔\n\n"
+                    f"**ERROR:** `{e_f}`", del_in=0
                 )
                 return
 
@@ -878,17 +887,17 @@ async def unmute_usr(message: Message):
                                                       can_invite_users=ainvite,
                                                       can_pin_messages=apin))
 
-                await message.edit("**🛡 Successfully Unmuted**", del_in=0)
+                await message.edit("`🛡 Successfully Unmuted..`", del_in=0)
                 await CHANNEL.log(
                     f"#UNMUTE\n\n"
                     f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
                     f"(`{get_mem.user.id}`)\n"
                     f"CHAT: `{get_group.title}` (`{chat_id}`)")
 
-            except Exception as e:
+            except Exception as e_f:
                 await message.edit(
-                    text="something went wrong! 🤔\n"
-                    f"**ERROR:** `{e}`", del_in=0
+                    text="`something went wrong! 🤔`\n\n"
+                    f"**ERROR:** `{e_f}`", del_in=0
                 )
                 return
 
@@ -947,19 +956,19 @@ async def zombie_clean(message: Message):
                         del_users -= 1
                         del_admins += 1
 
-                    except FloodWait as e:
-                        time.sleep(e.x)
+                    except FloodWait as e_f:
+                        time.sleep(e_f.x)
                     del_users += 1
                     del_total += 1
 
             if del_admins > 0:
-                del_stats = f"**👻 Found** `{del_total}` **total zombies..**\
-                \n**🗑 Cleaned** `{del_users}` **zombie (deleted) accounts from this chat..**\
-                \n🛡 `{del_admins}` **deleted admin accounts are skipped!!**"
+                del_stats = f"`👻 Found` **{del_total}** `total zombies..`\
+                \n`🗑 Cleaned` **{del_users}** `zombie (deleted) accounts from this chat..`\
+                \n🛡 **{del_admins}** `deleted admin accounts are skipped!!`"
 
             else:
-                del_stats = f"**👻 Found** `{del_total}` **total zombies..**\
-                \n**🗑 Cleaned** `{del_users}` **zombie (deleted) accounts from this chat..**"
+                del_stats = f"`👻 Found` **{del_total}** `total zombies..`\
+                \n`🗑 Cleaned` **{del_users}** `zombie (deleted) accounts from this chat..`"
 
             await message.edit(f"{del_stats}", del_in=0)
             await CHANNEL.log(
@@ -985,10 +994,10 @@ async def zombie_clean(message: Message):
 
         if del_users > 0:
 
-            del_stats = f"**Found** `{del_users}` **zombie accounts in this chat.**"
+            del_stats = f"`Found` **{del_users}** `zombie accounts in this chat.`"
             await message.edit(
                 f"🕵️‍♂️ {del_stats} "
-                "**you can clean them using** `.zombies -c`", del_in=0)
+                "`you can clean them using .zombies -c`", del_in=0)
             await CHANNEL.log(
                 f"#ZOMBIE_CHECK\n\n"
                 f"CHAT: `{get_group.title}` (`{chat_id}`)\n"
@@ -1048,10 +1057,11 @@ async def pin_msgs(message: Message):
                     f"CHAT: `{get_group.title}` (`{chat_id}`)"
                     )
 
-            except:
+            except Exception as e_f:
                 await message.edit(
                     r"`something went wrong! (⊙_⊙;)`"
-                    f"\n`do .help pin for more info..`"
+                    f"\n`do .help pin for more info..`\n\n"
+                    f"**ERROR:** `{e_f}`"
                     )
             return
 
@@ -1066,10 +1076,11 @@ async def pin_msgs(message: Message):
                     f"CHAT: `{get_group.title}` (`{chat_id}`)"
                     )
 
-            except:
+            except Exception as e_f:
                 await message.edit(
                     r"`something went wrong! (⊙_⊙;)`"
-                    f"\n`do .help pin for more info..`"
+                    f"\n`do .help pin for more info..`\n\n"
+                    f"**ERROR:** `{e_f}`"
                     )
             return
 
@@ -1084,10 +1095,11 @@ async def pin_msgs(message: Message):
                     f"CHAT: `{get_group.title}` (`{chat_id}`)"
                     )
 
-            except:
+            except Exception as e_f:
                 await message.edit(
                     r"`something went wrong! (⊙_⊙;)`"
-                    f"\n`do .help pin for more info..`"
+                    f"\n`do .help pin for more info..`\n\n"
+                    f"**ERROR:** `{e_f}`"
                     )
             return
 
@@ -1130,21 +1142,40 @@ async def chatpic_func(message: Message):
 
         if gpic_set:
 
-            if message.reply_to_message:
+            if message.reply_to_message.photo:
 
                 try:
                     img_id = message.reply_to_message.photo.file_id
                     img_ref = message.reply_to_message.photo.file_ref
                     await userge.set_chat_photo(chat_id, img_id, img_ref)
+                    await message.delete()
                     await CHANNEL.log(
                         f"#GPIC-SET\n\n"
                         f"CHAT: `{get_group.title}` (`{chat_id}`)"
                         )
 
-                except Exception as e:
+                except Exception as e_f:
                     await message.edit(
                         r"`something went wrong!! (⊙ˍ⊙)`"
-                        f"\n`looks like invalid media type, do .help gpic for more info..`")
+                        f"\n\n**ERROR:** `{e_f}`")
+                    return
+
+            elif message.reply_to_message.document.mime_type == "image/png":
+
+                try:
+                    gpic_path = await userge.download_media(message.reply_to_message)
+                    await userge.set_chat_photo(message.chat.id, gpic_path)
+                    await message.delete()
+                    os.remove(gpic_path)
+                    await CHANNEL.log(
+                        f"#GPIC-SET\n\n"
+                        f"CHAT: `{get_group.title}` (`{chat_id}`)"
+                        )
+
+                except Exception as e_f:
+                    await message.edit(
+                        r"`something went wrong!! (⊙ˍ⊙)`"
+                        f"\n\n**ERROR:** `{e_f}`")
                     return
 
             else:
@@ -1157,14 +1188,16 @@ async def chatpic_func(message: Message):
 
             try:
                 await userge.delete_chat_photo(chat_id)
+                await message.delete()
                 await CHANNEL.log(
                     f"#GPIC-DELETE\n\n"
                     f"CHAT: `{get_group.title}` (`{chat_id}`)"
                     )
 
-            except:
+            except Exception as e_f:
                 await message.edit(
-                    r"`something went wrong!! (⊙ˍ⊙)`")
+                    r"`something went wrong!! (⊙ˍ⊙)`"
+                    f"\n\n**ERROR:** `{e_f}`")
                 return
 
         else:
