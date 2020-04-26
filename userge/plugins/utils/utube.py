@@ -8,6 +8,7 @@
 
 
 import asyncio
+import glob
 from os import path
 from time import time
 from math import floor
@@ -43,8 +44,8 @@ def supported(url):
     return False
 
 
-def tubeDl(url: list, prog, uid=None):
-    _opts = {'outtmpl': path.join('downloads', '%(title)s-%(format)s.%(ext)s')}
+def tubeDl(url: list, prog, starttime, uid=None):
+    _opts = {'outtmpl': path.join('downloads', str(starttime), '%(title)s-%(format)s.%(ext)s')}
     _quality = {'format': 'bestvideo+bestaudio/best' if not uid else str(uid)}
     _opts.update(_quality)
     try:
@@ -104,14 +105,14 @@ async def ytDown(message: Message):
     def __progress(data: dict):
         if ((time() - startTime) % 4) > 3.9:
             if data['status'] == "downloading":
-                eta = data['eta']
-                speed = data['speed']
+                eta = data.get('eta')
+                speed = data.get('speed')
                 if not (eta and speed):
                     return
                 out = "**Speed** >> {}/s\n**ETA** >> {}\n".format(humanbytes(speed), time_formatter(eta))
                 out += f'**File Name** >> `{data["filename"]}`\n\n'
-                current = data['downloaded_bytes']
-                total = data["total_bytes"]
+                current = data.get('downloaded_bytes')
+                total = data.get("total_bytes")
                 if current and total:
                     percentage = int(current) * 100 / int(total)
                     out += f"Progress >> {int(percentage)}%\n"
@@ -120,5 +121,9 @@ async def ytDown(message: Message):
                 if message.text != out:
                     asyncio.get_event_loop().run_until_complete(message.edit(out))
 
-    retcode = tubeDl([message.filtered_input_str], __progress, desiredFormat)
-    await message.edit(str(retcode) if not retcode == 0 else f"Downloaded in {round(time() - startTime)} seconds")
+    retcode = tubeDl([message.filtered_input_str], __progress, startTime, desiredFormat)
+    if retcode == 0:
+        _fpath = glob.glob(path.join('downloads', str(startTime), '*'))[0]
+        await message.edit(f"**YTDL completed in {round(time() - startTime)} seconds**\n`{_fpath}`")
+    else:
+        await message.edit(str(retcode))
