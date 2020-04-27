@@ -1065,7 +1065,7 @@ async def pin_msgs(message: Message):
                     )
             return
 
-        if silent_pin:
+        elif silent_pin:
 
             try:
                 message_id = message.reply_to_message.message_id
@@ -1184,7 +1184,7 @@ async def chatpic_func(message: Message):
                     " `do .help gpic for more info` ⚠", del_in=0)
                 return
 
-        if gpic_del:
+        elif gpic_del:
 
             try:
                 await userge.delete_chat_photo(chat_id)

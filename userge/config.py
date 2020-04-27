@@ -58,6 +58,8 @@ class Config:
 
     SCREENSHOT_API = os.environ.get("SCREENSHOT_API", None)
 
+    CURRENCY_API = os.environ.get("CURRENCY_API", None)
+
     G_DRIVE_CLIENT_ID = os.environ.get("G_DRIVE_CLIENT_ID", None)
 
     G_DRIVE_CLIENT_SECRET = os.environ.get("G_DRIVE_CLIENT_SECRET", None)

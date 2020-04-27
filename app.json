@@ -44,8 +44,14 @@
             "required": false
         },
         "SCREENSHOT_API": {
-            "description": "api key from 'https://screenshotlayer.com'",
+            "description": "get API key from 'https://screenshotlayer.com'",
             "required": false
+
+        },
+        "CURRENCY_API": {
+            "description": "get API key from 'https://free.currencyconverterapi.com'",
+            "required": false
+
         },
         "G_DRIVE_PARENT_ID": {
             "description": "GDrive Folder ID",
