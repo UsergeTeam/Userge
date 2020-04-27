@@ -54,6 +54,8 @@ async def clear_thumb_nail(message: Message):
     elif os.path.exists('resources/userge.png'):
         os.remove('resources/userge.png')
         await message.edit("✅ Default thumbnail deleted succesfully.", del_in=3)
+    else:
+        await message.delete()
 
 
 @userge.on_cmd('vthumb', about={'header': "View thumbnail"})

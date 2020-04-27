@@ -10,25 +10,29 @@
 import asyncio
 import glob
 from os import path
+from pathlib import Path
 from time import time
 from math import floor
 
 import youtube_dl as ytdl
 
-from userge import userge, Message
+from userge import userge, Message, Config
+from userge.plugins.misc.upload import upload
 from userge.utils import time_formatter, humanbytes
+
+LOGGER = userge.getLogger(__name__)
 
 
 def yt_getInfo(link):
     try:
-        x = ytdl.YoutubeDL({'no-playlist': True}).extract_info(link, download=False)
+        x = ytdl.YoutubeDL({'no-playlist': True, 'logger': LOGGER}).extract_info(link, download=False)
         thumb = x.get('thumbnail', '')
         formats = x.get('formats', [x])
         out = "No formats found :("
         if formats:
             out = "--U-ID   |   Reso.  |   Extension--\n"
         for i in formats:
-            out += f"`{i.get('format_id','')} | {i.get('format_note', None)} | {i.get('ext', None)}`\n"
+            out += f"`{i.get('format_id', '')} | {i.get('format_note', None)} | {i.get('ext', None)}`\n"
     except ytdl.utils.YoutubeDLError as e:
         return e
     else:
@@ -45,8 +49,37 @@ def supported(url):
 
 
 def tubeDl(url: list, prog, starttime, uid=None):
-    _opts = {'outtmpl': path.join('downloads', str(starttime), '%(title)s-%(format)s.%(ext)s')}
+    _opts = {'outtmpl': path.join(Config.DOWN_PATH, str(starttime), '%(title)s-%(format)s.%(ext)s'),
+             'logger': LOGGER,
+             'postprocessors': [
+                 {'key': 'FFmpegMetadata'}
+             ]}
     _quality = {'format': 'bestvideo+bestaudio/best' if not uid else str(uid)}
+    _opts.update(_quality)
+    try:
+        x = ytdl.YoutubeDL(_opts)
+        x.add_progress_hook(prog)
+        dloader = x.download(url)
+    except ytdl.utils.YoutubeDLError as e:
+        return e
+    else:
+        return dloader
+
+
+def mp3Dl(url, prog, starttime):
+    _opts = {'outtmpl': path.join(Config.DOWN_PATH, str(starttime), '%(title)s.%(ext)s'),
+             'logger': LOGGER,
+             'writethumbnail': True,
+             'postprocessors': [
+                 {
+                     'key': 'FFmpegExtractAudio',
+                     'preferredcodec': 'mp3',
+                     'preferredquality': '320',
+                 },
+                 {'key': 'EmbedThumbnail'},
+                 {'key': 'FFmpegMetadata'},
+             ]}
+    _quality = {'format': 'bestaudio/best'}
     _opts.update(_quality)
     try:
         x = ytdl.YoutubeDL(_opts)
@@ -86,22 +119,14 @@ __{uploader}__
 
 @userge.on_cmd("ytdl", about={'header': "Download from youtube",
                               'options': {'-a': 'select the audio u-id',
-                                          '-v': 'select the video u-id'},
+                                          '-v': 'select the video u-id',
+                                          '-m': 'extract the mp3 in 320kbps',
+                                          '-t': 'uploadsm to telegram'},
                               'examples': ['.ytdl `link`',
-                                           '`.ytdl -a12 -v120 link`']}, del_pre=True)
+                                           '`.ytdl -a12 -v120 link`',
+                                           '`.ytdl -m -t link` will upload the mp3',
+                                           '`.ytsl -m -t -d link` will upload the mp3 as a document']}, del_pre=True)
 async def ytDown(message: Message):
-    await message.edit("Hold on \u23f3 ..")
-    desiredFormat = None
-    startTime = time()
-    if bool(message.flags):
-        desiredFormat1 = str(message.flags.get('a', ''))
-        desiredFormat2 = str(message.flags.get('v', ''))
-        if len(message.flags) == 2:
-            # 1st format must contain the video
-            desiredFormat = '+'.join([desiredFormat2, desiredFormat1])
-        elif len(message.flags) == 1:
-            desiredFormat = desiredFormat2 or desiredFormat1
-
     def __progress(data: dict):
         if ((time() - startTime) % 4) > 3.9:
             if data['status'] == "downloading":
@@ -121,9 +146,28 @@ async def ytDown(message: Message):
                 if message.text != out:
                     asyncio.get_event_loop().run_until_complete(message.edit(out))
 
-    retcode = tubeDl([message.filtered_input_str], __progress, startTime, desiredFormat)
+    await message.edit("Hold on \u23f3 ..")
+    startTime = time()
+    if bool(message.flags):
+        desiredFormat1 = str(message.flags.get('a', ''))
+        desiredFormat2 = str(message.flags.get('v', ''))
+        if 'm' in message.flags:
+            retcode = mp3Dl(message.filtered_input_str, __progress, startTime)
+        elif all(k in message.flags for k in ("a", "v")):
+            # 1st format must contain the video
+            desiredFormat = '+'.join([desiredFormat2, desiredFormat1])
+            retcode = tubeDl([message.filtered_input_str], __progress, startTime, desiredFormat)
+        elif len(message.flags) == 1:
+            desiredFormat = desiredFormat2 or desiredFormat1
+            retcode = tubeDl([message.filtered_input_str], __progress, startTime, desiredFormat)
+        else:
+            retcode = tubeDl([message.filtered_input_str], __progress, startTime, None)
+    else:
+        retcode = tubeDl([message.filtered_input_str], __progress, startTime, None)
     if retcode == 0:
-        _fpath = glob.glob(path.join('downloads', str(startTime), '*'))[0]
+        _fpath = glob.glob(path.join(Config.DOWN_PATH, str(startTime), '*'))[0]
         await message.edit(f"**YTDL completed in {round(time() - startTime)} seconds**\n`{_fpath}`")
+        if 't' in message.flags:
+            await upload(Path(_fpath), message.chat.id, message.flags)
     else:
         await message.edit(str(retcode))
