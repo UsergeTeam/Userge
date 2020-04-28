@@ -125,7 +125,7 @@ __{uploader}__
                               'examples': ['.ytdl `link`',
                                            '`.ytdl -a12 -v120 link`',
                                            '`.ytdl -m -t link` will upload the mp3',
-                                           '`.ytsl -m -t -d link` will upload the mp3 as a document']}, del_pre=True)
+                                           '`.ytdl -m -t -d link` will upload the mp3 as a document']}, del_pre=True)
 async def ytDown(message: Message):
     def __progress(data: dict):
         if ((time() - startTime) % 4) > 3.9:
@@ -152,7 +152,7 @@ async def ytDown(message: Message):
         desiredFormat1 = str(message.flags.get('a', ''))
         desiredFormat2 = str(message.flags.get('v', ''))
         if 'm' in message.flags:
-            retcode = mp3Dl(message.filtered_input_str, __progress, startTime)
+            retcode = mp3Dl([message.filtered_input_str], __progress, startTime)
         elif all(k in message.flags for k in ("a", "v")):
             # 1st format must contain the video
             desiredFormat = '+'.join([desiredFormat2, desiredFormat1])
