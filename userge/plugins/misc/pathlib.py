@@ -18,7 +18,7 @@ from shutil import rmtree
 from os.path import (
     join, splitext, basename, dirname, relpath, exists, isdir, isfile)
 from zipfile import ZipFile, is_zipfile
-from tarfile import TarFile, is_tarfile
+from tarfile import TarFile, is_tarfile, open as tar_open
 from threading import Thread
 from multiprocessing import Pool, Lock
 from typing import Union, List, Tuple, Sequence
@@ -125,7 +125,7 @@ class PackLib(BaseLib):
         super().__init__()
 
     def __zip(self,
-              File: Union[ZipFile, TarFile],
+              p_type: Union[ZipFile, TarFile],
               file_paths: List[str],
               final_file_path: str) -> None:
 
@@ -134,7 +134,7 @@ class PackLib(BaseLib):
         if exists(final_file_path):
             os.remove(final_file_path)
 
-        with File(final_file_path, 'w') as p_f:
+        with p_type(final_file_path, 'w') as p_f:
             try:
                 for file_ in file_paths:
 
@@ -180,12 +180,12 @@ class PackLib(BaseLib):
         error = ""
 
         if is_zipfile(file_path):
-            File = ZipFile
+            u_type = ZipFile
 
         else:
-            File = TarFile
+            u_type = tar_open
 
-        with File(file_path, 'r') as p_f:
+        with u_type(file_path, 'r') as p_f:
             for file_name in file_names:
                 try:
                     p_f.extract(file_name, final_file_path)
@@ -221,15 +221,15 @@ class PackLib(BaseLib):
 
         if tar:
             file_name += '.tar'
-            File = TarFile
+            p_type = tar_open
 
         else:
             file_name += '.zip'
-            File = ZipFile
+            p_type = ZipFile
 
         self._final_file_path = join(Config.DOWN_PATH, file_name)
 
-        Thread(target=self.__zip, args=(File, file_paths, self._final_file_path)).start()
+        Thread(target=self.__zip, args=(p_type, file_paths, self._final_file_path)).start()
 
     def unpack_path(self) -> None:
         """
@@ -257,7 +257,8 @@ class PackLib(BaseLib):
         del temp_file_names, temp_size, min_chunk_size
 
         dir_name = splitext(basename(self.__file_path))[0]
-        self._final_file_path = join(Config.DOWN_PATH, dir_name)
+        self._final_file_path = join(
+            Config.DOWN_PATH, dir_name.replace('.tar', '').replace('.', '_'))
 
         pool = Pool()
 
@@ -278,7 +279,7 @@ class PackLib(BaseLib):
                 return tuple((z_.filename, z_.file_size) for z_ in z_f.infolist())
 
         else:
-            with TarFile(self.__file_path, 'r') as t_f:
+            with tar_open(self.__file_path, 'r') as t_f:
                 return tuple((t_.name, t_.size) for t_ in t_f.getmembers())
 
     @staticmethod
@@ -435,7 +436,8 @@ class SCLib(BaseLib):
         times = int(ceil(split_size / self.__chunk_size))
         self._total = int(ceil(self.__file_size / split_size))
 
-        self._final_file_path = join(dirname(self.__path), f"split_{basename(self.__path)}")
+        self._final_file_path = join(
+            dirname(self.__path), f"split_{basename(self.__path).replace('.', '_')}")
 
         if not isdir(self._final_file_path):
             os.makedirs(self._final_file_path)
@@ -447,9 +449,9 @@ class SCLib(BaseLib):
         Combine Split files.
         """
 
-        file_name = splitext(basename(self.__path))[0]
+        file_name, ext = splitext(basename(self.__path))
         self._final_file_path = join(dirname(self.__path), file_name)
-        file_list = sorted(glob(self._final_file_path + f'.{"[0-9]" * 5}'))
+        file_list = sorted(glob(self._final_file_path + f".{'[0-9]' * len(ext.lstrip('.'))}"))
 
         self._total = len(file_list)
         self.__file_size = sum([os.stat(f_).st_size for f_ in file_list])
@@ -473,7 +475,7 @@ async def setdir_(message: Message) -> None:
             os.makedirs(path)
 
         Config.DOWN_PATH = path
-        await message.edit(f"set `{path}` as **working directory** successfully!")
+        await message.edit(f"set `{path}` as **working directory** successfully!", del_in=5)
 
     except Exception as p_e:
         await message.err(p_e)
@@ -511,7 +513,7 @@ async def rmdir_(message: Message) -> None:
         return
 
     rmtree(path)
-    await message.edit(f"path : `{path}` **deleted** successfully!")
+    await message.edit(f"path : `{path}` **deleted** successfully!", del_in=5)
 
 
 @userge.on_cmd(r'split (\d+) ([\s\S]+)', about={
@@ -595,7 +597,7 @@ async def combine_(message: Message) -> None:
 
     _, ext = splitext(basename(file_path))
 
-    if not len(ext.lstrip('.')) == 5 or not ext.lstrip('.').isdigit():
+    if not ext.lstrip('.').isdigit():
         await message.err("unsupported file!")
         return
 

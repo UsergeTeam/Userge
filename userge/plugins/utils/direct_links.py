@@ -25,7 +25,8 @@ from userge.utils import humanbytes
     'supported links': [
         'Google Drive', 'MEGA.nz', 'Cloud Mail', 'Yandex.Disk', 'AFH',
         'ZippyShare', 'MediaFire', 'SourceForge', 'OSDN', 'GitHub'],
-    'usage': ".direct [link]"})
+    'usage': ".direct [link]",
+    'others': "MEGA.nz and ZippyShare **DISABLED**"})
 async def direct_(message: Message):
     """direct links generator"""
 
@@ -46,11 +47,11 @@ async def direct_(message: Message):
         if 'drive.google.com' in link:
             reply += f" 👉 {gdrive(link)}\n"
 
-        elif 'zippyshare.com' in link:
-            reply += f" 👉 {zippy_share(link)}\n"
+        # elif 'zippyshare.com' in link:
+            # reply += f" 👉 {zippy_share(link)}\n"
 
-        elif 'mega.' in link:
-            reply += f" 👉 {mega_dl(link)}\n"
+        # elif 'mega.' in link:
+            # reply += f" 👉 {mega_dl(link)}\n"
 
         elif 'yadi.sk' in link:
             reply += f" 👉 {yandex_disk(link)}\n"
