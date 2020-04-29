@@ -121,7 +121,7 @@ __{uploader}__
                               'options': {'-a': 'select the audio u-id',
                                           '-v': 'select the video u-id',
                                           '-m': 'extract the mp3 in 320kbps',
-                                          '-t': 'uploadsm to telegram'},
+                                          '-t': 'upload to telegram'},
                               'examples': ['.ytdl `link`',
                                            '`.ytdl -a12 -v120 link`',
                                            '`.ytdl -m -t link` will upload the mp3',

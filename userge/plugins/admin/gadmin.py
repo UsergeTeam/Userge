@@ -9,6 +9,7 @@
 
 import os
 import time
+import asyncio
 from emoji import get_emoji_regexp
 from pyrogram import ChatPermissions
 from pyrogram.errors import (FloodWait,
@@ -117,6 +118,8 @@ async def promote_usr(message: Message):
                                                  can_restrict_members=True,
                                                  can_invite_users=True,
                                                  can_pin_messages=True)
+
+                await asyncio.sleep(2)
 
                 await userge.set_administrator_title(chat_id, user_id, custom_rank)
 

@@ -219,13 +219,13 @@ async def unlock_perm(message: Message):
             await CHANNEL.log(
                 f"#UNLOCK\n\n"
                 f"CHAT: `{get_uperm.title}` (`{chat_id}`)\n"
-                f"PERMISSIONS: `All Permissions`"
-            )
+                f"PERMISSIONS: `All Permissions`")
 
         except Exception as e_f:
             await message.edit(
                 text=r"`i don't have permission to do that ＞︿＜`\n\n"
                 f"**ERROR:** `{e_f}`", del_in=0)
+        return
 
     if unlock_type == "msg":
         umsg = True

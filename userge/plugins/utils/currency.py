@@ -24,8 +24,11 @@ async def cur_conv(message: Message):
     """
     if Config.CURRENCY_API is None:
         await message.edit(
-            "`Oops!!\nget the API from` (HERE)[https://free.currencyconverterapi.com] "
-            "`& add it to Heroku config vars` (`CURRENCY_API`)", del_in=0)
+            "<code>Oops!!get the API from</code> "
+            "<a href='https://free.currencyconverterapi.com'>HERE</a> "
+            "<code>& add it to Heroku config vars</code> (<code>CURRENCY_API</code>)",
+            disable_web_page_preview=True,
+            parse_mode="html", del_in=0)
         return
 
     filterinput = get_emoji_regexp().sub(u'', message.input_str)
