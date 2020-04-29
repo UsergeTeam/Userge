@@ -92,18 +92,6 @@ async def doc_upload(chat_id, path):
     await finalize(chat_id, message, msg, start_t)
 
 
-async def finalize(chat_id, message, msg, start_t):
-    await CHANNEL.fwd_msg(msg)
-    await userge.send_chat_action(chat_id, "cancel")
-    if message.process_is_canceled:
-        await message.edit("`Process Canceled!`", del_in=5)
-
-    else:
-        end_t = datetime.now()
-        ms = (end_t - start_t).seconds
-        await message.edit(f"Uploaded in {ms} seconds")
-
-
 async def vid_upload(chat_id, path):
     strpath = str(path)
     thumb = await get_thumb(strpath)
@@ -128,17 +116,9 @@ async def vid_upload(chat_id, path):
             "uploading", userge, message, c_time
         )
     )
-    await userge.send_chat_action(chat_id, "cancel")
-    await CHANNEL.fwd_msg(msg)
+
     await remove_thumb(thumb)
-
-    if message.process_is_canceled:
-        await message.edit("`Process Canceled!`", del_in=5)
-
-    else:
-        end_t = datetime.now()
-        ms = (end_t - start_t).seconds
-        await message.edit(f"Uploaded in {ms} seconds")
+    await finalize(chat_id, message, msg, start_t)
 
 
 async def audio_upload(chat_id, path):
@@ -196,3 +176,15 @@ async def remove_thumb(thumb: str) -> None:
             thumb != LOGO_PATH and \
             thumb != THUMB_PATH:
         os.remove(thumb)
+
+
+async def finalize(chat_id: int, message: Message, msg: Message, start_t: int):
+    await CHANNEL.fwd_msg(msg)
+    await userge.send_chat_action(chat_id, "cancel")
+    if message.process_is_canceled:
+        await message.edit("`Process Canceled!`", del_in=5)
+
+    else:
+        end_t = datetime.now()
+        ms = (end_t - start_t).seconds
+        await message.edit(f"Uploaded in {ms} seconds")

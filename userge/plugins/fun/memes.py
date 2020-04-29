@@ -572,6 +572,7 @@ async def slap_(message: Message):
 async def decide_(message: Message):
     """decide"""
     decision = message.matches[0].group(1).lower()
+    await message.edit("hmm...")
 
     if decision != "decide":
         r = requests.get(f"https://yesno.wtf/api?force={decision}").json()

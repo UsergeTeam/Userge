@@ -15,9 +15,9 @@ from userge import userge, Message
 
 @userge.on_cmd("type", about={
     'header': "Simulate a typewriter",
-    'usage': ".type [text | reply to msg]"})
+    'usage': ".type [text]"})
 async def type_(message: Message):
-    text = message.input_or_reply_str
+    text = message.input_str
 
     if not text:
         await message.err("input not found")

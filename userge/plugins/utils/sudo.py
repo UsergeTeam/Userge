@@ -112,8 +112,13 @@ async def add_sudo_cmd(message: Message):
         await message.err('input not found!')
         return
 
+    cmd = cmd.lstrip('.')
+
     if cmd in Config.ALLOWED_COMMANDS:
         await message.edit(f"cmd : `{cmd}` already in **SUDO**!", del_in=5)
+
+    elif cmd not in [c_d.lstrip('.') for c_d in userge.get_help(all_cmds=True)[0]]:
+        await message.edit(f"cmd : `{cmd}` 🤔, is that a command ?", del_in=5)
 
     else:
         Config.ALLOWED_COMMANDS.add(cmd)

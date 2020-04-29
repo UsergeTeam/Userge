@@ -56,8 +56,8 @@ Latency: `{result['server']['latency']}`
 Ping: `{result['ping']}`
 Sent: `{humanbytes(result['bytes_sent'])}`
 Received: `{humanbytes(result['bytes_received'])}`
-Download: `{humanbytes(result['download'])}/s`
-Upload: `{humanbytes(result['upload'])}/s`**"""
+Download: `{humanbytes(result['download'] / 8)}/s`
+Upload: `{humanbytes(result['upload'] / 8)}/s`**"""
 
     msg = await userge.send_photo(chat_id=message.chat.id,
                                   photo=path,

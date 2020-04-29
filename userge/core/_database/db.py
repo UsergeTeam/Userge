@@ -13,7 +13,7 @@ from pymongo.collection import Collection
 from userge import logging, Config
 
 LOG = logging.getLogger(__name__)
-LOG_STR = "$$$>>> __%s__ <<<$$$"
+LOG_STR = "$$$>>> %s <<<$$$"
 
 LOG.info(LOG_STR, "Connecting to Database...")
 

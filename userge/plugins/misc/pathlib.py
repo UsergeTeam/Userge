@@ -474,7 +474,7 @@ async def setdir_(message: Message) -> None:
         if not isdir(path):
             os.makedirs(path)
 
-        Config.DOWN_PATH = path
+        Config.DOWN_PATH = path.rstrip('/') + '/'
         await message.edit(f"set `{path}` as **working directory** successfully!", del_in=5)
 
     except Exception as p_e:

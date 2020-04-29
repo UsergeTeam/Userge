@@ -54,7 +54,7 @@ class Config:
 
     LANG = os.environ.get("PREFERRED_LANGUAGE", "en")
 
-    DOWN_PATH = os.environ.get("DOWN_PATH", "downloads/")
+    DOWN_PATH = os.environ.get("DOWN_PATH", "downloads").rstrip('/') + '/'
 
     SCREENSHOT_API = os.environ.get("SCREENSHOT_API", None)
 
@@ -132,8 +132,8 @@ if not os.path.exists('bin'):
     os.mkdir('bin')
 
 BINS = {
-    "https://raw.githubusercontent.com/yshalsager/megadown/master/megadown":
-    "bin/megadown",
+    #"https://raw.githubusercontent.com/yshalsager/megadown/master/megadown":
+    #"bin/megadown", removed temporary
     "https://raw.githubusercontent.com/yshalsager/cmrudl.py/master/cmrudl.py":
     "bin/cmrudl"}
 

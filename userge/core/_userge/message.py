@@ -23,7 +23,7 @@ ERROR_MSG_DELETE_TIMEOUT = 5
 ERROR_STRING = "**ERROR**: `{}`"
 
 LOG = logging.getLogger(__name__)
-LOG_STR = "<<<!  [[[[[  ___%s___  ]]]]]  !>>>"
+LOG_STR = "<<<!  [[[[[  %s  ]]]]]  !>>>"
 
 
 class Message(RawMessage):
@@ -168,7 +168,7 @@ class Message(RawMessage):
                            log: Union[bool, str] = False,
                            delete_message: bool = True) -> 'Message':
         """
-        You can send large outputs as file
+        \nYou can send large outputs as file
 
         Example:
                 message.send_as_file(text="hello")
@@ -176,15 +176,22 @@ class Message(RawMessage):
         Parameters:
             text (``str``):
                 Text of the message to be sent.
+
             filename (``str``, *optional*):
                 file_name for output file.
+
             caption (``str``, *optional*):
                 caption for output file.
+
             log (``bool`` | ``str``, *optional*):
-                If ``True``, the message will be forwarded to the log channel.
+                If ``True``, the message will be forwarded
+                to the log channel.
                 If ``str``, the logger name will be updated.
+
             delete_message (``bool``, *optional*):
-                If ``True``, the message will be deleted after sending the file.
+                If ``True``, the message will be deleted
+                after sending the file.
+
         Returns:
             On success, the sent Message is returned.
         """
@@ -227,39 +234,59 @@ class Message(RawMessage):
                     reply_to_message_id: Optional[int] = None,
                     reply_markup: InlineKeyboardMarkup = None) -> Union['Message', bool]:
         """
-        Example:
+        \nExample:
                 message.reply("hello")
 
         Parameters:
             text (``str``):
                 Text of the message to be sent.
+
             del_in (``int``):
                 Time in Seconds for delete that message.
+
             log (``bool`` | ``str``, *optional*):
-                If ``True``, the message will be forwarded to the log channel.
+                If ``True``, the message will be forwarded
+                to the log channel.
                 If ``str``, the logger name will be updated.
+
             quote (``bool``, *optional*):
-                If ``True``, the message will be sent as a reply to this message.
-                If *reply_to_message_id* is passed, this parameter will be ignored.
-                Defaults to ``True`` in group chats and ``False`` in private chats.
+                If ``True``, the message will be sent as
+                a reply to this message.
+                If *reply_to_message_id* is passed,
+                this parameter will be ignored.
+                Defaults to ``True`` in group chats
+                and ``False`` in private chats.
+
             parse_mode (``str``, *optional*):
-                By default, texts are parsed using both Markdown and HTML styles.
+                By default, texts are parsed using both
+                Markdown and HTML styles.
                 You can combine both syntaxes together.
-                Pass "markdown" or "md" to enable Markdown-style parsing only.
+                Pass "markdown" or "md" to enable
+                Markdown-style parsing only.
                 Pass "html" to enable HTML-style parsing only.
                 Pass None to completely disable style parsing.
+
             disable_web_page_preview (``bool``, *optional*):
                 Disables link previews for links in this message.
+
             disable_notification (``bool``, *optional*):
                 Sends the message silently.
                 Users will receive a notification with no sound.
+
             reply_to_message_id (``int``, *optional*):
                 If the message is a reply, ID of the original message.
-            reply_markup (:obj:`InlineKeyboardMarkup` | :obj:`ReplyKeyboardMarkup` | :obj:`ReplyKeyboardRemove` | :obj:`ForceReply`, *optional*):
-                Additional interface options. An object for an inline keyboard, custom reply keyboard,
-                instructions to remove reply keyboard or to force a reply from the user.
+
+            reply_markup (:obj:`InlineKeyboardMarkup`
+            | :obj:`ReplyKeyboardMarkup` | :obj:`ReplyKeyboardRemove`
+            | :obj:`ForceReply`, *optional*):
+                Additional interface options. An object for an inline keyboard,
+                custom reply keyboard,
+                instructions to remove reply keyboard or to
+                force a reply from the user.
+
         Returns:
             On success, the sent Message or True is returned.
+
         Raises:
             RPCError: In case of a Telegram RPC error.
         """
@@ -303,31 +330,43 @@ class Message(RawMessage):
                    disable_web_page_preview: Optional[bool] = None,
                    reply_markup: InlineKeyboardMarkup = None) -> Union['Message', bool]:
         """
-        Example:
+        \nExample:
                 message.edit_text("hello")
 
         Parameters:
             text (``str``):
                 New text of the message.
+
             del_in (``int``):
                 Time in Seconds for delete that message.
+
             log (``bool`` | ``str``, *optional*):
-                If ``True``, the message will be forwarded to the log channel.
+                If ``True``, the message will be forwarded
+                to the log channel.
                 If ``str``, the logger name will be updated.
+
             sudo (``bool``, *optional*):
                 If ``True``, sudo users supported.
+
             parse_mode (``str``, *optional*):
-                By default, texts are parsed using both Markdown and HTML styles.
+                By default, texts are parsed using
+                both Markdown and HTML styles.
                 You can combine both syntaxes together.
-                Pass "markdown" or "md" to enable Markdown-style parsing only.
+                Pass "markdown" or "md" to enable
+                Markdown-style parsing only.
                 Pass "html" to enable HTML-style parsing only.
                 Pass None to completely disable style parsing.
+
             disable_web_page_preview (``bool``, *optional*):
                 Disables link previews for links in this message.
+
             reply_markup (:obj:`InlineKeyboardMarkup`, *optional*):
                 An InlineKeyboardMarkup object.
+
         Returns:
-            On success, the edited :obj:`Message` or True is returned.
+            On success, the edited
+            :obj:`Message` or True is returned.
+
         Raises:
             RPCError: In case of a Telegram RPC error.
         """
@@ -382,8 +421,9 @@ class Message(RawMessage):
                          reply_markup: InlineKeyboardMarkup = None,
                          **kwargs) -> Union['Message', bool]:
         """
-        This will first try to message.edit.
-        If it raise MessageAuthorRequired or MessageIdInvalid error, run message.reply.
+        \nThis will first try to message.edit.
+        If it raise MessageAuthorRequired or
+        MessageIdInvalid error, run message.reply.
 
         Example:
                 message.force_edit(text='force_edit', del_in=3)
@@ -391,24 +431,35 @@ class Message(RawMessage):
         Parameters:
             text (``str``):
                 New text of the message.
+
             del_in (``int``):
                 Time in Seconds for delete that message.
+
             log (``bool`` | ``str``, *optional*):
-                If ``True``, the message will be forwarded to the log channel.
+                If ``True``, the message will be forwarded
+                to the log channel.
                 If ``str``, the logger name will be updated.
+
             parse_mode (``str``, *optional*):
-                By default, texts are parsed using both Markdown and HTML styles.
+                By default, texts are parsed using both
+                Markdown and HTML styles.
                 You can combine both syntaxes together.
-                Pass "markdown" or "md" to enable Markdown-style parsing only.
+                Pass "markdown" or "md" to enable
+                Markdown-style parsing only.
                 Pass "html" to enable HTML-style parsing only.
                 Pass None to completely disable style parsing.
+
             disable_web_page_preview (``bool``, *optional*):
                 Disables link previews for links in this message.
+
             reply_markup (:obj:`InlineKeyboardMarkup`, *optional*):
                 An InlineKeyboardMarkup object.
+
             **kwargs (for message.reply)
+
         Returns:
-            On success, the edited or replied :obj:`Message` or True is returned.
+            On success, the edited or replied
+            :obj:`Message` or True is returned.
         """
 
         try:
@@ -438,33 +489,43 @@ class Message(RawMessage):
                   disable_web_page_preview: Optional[bool] = None,
                   reply_markup: InlineKeyboardMarkup = None) -> Union['Message', bool]:
         """
-        You can send error messages using this method
+        \nYou can send error messages using this method
 
         Example:
                 message.err(text='error', del_in=3)
-
         Parameters:
             text (``str``):
                 New text of the message.
+
             del_in (``int``):
                 Time in Seconds for delete that message.
+
             log (``bool`` | ``str``, *optional*):
-                If ``True``, the message will be forwarded to the log channel.
+                If ``True``, the message will be forwarded
+                to the log channel.
                 If ``str``, the logger name will be updated.
+
             sudo (``bool``, *optional*):
                 If ``True``, sudo users supported.
+
             parse_mode (``str``, *optional*):
-                By default, texts are parsed using both Markdown and HTML styles.
+                By default, texts are parsed using
+                both Markdown and HTML styles.
                 You can combine both syntaxes together.
-                Pass "markdown" or "md" to enable Markdown-style parsing only.
+                Pass "markdown" or "md" to enable
+                Markdown-style parsing only.
                 Pass "html" to enable HTML-style parsing only.
                 Pass None to completely disable style parsing.
+
             disable_web_page_preview (``bool``, *optional*):
                 Disables link previews for links in this message.
+
             reply_markup (:obj:`InlineKeyboardMarkup`, *optional*):
                 An InlineKeyboardMarkup object.
+
         Returns:
-            On success, the edited :obj:`Message` or True is returned.
+            On success, the edited
+            :obj:`Message` or True is returned.
         """
 
         del_in = del_in if del_in > 0 \
@@ -487,8 +548,9 @@ class Message(RawMessage):
                         reply_markup: InlineKeyboardMarkup = None,
                         **kwargs) -> Union['Message', bool]:
         """
-        This will first try to message.edit.
-        If it raise MessageAuthorRequired or MessageIdInvalid error, run message.reply.
+        \nThis will first try to message.edit.
+        If it raise MessageAuthorRequired or
+        MessageIdInvalid error, run message.reply.
 
         Example:
                 message.force_err(text='force_err', del_in=3)
@@ -496,24 +558,35 @@ class Message(RawMessage):
         Parameters:
             text (``str``):
                 New text of the message.
+
             del_in (``int``):
                 Time in Seconds for delete that message.
+
             log (``bool`` | ``str``, *optional*):
-                If ``True``, the message will be forwarded to the log channel.
+                If ``True``, the message will be forwarded
+                to the log channel.
                 If ``str``, the logger name will be updated.
+
             parse_mode (``str``, *optional*):
-                By default, texts are parsed using both Markdown and HTML styles.
+                By default, texts are parsed using
+                both Markdown and HTML styles.
                 You can combine both syntaxes together.
-                Pass "markdown" or "md" to enable Markdown-style parsing only.
+                Pass "markdown" or "md" to enable
+                Markdown-style parsing only.
                 Pass "html" to enable HTML-style parsing only.
                 Pass None to completely disable style parsing.
+
             disable_web_page_preview (``bool``, *optional*):
                 Disables link previews for links in this message.
+
             reply_markup (:obj:`InlineKeyboardMarkup`, *optional*):
                 An InlineKeyboardMarkup object.
+
             **kwargs (for message.reply)
+
         Returns:
-            On success, the edited or replied :obj:`Message` or True is returned.
+            On success, the edited or replied
+            :obj:`Message` or True is returned.
         """
 
         del_in = del_in if del_in > 0 \
@@ -537,7 +610,8 @@ class Message(RawMessage):
                           reply_markup: InlineKeyboardMarkup = None) -> Union['Message', bool]:
 
         """
-        This will first try to message.edit. If it raise MessageNotModified error,
+        \nThis will first try to message.edit.
+        If it raise MessageNotModified error,
         just pass it.
 
         Example:
@@ -546,25 +620,37 @@ class Message(RawMessage):
         Parameters:
             text (``str``):
                 New text of the message.
+
             del_in (``int``):
                 Time in Seconds for delete that message.
+
             log (``bool`` | ``str``, *optional*):
-                If ``True``, the message will be forwarded to the log channel.
+                If ``True``, the message will be forwarded
+                to the log channel.
                 If ``str``, the logger name will be updated.
+
             sudo (``bool``, *optional*):
                 If ``True``, sudo users supported.
+
             parse_mode (``str``, *optional*):
-                By default, texts are parsed using both Markdown and HTML styles.
+                By default, texts are parsed using
+                both Markdown and HTML styles.
                 You can combine both syntaxes together.
-                Pass "markdown" or "md" to enable Markdown-style parsing only.
+                Pass "markdown" or "md" to enable
+                Markdown-style parsing only.
                 Pass "html" to enable HTML-style parsing only.
                 Pass None to completely disable style parsing.
+
             disable_web_page_preview (``bool``, *optional*):
                 Disables link previews for links in this message.
+
             reply_markup (:obj:`InlineKeyboardMarkup`, *optional*):
                 An InlineKeyboardMarkup object.
+
         Returns:
-            On success, the edited :obj:`Message` or True is returned.
+            On success, the edited
+            :obj:`Message` or True is returned.
+
         Raises:
             RPCError: In case of a Telegram RPC error.
         """
@@ -592,7 +678,8 @@ class Message(RawMessage):
                                    **kwargs) -> Union['Message', bool]:
 
         """
-        This will first try to message.edit. If it raise MessageTooLong error,
+        \nThis will first try to message.edit.
+        If it raise MessageTooLong error,
         run message.send_as_file.
 
         Example:
@@ -601,26 +688,39 @@ class Message(RawMessage):
         Parameters:
             text (``str``):
                 New text of the message.
+
             del_in (``int``):
                 Time in Seconds for delete that message.
+
             log (``bool`` | ``str``, *optional*):
-                If ``True``, the message will be forwarded to the log channel.
+                If ``True``, the message will be forwarded
+                to the log channel.
                 If ``str``, the logger name will be updated.
+
             sudo (``bool``, *optional*):
                 If ``True``, sudo users supported.
+
             parse_mode (``str``, *optional*):
-                By default, texts are parsed using both Markdown and HTML styles.
+                By default, texts are parsed using both
+                Markdown and HTML styles.
                 You can combine both syntaxes together.
-                Pass "markdown" or "md" to enable Markdown-style parsing only.
+                Pass "markdown" or "md" to enable
+                Markdown-style parsing only.
                 Pass "html" to enable HTML-style parsing only.
                 Pass None to completely disable style parsing.
+
             disable_web_page_preview (``bool``, *optional*):
                 Disables link previews for links in this message.
+
             reply_markup (:obj:`InlineKeyboardMarkup`, *optional*):
                 An InlineKeyboardMarkup object.
+
             **kwargs (for message.send_as_file)
+
         Returns:
-            On success, the edited :obj:`Message` or True is returned.
+            On success, the edited
+            :obj:`Message` or True is returned.
+
         Raises:
             RPCError: In case of a Telegram RPC error.
         """
@@ -650,7 +750,8 @@ class Message(RawMessage):
                                     **kwargs) -> Union['Message', bool]:
 
         """
-        This will first try to message.reply. If it raise MessageTooLong error,
+        \nThis will first try to message.reply.
+        If it raise MessageTooLong error,
         run message.send_as_file.
 
         Example:
@@ -659,34 +760,56 @@ class Message(RawMessage):
         Parameters:
             text (``str``):
                 Text of the message to be sent.
+
             del_in (``int``):
                 Time in Seconds for delete that message.
+
             log (``bool`` | ``str``, *optional*):
-                If ``True``, the message will be forwarded to the log channel.
+                If ``True``, the message will be forwarded
+                to the log channel.
                 If ``str``, the logger name will be updated.
+
             quote (``bool``, *optional*):
-                If ``True``, the message will be sent as a reply to this message.
-                If *reply_to_message_id* is passed, this parameter will be ignored.
-                Defaults to ``True`` in group chats and ``False`` in private chats.
+                If ``True``, the message will be sent
+                as a reply to this message.
+                If *reply_to_message_id* is passed,
+                this parameter will be ignored.
+                Defaults to ``True`` in group chats
+                and ``False`` in private chats.
+
             parse_mode (``str``, *optional*):
-                By default, texts are parsed using both Markdown and HTML styles.
+                By default, texts are parsed using
+                both Markdown and HTML styles.
                 You can combine both syntaxes together.
-                Pass "markdown" or "md" to enable Markdown-style parsing only.
+                Pass "markdown" or "md" to enable
+                Markdown-style parsing only.
                 Pass "html" to enable HTML-style parsing only.
                 Pass None to completely disable style parsing.
+
             disable_web_page_preview (``bool``, *optional*):
                 Disables link previews for links in this message.
+
             disable_notification (``bool``, *optional*):
                 Sends the message silently.
                 Users will receive a notification with no sound.
+
             reply_to_message_id (``int``, *optional*):
-                If the message is a reply, ID of the original message.
-            reply_markup (:obj:`InlineKeyboardMarkup` | :obj:`ReplyKeyboardMarkup` | :obj:`ReplyKeyboardRemove` | :obj:`ForceReply`, *optional*):
-                Additional interface options. An object for an inline keyboard, custom reply keyboard,
-                instructions to remove reply keyboard or to force a reply from the user.
+                If the message is a reply, ID of the
+                original message.
+
+            reply_markup (:obj:`InlineKeyboardMarkup`
+            | :obj:`ReplyKeyboardMarkup` | :obj:`ReplyKeyboardRemove`
+            | :obj:`ForceReply`, *optional*):
+                Additional interface options. An object for an
+                inline keyboard, custom reply keyboard,
+                instructions to remove reply keyboard
+                or to force a reply from the user.
+
             **kwargs (for message.send_as_file)
+
         Returns:
             On success, the sent Message or True is returned.
+
         Raises:
             RPCError: In case of a Telegram RPC error.
         """
@@ -715,8 +838,9 @@ class Message(RawMessage):
                                          **kwargs) -> Union['Message', bool]:
 
         """
-        This will first try to message.edit_or_send_as_file.
-        If it raise MessageAuthorRequired or MessageIdInvalid error, run message.reply_or_send_as_file.
+        \nThis will first try to message.edit_or_send_as_file.
+        If it raise MessageAuthorRequired
+        or MessageIdInvalid error, run message.reply_or_send_as_file.
 
         Example:
                 message.force_edit_or_send_as_file("some huge text")
@@ -724,24 +848,35 @@ class Message(RawMessage):
         Parameters:
             text (``str``):
                 New text of the message.
+
             del_in (``int``):
                 Time in Seconds for delete that message.
+
             log (``bool`` | ``str``, *optional*):
-                If ``True``, the message will be forwarded to the log channel.
+                If ``True``, the message will be
+                forwarded to the log channel.
                 If ``str``, the logger name will be updated.
+
             parse_mode (``str``, *optional*):
-                By default, texts are parsed using both Markdown and HTML styles.
+                By default, texts are parsed using
+                both Markdown and HTML styles.
                 You can combine both syntaxes together.
-                Pass "markdown" or "md" to enable Markdown-style parsing only.
+                Pass "markdown" or "md" to enable
+                Markdown-style parsing only.
                 Pass "html" to enable HTML-style parsing only.
                 Pass None to completely disable style parsing.
+
             disable_web_page_preview (``bool``, *optional*):
                 Disables link previews for links in this message.
+
             reply_markup (:obj:`InlineKeyboardMarkup`, *optional*):
                 An InlineKeyboardMarkup object.
+
             **kwargs (for message.reply and message.send_as_file)
+
         Returns:
-            On success, the edited or replied :obj:`Message` or True is returned.
+            On success, the edited or replied
+            :obj:`Message` or True is returned.
         """
 
         try:

@@ -9,10 +9,10 @@
 
 from pyrogram import Message as RawMessage
 from userge import logging, Config
-from . import client, message
+from .. import client, message
 
 LOG = logging.getLogger(__name__)
-LOG_STR = "<<<!  (((((  ___%s___  )))))  !>>>"
+LOG_STR = "<<<!  (((((  %s  )))))  !>>>"
 
 
 class CLogger:
@@ -30,11 +30,12 @@ class CLogger:
 
     def update(self, name: str) -> None:
         """
-        update current logger name.
+        \nupdate current logger name.
 
         Parameters:
             name (``str``):
                 New name to logger.
+
         Returns:
             None
         """
@@ -43,11 +44,12 @@ class CLogger:
 
     async def log(self, text: str) -> None:
         """
-        send text message to log channel.
+        \nsend text message to log channel.
 
         Parameters:
             text (``str``):
                 Text of the message to be sent.
+
         Returns:
             None
         """
@@ -63,19 +65,24 @@ class CLogger:
                       as_copy: bool = True,
                       remove_caption: bool = False) -> None:
         """
-        forward message to log channel.
+        \nforward message to log channel.
 
         Parameters:
             message (`pyrogram.Message`):
                 pass pyrogram.Message object which want to forward.
+
             as_copy (`bool`, *optional*):
-                Pass True to forward messages without the forward header (i.e.: send a copy of the message content so
+                Pass True to forward messages without the forward header
+                (i.e.: send a copy of the message content so
                 that it appears as originally sent by you).
                 Defaults to True.
+
             remove_caption (`bool`, *optional*):
-                If set to True and *as_copy* is enabled as well, media captions are not preserved when copying the
+                If set to True and *as_copy* is enabled as well,
+                media captions are not preserved when copying the
                 message. Has no effect if *as_copy* is not enabled.
                 Defaults to False.
+                
         Returns:
             None
         """
