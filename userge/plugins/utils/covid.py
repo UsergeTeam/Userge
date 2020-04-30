@@ -22,6 +22,25 @@ from userge import userge, Message
                  "Poland, S. Korea, Romania, UAE......"})
 async def covid(message: Message):
     """covid"""
+    def fill(nw_c, nw_d, ac_c, cr_c, t_c, t_d, t_r, name):
+        output_l = f'''
+        <strong><u>COVID-19 ☠ Patients Reported in {name}</u></strong>
+
+        😕 **New Cases** : `{nw_c}`
+        😭 **New Deaths** : `{nw_d}`
+
+        😔 **Active Cases** : `{ac_c}`
+        😥 **Critical Cases** : `{cr_c}`
+
+        😔 **Total Cases** : `{t_c}`
+        😭 **Total Deaths** : `{t_d}`
+        😍 **Total Recovered** : `{t_r}`
+
+        **Last Update** : __{set_data}__
+        **References** : <a href="https://www.worldometers.info/coronavirus/">worldometers.info</a>      
+        '''
+        return output_l
+
 
     input_ = message.input_str.title()
     # Country Wise Data Reciever
@@ -32,23 +51,14 @@ async def covid(message: Message):
     set_count_globe = r_json['world_total']
 
     if not input_:
-        await message.edit(f'''
-<strong><u>COVID-19 ☠ Patients Reported in Global</u></strong>
-
-    😕 **New Cases** : `{set_count_globe['new_cases']}`
-    😭 **New Deaths** : `{set_count_globe['new_deaths']}`
-
-    😔 **Active Cases** : `{set_count_globe['active_cases']}`
-    😥 **Critical Cases** : `{set_count_globe['serious_critical']}`
-
-    😔 **Total Cases** : `{set_count_globe['total_cases']}`
-    😭 **Total Deaths** : `{set_count_globe['total_deaths']}`
-    😍 **Total Recovered** : `{set_count_globe['total_recovered']}`
-
-**Last Update** : __{set_data}__
-**References** : <a href="https://www.worldometers.info/coronavirus/">worldometers.info</a>
-''', disable_web_page_preview=True)
+        #print("Globle")
+        final_out1 = fill(set_count_globe['new_cases'], set_count_globe['new_deaths'], \
+        set_count_globe['active_cases'], set_count_globe['serious_critical'], \
+        set_count_globe['total_cases'], set_count_globe['total_deaths'],\
+        set_count_globe['total_recovered'], 'Global')
+        await message.edit(final_out1, disable_web_page_preview=True)
     else:
+        #print("Local")
         flag = 0
         for i in range(len(set_count_country)):
             if set_count_country[i]['country_name'] == input_ or \
@@ -57,22 +67,11 @@ async def covid(message: Message):
                 flag = 1
                 break
         if flag == 1:
-            await message.edit(f'''
-<strong><u>COVID-19 ☠ Patients Reported in {set_country['country_name']}</u></strong>
-
-    😕 **New Cases** : `{set_country['new_cases']}`
-    😭 **New Deaths** : `{set_country['new_deaths']}`
-
-    😔 **Active Cases** : `{set_country['active_cases']}`
-    😥 **Critical Cases** : `{set_country['serious_critical']}`
-
-    😔 **Total Cases** : `{set_country['cases']}`
-    😭 **Total Deaths** : `{set_country['deaths']}`
-    😍 **Total Recovered** : `{set_country['total_recovered']}`
-
-**Last Update** : __{set_data}__
-**References** : <a href="https://www.worldometers.info/coronavirus/">worldometers.info</a>
-''', disable_web_page_preview=True)
+            final_out2 = fill(set_country['new_cases'], set_country['new_deaths'], \
+            set_country['active_cases'], set_country['serious_critical'], \
+            set_country['cases'], set_country['deaths'],\
+            set_country['total_recovered'], set_country['country_name'])
+            await message.edit(final_out2, disable_web_page_preview=True)
         else:
             await message.edit(
                 "invalid country or statistics of this country hasn't in our database☹", del_in=5)
