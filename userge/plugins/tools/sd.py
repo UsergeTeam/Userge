@@ -16,5 +16,4 @@ from userge import userge, Message
 async def selfdestruct(message: Message):
     seconds = int(message.matches[0].group(1) or 0)
     text = str(message.matches[0].group(2))
-
     await message.edit(text=text, del_in=seconds)

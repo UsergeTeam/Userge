@@ -10,6 +10,7 @@
 import os
 import time
 import asyncio
+
 from emoji import get_emoji_regexp
 from pyrogram import ChatPermissions
 from pyrogram.errors import (FloodWait,
@@ -18,6 +19,7 @@ from pyrogram.errors import (FloodWait,
                              ChatAdminRequired,
                              PeerIdInvalid,
                              UserIdInvalid)
+
 from userge import userge, Message
 
 CHANNEL = userge.getCLogger(__name__)
@@ -1211,11 +1213,11 @@ async def chatpic_func(message: Message):
     else:
         await message.edit(r"`i don't have proper permission to do that! (* ￣︿￣)`", del_in=0)
 
+
 @userge.on_cmd("smode", about={
     'header': "turn on/off chat slow mode",
-    'description': [
-        "use this to turn off or switch between chat slow mode \n",
-        "available 6 modes, s10/s30/m1/m5/m15/h1"],
+    'description': "use this to turn off or switch between chat slow mode \n"
+                   "available 6 modes, s10/s30/m1/m5/m15/h1",
     'flags': {
         '-s': "seconds",
         '-m': "minutes",

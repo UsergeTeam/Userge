@@ -6,6 +6,7 @@
 #
 # All rights reserved.
 
+__all__ = ['Userge']
 
 import re
 import os
@@ -15,7 +16,6 @@ import importlib
 from types import ModuleType
 from typing import (
     Dict, List, Tuple, Optional, Union, Any, Callable)
-from concurrent.futures import ThreadPoolExecutor
 
 import psutil
 import nest_asyncio
@@ -30,46 +30,32 @@ from userge.plugins import get_all_plugins
 from .message import Message
 from .ext import CLogger, Conv
 
-PYROFUNC = Callable[[Message], Any]
+_PYROFUNC = Callable[[Message], Any]
 
-LOG = logging.getLogger(__name__)
-LOG_STR = "<<<!  #####  %s  #####  !>>>"
+_LOG = logging.getLogger(__name__)
+_LOG_STR = "<<<!  #####  %s  #####  !>>>"
 
 
 class Userge(RawClient):
-    """
-    Userge: userbot
-    """
-
+    """Userge, the userbot"""
     def __init__(self) -> None:
-
-        self.__help_dict: Dict[str, Dict[str, str]] = {}
-        self.__imported: List[ModuleType] = []
-        self.__channel = self.getCLogger(__name__)
-
-        LOG.info(LOG_STR, "Setting Userge Configs")
-
+        self._help_dict: Dict[str, Dict[str, str]] = {}
+        self._imported: List[ModuleType] = []
+        self._channel = self.getCLogger(__name__)
+        _LOG.info(_LOG_STR, "Setting Userge Configs")
         super().__init__(Config.HU_STRING_SESSION,
                          api_id=Config.API_ID,
                          api_hash=Config.API_HASH)
 
     @staticmethod
     def getLogger(name: str) -> logging.Logger:
-        """
-        This returns new logger object.
-        """
-
-        LOG.debug(LOG_STR, f"Creating Logger => {name}")
-
+        """This returns new logger object"""
+        _LOG.debug(_LOG_STR, f"Creating Logger => {name}")
         return logging.getLogger(name)
 
     def getCLogger(self, name: str) -> CLogger:
-        """
-        This returns new channel logger object.
-        """
-
-        LOG.debug(LOG_STR, f"Creating CLogger => {name}")
-
+        """This returns new channel logger object"""
+        _LOG.debug(_LOG_STR, f"Creating CLogger => {name}")
         return CLogger(self, name)
 
     def conversation(self,
@@ -77,8 +63,7 @@ class Userge(RawClient):
                      *,
                      timeout: Union[int, float] = 10,
                      limit: int = 10) -> Conv:
-        """
-        \nThis returns new conversation object.
+        """\nThis returns new conversation object.
 
         Parameters:
             chat_id (``int`` | ``str``):
@@ -96,7 +81,6 @@ class Userge(RawClient):
                 set conversation message limit.
                 defaults to 10.
         """
-
         return Conv(self, chat_id, timeout, limit)
 
     async def send_read_acknowledge(self,
@@ -106,8 +90,7 @@ class Userge(RawClient):
                                     *,
                                     max_id: Optional[int] = None,
                                     clear_mentions: bool = False) -> bool:
-        """
-        \nMarks messages as read and optionally clears mentions.
+        """\nMarks messages as read and optionally clears mentions.
 
         Parameters:
             chat_id (``int`` | ``str``):
@@ -130,78 +113,46 @@ class Userge(RawClient):
                 If no message is provided, this will be the only action
                 taken.
                 defaults to False.
-        """
 
+        Returns:
+            On success, True is returned.
+        """
         if max_id is None:
             if message:
                 if isinstance(message, list):
                     max_id = max(msg.message_id for msg in message)
-
                 else:
                     max_id = message.message_id
-
             else:
                 max_id = 0
-
         if clear_mentions:
-            self.send(
+            await self.send(
                 functions.messages.ReadMentions(
                     peer=await self.resolve_peer(chat_id)))
-
             if max_id is None:
                 return True
-
         if max_id is not None:
             return await self.read_history(chat_id=chat_id, max_id=max_id)
-
         return False
 
-    @staticmethod
-    def new_thread(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
-        """
-        Run funcion in new thread.
-        """
-
-        async def thread(*args: Any) -> Any:
-            loop = asyncio.get_event_loop()
-
-            LOG.debug(LOG_STR, "Creating new thread")
-
-            with ThreadPoolExecutor() as pool:
-                return await loop.run_in_executor(pool, func, *args)
-
-        return thread
-
     async def get_user_dict(self, user_id: int) -> Dict[str, str]:
-        """
-        This will return user `Dict` which contains
+        """This will return user `Dict` which contains
         `id`(chat id), `fname`(first name), `lname`(last name),
         `flname`(full name), `uname`(username) and `mention`.
         """
-
         user_obj = await self.get_users(user_id)
-
         fname = (user_obj.first_name or '').strip()
         lname = (user_obj.last_name or '').strip()
         username = (user_obj.username or '').strip()
-
         if fname and lname:
             full_name = fname + ' ' + lname
-
         elif fname or lname:
             full_name = fname or lname
-
         else:
             full_name = "user"
-
         mention = f"[{username or full_name}](tg://user?id={user_id})"
-
-        return {'id': user_obj.id,
-                'fname': fname,
-                'lname': lname,
-                'flname': full_name,
-                'uname': username,
-                'mention': mention}
+        return {'id': user_obj.id, 'fname': fname, 'lname': lname,
+                'flname': full_name, 'uname': username, 'mention': mention}
 
     async def send_message(self,
                            chat_id: Union[int, str],
@@ -217,8 +168,7 @@ class Userge(RawClient):
                                                ReplyKeyboardMarkup,
                                                ReplyKeyboardRemove,
                                                ForceReply] = None) -> Union[Message, bool]:
-        """
-        \nSend text messages.
+        """\nSend text messages.
 
         Example:
                 @userge.send_message(chat_id=12345, text='test')
@@ -270,7 +220,6 @@ class Userge(RawClient):
         Returns:
             :obj:`Message`: On success, the sent text message or True is returned.
         """
-
         msg = await super().send_message(chat_id=chat_id,
                                          text=text,
                                          parse_mode=parse_mode,
@@ -279,19 +228,14 @@ class Userge(RawClient):
                                          reply_to_message_id=reply_to_message_id,
                                          schedule_date=schedule_date,
                                          reply_markup=reply_markup)
-
         if log:
             if isinstance(log, str):
-                self.__channel.update(log)
-
-            await self.__channel.fwd_msg(msg)
-
+                self._channel.update(log)
+            await self._channel.fwd_msg(msg)
         del_in = del_in or Config.MSG_DELETE_TIMEOUT
-
         if del_in > 0:
             await asyncio.sleep(del_in)
             return await msg.delete()
-
         return Message(self, msg)
 
     def on_cmd(self,
@@ -301,10 +245,9 @@ class Userge(RawClient):
                name: str = '',
                trigger: str = '.',
                filter_me: bool = True,
-               **kwargs: Union[str, bool, Dict[
-                   str, Union[str, List[str], Dict[str, str]]]]) -> Callable[[PYROFUNC], PYROFUNC]:
-        """
-        \nDecorator for handling messages.
+               **kwargs: Union[str, bool, Dict[str, Union[str, List[str], Dict[str, str]]]]
+               ) -> Callable[[_PYROFUNC], _PYROFUNC]:
+        """\nDecorator for handling messages.
 
         Example:
                 @userge.on_cmd('test', about='for testing')
@@ -347,313 +290,223 @@ class Userge(RawClient):
                     If ``True``, flags returns without prefix,
                     defaults to False.
         """
-
         pattern = f"^(?:\\{trigger}|\\{Config.SUDO_TRIGGER}){command.lstrip('^')}" if trigger \
             else f"^{command.lstrip('^')}"
-
         if [i for i in '^()[]+*.\\|?:$' if i in command]:
             match = re.match("(\\w[\\w_]*)", command)
             cname = match.groups()[0] if match else ''
             cname = name or cname
             cname = trigger + cname if cname else ''
-
         else:
             cname = trigger + command
+            cname = name or cname
             pattern += r"(?:\s([\S\s]+))?$"
-
         kwargs.update({'cname': cname, 'chelp': about})
 
         filters_ = Filters.regex(pattern=pattern)
-
         filter_my_trigger = Filters.create(lambda _, query: \
             query.text.startswith(trigger) if trigger else True)
-
         sudo_filter = Filters.create(lambda _, query: \
             query.from_user and query.from_user.id in Config.SUDO_USERS and \
-                query.text.startswith(Config.SUDO_TRIGGER) if trigger else True)
-
-        sudo_cmd_filter = Filters.create(lambda _, __: \
-            cname.lstrip(trigger) in Config.ALLOWED_COMMANDS)
+                (query.text.startswith(Config.SUDO_TRIGGER) if trigger else True))
+        sudo_cmd_filter = Filters.create(lambda _, __: cname in Config.ALLOWED_COMMANDS)
 
         if filter_me:
             filters_ = filters_ & (
-                (Filters.me & filter_my_trigger) | (sudo_filter & sudo_cmd_filter))
-
-        return self.__build_decorator(log=f"On {pattern}",
-                                      filters=filters_,
-                                      group=group,
-                                      **kwargs)
+                (Filters.outgoing & filter_my_trigger) | \
+                    (Filters.incoming & sudo_filter & sudo_cmd_filter))
+        return self._build_decorator(log=f"On {pattern}", filters=filters_,
+                                     group=group, **kwargs)
 
     def on_filters(self,
                    filters: Filters,
-                   group: int = 0) -> Callable[[PYROFUNC], PYROFUNC]:
-        """
-        Decorator for handling filters.
-        """
-
-        return self.__build_decorator(log=f"On Filters {filters}",
-                                      filters=filters,
-                                      group=group)
+                   group: int = 0) -> Callable[[_PYROFUNC], _PYROFUNC]:
+        """Decorator for handling filters"""
+        return self._build_decorator(log=f"On Filters {filters}",
+                                     filters=filters, group=group)
 
     def on_new_member(self,
                       welcome_chats: Filters.chat,
-                      group: int = -2) -> Callable[[PYROFUNC], PYROFUNC]:
-        """
-        Decorator for handling new members.
-        """
-
-        return self.__build_decorator(log=f"On New Member in {welcome_chats}",
-                                      filters=Filters.new_chat_members & welcome_chats,
-                                      group=group)
+                      group: int = -2) -> Callable[[_PYROFUNC], _PYROFUNC]:
+        """Decorator for handling new members"""
+        return self._build_decorator(log=f"On New Member in {welcome_chats}",
+                                     filters=Filters.new_chat_members & welcome_chats,
+                                     group=group)
 
     def on_left_member(self,
                        leaving_chats: Filters.chat,
-                       group: int = -2) -> Callable[[PYROFUNC], PYROFUNC]:
-        """
-        Decorator for handling left members.
-        """
-
-        return self.__build_decorator(log=f"On Left Member in {leaving_chats}",
-                                      filters=Filters.left_chat_member & leaving_chats,
-                                      group=group)
+                       group: int = -2) -> Callable[[_PYROFUNC], _PYROFUNC]:
+        """Decorator for handling left members"""
+        return self._build_decorator(log=f"On Left Member in {leaving_chats}",
+                                     filters=Filters.left_chat_member & leaving_chats,
+                                     group=group)
 
     def get_help(self,
                  key: str = '',
                  all_cmds: bool = False) -> Tuple[Union[str, List[str]], Union[bool, str]]:
-        """
-        This will return help string for specific key
+        """This will return help string for specific key
         or all modules or commands as `List`.
         """
-
         if not key and not all_cmds:
-            return sorted(list(self.__help_dict)), True         # names of all modules
+            return sorted(list(self._help_dict)), True         # names of all modules
+        if not key.startswith('.') and key in self._help_dict and \
+            (len(self._help_dict[key]) > 1 or list(self._help_dict[key])[0].lstrip('.') != key):
+            return sorted(list(self._help_dict[key])), False   # all commands for that module
 
-        if not key.startswith('.') and key in self.__help_dict and \
-            (len(self.__help_dict[key]) > 1 or list(self.__help_dict[key])[0].lstrip('.') != key):
-            return sorted(list(self.__help_dict[key])), False   # all commands for that module
-
-        dict_ = {x: y for _, i in self.__help_dict.items() for x, y in i.items()}
-
+        dict_ = {x: y for _, i in self._help_dict.items() for x, y in i.items()}
         if all_cmds:
             return sorted(list(dict_)), False                   # all commands for .s
-
         key = key.lstrip('.')
         key_ = '.' + key
-
         if key in dict_:
             return dict_[key], key      # help text and command for given command
-
         if key_ in dict_:
             return dict_[key_], key_    # help text and command for modified command
-
         return '', False                # if unknown
 
-    def __add_help(self,
-                   module: str,
-                   cname: str = '',
-                   chelp: Union[str, Dict[str, Union[str, List[str], Dict[str, str]]]] = '',
-                   **_: Union[str, bool]) -> None:
+    def _add_help(self,
+                  module: str,
+                  cname: str = '',
+                  chelp: Union[str, Dict[str, Union[str, List[str], Dict[str, str]]]] = '',
+                  **_: Union[str, bool]) -> None:
         if cname:
-            LOG.debug(LOG_STR, f"Updating Help Dict => [ {cname} : {chelp} ]")
-
+            _LOG.debug(_LOG_STR, f"Updating Help Dict => [ {cname} : {chelp} ]")
             mname = module.split('.')[-1]
-
             if isinstance(chelp, dict):
                 tmp_chelp = ''
-
                 if 'header' in chelp and isinstance(chelp['header'], str):
                     tmp_chelp += f"__**{chelp['header'].title()}**__"
                     del chelp['header']
-
                 if 'description' in chelp and isinstance(chelp['description'], str):
                     tmp_chelp += ("\n\n📝 --**Description**-- :\n\n    "
                                   f"__{chelp['description'].capitalize()}__")
                     del chelp['description']
-
                 if 'flags' in chelp:
                     tmp_chelp += f"\n\n⛓ --**Available Flags**-- :\n"
-
                     if isinstance(chelp['flags'], dict):
                         for f_n, f_d in chelp['flags'].items():
                             tmp_chelp += f"\n    ▫ `{f_n}` : __{f_d.lower()}__"
                     else:
                         tmp_chelp += f"\n    {chelp['flags']}"
                     del chelp['flags']
-
                 if 'options' in chelp:
                     tmp_chelp += f"\n\n🕶 --**Available Options**-- :\n"
-
                     if isinstance(chelp['options'], dict):
                         for o_n, o_d in chelp['options'].items():
                             tmp_chelp += f"\n    ▫ `{o_n}` : __{o_d.lower()}__"
                     else:
                         tmp_chelp += f"\n    {chelp['options']}"
                     del chelp['options']
-
                 if 'types' in chelp:
                     tmp_chelp += f"\n\n🎨 --**Supported Types**-- :\n\n"
-
                     if isinstance(chelp['types'], list):
                         for _opt in chelp['types']:
                             tmp_chelp += f"    `{_opt}` ,"
                     else:
                         tmp_chelp += f"    {chelp['types']}"
                     del chelp['types']
-
                 if 'usage' in chelp:
                     tmp_chelp += f"\n\n✒ --**Usage**-- :\n\n`{chelp['usage']}`"
                     del chelp['usage']
-
                 if 'examples' in chelp:
                     tmp_chelp += f"\n\n✏ --**Examples**-- :\n"
-
                     if isinstance(chelp['examples'], list):
                         for ex_ in chelp['examples']:
                             tmp_chelp += f"\n    `{ex_}`\n"
                     else:
                         tmp_chelp += f"\n    `{chelp['examples']}`"
                     del chelp['examples']
-
                 if 'others' in chelp:
                     tmp_chelp += f"\n\n📎 --**Others**-- :\n\n{chelp['others']}"
                     del chelp['others']
-
                 if chelp:
                     for t_n, t_d in chelp.items():
                         tmp_chelp += f"\n\n⚙ --**{t_n.title()}**-- :\n"
-
                         if isinstance(t_d, dict):
                             for o_n, o_d in t_d.items():
                                 tmp_chelp += f"\n    ▫ `{o_n}` : __{o_d.lower()}__"
-
                         elif isinstance(t_d, list):
                             tmp_chelp += '\n'
                             for _opt in t_d:
                                 tmp_chelp += f"    `{_opt}` ,"
-
                         else:
                             tmp_chelp += '\n'
                             tmp_chelp += t_d
-
                 chelp = tmp_chelp
                 del tmp_chelp
-
-            if mname in self.__help_dict:
-                self.__help_dict[mname].update({cname: chelp})
-
+            if mname in self._help_dict:
+                self._help_dict[mname].update({cname: chelp})
             else:
-                self.__help_dict.update({mname: {cname: chelp}})
+                self._help_dict.update({mname: {cname: chelp}})
 
-    def __build_decorator(self,
-                          log: str,
-                          filters: Filters,
-                          group: int,
-                          **kwargs: Union[str, bool, Dict[
-                              str, Union[str, List[str], Dict[
-                                  str, str]]]]) -> Callable[[PYROFUNC], PYROFUNC]:
-
-        def __decorator(func: PYROFUNC) -> PYROFUNC:
-
-            async def __template(_: RawClient, __: RawMessage) -> None:
-
+    def _build_decorator(self,
+                         log: str,
+                         filters: Filters,
+                         group: int,
+                         **kwargs: Union[str, bool, Dict[
+                             str, Union[str, List[str], Dict[
+                                 str, str]]]]) -> Callable[[_PYROFUNC], _PYROFUNC]:
+        def _decorator(func: _PYROFUNC) -> _PYROFUNC:
+            async def _template(_: RawClient, __: RawMessage) -> None:
                 await func(Message(_, __, **kwargs))
-
-            LOG.debug(LOG_STR, f"Loading => [ async def {func.__name__}(message) ] " + \
+            _LOG.debug(_LOG_STR, f"Loading => [ async def {func.__name__}(message) ] " + \
                 f"from {func.__module__} `{log}`")
-
-            self.__add_help(func.__module__, **kwargs)
-
-            self.add_handler(MessageHandler(__template, filters), group)
-
+            self._add_help(func.__module__, **kwargs)
+            self.add_handler(MessageHandler(_template, filters), group)
             return func
-
-        return __decorator
+        return _decorator
 
     def load_plugin(self, name: str) -> None:
-        """
-        Load plugin to Userge.
-        """
-
-        LOG.debug(LOG_STR, f"Importing {name}")
-
-        self.__imported.append(
+        """Load plugin to Userge"""
+        _LOG.debug(_LOG_STR, f"Importing {name}")
+        self._imported.append(
             importlib.import_module(f"userge.plugins.{name}"))
-
-        LOG.debug(LOG_STR, f"Imported {self.__imported[-1].__name__} Plugin Successfully")
+        _LOG.debug(_LOG_STR, f"Imported {self._imported[-1].__name__} Plugin Successfully")
 
     def load_plugins(self) -> None:
-        """
-        Load all Plugins.
-        """
-
-        self.__imported.clear()
-
-        LOG.info(LOG_STR, "Importing All Plugins")
-
+        """Load all Plugins"""
+        self._imported.clear()
+        _LOG.info(_LOG_STR, "Importing All Plugins")
         for name in get_all_plugins():
             try:
                 self.load_plugin(name)
-
             except ImportError as i_e:
-                LOG.error(LOG_STR, i_e)
-
-        LOG.info(LOG_STR, f"Imported ({len(self.__imported)}) Plugins => " + \
-            str([i.__name__ for i in self.__imported]))
+                _LOG.error(_LOG_STR, i_e)
+        _LOG.info(_LOG_STR, f"Imported ({len(self._imported)}) Plugins => " + \
+            str([i.__name__ for i in self._imported]))
 
     async def reload_plugins(self) -> int:
-        """
-        Reload all Plugins.
-        """
-
-        self.__help_dict.clear()
+        """Reload all Plugins"""
+        self._help_dict.clear()
         reloaded: List[str] = []
-
-        LOG.info(LOG_STR, "Reloading All Plugins")
-
-        for imported in self.__imported:
+        _LOG.info(_LOG_STR, "Reloading All Plugins")
+        for imported in self._imported:
             try:
                 reloaded_ = importlib.reload(imported)
-
             except ImportError as i_e:
-                LOG.error(LOG_STR, i_e)
-
+                _LOG.error(_LOG_STR, i_e)
             else:
                 reloaded.append(reloaded_.__name__)
-
-        LOG.info(LOG_STR, f"Reloaded {len(reloaded)} Plugins => {reloaded}")
-
+        _LOG.info(_LOG_STR, f"Reloaded {len(reloaded)} Plugins => {reloaded}")
         return len(reloaded)
 
     async def restart(self) -> None:
-        """
-        Restart the Userge.
-        """
-
-        LOG.info(LOG_STR, "Restarting Userge")
-
+        """Restart the Userge"""
+        _LOG.info(_LOG_STR, "Restarting Userge")
         await self.stop()
-
         try:
             c_p = psutil.Process(os.getpid())
             for handler in c_p.open_files() + c_p.connections():
                 os.close(handler.fd)
-
         except Exception as c_e:
-            LOG.error(LOG_STR, c_e)
-
+            _LOG.error(_LOG_STR, c_e)
         os.execl(sys.executable, sys.executable, '-m', 'userge')
-
         sys.exit()
 
     def begin(self) -> None:
-        """
-        This will start the Userge.
-        """
-
-        LOG.info(LOG_STR, "Starting Userge")
-
+        """This will start the Userge"""
+        _LOG.info(_LOG_STR, "Starting Userge")
         nest_asyncio.apply()
         Conv.init(self)
         self.run()
-
-        LOG.info(LOG_STR, "Exiting Userge")
+        _LOG.info(_LOG_STR, "Exiting Userge")

@@ -6,31 +6,30 @@
 #
 # All rights reserved.
 
+__all__ = ['CLogger']
+
+import asyncio
 
 from pyrogram import Message as RawMessage
 from userge import logging, Config
 from .. import client, message
 
-LOG = logging.getLogger(__name__)
-LOG_STR = "<<<!  (((((  %s  )))))  !>>>"
+_LOG = logging.getLogger(__name__)
+_LOG_STR = "<<<!  (((((  %s  )))))  !>>>"
 
 
 class CLogger:
-    """
-    Channel logger for Userge.
-    """
-
+    """Channel logger for Userge"""
     def __init__(self, client_: 'client.Userge', name: str) -> None:
-        self.__client = client_
-        self.__string = self.__gen_string(name)
+        self._client = client_
+        self._string = self._gen_string(name)
 
     @staticmethod
-    def __gen_string(name: str) -> str:
+    def _gen_string(name: str) -> str:
         return "**logger** : #" + name.split('.')[-1].upper() + "\n\n{}"
 
     def update(self, name: str) -> None:
-        """
-        \nupdate current logger name.
+        """\nupdate current logger name.
 
         Parameters:
             name (``str``):
@@ -39,12 +38,10 @@ class CLogger:
         Returns:
             None
         """
-
-        self.__string = self.__gen_string(name)
+        self._string = self._gen_string(name)
 
     async def log(self, text: str) -> None:
-        """
-        \nsend text message to log channel.
+        """\nsend text message to log channel.
 
         Parameters:
             text (``str``):
@@ -53,19 +50,16 @@ class CLogger:
         Returns:
             None
         """
-
-        LOG.debug(LOG_STR, f"logging text : {text} to channel : {Config.LOG_CHANNEL_ID}")
-
+        _LOG.debug(_LOG_STR, f"logging text : {text} to channel : {Config.LOG_CHANNEL_ID}")
         if Config.LOG_CHANNEL_ID:
-            await self.__client.send_message(chat_id=Config.LOG_CHANNEL_ID,
-                                             text=self.__string.format(text))
+            await self._client.send_message(chat_id=Config.LOG_CHANNEL_ID,
+                                            text=self._string.format(text))
 
     async def fwd_msg(self,
                       message_: 'message.Message',
                       as_copy: bool = True,
                       remove_caption: bool = False) -> None:
-        """
-        \nforward message to log channel.
+        """\nforward message to log channel.
 
         Parameters:
             message (`pyrogram.Message`):
@@ -82,24 +76,19 @@ class CLogger:
                 media captions are not preserved when copying the
                 message. Has no effect if *as_copy* is not enabled.
                 Defaults to False.
-                
+
         Returns:
             None
         """
-
-        LOG.debug(
-            LOG_STR, f"forwarding msg : {message_} to channel : {Config.LOG_CHANNEL_ID}")
-
+        _LOG.debug(
+            _LOG_STR, f"forwarding msg : {message_} to channel : {Config.LOG_CHANNEL_ID}")
         if Config.LOG_CHANNEL_ID and isinstance(message_, RawMessage):
             if message_.media:
-                await self.log("**Forwarding Message...**")
-
-                await self.__client.forward_messages(chat_id=Config.LOG_CHANNEL_ID,
-                                                     from_chat_id=message_.chat.id,
-                                                     message_ids=(
-                                                         message_.message_id),
-                                                     as_copy=as_copy,
-                                                     remove_caption=remove_caption)
-
+                asyncio.create_task(self.log("**Forwarding Message...**"))
+                await self._client.forward_messages(chat_id=Config.LOG_CHANNEL_ID,
+                                                    from_chat_id=message_.chat.id,
+                                                    message_ids=message_.message_id,
+                                                    as_copy=as_copy,
+                                                    remove_caption=remove_caption)
             else:
                 await self.log(message_.text)

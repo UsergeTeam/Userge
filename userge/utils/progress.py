@@ -6,8 +6,8 @@
 #
 # All rights reserved.
 
-
 import time
+import asyncio
 from math import floor
 
 from pyrogram.errors.exceptions import FloodWait
@@ -23,18 +23,28 @@ async def progress(current: int,
                    message: 'userge.Message',
                    start: int) -> None:
     """display upload/download progress"""
+    asyncio.create_task(_progress(current=current,
+                                  total=total,
+                                  ud_type=ud_type,
+                                  client=client,
+                                  message=message,
+                                  start=start))
 
+
+async def _progress(current: int,
+                    total: int,
+                    ud_type: str,
+                    client: 'userge.Userge',
+                    message: 'userge.Message',
+                    start: int) -> None:
     if message.process_is_canceled:
         await client.stop_transmission()
-
     now = time.time()
     diff = now - start
-
     if diff % 10 < 0.25 or current == total:
         percentage = current * 100 / total
         speed = current / diff
         time_to_completion = time_formatter(int((total - current) / speed))
-
         progress_str = \
             "__{}__\n" + \
             "```[{}{}]```\n" + \
@@ -43,7 +53,6 @@ async def progress(current: int,
             "**Total** : `{}`\n" + \
             "**Speed** : `{}/s`\n" + \
             "**ETA** : `{}`"
-
         progress_str = progress_str.format(
             ud_type,
             ''.join(["█" for i in range(floor(percentage / 5))]),
@@ -56,6 +65,5 @@ async def progress(current: int,
         if message.text != progress_str:
             try:
                 await message.edit(progress_str)
-
             except FloodWait as f_e:
                 time.sleep(f_e.x)

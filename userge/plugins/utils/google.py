@@ -35,7 +35,7 @@ async def gsearch(message: Message):
 
     try:
         g_search = GoogleSearch()
-        gresults = g_search.search(query, page)
+        gresults = await g_search.async_search(query, page)
 
     except Exception as e:
         await message.err(text=e)

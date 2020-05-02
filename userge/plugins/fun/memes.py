@@ -260,8 +260,8 @@ FACEREACTS = (
     "(ノಠ ∩ಠ)ノ彡( \\o°o)\\", "“ヽ(´▽｀)ノ”",)
 
 
-@userge.on_cmd(r"(?:\.kek|:/)$",
-               about={'header': "Check yourself, hint: `:/`"}, name=".kek", trigger='')
+@userge.on_cmd(r"(?:[kK]ek|:/)$",
+               about={'header': "Check yourself, hint: `:/`"}, name='kek',trigger='')
 async def kek_(message: Message):
     """kek"""
     kek = ["/", "\\"]
@@ -270,8 +270,8 @@ async def kek_(message: Message):
         await message.edit(":" + kek[i % 2])
 
 
-@userge.on_cmd(r"(?:\.lol|-_-)$",
-               about={'header': "Check yourself, hint: `-_-`"}, name=".lol", trigger='')
+@userge.on_cmd(r"(?:[lL]ol|-_-)$",
+               about={'header': "Check yourself, hint: `-_-`"}, name='lol',trigger='')
 async def lol_(message: Message):
     """lol"""
     lol = "-_ "
@@ -282,8 +282,8 @@ async def lol_(message: Message):
         await message.edit(lol, parse_mode="html")
 
 
-@userge.on_cmd(r"(?:\.fun|;_;)$",
-               about={'header': "Check yourself, hint: `;_;`"}, name=".fun", trigger='')
+@userge.on_cmd(r"(?:[fF]un|;_;)$",
+               about={'header': "Check yourself, hint: `;_;`"}, name="fun", trigger='')
 async def fun_(message: Message):
     """fun"""
     fun = ";_ "
@@ -294,7 +294,7 @@ async def fun_(message: Message):
         await message.edit(fun, parse_mode="html")
 
 
-@userge.on_cmd("Oof$", about={'header': "Ooooof"}, trigger='')
+@userge.on_cmd("[oO]of$", about={'header': "Ooooof"}, name='oof', trigger='')
 async def Oof_(message: Message):
     """Oof"""
     Oof = "Oo "
@@ -303,7 +303,7 @@ async def Oof_(message: Message):
         await message.edit(Oof)
 
 
-@userge.on_cmd("Hmm$", about={'header': "Hmmmmm"}, trigger='')
+@userge.on_cmd("[hH]mm$", about={'header': "Hmmmmm"}, name='hmm', trigger='')
 async def Hmm_(message: Message):
     """Hmm"""
     Hmm = "Hm "
