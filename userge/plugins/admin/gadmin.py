@@ -476,7 +476,7 @@ async def kick_usr(message: Message):
 
             try:
                 get_mem = await userge.get_chat_member(chat_id, user_id)
-                await userge.kick_chat_member(chat_id, user_id, int(time.time() + 45))
+                await userge.kick_chat_member(chat_id, user_id, int(time.time() + 60))
                 await message.edit(
                     f"#KICK\n\n"
                     f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
@@ -574,9 +574,9 @@ async def mute_usr(message: Message):
     get_group = await userge.get_chat(chat_id)
     can_mute = await is_admin(message)
 
-    minutes = int(flags.get('-m', 0))
-    hours = int(flags.get('-h', 0))
-    days = int(flags.get('-d', 0))
+    minutes = flags.get('-m', 0)
+    hours = flags.get('-h', 0)
+    days = flags.get('-d', 0)
 
     if can_mute:
 
@@ -601,7 +601,7 @@ async def mute_usr(message: Message):
 
             try:
                 get_mem = await userge.get_chat_member(chat_id, user_id)
-                mute_period = minutes * 60
+                mute_period = int(minutes) * 60
                 await userge.restrict_chat_member(chat_id, user_id,
                                                   ChatPermissions(),
                                                   int(time.time() + mute_period))
@@ -648,7 +648,7 @@ async def mute_usr(message: Message):
 
             try:
                 get_mem = await userge.get_chat_member(chat_id, user_id)
-                mute_period = hours * 3600
+                mute_period = int(hours) * 3600
                 await userge.restrict_chat_member(chat_id, user_id,
                                                   ChatPermissions(),
                                                   int(time.time() + mute_period))
@@ -695,7 +695,7 @@ async def mute_usr(message: Message):
 
             try:
                 get_mem = await userge.get_chat_member(chat_id, user_id)
-                mute_period = hours * 86400
+                mute_period = int(days) * 86400
                 await userge.restrict_chat_member(chat_id, user_id,
                                                   ChatPermissions(),
                                                   int(time.time() + mute_period))
@@ -1207,6 +1207,106 @@ async def chatpic_func(message: Message):
             await message.edit(
                 text="`invalid flag type, do .help gpic for more info` ⚠", del_in=0)
             return
+
+    else:
+        await message.edit(r"`i don't have proper permission to do that! (* ￣︿￣)`", del_in=0)
+
+@userge.on_cmd("smode", about={
+    'header': "turn on/off chat slow mode",
+    'description': [
+        "use this to turn off or switch between chat slow mode \n",
+        "available 6 modes, s10/s30/m1/m5/m15/h1"],
+    'flags': {
+        '-s': "seconds",
+        '-m': "minutes",
+        '-h': "hour",
+        '-o': "off"},
+    'types': [
+        '-s10 = 10 seconds', '-s30 = 30 seconds', '-m1 = 1 minutes',
+        '-m5 = 5 minutes','-m15 = 15 minutes', '-h1 = 1 hour'],
+    'examples': [
+        ".smode -s30 [send to chat] (turn on 30s slow mode) ",
+        ".smode -o [send to chat] (turn off slow mode)"]})
+async def smode_switch(message: Message):
+    """
+    turn on/off chat slow mode
+    """
+    chat_id = message.chat.id
+    can_do_smode = await is_sudoadmin(message)
+    get_group = await userge.get_chat(chat_id)
+    flags = message.flags
+
+    seconds = flags.get('-s', 0)
+    minutes = flags.get('-m', 0)
+    hours = flags.get('-h', 0)
+    smode_off = '-o' in flags
+
+    if can_do_smode:
+
+        if seconds:
+            try:
+                seconds = int(seconds)
+                await userge.set_slow_mode(chat_id, seconds)
+                await message.edit(
+                    f"`⏳ turned on {seconds} seconds slow mode for chat!`", del_in=0)
+                await CHANNEL.log(
+                    f"#SLOW_MODE\n\n"
+                    f"CHAT: `{get_group.title}` (`{chat_id}`)\n"
+                    f"SLOW MODE TIME: `{seconds} seconds`")
+            except Exception as e_f:
+                await message.edit(
+                    "`something went wrong!!, do .help smode for more info..` \n\n"
+                    f"**ERROR:** `{e_f}`")
+                return
+
+        elif minutes:
+            try:
+                smode_time = int(minutes) * 60
+                await userge.set_slow_mode(chat_id, smode_time)
+                await message.edit(
+                    f"`⏳ turned on {minutes} minutes slow mode for chat!`", del_in=0)
+                await CHANNEL.log(
+                    f"#SLOW_MODE\n\n"
+                    f"CHAT: `{get_group.title}` (`{chat_id}`)\n"
+                    f"SLOW MODE TIME: `{minutes} minutes`")
+            except Exception as e_f:
+                await message.edit(
+                    "`something went wrong!!, do .help smode for more info..` \n\n"
+                    f"**ERROR:** `{e_f}`")
+                return
+
+        elif hours:
+            try:
+                smode_time = int(hours) * 3600
+                await userge.set_slow_mode(chat_id, smode_time)
+                await message.edit("`⏳ turned on 1 hour slow mode for chat!`", del_in=0)
+                await CHANNEL.log(
+                    f"#SLOW_MODE\n\n"
+                    f"CHAT: `{get_group.title}` (`{chat_id}`)\n"
+                    f"SLOW MODE TIME: `{hours} hours`")
+            except Exception as e_f:
+                await message.edit(
+                    "`something went wrong!!, do .help smode for more info..` \n\n"
+                    f"**ERROR:** `{e_f}`")
+                return
+
+        elif smode_off:
+            try:
+                await userge.set_slow_mode(chat_id, 0)
+                await message.edit("`⏳ turned off slow mode for chat!`", del_in=0)
+                await CHANNEL.log(
+                    f"#SLOW_MODE\n\n"
+                    f"CHAT: `{get_group.title}` (`{chat_id}`)\n"
+                    f"SLOW MODE: `Off`")
+            except Exception as e_f:
+                await message.edit(
+                    "`something went wrong!!, do .help smode for more info..` \n\n"
+                    f"**ERROR:** `{e_f}`")
+            return
+
+        else:
+            await message.edit(
+                "`inavlid flag type/mode.. do .help smode for more info!!`", del_in=0)
 
     else:
         await message.edit(r"`i don't have proper permission to do that! (* ￣︿￣)`", del_in=0)

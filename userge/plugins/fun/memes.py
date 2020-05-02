@@ -215,6 +215,8 @@ EMOJIS = (
     "😂", "😂", "👌", "✌", "💞", "👍", "👌", "💯", "🎶", "👀", "😂", "👓", "👏", "👐", "🍕",
     "💥", "🍴", "💦", "💦", "🍑", "🍆", "😩", "😏", "👉👌", "👀", "👅", "😩", "🚰")
 
+DICE_EMO = ("🎯","🎲")
+
 ZALG_LIST = (
     ("̖", " ̗", " ̘", " ̙", " ̜", " ̝", " ̞", " ̟", " ̠", " ̤", " ̥", " ̦", " ̩", " ̪", " ̫", " ̬", " ̭", " ̮",
      " ̯", " ̰", " ̱", " ̲", " ̳", " ̹", " ̺", " ̻", " ̼", " ͅ", " ͇", " ͈", " ͉", " ͍", " ͎", " ͓", " ͔",
@@ -814,7 +816,7 @@ async def scam_(message: Message):
         return
 
     try:
-        if (scam_time > 0):
+        if scam_time > 0:
             chat_id = message.chat.id
             await message.delete()
 
@@ -826,3 +828,12 @@ async def scam_(message: Message):
 
     except Exception:
         await message.delete()
+
+@userge.on_cmd("try", about={
+    'header': "send dart or dice randomly",
+    'usage': ".try [send to chat or anyone]"})
+async def dice_gen(message: Message):
+    """send dice"""
+    random_emo = choice(DICE_EMO)
+    await userge.send_dice(message.chat.id, random_emo)
+    await message.delete()
