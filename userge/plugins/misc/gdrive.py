@@ -102,22 +102,6 @@ class _GDrive(_DBase):
         self._is_finished = True
 
     @property
-    def is_canceled(self) -> bool:
-        return self._is_canceled
-
-    @property
-    def is_finished(self) -> bool:
-        return self._is_finished
-
-    @property
-    def progress(self) -> str:
-        return self._progress
-
-    @property
-    def output(self) -> str:
-        return self._output
-
-    @property
     def _service(self) -> object:
         return build("drive", "v3", credentials=_CREDS, cache_discovery=False)
 
@@ -748,22 +732,22 @@ class Worker(_GDrive):
         await self._message.edit("`Loading GDrive Upload...`")
         pool.submit_thread(self._upload, upload_file_name)
         start_t = datetime.now()
-        while not self.is_finished:
+        while not self._is_finished:
             if self._message.process_is_canceled:
                 self._cancel()
-            if self.progress is not None:
+            if self._progress is not None:
                 await self._message.try_to_edit(self._progress)
             await asyncio.sleep(3)
         if dl_loc and os.path.exists(dl_loc):
             os.remove(dl_loc)
         end_t = datetime.now()
         m_s = (end_t - start_t).seconds
-        if isinstance(self.output, HttpError):
-            out = f"**ERROR** : `{self.output._get_reason()}`"
-        elif self._output is not None and not self.is_canceled:
-            out = f"**Uploaded Successfully** __in {m_s} seconds__\n\n{self.output}"
-        elif self.output is not None and self.is_canceled:
-            out = self.output
+        if isinstance(self._output, HttpError):
+            out = f"**ERROR** : `{self._output._get_reason()}`"
+        elif self._output is not None and not self._is_canceled:
+            out = f"**Uploaded Successfully** __in {m_s} seconds__\n\n{self._output}"
+        elif self._output is not None and self._is_canceled:
+            out = self._output
         else:
             out = "`failed to upload.. check logs?`"
         await self._message.edit(out, disable_web_page_preview=True, log=True)
@@ -777,20 +761,20 @@ class Worker(_GDrive):
         file_id, _ = self._get_file_id()
         pool.submit_thread(self._download, file_id)
         start_t = datetime.now()
-        while not self.is_finished:
+        while not self._is_finished:
             if self._message.process_is_canceled:
                 self._cancel()
-            if self.progress is not None:
-                await self._message.try_to_edit(self.progress)
+            if self._progress is not None:
+                await self._message.try_to_edit(self._progress)
             await asyncio.sleep(3)
         end_t = datetime.now()
         m_s = (end_t - start_t).seconds
-        if isinstance(self.output, HttpError):
-            out = f"**ERROR** : `{self.output._get_reason()}`"
-        elif self.output is not None and not self.is_canceled:
-            out = f"**Downloaded Successfully** __in {m_s} seconds__\n\n`{self.output}`"
-        elif self.output is not None and self.is_canceled:
-            out = self.output
+        if isinstance(self._output, HttpError):
+            out = f"**ERROR** : `{self._output._get_reason()}`"
+        elif self._output is not None and not self._is_canceled:
+            out = f"**Downloaded Successfully** __in {m_s} seconds__\n\n`{self._output}`"
+        elif self._output is not None and self._is_canceled:
+            out = self._output
         else:
             out = "`failed to download.. check logs?`"
         await self._message.edit(out, disable_web_page_preview=True, log=True)
@@ -805,20 +789,20 @@ class Worker(_GDrive):
         file_id, _ = self._get_file_id()
         pool.submit_thread(self._copy, file_id)
         start_t = datetime.now()
-        while not self.is_finished:
+        while not self._is_finished:
             if self._message.process_is_canceled:
                 self._cancel()
-            if self.progress is not None:
-                await self._message.try_to_edit(self.progress)
+            if self._progress is not None:
+                await self._message.try_to_edit(self._progress)
             await asyncio.sleep(3)
         end_t = datetime.now()
         m_s = (end_t - start_t).seconds
-        if isinstance(self.output, HttpError):
-            out = f"**ERROR** : `{self.output._get_reason()}`"
-        elif self.output is not None and not self.is_canceled:
-            out = f"**Copied Successfully** __in {m_s} seconds__\n\n{self.output}"
-        elif self.output is not None and self.is_canceled:
-            out = self.output
+        if isinstance(self._output, HttpError):
+            out = f"**ERROR** : `{self._output._get_reason()}`"
+        elif self._output is not None and not self._is_canceled:
+            out = f"**Copied Successfully** __in {m_s} seconds__\n\n{self._output}"
+        elif self._output is not None and self._is_canceled:
+            out = self._output
         else:
             out = "`failed to copy.. check logs?`"
         await self._message.edit(out, disable_web_page_preview=True, log=True)

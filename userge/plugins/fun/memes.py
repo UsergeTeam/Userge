@@ -9,8 +9,8 @@
 
 import os
 import time
+import asyncio
 from re import sub
-from asyncio import sleep
 from collections import deque
 from random import choice, getrandbits, randint
 
@@ -315,19 +315,40 @@ async def Hmm_(message: Message):
 @userge.on_cmd("fp$", about={'header': "Facepalm :P"})
 async def facepalm_(message: Message):
     """facepalm_"""
-    await message.edit("🤦‍♂")
+    replied = message.reply_to_message
+    if replied:
+        await asyncio.gather(
+            message.delete(),
+            replied.reply("🤦‍♂")
+        )
+    else:
+        await message.edit("🤦‍♂")
 
 
 @userge.on_cmd("cry$", about={'header': "y u du dis, i cri"})
 async def cry_(message: Message):
     """cry"""
-    await message.edit(choice(CRI), parse_mode="html")
+    replied = message.reply_to_message
+    if replied:
+        await asyncio.gather(
+            message.delete(),
+            replied.reply(choice(CRI), parse_mode="html")
+        )
+    else:
+        await message.edit(choice(CRI), parse_mode="html")
 
 
 @userge.on_cmd("insult$", about={'header': "Check yourself ;)"})
 async def insult_(message: Message):
     """insult"""
-    await message.edit(choice(INSULT_STRINGS), parse_mode="html")
+    replied = message.reply_to_message
+    if replied:
+        await asyncio.gather(
+            message.delete(),
+            replied.reply(choice(INSULT_STRINGS), parse_mode="html")
+        )
+    else:
+        await message.edit(choice(INSULT_STRINGS), parse_mode="html")
 
 
 @userge.on_cmd("hi", about={
@@ -368,37 +389,79 @@ async def hi_(message: Message):
 @userge.on_cmd("react$", about={'header': "Make your userbot react to everything"})
 async def react_(message: Message):
     """react"""
-    await message.edit(choice(FACEREACTS), parse_mode="html")
+    replied = message.reply_to_message
+    if replied:
+        await asyncio.gather(
+            message.delete(),
+            replied.reply(choice(FACEREACTS), parse_mode="html")
+        )
+    else:
+        await message.edit(choice(FACEREACTS), parse_mode="html")
 
 
 @userge.on_cmd("shg$", about={'header': "Shrug at it !!"})
 async def shrugger(message: Message):
     """shrugger"""
-    await message.edit(choice(SHGS), parse_mode="html")
+    replied = message.reply_to_message
+    if replied:
+        await asyncio.gather(
+            message.delete(),
+            replied.reply(choice(SHGS), parse_mode="html")
+        )
+    else:
+        await message.edit(choice(SHGS), parse_mode="html")
 
 
 @userge.on_cmd("chase$", about={'header': "You better start running"})
 async def chase_(message: Message):
     """chase"""
-    await message.edit(choice(CHASE_STR), parse_mode="html")
+    replied = message.reply_to_message
+    if replied:
+        await asyncio.gather(
+            message.delete(),
+            replied.reply(choice(CHASE_STR), parse_mode="html")
+        )
+    else:
+        await message.edit(choice(CHASE_STR), parse_mode="html")
 
 
 @userge.on_cmd("run$", about={'header': "Let Me Run, run, RUNNN!"})
 async def run_(message: Message):
     """run"""
-    await message.edit(choice(RUNS_STR), parse_mode="html")
+    replied = message.reply_to_message
+    if replied:
+        await asyncio.gather(
+            message.delete(),
+            replied.reply(choice(RUNS_STR), parse_mode="html")
+        )
+    else:
+        await message.edit(choice(RUNS_STR), parse_mode="html")
 
 
 @userge.on_cmd("metoo$", about={'header': "Haha yes"})
 async def metoo_(message: Message):
     """metoo"""
-    await message.edit(choice(METOOSTR), parse_mode="html")
+    replied = message.reply_to_message
+    if replied:
+        await asyncio.gather(
+            message.delete(),
+            replied.reply(choice(METOOSTR), parse_mode="html")
+        )
+    else:
+        await message.edit(choice(METOOSTR), parse_mode="html")
 
 
 @userge.on_cmd("10iq$", about={'header': "You retard !!"}, name="10iq")
 async def iqless(message: Message):
     """iqless"""
-    await message.edit("♿")
+    replied = message.reply_to_message
+    if replied:
+        await asyncio.gather(
+            message.delete(),
+            replied.reply("♿")
+        )
+    else:
+        await message.edit("♿")
 
 
 @userge.on_cmd("moon$", about={'header': "kensar moon animation"})
@@ -408,7 +471,7 @@ async def moon_(message: Message):
 
     try:
         for _ in range(32):
-            await sleep(0.1)
+            await asyncio.sleep(0.1)
             await message.edit("".join(deq))
             deq.rotate(1)
 
@@ -423,7 +486,7 @@ async def clock_(message: Message):
 
     try:
         for _ in range(32):
-            await sleep(0.1)
+            await asyncio.sleep(0.1)
             await message.edit("".join(deq))
             deq.rotate(1)
 
@@ -823,7 +886,7 @@ async def scam_(message: Message):
             count = 0
             while count <= scam_time:
                 await userge.send_chat_action(chat_id, scam_action)
-                await sleep(5)
+                await asyncio.sleep(5)
                 count += 5
 
     except Exception:

@@ -20,26 +20,17 @@ _LOG.info(_LOG_STR, "Connecting to Database...")
 
 _MGCLIENT = MongoClient(Config.DB_URI)
 
-
 if "Userge" in _MGCLIENT.list_database_names():
     _LOG.info(_LOG_STR, "Userge Database Found :) => Now Logging to it...")
-
 else:
     _LOG.info(_LOG_STR, "Userge Database Not Found :( => Creating New Database...")
 
-
 _DATABASE = _MGCLIENT["Userge"]
 
-
 def get_collection(name: str) -> Collection:
-    """
-    Create or Get Collection from your database.
-    """
-
+    """Create or Get Collection from your database"""
     if name in _DATABASE.list_collection_names():
         _LOG.debug(_LOG_STR, f"{name} Collection Found :) => Now Logging to it...")
-
     else:
         _LOG.debug(_LOG_STR, f"{name} Collection Not Found :( => Creating New Collection...")
-
     return _DATABASE[name]

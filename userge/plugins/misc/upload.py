@@ -34,13 +34,10 @@ async def uploadtotg(message: Message):
     if not path_:
         await message.edit("invalid input!, check `.help .upload`", del_in=5)
         return
-
     try:
         string = Path(path_)
-
     except IndexError:
         await message.edit("wrong syntax\n`.upload [path]`")
-
     else:
         await message.delete()
         await explorer(string, message.chat.id, flags)
@@ -50,10 +47,8 @@ async def explorer(path: Path, chatid, flags):
     if path.is_file():
         try:
             await upload(path, chatid, flags)
-
         except FloodWait as x:
             time.sleep(x.x)  # asyncio sleep ?
-
     elif path.is_dir():
         for i in path.iterdir():
             await explorer(i, chatid, flags)
@@ -71,7 +66,6 @@ async def upload(path: Path, chat_id: int, flags):
 async def doc_upload(chat_id, path):
     message: Message = await userge.send_message(
         chat_id, f"`Uploading {path.name} ...`")
-
     start_t = datetime.now()
     c_time = time.time()
     thumb = await get_thumb()
@@ -88,7 +82,6 @@ async def doc_upload(chat_id, path):
             "uploading", userge, message, c_time
         )
     )
-
     await finalize(chat_id, message, msg, start_t)
 
 
@@ -96,10 +89,8 @@ async def vid_upload(chat_id, path):
     strpath = str(path)
     thumb = await get_thumb(strpath)
     metadata = extractMetadata(createParser(strpath))
-
     message: Message = await userge.send_message(
         chat_id, f"`Uploading {path.name} as a video ..`")
-
     start_t = datetime.now()
     c_time = time.time()
     await userge.send_chat_action(chat_id, "upload_video")
@@ -116,7 +107,6 @@ async def vid_upload(chat_id, path):
             "uploading", userge, message, c_time
         )
     )
-
     await remove_thumb(thumb)
     await finalize(chat_id, message, msg, start_t)
 
@@ -151,21 +141,17 @@ async def audio_upload(chat_id, path):
             "uploading", userge, message, c_time
         )
     )
-
     await finalize(chat_id, message, msg, start_t)
 
 
 async def get_thumb(path: str = ''):
     if os.path.exists(THUMB_PATH):
         return THUMB_PATH
-
     if path:
         metadata = extractMetadata(createParser(path))
-
         if metadata and metadata.has("duration"):
             return await take_screen_shot(
                 path, metadata.get("duration").seconds)
-
     if os.path.exists(LOGO_PATH):
         return LOGO_PATH
     return None
@@ -183,7 +169,6 @@ async def finalize(chat_id: int, message: Message, msg: Message, start_t: int):
     await userge.send_chat_action(chat_id, "cancel")
     if message.process_is_canceled:
         await message.edit("`Process Canceled!`", del_in=5)
-
     else:
         end_t = datetime.now()
         ms = (end_t - start_t).seconds

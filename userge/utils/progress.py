@@ -7,7 +7,6 @@
 # All rights reserved.
 
 import time
-import asyncio
 from math import floor
 
 from pyrogram.errors.exceptions import FloodWait
@@ -22,21 +21,6 @@ async def progress(current: int,
                    client: 'userge.Userge',
                    message: 'userge.Message',
                    start: int) -> None:
-    """display upload/download progress"""
-    asyncio.create_task(_progress(current=current,
-                                  total=total,
-                                  ud_type=ud_type,
-                                  client=client,
-                                  message=message,
-                                  start=start))
-
-
-async def _progress(current: int,
-                    total: int,
-                    ud_type: str,
-                    client: 'userge.Userge',
-                    message: 'userge.Message',
-                    start: int) -> None:
     if message.process_is_canceled:
         await client.stop_transmission()
     now = time.time()
