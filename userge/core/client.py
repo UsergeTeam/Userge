@@ -243,7 +243,7 @@ class Userge(RawClient):
                about: Union[str, Dict[str, Union[str, List[str], Dict[str, str]]]],
                group: int = 0,
                name: str = '',
-               trigger: str = '.',
+               trigger: str = Config.CMD_TRIGGER,
                filter_me: bool = True,
                **kwargs: Union[str, bool, Dict[str, Union[str, List[str], Dict[str, str]]]]
                ) -> Callable[[_PYROFUNC], _PYROFUNC]:
@@ -309,11 +309,11 @@ class Userge(RawClient):
         sudo_filter = Filters.create(lambda _, query: \
             query.from_user and query.from_user.id in Config.SUDO_USERS and \
                 (query.text.startswith(Config.SUDO_TRIGGER) if trigger else True))
-        sudo_cmd_filter = Filters.create(lambda _, __: cname in Config.ALLOWED_COMMANDS)
-
+        sudo_cmd_filter = Filters.create(lambda _, __: \
+            cname.lstrip(trigger) in Config.ALLOWED_COMMANDS)
         if filter_me:
             filters_ = filters_ & (
-                (Filters.outgoing & filter_my_trigger) | \
+                ((Filters.outgoing | Filters.me) & filter_my_trigger) | \
                     (Filters.incoming & sudo_filter & sudo_cmd_filter))
         return self._build_decorator(log=f"On {pattern}", filters=filters_,
                                      group=group, **kwargs)
@@ -349,15 +349,15 @@ class Userge(RawClient):
         """
         if not key and not all_cmds:
             return sorted(list(self._help_dict)), True         # names of all modules
-        if not key.startswith('.') and key in self._help_dict and \
-            (len(self._help_dict[key]) > 1 or list(self._help_dict[key])[0].lstrip('.') != key):
+        if not key.startswith(Config.CMD_TRIGGER) and key in self._help_dict and \
+            (len(self._help_dict[key]) > 1 or list(self._help_dict[key])[0].lstrip(Config.CMD_TRIGGER) != key):
             return sorted(list(self._help_dict[key])), False   # all commands for that module
 
         dict_ = {x: y for _, i in self._help_dict.items() for x, y in i.items()}
         if all_cmds:
             return sorted(list(dict_)), False                   # all commands for .s
-        key = key.lstrip('.')
-        key_ = '.' + key
+        key = key.lstrip(Config.CMD_TRIGGER)
+        key_ = Config.CMD_TRIGGER + key
         if key in dict_:
             return dict_[key], key      # help text and command for given command
         if key_ in dict_:
@@ -432,7 +432,7 @@ class Userge(RawClient):
                         else:
                             tmp_chelp += '\n'
                             tmp_chelp += t_d
-                chelp = tmp_chelp
+                chelp = tmp_chelp.replace('{tr}', Config.CMD_TRIGGER)
                 del tmp_chelp
             if mname in self._help_dict:
                 self._help_dict[mname].update({cname: chelp})

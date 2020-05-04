@@ -21,8 +21,8 @@ LOGGER = userge.getLogger(__name__)
 
 @userge.on_cmd("download", about={
     'header': "Download files to server",
-    'usage': ".download [url | reply to telegram media]",
-    'examples': ".download https://speed.hetzner.de/100MB.bin | testing upload.bin"})
+    'usage': "{tr}download [url | reply to telegram media]",
+    'examples': "{tr}download https://speed.hetzner.de/100MB.bin | testing upload.bin"})
 async def down_load_media(message: Message):
     await message.edit("Trying to Download...")
     if not os.path.isdir(Config.DOWN_PATH):

@@ -21,7 +21,7 @@ CHANNEL = userge.getCLogger(__name__)
     'types': [
         'all', 'msg', 'media', 'polls', 'invite', 'pin', 'info',
         'webprev', 'inlinebots', 'animations', 'games', 'stickers'],
-    'examples': ".lock [all | type]"})
+    'examples': "{tr}lock [all | type]"})
 async def lock_perm(message: Message):
     """
     this function can lock chat permissions from tg group
@@ -160,7 +160,7 @@ async def lock_perm(message: Message):
     'types': [
         'all', 'msg', 'media', 'polls', 'invite', 'pin', 'info',
         'webprev', 'inlinebots', 'animations', 'games', 'stickers'],
-    'examples': ".unlock [all | type]"})
+    'examples': "{tr}unlock [all | type]"})
 async def unlock_perm(message: Message):
     """
     this function can unlock chat permissions from tg group

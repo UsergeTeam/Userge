@@ -15,9 +15,9 @@ from userge import userge, Message
 @userge.on_cmd("purge", about={
     'header': "purge messages from user",
     'flags': {'-u': "get user_id from replied message"},
-    'usage': "reply .purge to the start message to purge.\n"
-             "use .purge [user_id | user_name] to purge messages from that user or use flags",
-    'examples': ['.purge', '.purge -u', '.purge [user_id | user_name]']})
+    'usage': "reply {tr}purge to the start message to purge.\n"
+             "use {tr}purge [user_id | user_name] to purge messages from that user or use flags",
+    'examples': ['{tr}purge', '{tr}purge -u', '{tr}purge [user_id | user_name]']})
 async def purge_(message: Message):
     if message.reply_to_message:
         start_t = datetime.now()

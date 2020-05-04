@@ -43,8 +43,8 @@ del _pm, _pmMsg
     'header': "allows someone to contact",
     'description': "Ones someone is allowed, "
                    "Userge will not interfere or handle such private chats",
-    'usage': ".allow [username | userID]\nreply .allow to a message, "
-             "do .allow in the private chat"})
+    'usage': "{tr}allow [username | userID]\nreply {tr}allow to a message, "
+             "do {tr}allow in the private chat"})
 async def allow(message: Message):
     userid = await get_id(message)
     if userid:
@@ -67,8 +67,8 @@ async def allow(message: Message):
     'header': "Activates guarding on inbox",
     'description': "Ones someone is allowed, "
                    "Userge will not interfere or handle such private chats",
-    'usage': ".nopm [username | userID]\nreply .nopm to a message, "
-             "do .nopm in the private chat"})
+    'usage': "{tr}nopm [username | userID]\nreply {tr}nopm to a message, "
+             "do {tr}nopm in the private chat"})
 async def denyToPm(message: Message):
     userid = await get_id(message)
     if userid:

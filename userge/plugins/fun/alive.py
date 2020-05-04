@@ -9,6 +9,7 @@
 
 from pyrogram.errors.exceptions import FileIdInvalid, FileReferenceEmpty
 from pyrogram.errors.exceptions.bad_request_400 import BadRequest
+
 from userge import userge, Message, Config, versions
 
 LOGO_STICKER_ID, LOGO_STICKER_REF = None, None
@@ -17,19 +18,15 @@ LOGO_STICKER_ID, LOGO_STICKER_REF = None, None
 @userge.on_cmd("alive", about={'header': "This command is just for fun"})
 async def alive(message: Message):
     await message.delete()
-
     try:
         if LOGO_STICKER_ID:
             await sendit(LOGO_STICKER_ID, message)
-
         else:
             await refresh_id()
             await sendit(LOGO_STICKER_ID, message)
-
     except (FileIdInvalid, FileReferenceEmpty, BadRequest):
         await refresh_id()
         await sendit(LOGO_STICKER_ID, message)
-
     output = f"""
 **USERGE is Up and Running**
 
@@ -42,7 +39,6 @@ async def alive(message: Message):
 • **copyright** : {versions.__copyright__}
 • **repo** : [Userge]({Config.UPSTREAM_REPO})
 """
-
     await userge.send_message(message.chat.id, output, disable_web_page_preview=True)
 
 

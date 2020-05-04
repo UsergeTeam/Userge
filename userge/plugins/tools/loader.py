@@ -18,7 +18,7 @@ TMP_PATH = "userge/plugins/temp/"
 
 @userge.on_cmd('load', about={
     'header': "Load Userge plugin",
-    'usage': ".load [reply to userge plugin]"})
+    'usage': "{tr}load [reply to userge plugin]"})
 async def load_cmd_handler(message: Message):
     await message.edit("Loading...")
     replied = message.reply_to_message

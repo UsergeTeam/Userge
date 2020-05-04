@@ -93,8 +93,8 @@ def mp3Dl(url, prog, starttime):
 
 @userge.on_cmd("ytinfo", about={'header': "Get info from ytdl",
                                 'description': 'Get information of the link without downloading',
-                                'examples': '.ytinfo link',
-                                'others': 'To get info about direct links, use `.head link`'})
+                                'examples': '{tr}ytinfo link',
+                                'others': 'To get info about direct links, use `{tr}head link`'})
 async def ytinfo(message: Message):
     await message.edit("Hold on \u23f3 ..")
     _exracted = yt_getInfo(message.input_or_reply_str)
@@ -122,10 +122,10 @@ __{uploader}__
                                           '-v': 'select the video u-id',
                                           '-m': 'extract the mp3 in 320kbps',
                                           '-t': 'upload to telegram'},
-                              'examples': ['.ytdl link',
-                                           '.ytdl -a12 -v120 link',
-                                           '.ytdl -m -t link will upload the mp3',
-                                           '.ytdl -m -t -d link will upload the mp3 as a document']}, del_pre=True)
+                              'examples': ['{tr}ytdl link',
+                                           '{tr}ytdl -a12 -v120 link',
+                                           '{tr}ytdl -m -t link will upload the mp3',
+                                           '{tr}ytdl -m -t -d link will upload the mp3 as a document']}, del_pre=True)
 async def ytDown(message: Message):
     def __progress(data: dict):
         if ((time() - startTime) % 4) > 3.9:

@@ -17,7 +17,7 @@ CHANNEL = userge.getCLogger(__name__)
 @userge.on_cmd("cr", about={
     'header': "use this to convert currency & get exchange rate",
     'description': "Convert currency & get exchange rates.",
-    'examples': ".cr 1 BTC USD"})
+    'examples': "{tr}cr 1 BTC USD"})
 async def cur_conv(message: Message):
     """
     this function can get exchange rate results

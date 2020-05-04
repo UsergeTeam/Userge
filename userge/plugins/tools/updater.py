@@ -26,10 +26,10 @@ UPSTREAM_REMOTE = 'upstream'
         '-pull': "pull updates",
         '-push': "push updates to heroku",
         '-dev': "select develop branch"},
-    'usage': ".update : check updates to default/master branch\n"
-             ".update -dev : check updates to develop branch\n"
-             ".update -pull : pull updates to default branch\n"
-             ".update -dev -pull : pull updates to dev branch"}, del_pre=True)
+    'usage': "{tr}update : check updates to default/master branch\n"
+             "{tr}update -dev : check updates to develop branch\n"
+             "{tr}update -pull : pull updates to default branch\n"
+             "{tr}update -dev -pull : pull updates to dev branch"}, del_pre=True)
 async def check_update(message: Message):
     """check or do updates"""
     await message.edit("`Checking for updates, please wait....`")

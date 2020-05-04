@@ -42,17 +42,14 @@ IS_AFK_FILTER = Filters.create(lambda _, __: bool(IS_AFK))
     'header': "Set to AFK mode",
     'description': "Sets your status as AFK. Responds to anyone who tags/PM's.\n"
                    "you telling you are AFK. Switches off AFK when you type back anything.",
-    'usage': ".afk or .afk [reason]"})
+    'usage': "{tr}afk or {tr}afk [reason]"})
 async def active_afk(message: Message):
     global REASON, IS_AFK, TIME
-
     IS_AFK = True
     TIME = time.time()
     REASON = message.input_str
-
     await CHANNEL.log(f"You went AFK! : `{REASON}`")
     await message.edit("`You went AFK!`", del_in=1)
-
     AFK_COLLECTION.drop()
     SAVED_SETTINGS.update_one(
         {'_id': 'AFK'}, {"$set": {'on': True, 'data': REASON, 'time': TIME}}, upsert=True)
@@ -65,47 +62,36 @@ async def handle_afk_incomming(message: Message):
     chat = message.chat
     user_dict = await userge.get_user_dict(user_id)
     afk_time = time_formatter(round(time.time() - TIME))
-
     if user_id in USERS:
         if not (USERS[user_id][0] + USERS[user_id][1]) % randint(2, 4):
             if REASON:
                 out_str = f"I'm still **AFK**.\nReason: `{REASON}`\nLast Seen: `{afk_time} ago`"
             else:
                 out_str = choice(AFK_REASONS)
-
             await message.reply(out_str)
-
         if chat.type == 'private':
             USERS[user_id][0] += 1
-
         else:
             USERS[user_id][1] += 1
-
     else:
         if REASON:
             out_str = f"I'm **AFK** right now.\nReason: `{REASON}`\nLast Seen: `{afk_time} ago`"
         else:
             out_str = choice(AFK_REASONS)
-
         await message.reply(out_str)
-
         if chat.type == 'private':
             USERS[user_id] = [1, 0, user_dict['mention']]
-
         else:
             USERS[user_id] = [0, 1, user_dict['mention']]
-
     if chat.type =='private':
         await CHANNEL.log(
             f"#PRIVATE\n{user_dict['mention']} send you\n\n"
             f"{message.text}")
-
     else:
         await CHANNEL.log(
             "#GROUP\n"
             f"{user_dict['mention']} tagged you in [{chat.title}](http://t.me/{chat.username})\n\n"
             f"{message.text}\n\n[goto_msg](https://t.me/c/{str(chat.id)[4:]}/{message.message_id})")
-
     AFK_COLLECTION.update_one({'_id': user_id},
                               {"$set": {
                                   'pcount': USERS[user_id][0],
@@ -117,47 +103,35 @@ async def handle_afk_incomming(message: Message):
 @userge.on_filters(IS_AFK_FILTER & Filters.outgoing, group=-1)
 async def handle_afk_outgoing(message: Message):
     global IS_AFK
-
     IS_AFK = False
     afk_time = time_formatter(round(time.time() - TIME))
-
     replied: Message = await message.reply(f"`I'm no longer AFK!`", log=__name__)
-
     if USERS:
         p_msg = ''
         g_msg = ''
         p_count = 0
         g_count = 0
-
         for pcount, gcount, men in USERS.values():
             if pcount:
                 p_msg += f"👤 {men} ✉️ **{pcount}**\n"
                 p_count += pcount
-
             if gcount:
                 g_msg += f"👥 {men} ✉️ **{gcount}**\n"
                 g_count += gcount
-
         await replied.edit(
             f"`You recieved {p_count + g_count} messages while you were away. "
             f"Check log for more details.`\n\n**AFK time** : __{afk_time}__", del_in=3)
-
         out_str = f"You've recieved **{p_count + g_count}** messages " + \
             f"from **{len(USERS)}** users while you were away!\n\n**AFK time** : __{afk_time}__\n"
-
         if p_count:
             out_str += f"\n**{p_count} Private Messages:**\n\n{p_msg}"
-
         if g_count:
             out_str += f"\n**{g_count} Group Messages:**\n\n{g_msg}"
-
         await CHANNEL.log(out_str)
         USERS.clear()
-
     else:
         await asyncio.sleep(3)
         await replied.delete()
-
     AFK_COLLECTION.drop()
     SAVED_SETTINGS.update_one(
         {'_id': 'AFK'}, {"$set": {'on': False}}, upsert=True)

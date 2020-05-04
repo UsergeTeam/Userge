@@ -18,7 +18,6 @@ FILTERS_CHATS = Filters.create(lambda _, query: query.chat.id in FILTERS_DATA)
 def _filter_updater(chat_id: int, name: str, content: str) -> None:
     if chat_id in FILTERS_DATA:
         FILTERS_DATA[chat_id].update({name: content})
-
     else:
         FILTERS_DATA[chat_id] = {name: content}
 
@@ -26,7 +25,6 @@ def _filter_updater(chat_id: int, name: str, content: str) -> None:
 def _filter_deleter(chat_id: int, name: str) -> None:
     if chat_id in FILTERS_DATA and name in FILTERS_DATA[chat_id]:
         FILTERS_DATA[chat_id].pop(name)
-
         if not FILTERS_DATA[chat_id]:
             FILTERS_DATA.pop(chat_id)
 
@@ -41,68 +39,54 @@ async def filters_active(message: Message):
     if message.chat.id in FILTERS_DATA:
         for filter_ in FILTERS_DATA[message.chat.id]:
             out += " 🔍 `{}`\n".format(filter_)
-
     if out:
         await message.edit("**--Filters saved in this chat:--**\n\n" + out, del_in=0)
-
     else:
         await message.err("There are no saved filters in this chat")
 
 
 @userge.on_cmd("delfilter", about={
     'header': "Deletes a filter by name",
-    'usage': ".delfilter [filter name]"})
+    'usage': "{tr}delfilter [filter name]"})
 async def delete_filters(message: Message):
     filter_ = message.input_str
-
     if not filter_:
         out = "`Wrong syntax`\nNo arguements"
-
     elif FILTERS_COLLECTION.find_one_and_delete({'chat_id': message.chat.id, 'name': filter_}):
         out = "`Successfully deleted filter:` **{}**".format(filter_)
         _filter_deleter(message.chat.id, filter_)
-
     else:
         out = "`Couldn't find filter:` **{}**".format(filter_)
-
     await message.edit(text=out, del_in=3)
 
 
 @userge.on_cmd(r"addfilter (\w[^\|]*)(?:\s?\|\s?([\s\S]+))?",
                about={
     'header': "Adds a filter by name",
-    'usage': ".addfilter [filter name] | [content | reply to msg]"})
+    'usage': "{tr}addfilter [filter name] | [content | reply to msg]"})
 async def add_filter(message: Message):
     filter_ = message.matches[0].group(1).strip()
     content = message.matches[0].group(2)
-
     if message.reply_to_message:
         content = message.reply_to_message.text
-
     if not content:
         await message.err(text="No Content Found!")
         return
-
     _filter_updater(message.chat.id, filter_, content.strip())
-
     out = "`{} filter -> {}`"
     result = FILTERS_COLLECTION.update_one({'chat_id': message.chat.id, 'name': filter_},
                                            {"$set": {'content': content.strip()}},
                                            upsert=True)
-
     if result.upserted_id:
         out = out.format('Added', filter_)
-
     else:
         out = out.format('Updated', filter_)
-
     await message.edit(text=out, del_in=3, log=True)
 
 
 @userge.on_filters(~Filters.me & Filters.text & FILTERS_CHATS, group=-1)
 async def chat_filter(message: Message):
     input_text = message.text.strip()
-
     for name in FILTERS_DATA[message.chat.id]:
         if input_text == name or \
             input_text.startswith(f"{name} ") or \

@@ -19,7 +19,7 @@ CHANNEL = userge.getCLogger(__name__)
 
 @userge.on_cmd('sthumb', about={
     'header': "Save thumbnail",
-    'usage': ".sthumb [reply to any photo]"})
+    'usage': "{tr}sthumb [reply to any photo]"})
 async def save_thumb_nail(message: Message):
     await message.edit("processing ...")
     replied = message.reply_to_message

@@ -353,22 +353,19 @@ async def insult_(message: Message):
 
 @userge.on_cmd("hi", about={
     'header': "Greet everyone!",
-    'usage': ".hi\n.hi [emoji | character]\n.hi [emoji | character] [emoji | character]"})
+    'usage': "{tr}hi\n{tr}hi [emoji | character]\n{tr}hi [emoji | character] [emoji | character]"})
 async def hi_(message: Message):
     """hi"""
     input_str = message.input_str
     if not input_str:
         await message.edit(choice(HELLOSTR), parse_mode="html")
-
     else:
         args = input_str.split()
         if len(args) == 2:
             paytext, filler = args
-
         else:
             paytext = args[0]
             filler = choice(EMOJIS)
-
         pay = "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}".format(
             paytext * 2 + filler * 4 + paytext * 2 + filler * 2 + paytext * 2,
             paytext * 2 + filler * 4 + paytext * 2 + filler * 2 + paytext * 2,
@@ -382,7 +379,6 @@ async def hi_(message: Message):
             paytext * 2 + filler * 4 + paytext * 2 + filler * 2 + paytext * 2,
             paytext * 2 + filler * 4 + paytext * 2 + filler * 2 + paytext * 2,
             paytext * 2 + filler * 4 + paytext * 2 + filler * 2 + paytext * 2)
-
         await message.edit(pay)
 
 
@@ -468,13 +464,11 @@ async def iqless(message: Message):
 async def moon_(message: Message):
     """moon"""
     deq = deque(list("🌗🌘🌑🌒🌓🌔🌕🌖"))
-
     try:
         for _ in range(32):
             await asyncio.sleep(0.1)
             await message.edit("".join(deq))
             deq.rotate(1)
-
     except Exception:
         await message.delete()
 
@@ -483,20 +477,18 @@ async def moon_(message: Message):
 async def clock_(message: Message):
     """clock"""
     deq = deque(list("🕙🕘🕗🕖🕕🕔🕓🕒🕑🕐🕛"))
-
     try:
         for _ in range(32):
             await asyncio.sleep(0.1)
             await message.edit("".join(deq))
             deq.rotate(1)
-
     except Exception:
         await message.delete()
 
 
 @userge.on_cmd("bt$", about={
     'header': "Believe me, you will find this useful",
-    'usage': ".bt [reply to msg]"})
+    'usage': "{tr}bt [reply to msg]"})
 async def bluetext(message: Message):
     """bluetext"""
     if message.reply_to_message:
@@ -507,125 +499,102 @@ async def bluetext(message: Message):
 
 @userge.on_cmd("f (.+)", about={
     'header': "Pay Respects",
-    'usage': ".f [emoji | character]"})
+    'usage': "{tr}f [emoji | character]"})
 async def payf_(message: Message):
     """payf"""
     paytext = message.input_str
-
     pay = "{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}".format(
         paytext * 8, paytext * 8, paytext * 2, paytext * 2, paytext * 2,
         paytext * 6, paytext * 6, paytext * 2, paytext * 2, paytext * 2,
         paytext * 2, paytext * 2)
-
     await message.edit(pay)
 
 
 @userge.on_cmd("clap", about={
     'header': "Praise people!",
-    'usage': ".clap [input | reply to msg]"})
+    'usage': "{tr}clap [input | reply to msg]"})
 async def clap_(message: Message):
     """clap"""
     input_str = message.input_or_reply_str
-
     if not input_str:
         await message.edit("`Hah, I don't clap pointlessly!`")
         return
-
     reply_text = "👏 "
     reply_text += input_str.replace(" ", " 👏 ")
     reply_text += " 👏"
-
     await message.edit(reply_text)
 
 
 @userge.on_cmd("(\\w+)say (.+)", about={
     'header': "cow which says things",
-    'usage': ".[any cowacter]say [text]",
+    'usage': "{tr}[any cowacter]say [text]",
     'cowacters': f"`{'`,    `'.join(cow.COWACTERS)}`"}, name="cowsay")
 async def cowsay_(message: Message):
     """cowsay"""
     arg = message.matches[0].group(1).lower()
     text = message.matches[0].group(2)
-
     if arg == "cow":
         arg = "default"
-
     if arg not in cow.COWACTERS:
         await message.err("cowacter not found!")
         return
-
     cheese = cow.get_cow(arg)
     cheese = cheese()
-
     await message.edit(f"`{cheese.milk(text).replace('`', '´')}`")
 
 
 @userge.on_cmd("coinflip", about={
     'header': "Flip a coin !!",
-    'usage': ".coinflip [heads | tails]"})
+    'usage': "{tr}coinflip [heads | tails]"})
 async def coin_(message: Message):
     """coin"""
     r = choice(["heads", "tails"])
     input_str = message.input_str
-
     if not input_str:
         return
-
     input_str = input_str.lower()
-
     if r == "heads":
         if input_str == "heads":
             await message.edit(
                 "The coin landed on: **Heads**.\nYou were correct.")
-
         elif input_str == "tails":
             await message.edit(
                 "The coin landed on: **Heads**.\nYou weren't correct, try again ...")
-
         else:
             await message.edit("The coin landed on: **Heads**.")
-
     elif r == "tails":
         if input_str == "tails":
             await message.edit(
                 "The coin landed on: **Tails**.\nYou were correct.")
-
         elif input_str == "heads":
             await message.edit(
                 "The coin landed on: **Tails**.\nYou weren't correct, try again ...")
-
         else:
             await message.edit("The coin landed on: **Tails**.")
 
 
 @userge.on_cmd("slap", about={
     'header': "reply to slap them with random objects !!",
-    'usage': ".slap [input | reply to msg]"})
+    'usage': "{tr}slap [input | reply to msg]"})
 async def slap_(message: Message):
     """slap"""
     u_id = message.input_str
     if message.reply_to_message:
         u_id = message.reply_to_message.from_user.id
-
     if not u_id:
         await message.err("no input found!")
         return
-
     info_dict = await userge.get_user_dict(u_id)
-
     temp = choice(SLAP_TEMPLATES)
     item = choice(ITEMS)
     hit = choice(HIT)
     throw = choice(THROW)
     where = choice(WHERE)
-
     caption = "..." + temp.format(victim=info_dict['mention'],
                                   item=item, hits=hit,
                                   throws=throw, where=where)
-
     try:
         await message.edit(caption)
-
     except Exception:
         await message.edit(
             "`Can't slap this person, need to fetch some sticks and stones !!`")
@@ -633,158 +602,125 @@ async def slap_(message: Message):
 
 @userge.on_cmd("(yes|no|maybe|decide)$", about={
     'header': "Make a quick decision",
-    'examples': ['.decide', '.yes', '.no', '.maybe']}, name="decide")
+    'examples': ['{tr}decide', '{tr}yes', '{tr}no', '{tr}maybe']}, name="decide")
 async def decide_(message: Message):
     """decide"""
     decision = message.matches[0].group(1).lower()
     await message.edit("hmm...")
-
     if decision != "decide":
         r = requests.get(f"https://yesno.wtf/api?force={decision}").json()
-
     else:
         r = requests.get(f"https://yesno.wtf/api").json()
-
     path = wget.download(r["image"])
-
     chat_id = message.chat.id
     message_id = None
     if message.reply_to_message:
         message_id = message.reply_to_message.message_id
-
     await message.delete()
-
     await userge.send_photo(chat_id=chat_id,
                             photo=path,
                             caption=str(r["answer"]).upper(),
                             reply_to_message_id=message_id)
-
     os.remove(path)
 
 
 @userge.on_cmd("cp", about={
     'header': "Copypasta the famous meme",
-    'usage': ".cp [input | reply to msg]"})
+    'usage': "{tr}cp [input | reply to msg]"})
 async def copypasta(message: Message):
     """copypasta"""
     input_str = message.input_or_reply_str
-
     if not input_str:
         await message.edit("`😂🅱️IvE👐sOME👅text👅for✌️Me👌tO👐MAkE👀iT💞funNy!💦`")
         return
-
     reply_text = choice(EMOJIS)
     # choose a random character in the message to be substituted with 🅱️
     b_char = choice(input_str).lower()
-
     for owo in input_str:
         if owo == " ":
             reply_text += choice(EMOJIS)
-
         elif owo in EMOJIS:
             reply_text += owo
             reply_text += choice(EMOJIS)
-
         elif owo.lower() == b_char:
             reply_text += "🅱️"
-
         else:
             if bool(getrandbits(1)):
                 reply_text += owo.upper()
-
             else:
                 reply_text += owo.lower()
-
     reply_text += choice(EMOJIS)
     await message.edit(reply_text)
 
 
 @userge.on_cmd("vapor", about={
     'header': "Vaporize everything!",
-    'usage': ".vapor [input | reply to msg]"})
+    'usage': "{tr}vapor [input | reply to msg]"})
 async def vapor_(message: Message):
     """vapor"""
     input_str = message.input_or_reply_str
-
     if not input_str:
         await message.edit("`Ｇｉｖｅ ｓｏｍｅ ｔｅｘｔ ｆｏｒ ｖａｐｏｒ！`")
         return
-
     reply_text = []
-
     for charac in input_str:
         if 0x21 <= ord(charac) <= 0x7F:
             reply_text.append(chr(ord(charac) + 0xFEE0))
-
         elif ord(charac) == 0x20:
             reply_text.append(chr(0x3000))
-
         else:
             reply_text.append(charac)
-
     await message.edit("".join(reply_text))
 
 
 @userge.on_cmd("str", about={
     'header': "Stretch it",
-    'usage': ".str [input | reply to msg]"})
+    'usage': "{tr}str [input | reply to msg]"})
 async def stretch(message: Message):
     """stretch"""
     input_str = message.input_or_reply_str
-
     if not input_str:
         await message.edit("`GiiiiiiiB sooooooomeeeeeee teeeeeeext!`")
         return
-
     await message.edit(
         sub(r"([aeiouAEIOUａｅｉｏｕＡＥＩＯＵаеиоуюяыэё])", (r"\1" * randint(3, 10)), input_str))
 
 
 @userge.on_cmd("zal", about={
     'header': "Invoke the feeling of chaos",
-    'usage': ".zal [input | reply to msg]"})
+    'usage': "{tr}zal [input | reply to msg]"})
 async def zal_(message: Message):
     """zal"""
     input_str = message.input_or_reply_str
-
     if not input_str:
         await message.edit("`gͫ ̆ i̛ ̺ v͇̆ ȅͅ   a̢ͦ   s̴̪ c̸̢ ä̸ rͩͣ y͖͞   t̨͚ é̠ x̢͖  t͔͛`")
         return
-
     reply_text = []
-
     for charac in input_str:
         if not charac.isalpha():
             reply_text.append(charac)
             continue
-
         for _ in range(0, 3):
             randint_ = randint(0, 2)
             if randint_ == 0:
                 charac = charac.strip() + choice(ZALG_LIST[0]).strip()
-
             elif randint_ == 1:
                 charac = charac.strip() + choice(ZALG_LIST[1]).strip()
-
             else:
                 charac = charac.strip() + choice(ZALG_LIST[2]).strip()
-
         reply_text.append(charac)
-
     await message.edit("".join(reply_text))
 
 
 @userge.on_cmd("owo", about={
     'header': "UwU",
-    'usage': ".owo [input | reply to msg]"})
+    'usage': "{tr}owo [input | reply to msg]"})
 async def owo_(message: Message):
     """owo"""
     input_str = message.input_or_reply_str
-
     if not input_str:
         await message.edit("` UwU no text given! `")
         return
-
     reply_text = sub(r"(r|l)", "w", input_str)
     reply_text = sub(r"(R|L)", "W", reply_text)
     reply_text = sub(r"n([aeiou])", r"ny\1", reply_text)
@@ -792,51 +728,41 @@ async def owo_(message: Message):
     reply_text = sub(r"\!+", " " + choice(UWUS), reply_text)
     reply_text = reply_text.replace("ove", "uv")
     reply_text += " " + choice(UWUS)
-
     await message.edit(reply_text)
 
 
 @userge.on_cmd("mock", about={
     'header': "Do it and find the real fun",
-    'usage': ".mock [input | reply to msg]"})
+    'usage': "{tr}mock [input | reply to msg]"})
 async def mock_(message: Message):
     """mock"""
     input_str = message.input_or_reply_str
-
     if not input_str:
         await message.edit("`gIvE sOMEtHInG tO MoCk!`")
         return
-
     reply_text = []
-
     for charac in input_str:
         if charac.isalpha() and randint(0, 1):
             to_app = charac.upper() if charac.islower() else charac.lower()
             reply_text.append(to_app)
-
         else:
             reply_text.append(charac)
-
     await message.edit("".join(reply_text))
 
 
 @userge.on_cmd("lfy", about={
     'header': "Let me Google that for you real quick !!",
-    'usage': ".lfy [query | reply to msg]"})
+    'usage': "{tr}lfy [query | reply to msg]"})
 async def lfy_(message: Message):
     """lfy_"""
     query = message.input_or_reply_str
-
     if not query:
         await message.edit("`gIvE sOMEtHInG tO lFy!`")
         return
-
     query_encoded = query.replace(" ", "+")
     lfy_url = f"http://lmgtfy.com/?s=g&iie=1&q={query_encoded}"
     payload = {'format': 'json', 'url': lfy_url}
-
     r = requests.get('http://is.gd/create.php', params=payload)
-
     await message.edit(f"Here you are, help yourself.\n[{query}]({r.json()['shorturl']})")
 
 
@@ -847,54 +773,45 @@ async def lfy_(message: Message):
         'upload_audio', 'upload_document', 'upload_video_note',
         'record_video', 'record_audio', 'record_video_note',
         'find_location', 'choose_contact'],
-    'usage': ".scam\n.scam [action]\n.scam [time]\n.scam [action] [time]"})
+    'usage': "{tr}scam\n{tr}scam [action]\n{tr}scam [time]\n{tr}scam [action] [time]"})
 async def scam_(message: Message):
     """scam"""
     options = ('typing', 'upload_photo', 'record_video', 'upload_video', 'record_audio',
                'upload_audio', 'upload_document', 'find_location', 'record_video_note',
                'upload_video_note', 'choose_contact', 'playing')
-
     input_str = message.input_str
     args = input_str.split()
-
     if len(args) == 0:  # Let bot decide action and time
         scam_action = choice(options)
         scam_time = randint(30, 60)
-
     elif len(args) == 1:  # User decides time/action, bot decides the other.
         try:
             scam_action = str(args[0]).lower()
             scam_time = randint(30, 60)
-
         except ValueError:
             scam_action = choice(options)
             scam_time = int(args[0])
-
     elif len(args) == 2:  # User decides both action and time
         scam_action = str(args[0]).lower()
         scam_time = int(args[1])
-
     else:
         await message.edit("`Invalid Syntax !!`")
         return
-
     try:
         if scam_time > 0:
             chat_id = message.chat.id
             await message.delete()
-
             count = 0
             while count <= scam_time:
                 await userge.send_chat_action(chat_id, scam_action)
                 await asyncio.sleep(5)
                 count += 5
-
     except Exception:
         await message.delete()
 
 @userge.on_cmd("try", about={
     'header': "send dart or dice randomly",
-    'usage': ".try [send to chat or anyone]"})
+    'usage': "{tr}try [send to chat or anyone]"})
 async def dice_gen(message: Message):
     """send dice"""
     random_emo = choice(DICE_EMO)

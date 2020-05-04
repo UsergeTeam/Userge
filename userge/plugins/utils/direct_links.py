@@ -25,7 +25,7 @@ from userge.utils import humanbytes
     'supported links': [
         'Google Drive', 'MEGA.nz', 'Cloud Mail', 'Yandex.Disk', 'AFH',
         'ZippyShare', 'MediaFire', 'SourceForge', 'OSDN', 'GitHub'],
-    'usage': ".direct [link]",
+    'usage': "{tr}direct [link]",
     'others': "MEGA.nz and ZippyShare **DISABLED**"})
 async def direct_(message: Message):
     """direct links generator"""

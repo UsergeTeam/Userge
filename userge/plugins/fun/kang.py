@@ -21,9 +21,9 @@ from userge import userge, Message, Config, pool
 
 @userge.on_cmd("kang", about={
     'header': "kangs stickers or creates new ones",
-    'usage': "Reply .kang [emoji('s)] [pack number] to a sticker or "
+    'usage': "Reply {tr}kang [emoji('s)] [pack number] to a sticker or "
              "an image to kang it to your userbot pack.",
-    'examples': [".kang", ".kang 🤔", ".kang 2", ".kang 🤔 2"]})
+    'examples': ["{tr}kang", "{tr}kang 🤔", "{tr}kang 2", "{tr}kang 🤔 2"]})
 async def kang_(message: Message):
     """kang"""
     user = message.from_user
@@ -162,7 +162,7 @@ async def kang_(message: Message):
 
 @userge.on_cmd("stkrinfo", about={
     'header': "get sticker pack info",
-    'usage': "reply .stkrinfo to any sticker"})
+    'usage': "reply {tr}stkrinfo to any sticker"})
 async def sticker_pack_info_(message: Message):
     """get sticker pack info"""
     replied = message.reply_to_message

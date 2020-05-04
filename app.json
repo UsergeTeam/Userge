@@ -73,6 +73,10 @@
             "description": "set this to your USERGE fork on GitHub",
             "required": false
         },
+        "CMD_TRIGGER": {
+            "description": "set command prefix",
+            "required": false
+        },
         "SUDO_TRIGGER": {
             "description": "set command prefix for SUDO users",
             "required": false

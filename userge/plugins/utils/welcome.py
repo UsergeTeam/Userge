@@ -52,9 +52,9 @@ for i in LEFT_LIST:
         'audio', 'animation', 'document', 'photo',
         'sticker', 'voice', 'video_note', 'video'],
     'examples': [
-        ".setwelcome Hi {mention}, <b>Welcome</b> to {chat} chat\n"
+        "{tr}setwelcome Hi {mention}, <b>Welcome</b> to {chat} chat\n"
         "or reply to supported media",
-        "reply .setwelcome to text message or supported media with text"],
+        "reply {tr}setwelcome to text message or supported media with text"],
     'others': "**max media size limt** : 10MB !"})
 async def setwel(msg: Message):
     await raw_set(msg, 'Welcome', WELCOME_COLLECTION, WELCOME_CHATS)
@@ -73,9 +73,9 @@ async def setwel(msg: Message):
         'audio', 'animation', 'document', 'photo',
         'sticker', 'voice', 'video_note', 'video'],
     'examples': [
-        ".setleft {flname}, Why you left :(\n"
+        "{tr}setleft {flname}, Why you left :(\n"
         "or reply to supported media",
-        "reply .setleft to text message or supported media with text"],
+        "reply {tr}setleft to text message or supported media with text"],
     'others': "**max media size limt** : 10MB !"})
 async def setleft(msg: Message):
     await raw_set(msg, 'Left', LEFT_COLLECTION, LEFT_CHATS)
@@ -155,63 +155,49 @@ async def raw_set(message: Message, name, collection, chats):
     if message.chat.type in ["private", "bot", "channel"]:
         await message.err(text=f'Are you high XO\nSet {name} in a group chat')
         return
-
     replied = message.reply_to_message
     string = message.input_or_reply_str
     file_ = ''
     file_type = ''
-
     if replied and replied.media:
         if replied.audio:
             file_ = replied.audio
             file_type = 'audio'
-
         elif replied.animation:
             file_ = replied.animation
             file_type = 'animation'
-
         elif replied.document:
             file_ = replied.document
             file_type = 'document'
-
         elif replied.photo:
             file_ = replied.photo
             file_type = 'photo'
-
         elif replied.sticker:
             file_ = replied.sticker
             file_type = 'sticker'
-
         elif replied.voice:
             file_ = replied.voice
             file_type = 'voice'
-
         elif replied.video_note:
             file_ = replied.video_note
             file_type = 'video_note'
-
         elif replied.video:
             file_ = replied.video
             file_type = 'video'
-
         if file_ and file_.file_size > 1024 * 1024 * 10:
             await message.err('File Size Too Large...!')
             return
-
     if not string and not file_:
         out = f"**Wrong Syntax**\nchech `.help .set{name.lower()}`"
-
     else:
         media = ''
         file_name = ''
         file_id = ''
         file_ref = ''
-
         if file_:
             file_id = file_.file_id
             file_ref = file_.file_ref
             c_time = time.time()
-
             tmp_path = await userge.download_media(
                 message=file_,
                 file_name=Config.DOWN_PATH,
@@ -220,10 +206,8 @@ async def raw_set(message: Message, name, collection, chats):
                     "trying to download", userge, message, c_time
                 )
             )
-
             with open(tmp_path, "rb") as media_file:
                 media = base64.b64encode(media_file.read())
-
             file_name = os.path.basename(tmp_path)
             os.remove(tmp_path)
 
@@ -236,22 +220,17 @@ async def raw_set(message: Message, name, collection, chats):
                                         'fref': file_ref,
                                         'on': True}},
                               upsert=True)
-
         chats.add(message.chat.id)
         out = f"{name} __message has been set for the__\n`{message.chat.title}`"
-
     await message.edit(text=out, del_in=3)
 
 
 async def raw_no(message: Message, name, collection, chats):
     out = f"`First Set {name} Message!`"
-
     if collection.find_one_and_update({'_id': message.chat.id}, {"$set": {'on': False}}):
         if message.chat.id in chats:
             chats.remove(message.chat.id)
-
         out = f"`{name} Disabled Successfully!`"
-
     await message.edit(text=out, del_in=3)
 
 
@@ -260,19 +239,15 @@ async def raw_do(message: Message, name, collection, chats):
     if collection.find_one_and_update({'_id': message.chat.id}, {"$set": {'on': True}}):
         chats.add(message.chat.id)
         out = f'`I will {name} new members XD`'
-
     await message.edit(text=out, del_in=3)
 
 
 async def raw_del(message: Message, name, collection, chats):
     out = f"`First Set {name} Message!`"
-
     if collection.find_one_and_delete({'_id': message.chat.id}):
         if message.chat.id in chats:
             chats.remove(message.chat.id)
-
         out = f"`{name} Removed Successfully!`"
-
     await message.edit(text=out, del_in=3)
 
 
@@ -280,7 +255,6 @@ async def raw_view(message: Message, name, collection):
     liststr = ""
     found = collection.find_one(
         {'_id': message.chat.id}, {'data': 1, 'type': 1, 'on': 1})
-
     if found:
         liststr += f"**{(await userge.get_chat(message.chat.id)).title}**\n"
         if 'type' in found and found['type']:
@@ -288,14 +262,12 @@ async def raw_view(message: Message, name, collection):
         if 'data' in found and found['data']:
             liststr += f"`{found['data']}`\n"
         liststr += f"**Active:** `{found['on']}`"
-
     await message.edit(
         text=liststr or f'`NO {name.upper()} STARTED`', del_in=0)
 
 
 async def raw_ls(message: Message, name, collection):
     liststr = ""
-
     for c_l in collection.find({}, {'media': 0}):
         liststr += f"**{(await userge.get_chat(c_l['_id'])).title}**\n"
         if 'type' in c_l and c_l['type']:
@@ -303,7 +275,6 @@ async def raw_ls(message: Message, name, collection):
         if 'data' in c_l and c_l['data']:
             liststr += f"`{c_l['data']}`\n"
         liststr += f"**Active:** `{c_l['on']}`\n\n"
-
     await message.edit(
         text=liststr or f'`NO {name.upper()}S STARTED`', del_in=0)
 
@@ -313,43 +284,30 @@ async def raw_say(message: Message, name, collection):
         else message.left_chat_member
     user_dict = await userge.get_user_dict(user.id)
     user_dict.update({'chat': message.chat.title if message.chat.title else "this group"})
-
     found = collection.find_one({'_id': message.chat.id}, {'media': 0, 'name': 0})
-
     caption = found['data']
     file_type = found['type'] if 'type' in found else ''
     file_id = found['fid'] if 'fid' in found else ''
     file_ref = found['fref'] if 'fref' in found else ''
-
     if caption:
         caption = caption.format_map(SafeDict(**user_dict))
-
     if file_id:
         try:
             await send_proper_type(message, caption, file_type, file_id, file_ref)
-
         except (FileIdInvalid, FileReferenceEmpty, BadRequest):
             found = collection.find_one({'_id': message.chat.id}, {'media': 1, 'name': 1})
-
             file_name = found['name']
             media = found['media']
-
             tmp_media_path = os.path.join(Config.DOWN_PATH, file_name)
-
             with open(tmp_media_path, "wb") as media_file:
                 media_file.write(base64.b64decode(media))
-
             file_id, file_ref = await send_proper_type(message, caption, file_type, tmp_media_path)
-
             collection.update_one({'_id': message.chat.id},
                                   {"$set": {'fid': file_id, 'fref': file_ref}},
                                   upsert=True)
-
             os.remove(tmp_media_path)
-
     else:
         await message.reply(caption, del_in=Config.WELCOME_DELETE_TIMEOUT)
-
     message.stop_propagation()
 
 
@@ -359,18 +317,14 @@ async def send_proper_type(message: Message,
                            media: str,
                            file_ref: str = None) -> tuple:
     """sent proper type"""
-
     thumb = None
     if os.path.exists(THUMB_PATH):
         thumb = THUMB_PATH
-
     tmp_msgs = []
-
     if file_type == 'audio':
         duration = 0
         if os.path.exists(media):
             duration = extractMetadata(createParser(media)).get("duration").seconds
-
         msg = await userge.send_audio(chat_id=message.chat.id,
                                       audio=media,
                                       file_ref=file_ref,
@@ -387,10 +341,8 @@ async def send_proper_type(message: Message,
         duration = 0
         if os.path.exists(media):
             duration = extractMetadata(createParser(media)).get("duration").seconds
-
             if not thumb:
                 thumb = take_screen_shot(media, duration)
-
         msg = await userge.send_animation(chat_id=message.chat.id,
                                           animation=media,
                                           file_ref=file_ref,
@@ -398,7 +350,6 @@ async def send_proper_type(message: Message,
                                           duration=duration,
                                           thumb=thumb,
                                           reply_to_message_id=message.message_id)
-
         file_id = msg.animation.file_id
         file_ref = msg.animation.file_ref
         tmp_msgs.append(msg)
@@ -409,7 +360,6 @@ async def send_proper_type(message: Message,
                                       file_ref=file_ref,
                                       caption=caption,
                                       reply_to_message_id=message.message_id)
-
         file_id = msg.photo.file_id
         file_ref = msg.photo.file_ref
         tmp_msgs.append(msg)
@@ -419,10 +369,8 @@ async def send_proper_type(message: Message,
                                         sticker=media,
                                         file_ref=file_ref,
                                         reply_to_message_id=message.message_id)
-
         if caption:
             tmp_msgs.append(await message.reply(caption))
-
         file_id = msg.sticker.file_id
         file_ref = msg.sticker.file_ref
         tmp_msgs.append(msg)
@@ -431,14 +379,12 @@ async def send_proper_type(message: Message,
         duration = 0
         if os.path.exists(media):
             duration = extractMetadata(createParser(media)).get("duration").seconds
-
         msg = await userge.send_voice(chat_id=message.chat.id,
                                       voice=media,
                                       file_ref=file_ref,
                                       caption=caption,
                                       duration=duration,
                                       reply_to_message_id=message.message_id)
-
         file_id = msg.voice.file_id
         file_ref = msg.voice.file_ref
         tmp_msgs.append(msg)
@@ -447,20 +393,16 @@ async def send_proper_type(message: Message,
         duration = 0
         if os.path.exists(media):
             duration = extractMetadata(createParser(media)).get("duration").seconds
-
             if not thumb:
                 thumb = take_screen_shot(media, duration)
-
         msg = await userge.send_video_note(chat_id=message.chat.id,
                                            video_note=media,
                                            file_ref=file_ref,
                                            duration=duration,
                                            thumb=thumb,
                                            reply_to_message_id=message.message_id)
-
         if caption:
             tmp_msgs.append(await message.reply(caption))
-
         file_id = msg.video_note.file_id
         file_ref = msg.video_note.file_ref
         tmp_msgs.append(msg)
@@ -469,10 +411,8 @@ async def send_proper_type(message: Message,
         duration = 0
         if os.path.exists(media):
             duration = extractMetadata(createParser(media)).get("duration").seconds
-
             if not thumb:
                 thumb = take_screen_shot(media, duration)
-
         msg = await userge.send_video(chat_id=message.chat.id,
                                       video=media,
                                       file_ref=file_ref,
@@ -480,7 +420,6 @@ async def send_proper_type(message: Message,
                                       duration=duration,
                                       thumb=thumb,
                                       reply_to_message_id=message.message_id)
-
         file_id = msg.video.file_id
         file_ref = msg.video.file_ref
         tmp_msgs.append(msg)
@@ -492,16 +431,13 @@ async def send_proper_type(message: Message,
                                          thumb=thumb,
                                          caption=caption,
                                          reply_to_message_id=message.message_id)
-
         file_id = msg.document.file_id
         file_ref = msg.document.file_ref
         tmp_msgs.append(msg)
 
     if Config.WELCOME_DELETE_TIMEOUT:
         await asyncio.sleep(Config.WELCOME_DELETE_TIMEOUT)
-
         for msg_ in tmp_msgs:
             if isinstance(msg_, RawMessage):
                 await msg_.delete()
-
     return file_id, file_ref

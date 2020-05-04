@@ -14,7 +14,7 @@ from userge import userge, Message
 @userge.on_cmd("covid", about={
     'header': "see covid details",
     'description': "The current real time situation of the COVID-19 patients reported in worldwide",
-    'usage': ".covid for global\n.covid [country]",
+    'usage': "{tr}covid for global\n{tr}covid [country]",
     'countries': "Sri Lanka, USA, Spain, Italy, France, Germany, UK, Turkey, Iran', China, "
                  "Russia, Brazil, Belgium, Canada, Netherlands, Switzerland, India, "
                  "Portugal, Ecuador, Peru, Ireland, Sweden, Saudi Arabia, Austria, "

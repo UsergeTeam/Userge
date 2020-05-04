@@ -12,7 +12,7 @@ from userge import userge, Message
 
 @userge.on_cmd("s", about={
     'header': "search commands in USERGE",
-    'examples': ".s wel"})
+    'examples': "{tr}s wel"})
 async def search(message: Message):
     cmd = message.input_str
     if not cmd:

@@ -87,6 +87,8 @@ class Config:
 
     ALLOWED_CHATS = Filters.chat([])
 
+    CMD_TRIGGER = os.environ.get("CMD_TRIGGER", '.')
+
     SUDO_TRIGGER = os.environ.get("SUDO_TRIGGER", '!')
 
     SUDO_USERS: Set[int] = set()
@@ -94,8 +96,8 @@ class Config:
     ALLOWED_COMMANDS: Set[str] = set()
 
 
-if Config.SUDO_TRIGGER == '.':
-    _LOG.info("Invalid SUDO_TRIGGER!, You can't use `.` as SUDO_TRIGGER")
+if Config.SUDO_TRIGGER == Config.CMD_TRIGGER:
+    _LOG.info("Invalid SUDO_TRIGGER!, You can't use `%s` as SUDO_TRIGGER", Config.CMD_TRIGGER)
     sys.exit()
 
 if not os.path.isdir(Config.DOWN_PATH):

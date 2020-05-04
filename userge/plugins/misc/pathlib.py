@@ -341,7 +341,7 @@ class SCLib(_BaseLib):
 
 @userge.on_cmd('setdir', about={
     'header': "set temporary working directory",
-    'usage': ".setdir [path / name]"})
+    'usage': "{tr}setdir [path / name]"})
 async def setdir_(message: Message) -> None:
     """setdir"""
     path = message.input_str
@@ -372,7 +372,7 @@ async def clear_dir_(message: Message):
 
 @userge.on_cmd('rmdir', about={
     'header': "delete a directory or file",
-    'usage': ".rmdir [path / name]"})
+    'usage': "{tr}rmdir [path / name]"})
 async def rmdir_(message: Message) -> None:
     """rmdir"""
     path = message.input_str
@@ -388,8 +388,8 @@ async def rmdir_(message: Message) -> None:
 
 @userge.on_cmd(r'split (\d+) ([\s\S]+)', about={
     'header': "Split files",
-    'usage': ".split [split size (MB)] [file path]",
-    'examples': ".split 5 downloads/test.zip"})
+    'usage': "{tr}split [split size (MB)] [file path]",
+    'examples': "{tr}split 5 downloads/test.zip"})
 async def split_(message: Message) -> None:
     """split"""
     split_size = int(message.matches[0].group(1))
@@ -440,8 +440,8 @@ async def split_(message: Message) -> None:
 
 @userge.on_cmd('combine', about={
     'header': "Combine split files",
-    'usage': ".combine [file path]",
-    'examples': ".combine downloads/test.tar.00000"})
+    'usage': "{tr}combine [file path]",
+    'examples': "{tr}combine downloads/test.tar.00000"})
 async def combine_(message: Message) -> None:
     """combine"""
     file_path = message.input_str
@@ -495,7 +495,7 @@ async def combine_(message: Message) -> None:
 
 @userge.on_cmd('zip', about={
     'header': "Zip file / folder",
-    'usage': ".zip [file path | folder path]"})
+    'usage': "{tr}zip [file path | folder path]"})
 async def zip_(message: Message) -> None:
     """zip"""
     await _pack_helper(message)
@@ -503,7 +503,7 @@ async def zip_(message: Message) -> None:
 
 @userge.on_cmd('tar', about={
     'header': "Tar file / folder",
-    'usage': ".tar [file path | folder path]"})
+    'usage': "{tr}tar [file path | folder path]"})
 async def tar_(message: Message) -> None:
     """tar"""
     await _pack_helper(message, True)
@@ -549,7 +549,7 @@ async def _pack_helper(message: Message, tar: bool = False) -> None:
 
 @userge.on_cmd('unpack', about={
     'header': "unpack packed file",
-    'usage': ".unpack [zip file path | tar file path]"})
+    'usage': "{tr}unpack [zip file path | tar file path]"})
 async def unpack_(message: Message) -> None:
     """unpack"""
     file_path = message.input_str
@@ -594,7 +594,7 @@ async def unpack_(message: Message) -> None:
 
 @userge.on_cmd('packinfo', about={
     'header': "File content of the pack",
-    'usage': ".packinfo [zip file path | tar file path]"})
+    'usage': "{tr}packinfo [zip file path | tar file path]"})
 async def packinfo_(message: Message) -> None:
     """packinfo"""
     file_path = message.input_str

@@ -18,7 +18,7 @@ LOG = userge.getLogger(__name__)
 @userge.on_cmd('restart', about={
     'header': "Restarts the bot and reload all plugins",
     'flags': {'-h': "restart heroku dyno"},
-    'usage': ".restart\n.restart -h"})
+    'usage': "{tr}restart\n{tr}restart -h"})
 async def restart_cmd_handler(message: Message):
     await message.edit("Restarting Userge Services", log=__name__)
     LOG.info("USERGE Services - Restart initiated")

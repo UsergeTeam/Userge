@@ -17,7 +17,7 @@ CHANNEL = userge.getCLogger(__name__)  # channel logger object
 
 @userge.on_cmd("dic", about={
     'header': "English Dictionary-telegram",
-    'usage': ".dic [word]",
+    'usage': "{tr}dic [word]",
     'examples': 'word : Search for any word'})
 async def dictionary(message: Message):
     """this is a dictionary"""

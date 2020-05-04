@@ -27,7 +27,7 @@ THUMB_PATH = Config.DOWN_PATH + "thumb_image.jpg"
 @userge.on_cmd("upload", about={
     'header': "Upload files to telegram",
     'flags': {'-d': "upload as document"},
-    'usage': ".upload [flags] [file or folder path]"}, del_pre=True)
+    'usage': "{tr}upload [flags] [file or folder path]"}, del_pre=True)
 async def uploadtotg(message: Message):
     flags = message.flags
     path_ = message.filtered_input_str
