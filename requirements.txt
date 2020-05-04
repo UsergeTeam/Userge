@@ -18,6 +18,7 @@ psutil
 pymongo
 pySmartDL
 python-dotenv
+pytz
 requests
 search-engine-parser
 selenium

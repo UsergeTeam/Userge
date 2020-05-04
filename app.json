@@ -53,6 +53,16 @@
             "required": false
 
         },
+        "WEATHER_DEFCITY": {
+            "description": "add default city for weather",
+            "required": false
+
+        },
+        "OPEN_WEATHER_MAP": {
+            "description": "Weather API get it from 'https://openweathermap.org/",
+            "required": false
+
+        },
         "G_DRIVE_PARENT_ID": {
             "description": "GDrive Folder ID",
             "required": false
