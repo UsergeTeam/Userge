@@ -315,7 +315,7 @@ async def fun_(message: Message):
         await message.edit(fun, parse_mode="html")
 
 
-@userge.on_cmd("Oof$", about={'header': "Ooooof"}, name='Oof', trigger='')
+@userge.on_cmd("Oof$", about={'header': "Ooooof"}, trigger='')
 async def Oof_(message: Message):
     """Oof"""
     Oof = "Oo "
@@ -324,7 +324,7 @@ async def Oof_(message: Message):
         await message.edit(Oof)
 
 
-@userge.on_cmd("Hmm$", about={'header': "Hmmmmm"}, name='Hmm', trigger='')
+@userge.on_cmd("Hmm$", about={'header': "Hmmmmm"}, trigger='')
 async def Hmm_(message: Message):
     """Hmm"""
     Hmm = "Hm "

@@ -35,6 +35,8 @@ async def carbon_(message: Message):
             await message.edit('first **unblock** @CarbonNowShBot')
             return
         response = await conv.get_response(mark_read=True)
+        while not response.reply_markup:
+            response = await conv.get_response(mark_read=True)
         await response.click(x=random.randint(0, 2), y=random.randint(0, 8))
         response = await conv.get_response(mark_read=True)
         while not response.media:

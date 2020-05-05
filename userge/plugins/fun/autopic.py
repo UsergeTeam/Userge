@@ -39,7 +39,7 @@ LOG = userge.getLogger(__name__)
 
 @userge.on_cmd("autopic", about={
     'header': "set profile picture",
-    'usage': "{tr}autopic\n{tr}autopic [image path]\nset timeout using {tr}sappto"})
+    'usage': "{tr}autopic\n{tr}autopic [image path]\nset timeout using {tr}sapicto"})
 async def autopic(message: Message):
     global UPDATE_PIC
     await message.edit('`processing...`')
