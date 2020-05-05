@@ -41,6 +41,7 @@ class Userge(RawClient):
     def __init__(self) -> None:
         self._help_dict: Dict[str, Dict[str, str]] = {}
         self._imported: List[ModuleType] = []
+        self._tasks: List[Callable[[Any], Any]] = []
         self._channel = self.getCLogger(__name__)
         _LOG.info(_LOG_STR, "Setting Userge Configs")
         super().__init__(Config.HU_STRING_SESSION,
@@ -60,8 +61,7 @@ class Userge(RawClient):
 
     def conversation(self,
                      chat_id: Union[str, int],
-                     *,
-                     timeout: Union[int, float] = 10,
+                     *, timeout: Union[int, float] = 10,
                      limit: int = 10) -> Conv:
         """\nThis returns new conversation object.
 
@@ -87,8 +87,7 @@ class Userge(RawClient):
                                     chat_id: Union[int, str],
                                     message: Union[List[RawMessage],
                                                    Optional[RawMessage]] = None,
-                                    *,
-                                    max_id: Optional[int] = None,
+                                    *, max_id: Optional[int] = None,
                                     clear_mentions: bool = False) -> bool:
         """\nMarks messages as read and optionally clears mentions.
 
@@ -135,7 +134,7 @@ class Userge(RawClient):
             return await self.read_history(chat_id=chat_id, max_id=max_id)
         return False
 
-    async def get_user_dict(self, user_id: int) -> Dict[str, str]:
+    async def get_user_dict(self, user_id: Union[int, str]) -> Dict[str, str]:
         """This will return user `Dict` which contains
         `id`(chat id), `fname`(first name), `lname`(last name),
         `flname`(full name), `uname`(username) and `mention`.
@@ -307,14 +306,15 @@ class Userge(RawClient):
         filter_my_trigger = Filters.create(lambda _, query: \
             query.text.startswith(trigger) if trigger else True)
         sudo_filter = Filters.create(lambda _, query: \
-            query.from_user and query.from_user.id in Config.SUDO_USERS and \
-                (query.text.startswith(Config.SUDO_TRIGGER) if trigger else True))
+            (query.from_user
+             and query.from_user.id in Config.SUDO_USERS
+             and (query.text.startswith(Config.SUDO_TRIGGER) if trigger else True)))
         sudo_cmd_filter = Filters.create(lambda _, __: \
             cname.lstrip(trigger) in Config.ALLOWED_COMMANDS)
         if filter_me:
-            filters_ = filters_ & (
-                ((Filters.outgoing | Filters.me) & filter_my_trigger) | \
-                    (Filters.incoming & sudo_filter & sudo_cmd_filter))
+            filters_ = (filters_
+                        & (((Filters.outgoing | Filters.me) & filter_my_trigger)
+                           | (Filters.incoming & sudo_filter & sudo_cmd_filter)))
         return self._build_decorator(log=f"On {pattern}", filters=filters_,
                                      group=group, **kwargs)
 
@@ -341,6 +341,11 @@ class Userge(RawClient):
                                      filters=Filters.left_chat_member & leaving_chats,
                                      group=group)
 
+    def add_task(self, func: Callable[[Any], Any]) -> Callable[[Any], Any]:
+        """add tasks"""
+        self._tasks.append(func)
+        return func
+
     def get_help(self,
                  key: str = '',
                  all_cmds: bool = False) -> Tuple[Union[str, List[str]], Union[bool, str]]:
@@ -349,8 +354,10 @@ class Userge(RawClient):
         """
         if not key and not all_cmds:
             return sorted(list(self._help_dict)), True         # names of all modules
-        if not key.startswith(Config.CMD_TRIGGER) and key in self._help_dict and \
-            (len(self._help_dict[key]) > 1 or list(self._help_dict[key])[0].lstrip(Config.CMD_TRIGGER) != key):
+        if (not key.startswith(Config.CMD_TRIGGER)
+                and key in self._help_dict
+                and (len(self._help_dict[key]) > 1
+                     or list(self._help_dict[key])[0].lstrip(Config.CMD_TRIGGER) != key)):
             return sorted(list(self._help_dict[key])), False   # all commands for that module
 
         dict_ = {x: y for _, i in self._help_dict.items() for x, y in i.items()}
@@ -443,9 +450,9 @@ class Userge(RawClient):
                          log: str,
                          filters: Filters,
                          group: int,
-                         **kwargs: Union[str, bool, Dict[
-                             str, Union[str, List[str], Dict[
-                                 str, str]]]]) -> Callable[[_PYROFUNC], _PYROFUNC]:
+                         **kwargs: Union[str, bool,
+                                         Dict[str, Union[str, List[str], Dict[str, str]]]]
+                         ) -> Callable[[_PYROFUNC], _PYROFUNC]:
         def _decorator(func: _PYROFUNC) -> _PYROFUNC:
             async def _template(_: RawClient, __: RawMessage) -> None:
                 await func(Message(_, __, **kwargs))
@@ -490,7 +497,7 @@ class Userge(RawClient):
         _LOG.info(_LOG_STR, f"Reloaded {len(reloaded)} Plugins => {reloaded}")
         return len(reloaded)
 
-    async def restart(self) -> None:
+    async def restart(self, update_req: bool = False) -> None:
         """Restart the Userge"""
         _LOG.info(_LOG_STR, "Restarting Userge")
         await self.stop()
@@ -500,13 +507,29 @@ class Userge(RawClient):
                 os.close(handler.fd)
         except Exception as c_e:
             _LOG.error(_LOG_STR, c_e)
+        if update_req:
+            os.system("pip3 install -r requirements.txt")
         os.execl(sys.executable, sys.executable, '-m', 'userge')
         sys.exit()
 
     def begin(self) -> None:
         """This will start the Userge"""
-        _LOG.info(_LOG_STR, "Starting Userge")
         nest_asyncio.apply()
         Conv.init(self)
-        self.run()
+        loop = asyncio.get_event_loop()
+        run = loop.run_until_complete
+        _LOG.info(_LOG_STR, "Starting Userge")
+        run(self.start())
+        running_tasks: List[asyncio.Task] = []
+        for task in self._tasks:
+            running_tasks.append(loop.create_task(task()))
+        _LOG.info(_LOG_STR, "Idling Userge")
+        run(Userge.idle())
         _LOG.info(_LOG_STR, "Exiting Userge")
+        for task in running_tasks:
+            task.cancel()
+        run(self.stop())
+        for task in asyncio.all_tasks():
+            task.cancel()
+        run(loop.shutdown_asyncgens())
+        loop.close()

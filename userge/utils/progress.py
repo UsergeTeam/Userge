@@ -20,7 +20,8 @@ async def progress(current: int,
                    ud_type: str,
                    client: 'userge.Userge',
                    message: 'userge.Message',
-                   start: int) -> None:
+                   start: int,
+                   file_name: str = '') -> None:
     if message.process_is_canceled:
         await client.stop_transmission()
     now = time.time()
@@ -30,7 +31,7 @@ async def progress(current: int,
         speed = current / diff
         time_to_completion = time_formatter(int((total - current) / speed))
         progress_str = \
-            "__{}__\n" + \
+            "__{}__ : `{}`\n" + \
             "```[{}{}]```\n" + \
             "**Progress** : `{}%`\n" + \
             "**Completed** : `{}`\n" + \
@@ -39,6 +40,7 @@ async def progress(current: int,
             "**ETA** : `{}`"
         progress_str = progress_str.format(
             ud_type,
+            file_name,
             ''.join(["█" for i in range(floor(percentage / 5))]),
             ''.join(["░" for i in range(20 - floor(percentage / 5))]),
             round(percentage, 2),

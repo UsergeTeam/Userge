@@ -257,11 +257,32 @@ FACEREACTS = (
     "（ ^_^）o自自o（^_^ ）", "ಠ‿ಠ", "ヽ(´▽`)/", "ᵒᴥᵒ#", "( ͡° ͜ʖ ͡°)", "┬─┬﻿ ノ( ゜-゜ノ)", "ヽ(´ー｀)ノ",
     "☜(⌒▽⌒)☞", "ε=ε=ε=┌(;*´Д`)ﾉ", "(╬ ಠ益ಠ)", "┬─┬⃰͡ (ᵔᵕᵔ͜ )", "┻━┻ ︵ヽ(`Д´)ﾉ︵﻿ ┻━┻", r"¯\_(ツ)_/¯", "ʕᵔᴥᵔʔ",
     "(`･ω･´)", "ʕ•ᴥ•ʔ", "ლ(｀ー´ლ)", "ʕʘ̅͜ʘ̅ʔ", "（　ﾟДﾟ）", r"¯\(°_o)/¯", "(｡◕‿◕｡)",
-    "(ノಠ ∩ಠ)ノ彡( \\o°o)\\", "“ヽ(´▽｀)ノ”",)
+    "(ノಠ ∩ಠ)ノ彡( \\o°o)\\", "“ヽ(´▽｀)ノ”", "( ͡° ͜ʖ ͡°)", "¯\_(ツ)_/¯", "( ͡°( ͡° ͜ʖ( ͡° ͜ʖ ͡°)ʖ ͡°) ͡°)",
+    "ʕ•ᴥ•ʔ", "(▀̿Ĺ̯▀̿ ̿)", "(ง ͠° ͟ل͜ ͡°)ง", "༼ つ ◕_◕ ༽つ", "ಠ_ಠ", "(☞ ͡° ͜ʖ ͡°)☞",
+    "¯\_༼ ି ~ ି ༽_/¯", "c༼ ͡° ͜ʖ ͡° ༽⊃")
+
+HAPPY = ("( ͡° ͜ʖ ͡°)", "(ʘ‿ʘ)", "(✿´‿`)", "=͟͟͞͞٩(๑☉ᴗ☉)੭ु⁾⁾", "(*⌒▽⌒*)θ～♪",
+         "°˖✧◝(⁰▿⁰)◜✧˖°", "✌(-‿-)✌", "⌒°(❛ᴗ❛)°⌒", "(ﾟ<|＼(･ω･)／|>ﾟ)", "ヾ(o✪‿✪o)ｼ")
+
+THINKING = ("(҂⌣̀_⌣́)", "（；¬＿¬)", "(-｡-;", "┌[ O ʖ̯ O ]┐", "〳 ͡° Ĺ̯ ͡° 〵")
+
+WAVING = ("(ノ^∇^)", "(;-_-)/", "@(o・ェ・)@ノ", "ヾ(＾-＾)ノ", "ヾ(◍’౪`◍)ﾉﾞ♡", "(ό‿ὸ)ﾉ", "(ヾ(´・ω・｀)")
+
+WTF = ("༎ຶ‿༎ຶ", "(‿ˠ‿)", "╰U╯☜(◉ɷ◉ )", "(;´༎ຶ益༎ຶ`)♡", "╭∩╮(︶ε︶*)chu", "( ＾◡＾)っ (‿|‿)")
+
+LOVE = ("乂❤‿❤乂", "(｡♥‿♥｡)", "( ͡~ ͜ʖ ͡°)", "໒( ♥ ◡ ♥ )७", "༼♥ل͜♥༽")
+
+CONFUSED = ("(・_・ヾ", "｢(ﾟﾍﾟ)", "﴾͡๏̯͡๏﴿", "(￣■￣;)!?", "▐ ˵ ͠° (oo) °͠ ˵ ▐", "(-_-)ゞ゛")
+
+DEAD = ("(✖╭╮✖)", "✖‿✖", "(+_+)", "(✖﹏✖)", "∑(✘Д✘๑)")
+
+SAD = ("(＠´＿｀＠)", "⊙︿⊙", "(▰˘︹˘▰)", "●︿●", "(　´_ﾉ` )", "彡(-_-;)彡")
+
+DOG = ("-ᄒᴥᄒ-", "◖⚆ᴥ⚆◗")
 
 
-@userge.on_cmd(r"(?:[kK]ek|:/)$",
-               about={'header': "Check yourself, hint: `:/`"}, name='kek',trigger='')
+@userge.on_cmd(r"(?:Kek|:/)$",
+               about={'header': "Check yourself, hint: `:/`"}, name='Kek',trigger='')
 async def kek_(message: Message):
     """kek"""
     kek = ["/", "\\"]
@@ -270,8 +291,8 @@ async def kek_(message: Message):
         await message.edit(":" + kek[i % 2])
 
 
-@userge.on_cmd(r"(?:[lL]ol|-_-)$",
-               about={'header': "Check yourself, hint: `-_-`"}, name='lol',trigger='')
+@userge.on_cmd(r"(?:Lol|-_-)$",
+               about={'header': "Check yourself, hint: `-_-`"}, name='Lol',trigger='')
 async def lol_(message: Message):
     """lol"""
     lol = "-_ "
@@ -282,8 +303,8 @@ async def lol_(message: Message):
         await message.edit(lol, parse_mode="html")
 
 
-@userge.on_cmd(r"(?:[fF]un|;_;)$",
-               about={'header': "Check yourself, hint: `;_;`"}, name="fun", trigger='')
+@userge.on_cmd(r"(?:Fun|;_;)$",
+               about={'header': "Check yourself, hint: `;_;`"}, name="Fun", trigger='')
 async def fun_(message: Message):
     """fun"""
     fun = ";_ "
@@ -294,7 +315,7 @@ async def fun_(message: Message):
         await message.edit(fun, parse_mode="html")
 
 
-@userge.on_cmd("[oO]of$", about={'header': "Ooooof"}, name='oof', trigger='')
+@userge.on_cmd("Oof$", about={'header': "Ooooof"}, name='Oof', trigger='')
 async def Oof_(message: Message):
     """Oof"""
     Oof = "Oo "
@@ -303,7 +324,7 @@ async def Oof_(message: Message):
         await message.edit(Oof)
 
 
-@userge.on_cmd("[hH]mm$", about={'header': "Hmmmmm"}, name='hmm', trigger='')
+@userge.on_cmd("Hmm$", about={'header': "Hmmmmm"}, name='Hmm', trigger='')
 async def Hmm_(message: Message):
     """Hmm"""
     Hmm = "Hm "
@@ -312,43 +333,33 @@ async def Hmm_(message: Message):
         await message.edit(Hmm)
 
 
-@userge.on_cmd("fp$", about={'header': "Facepalm :P"})
-async def facepalm_(message: Message):
-    """facepalm_"""
+async def check_and_send(message: Message, *args, **kwargs):
     replied = message.reply_to_message
     if replied:
         await asyncio.gather(
             message.delete(),
-            replied.reply("🤦‍♂")
+            replied.reply(*args, **kwargs)
         )
     else:
-        await message.edit("🤦‍♂")
+        await message.edit(*args, **kwargs)
+
+
+@userge.on_cmd("fp$", about={'header': "Facepalm :P"})
+async def facepalm_(message: Message):
+    """facepalm_"""
+    await check_and_send(message, "🤦‍♂")
 
 
 @userge.on_cmd("cry$", about={'header': "y u du dis, i cri"})
 async def cry_(message: Message):
     """cry"""
-    replied = message.reply_to_message
-    if replied:
-        await asyncio.gather(
-            message.delete(),
-            replied.reply(choice(CRI), parse_mode="html")
-        )
-    else:
-        await message.edit(choice(CRI), parse_mode="html")
+    await check_and_send(message, choice(CRI), parse_mode="html")
 
 
 @userge.on_cmd("insult$", about={'header': "Check yourself ;)"})
 async def insult_(message: Message):
     """insult"""
-    replied = message.reply_to_message
-    if replied:
-        await asyncio.gather(
-            message.delete(),
-            replied.reply(choice(INSULT_STRINGS), parse_mode="html")
-        )
-    else:
-        await message.edit(choice(INSULT_STRINGS), parse_mode="html")
+    await check_and_send(message, choice(INSULT_STRINGS), parse_mode="html")
 
 
 @userge.on_cmd("hi", about={
@@ -382,82 +393,65 @@ async def hi_(message: Message):
         await message.edit(pay)
 
 
-@userge.on_cmd("react$", about={'header': "Make your userbot react to everything"})
+@userge.on_cmd("react", about={
+    'header': "Make your userbot react to everything",
+    'types': ['happy', 'thinking', 'waving', 'wtf', 'love', 'confused', 'dead', 'sad', 'dog'],
+    'usage': "{tr}react [type]",
+    'examples': ["{tr}react", "{tr}react dead"]})
 async def react_(message: Message):
     """react"""
-    replied = message.reply_to_message
-    if replied:
-        await asyncio.gather(
-            message.delete(),
-            replied.reply(choice(FACEREACTS), parse_mode="html")
-        )
+    type_ = message.input_str
+    if "happy" in type_:
+        out = choice(HAPPY)
+    elif "thinking" in type_:
+        out = choice(THINKING)
+    elif "waving" in type_:
+        out = choice(WAVING)
+    elif "wtf" in type_:
+        out = choice(WTF)
+    elif "love" in type_:
+        out = choice(LOVE)
+    elif "confused" in type_:
+        out = choice(CONFUSED)
+    elif "dead" in type_:
+        out = choice(DEAD)
+    elif "sad" in type_:
+        out = choice(SAD)
+    elif "dog" in type_:
+        out = choice(DOG)
     else:
-        await message.edit(choice(FACEREACTS), parse_mode="html")
+        out = choice(FACEREACTS)
+    await check_and_send(message, out, parse_mode="html")
 
 
 @userge.on_cmd("shg$", about={'header': "Shrug at it !!"})
 async def shrugger(message: Message):
     """shrugger"""
-    replied = message.reply_to_message
-    if replied:
-        await asyncio.gather(
-            message.delete(),
-            replied.reply(choice(SHGS), parse_mode="html")
-        )
-    else:
-        await message.edit(choice(SHGS), parse_mode="html")
+    await check_and_send(message, choice(SHGS), parse_mode="html")
 
 
 @userge.on_cmd("chase$", about={'header': "You better start running"})
 async def chase_(message: Message):
     """chase"""
-    replied = message.reply_to_message
-    if replied:
-        await asyncio.gather(
-            message.delete(),
-            replied.reply(choice(CHASE_STR), parse_mode="html")
-        )
-    else:
-        await message.edit(choice(CHASE_STR), parse_mode="html")
+    await check_and_send(message, choice(CHASE_STR), parse_mode="html")
 
 
 @userge.on_cmd("run$", about={'header': "Let Me Run, run, RUNNN!"})
 async def run_(message: Message):
     """run"""
-    replied = message.reply_to_message
-    if replied:
-        await asyncio.gather(
-            message.delete(),
-            replied.reply(choice(RUNS_STR), parse_mode="html")
-        )
-    else:
-        await message.edit(choice(RUNS_STR), parse_mode="html")
+    await check_and_send(message, choice(RUNS_STR), parse_mode="html")
 
 
 @userge.on_cmd("metoo$", about={'header': "Haha yes"})
 async def metoo_(message: Message):
     """metoo"""
-    replied = message.reply_to_message
-    if replied:
-        await asyncio.gather(
-            message.delete(),
-            replied.reply(choice(METOOSTR), parse_mode="html")
-        )
-    else:
-        await message.edit(choice(METOOSTR), parse_mode="html")
+    await check_and_send(message, choice(METOOSTR), parse_mode="html")
 
 
 @userge.on_cmd("10iq$", about={'header': "You retard !!"}, name="10iq")
 async def iqless(message: Message):
     """iqless"""
-    replied = message.reply_to_message
-    if replied:
-        await asyncio.gather(
-            message.delete(),
-            replied.reply("♿")
-        )
-    else:
-        await message.edit("♿")
+    await check_and_send(message, "♿")
 
 
 @userge.on_cmd("moon$", about={'header': "kensar moon animation"})

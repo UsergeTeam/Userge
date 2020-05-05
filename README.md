@@ -133,7 +133,8 @@ async def testing(message: Message):
 * [@uaudIth](https://t.me/uaudIth)
 * [@K_E_N_W_A_Y](https://t.me/K_E_N_W_A_Y)
 * [@nawwasl](https://t.me/nawwasl)
-* [@THARUKA](https://t.me/TharukaN97)
+* [@TharukaN97](https://t.me/TharukaN97)
+* [@Supun97](https://t.me/Supun97)
 * [@gotstc](https://t.me/gotstc)
 
 ### Copyright & License 👮

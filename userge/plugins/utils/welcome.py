@@ -12,6 +12,7 @@ import time
 import base64
 import asyncio
 
+import aiofiles
 from hachoir.metadata import extractMetadata
 from hachoir.parser import createParser
 from pyrogram import Message as RawMessage
@@ -206,8 +207,8 @@ async def raw_set(message: Message, name, collection, chats):
                     "trying to download", userge, message, c_time
                 )
             )
-            with open(tmp_path, "rb") as media_file:
-                media = base64.b64encode(media_file.read())
+            async with aiofiles.open(tmp_path, "rb") as media_file:
+                media = base64.b64encode(await media_file.read())
             file_name = os.path.basename(tmp_path)
             os.remove(tmp_path)
 
@@ -299,8 +300,8 @@ async def raw_say(message: Message, name, collection):
             file_name = found['name']
             media = found['media']
             tmp_media_path = os.path.join(Config.DOWN_PATH, file_name)
-            with open(tmp_media_path, "wb") as media_file:
-                media_file.write(base64.b64decode(media))
+            async with aiofiles.open(tmp_media_path, "wb") as media_file:
+                await media_file.write(base64.b64decode(media))
             file_id, file_ref = await send_proper_type(message, caption, file_type, tmp_media_path)
             collection.update_one({'_id': message.chat.id},
                                   {"$set": {'fid': file_id, 'fref': file_ref}},

@@ -9,11 +9,7 @@
 from asyncio.exceptions import CancelledError
 
 class StopConversation(CancelledError):
-    """
-    Exception to raise if conversation terminated.
-    """
+    """Exception to raise if conversation terminated"""
 
 class ProcessCanceled(Exception):
-    """
-    Custom Exception to terminate threads.
-    """
+    """Custom Exception to terminate threads"""

@@ -15,6 +15,7 @@ import urllib.request
 from PIL import Image
 from pyrogram.api.functions.messages import GetStickerSet
 from pyrogram.api.types import InputStickerSetShortName
+from pyrogram.errors.exceptions.bad_request_400 import YouBlockedUser
 
 from userge import userge, Message, Config, pool
 
@@ -85,7 +86,11 @@ async def kang_(message: Message):
         if ("  A <strong>Telegram</strong> user has created "
             "the <strong>Sticker&nbsp;Set</strong>.") not in htmlstr:
             async with userge.conversation('Stickers') as conv:
-                await conv.send_message('/addsticker')
+                try:
+                    await conv.send_message('/addsticker')
+                except YouBlockedUser:
+                    await message.edit('first **unblock** @Stickers')
+                    return
                 await conv.get_response(mark_read=True)
                 await conv.send_message(packname)
                 msg = await conv.get_response(mark_read=True)
@@ -134,7 +139,11 @@ async def kang_(message: Message):
         else:
             await message.edit("`Brewing a new Pack...`")
             async with userge.conversation('Stickers') as conv:
-                await conv.send_message(cmd)
+                try:
+                    await conv.send_message(cmd)
+                except YouBlockedUser:
+                    await message.edit('first **unblock** @Stickers')
+                    return
                 await conv.get_response(mark_read=True)
                 await conv.send_message(packnick)
                 await conv.get_response(mark_read=True)

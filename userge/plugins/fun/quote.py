@@ -9,6 +9,8 @@
 
 import asyncio
 
+from pyrogram.errors.exceptions.bad_request_400 import YouBlockedUser
+
 from userge import userge, Message
 
 
@@ -21,12 +23,19 @@ async def quotecmd(message: Message):
     args = message.input_str
     replied = message.reply_to_message
     async with userge.conversation('QuotLyBot') as conv:
-        if replied:
-            await userge.forward_messages(chat_id=conv.chat_id,
-                                          from_chat_id=message.chat.id,
-                                          message_ids=replied.message_id)
-        else:
-            await conv.send_message(args)
+        try:
+            if replied:
+                await userge.forward_messages(chat_id=conv.chat_id,
+                                            from_chat_id=message.chat.id,
+                                            message_ids=replied.message_id)
+            else:
+                if not args:
+                    await message.err('input not found!')
+                    return
+                await conv.send_message(args)
+        except YouBlockedUser:
+            await message.edit('first **unblock** @QuotLyBot')
+            return
         quote = await conv.get_response(mark_read=True)
         await userge.forward_messages(chat_id=message.chat.id,
                                       from_chat_id=conv.chat_id,

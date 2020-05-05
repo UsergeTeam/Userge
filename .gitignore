@@ -140,3 +140,6 @@ gen
 unknown_errors.txt
 logs/
 bin/
+resources/base_profile_pic.jpg
+resources/mdfy_profile_pic.jpg
+pictest.py

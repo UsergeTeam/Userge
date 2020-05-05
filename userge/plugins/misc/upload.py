@@ -70,19 +70,24 @@ async def doc_upload(chat_id, path):
     c_time = time.time()
     thumb = await get_thumb()
     await userge.send_chat_action(chat_id, "upload_document")
-    msg = await userge.send_document(
-        chat_id=chat_id,
-        document=str(path),
-        thumb=thumb,
-        caption=path.name,
-        parse_mode="html",
-        disable_notification=True,
-        progress=progress,
-        progress_args=(
-            "uploading", userge, message, c_time
+    try:
+        msg = await userge.send_document(
+            chat_id=chat_id,
+            document=str(path),
+            thumb=thumb,
+            caption=path.name,
+            parse_mode="html",
+            disable_notification=True,
+            progress=progress,
+            progress_args=(
+                "uploading", userge, message, c_time, str(path.name)
+            )
         )
-    )
-    await finalize(chat_id, message, msg, start_t)
+    except Exception as u_e:
+        await message.edit(u_e)
+        raise u_e
+    else:
+        await finalize(chat_id, message, msg, start_t)
 
 
 async def vid_upload(chat_id, path):
@@ -94,21 +99,26 @@ async def vid_upload(chat_id, path):
     start_t = datetime.now()
     c_time = time.time()
     await userge.send_chat_action(chat_id, "upload_video")
-    msg = await userge.send_video(
-        chat_id=chat_id,
-        video=strpath,
-        duration=metadata.get("duration").seconds,
-        thumb=thumb,
-        caption=path.name,
-        parse_mode="html",
-        disable_notification=True,
-        progress=progress,
-        progress_args=(
-            "uploading", userge, message, c_time
+    try:
+        msg = await userge.send_video(
+            chat_id=chat_id,
+            video=strpath,
+            duration=metadata.get("duration").seconds,
+            thumb=thumb,
+            caption=path.name,
+            parse_mode="html",
+            disable_notification=True,
+            progress=progress,
+            progress_args=(
+                "uploading", userge, message, c_time, str(path.name)
+            )
         )
-    )
-    await remove_thumb(thumb)
-    await finalize(chat_id, message, msg, start_t)
+    except Exception as u_e:
+        await message.edit(u_e)
+        raise u_e
+    else:
+        await remove_thumb(thumb)
+        await finalize(chat_id, message, msg, start_t)
 
 
 async def audio_upload(chat_id, path):
@@ -126,22 +136,27 @@ async def audio_upload(chat_id, path):
     if metadata.has("artist"):
         artist = metadata.get("artist")
     await userge.send_chat_action(chat_id, "upload_audio")
-    msg = await userge.send_audio(
-        chat_id=chat_id,
-        audio=strpath,
-        thumb=thumb,
-        caption=path.name,
-        title=title,
-        performer=artist,
-        duration=metadata.get("duration").seconds,
-        parse_mode="html",
-        disable_notification=True,
-        progress=progress,
-        progress_args=(
-            "uploading", userge, message, c_time
+    try:
+        msg = await userge.send_audio(
+            chat_id=chat_id,
+            audio=strpath,
+            thumb=thumb,
+            caption=path.name,
+            title=title,
+            performer=artist,
+            duration=metadata.get("duration").seconds,
+            parse_mode="html",
+            disable_notification=True,
+            progress=progress,
+            progress_args=(
+                "uploading", userge, message, c_time, str(path.name)
+            )
         )
-    )
-    await finalize(chat_id, message, msg, start_t)
+    except Exception as u_e:
+        await message.edit(u_e)
+        raise u_e
+    else:
+        await finalize(chat_id, message, msg, start_t)
 
 
 async def get_thumb(path: str = ''):

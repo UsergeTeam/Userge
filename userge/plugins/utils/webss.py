@@ -8,49 +8,62 @@
 
 
 import os
-from time import time
-import requests
-from userge import userge, Message, Config
+from re import match
+from asyncio import sleep
 
-CHANNEL = userge.getCLogger(__name__)
+import aiofiles
+from selenium import webdriver
+
+from userge import userge, Message, Config
 
 
 @userge.on_cmd("webss", about={'header': "Get snapshot of a website"})
 async def webss(message: Message):
-    if Config.SCREENSHOT_API is None:
-        await message.edit(
-            "Damn!\nI forgot to get the api from (here)[https://screenshotlayer.com]",
-            del_in=0)
+    link_match = match(r'\bhttps?://.*\.\S+', message.input_str)
+    if not link_match:
+        await message.err("`I need a valid link to take screenshots from.`")
         return
-    await message.edit("`Processing`")
-    suc, data = await getimg(message.input_str)
-    if suc:
-        await message.edit('Uploading..')
-        await userge.send_chat_action(message.chat.id, "upload_photo")
-
-        msg = await userge.send_document(message.chat.id, data, caption=message.input_str)
-        await CHANNEL.fwd_msg(msg)
-
-        await message.delete()
-        await userge.send_chat_action(message.chat.id, "cancel")
-        if os.path.isfile(data):
-            os.remove(data)
-    else:
-        await message.err(data, del_in=6)
-
-
-async def getimg(url):
-    requrl = "https://api.screenshotlayer.com/api/capture"
-    requrl += "?access_key={}&url={}&fullpage={}&viewport={}"
-    response = requests.get(
-        requrl.format(Config.SCREENSHOT_API, url, '1', "2560x1440"),
-        stream=True
-    )
-    if 'image' in response.headers["content-type"]:
-        fname = f"screenshot_{time()}.png"
-        with open(fname, "wb") as file:
-            for chunk in response.iter_content(chunk_size=128):
-                file.write(chunk)
-        return True, fname
-    else:
-        return False, response.text
+    link = link_match.group()
+    if Config.GOOGLE_CHROME_BIN is None:
+        await message.err("need to install Google Chrome. Module Stopping")
+        return
+    await message.edit("`Processing ...`")
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.binary_location = Config.GOOGLE_CHROME_BIN
+    chrome_options.add_argument('--ignore-certificate-errors')
+    chrome_options.add_argument("--test-type")
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument('--disable-gpu')
+    driver = webdriver.Chrome(chrome_options=chrome_options)
+    driver.get(link)
+    height = driver.execute_script(
+        "return Math.max(document.body.scrollHeight, document.body.offsetHeight, "
+        "document.documentElement.clientHeight, document.documentElement.scrollHeight, "
+        "document.documentElement.offsetHeight);")
+    width = driver.execute_script(
+        "return Math.max(document.body.scrollWidth, document.body.offsetWidth, "
+        "document.documentElement.clientWidth, document.documentElement.scrollWidth, "
+        "document.documentElement.offsetWidth);")
+    driver.set_window_size(width + 125, height + 125)
+    wait_for = height / 1000
+    await message.edit(f"`Generating screenshot of the page...`"
+                       f"\n`Height of page = {height}px`"
+                       f"\n`Width of page = {width}px`"
+                       f"\n`Waiting ({int(wait_for)}s) for the page to load.`")
+    await sleep(int(wait_for))
+    im_png = driver.get_screenshot_as_png()
+    driver.close()
+    message_id = message.message_id
+    if message.reply_to_message:
+        message_id = message.reply_to_message.message_id
+    file_path = os.path.join(Config.DOWN_PATH, "webss.png")
+    async with aiofiles.open(file_path, 'wb') as out_file:
+        await out_file.write(im_png)
+    await userge.send_document(chat_id=message.chat.id,
+                               document=file_path,
+                               caption=link,
+                               reply_to_message_id=message_id)
+    os.remove(file_path)
