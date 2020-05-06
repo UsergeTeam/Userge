@@ -737,7 +737,7 @@ class Worker(_GDrive):
                 self._cancel()
             if self._progress is not None:
                 await self._message.try_to_edit(self._progress)
-            await asyncio.sleep(3)
+            await asyncio.sleep(6)
         if dl_loc and os.path.exists(dl_loc):
             os.remove(dl_loc)
         end_t = datetime.now()
@@ -766,7 +766,7 @@ class Worker(_GDrive):
                 self._cancel()
             if self._progress is not None:
                 await self._message.try_to_edit(self._progress)
-            await asyncio.sleep(3)
+            await asyncio.sleep(6)
         end_t = datetime.now()
         m_s = (end_t - start_t).seconds
         if isinstance(self._output, HttpError):
@@ -794,7 +794,7 @@ class Worker(_GDrive):
                 self._cancel()
             if self._progress is not None:
                 await self._message.try_to_edit(self._progress)
-            await asyncio.sleep(3)
+            await asyncio.sleep(6)
         end_t = datetime.now()
         m_s = (end_t - start_t).seconds
         if isinstance(self._output, HttpError):

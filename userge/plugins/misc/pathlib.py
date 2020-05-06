@@ -23,6 +23,8 @@ from multiprocessing import Manager
 from typing import Union, List, Tuple, Sequence
 from ctypes import c_bool, c_int, c_wchar_p
 
+from rarfile import RarFile, is_rarfile
+
 from userge import userge, Message, Config, pool
 from userge.utils import humanbytes, time_formatter
 from userge.utils.exceptions import ProcessCanceled
@@ -133,6 +135,8 @@ class PackLib(_BaseLib):
                 is_finished) -> None:
         if is_zipfile(file_path):
             u_type = ZipFile
+        elif is_rarfile(file_path):
+            u_type = RarFile
         else:
             u_type = tar_open
         with u_type(file_path, 'r') as p_f:
@@ -210,6 +214,9 @@ class PackLib(_BaseLib):
         if is_zipfile(self._file_path):
             with ZipFile(self._file_path, 'r') as z_f:
                 return tuple((z_.filename, z_.file_size) for z_ in z_f.infolist())
+        elif is_rarfile(self._file_path):
+            with RarFile(self._file_path, 'r') as r_f:
+                return tuple((r_.filename, r_.file_size) for r_ in r_f.infolist())
         else:
             with tar_open(self._file_path, 'r') as t_f:
                 return tuple((t_.name, t_.size) for t_ in t_f.getmembers())
@@ -217,7 +224,7 @@ class PackLib(_BaseLib):
     @staticmethod
     def is_supported(file_path: str) -> bool:
         """Returns file is supported or not"""
-        return is_zipfile(file_path) or is_tarfile(file_path)
+        return is_zipfile(file_path) or is_tarfile(file_path) or is_rarfile(file_path)
 
 
 class SCLib(_BaseLib):
@@ -339,6 +346,33 @@ class SCLib(_BaseLib):
         pool.submit_thread(self._combine_worker, file_list)
 
 
+@userge.on_cmd('ls', about={
+    'header': "list directory",
+    'usage': "{tr}ls [path]"})
+async def ls_dir(message: Message) -> None:
+    """list dir"""
+    path = message.input_str or '.'
+    if not exists(path):
+        await message.err("path not exists!")
+        return
+    path_ = Path(path)
+    out = f"<b>PATH</b> : <code>{path}</code>\n\n"
+    if path_.is_dir():
+        folders = ''
+        files = ''
+        for p_s in path_.iterdir():
+            if p_s.is_file():
+                size = os.stat(str(p_s)).st_size
+                files += f"📄 <code>{p_s.name}</code> <i>({humanbytes(size)})</i>\n"
+            else:
+                folders += f"📁 <code>{p_s.name}</code>\n"
+        out += folders + files
+    else:
+        size = os.stat(str(path_)).st_size
+        out += f"📄 <code>{path_.name}</code> <i>({humanbytes(size)})</i>\n"
+    await message.edit_or_send_as_file(out, parse_mode='html')
+
+
 @userge.on_cmd('setdir', about={
     'header': "set temporary working directory",
     'usage': "{tr}setdir [path / name]"})
@@ -427,7 +461,7 @@ async def split_(message: Message) -> None:
                                              s_obj.eta,
                                              s_obj.completed_files,
                                              s_obj.total_files))
-        await sleep(3)
+        await sleep(6)
     if s_obj.output:
         await message.err(s_obj.output)
     else:
@@ -482,7 +516,7 @@ async def combine_(message: Message) -> None:
                                              c_obj.eta,
                                              c_obj.completed_files,
                                              c_obj.total_files))
-        await sleep(3)
+        await sleep(6)
     if c_obj.output:
         await message.err(c_obj.output)
     else:
@@ -536,7 +570,7 @@ async def _pack_helper(message: Message, tar: bool = False) -> None:
                                              p_obj.final_file_path,
                                              p_obj.completed_files,
                                              p_obj.total_files))
-        await sleep(3)
+        await sleep(6)
     if p_obj.output:
         await message.err(p_obj.output)
     else:
@@ -549,7 +583,8 @@ async def _pack_helper(message: Message, tar: bool = False) -> None:
 
 @userge.on_cmd('unpack', about={
     'header': "unpack packed file",
-    'usage': "{tr}unpack [zip file path | tar file path]"})
+    'usage': "{tr}unpack [file path]",
+    'types': ['zip', 'tar', 'rar']})
 async def unpack_(message: Message) -> None:
     """unpack"""
     file_path = message.input_str
@@ -581,7 +616,7 @@ async def unpack_(message: Message) -> None:
                                              p_obj.final_file_path,
                                              p_obj.completed_files,
                                              p_obj.total_files))
-        await sleep(3)
+        await sleep(6)
     if p_obj.output:
         await message.err(p_obj.output)
     else:
@@ -594,7 +629,8 @@ async def unpack_(message: Message) -> None:
 
 @userge.on_cmd('packinfo', about={
     'header': "File content of the pack",
-    'usage': "{tr}packinfo [zip file path | tar file path]"})
+    'usage': "{tr}packinfo [file path]",
+    'types': ['zip', 'tar', 'rar']})
 async def packinfo_(message: Message) -> None:
     """packinfo"""
     file_path = message.input_str

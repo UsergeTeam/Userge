@@ -93,7 +93,7 @@ class Config:
 
     WELCOME_DELETE_TIMEOUT = 120
 
-    AUTOPIC_TIMEOUT = 120
+    AUTOPIC_TIMEOUT = 300
 
     ALLOWED_CHATS = Filters.chat([])
 

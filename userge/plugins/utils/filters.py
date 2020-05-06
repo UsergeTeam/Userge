@@ -21,13 +21,11 @@ def _filter_updater(chat_id: int, name: str, content: str) -> None:
     else:
         FILTERS_DATA[chat_id] = {name: content}
 
-
 def _filter_deleter(chat_id: int, name: str) -> None:
     if chat_id in FILTERS_DATA and name in FILTERS_DATA[chat_id]:
         FILTERS_DATA[chat_id].pop(name)
         if not FILTERS_DATA[chat_id]:
             FILTERS_DATA.pop(chat_id)
-
 
 for flt in FILTERS_COLLECTION.find():
     _filter_updater(flt['chat_id'], flt['name'], flt['content'])
@@ -88,8 +86,8 @@ async def add_filter(message: Message):
 async def chat_filter(message: Message):
     input_text = message.text.strip()
     for name in FILTERS_DATA[message.chat.id]:
-        if input_text == name or \
-            input_text.startswith(f"{name} ") or \
-                input_text.endswith(f" {name}") or \
-                    f" {name} " in input_text:
+        if (input_text == name
+                or input_text.startswith(f"{name} ")
+                or input_text.endswith(f" {name}")
+                or f" {name} " in input_text):
             await message.reply(FILTERS_DATA[message.chat.id][name])

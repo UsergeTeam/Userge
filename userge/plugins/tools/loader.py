@@ -45,6 +45,24 @@ async def load_cmd_handler(message: Message):
         await message.edit("`Reply to Plugin`")
 
 
+@userge.on_cmd('unload', about={
+    'header': "Unload plugin From Userge",
+    'usage': "{tr}unload [plugin name]"})
+async def unload_cmd_handler(message: Message):
+    plugin = message.input_str
+    if not plugin:
+        await message.err("input plugin name!")
+        return
+    removed = userge.unload_plugin(plugin)
+    if removed:
+        out = f"plugin : `{plugin}` **Unloaded** successfully!\n\n"
+        out += f"**--removed ({len(removed)}) commands--**\n\n    `"
+        out += '`\n    `'.join(removed)
+        await message.edit(out + '`')
+    else:
+        await message.err(f"invalid plugin name -> {plugin}")
+
+
 @userge.on_cmd('reload', about={'header': "Reload all plugins"})
 async def reload_cmd_handler(message: Message):
     await message.edit("`Reloading All Plugins`")

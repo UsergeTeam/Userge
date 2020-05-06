@@ -23,6 +23,7 @@ from pyrogram import (
     Client as RawClient, Message as RawMessage,
     Filters, MessageHandler, InlineKeyboardMarkup,
     ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply)
+from pyrogram.client.handlers.handler import Handler
 from pyrogram.api import functions
 
 from userge import logging, Config
@@ -40,6 +41,7 @@ class Userge(RawClient):
     """Userge, the userbot"""
     def __init__(self) -> None:
         self._help_dict: Dict[str, Dict[str, str]] = {}
+        self._handlers: Dict[str, List[Tuple[Handler, int]]] = {}
         self._imported: List[ModuleType] = []
         self._tasks: List[Callable[[Any], Any]] = []
         self._channel = self.getCLogger(__name__)
@@ -446,6 +448,14 @@ class Userge(RawClient):
             else:
                 self._help_dict.update({mname: {cname: chelp}})
 
+    def _add_handler(self, module: str, handler: Handler, group: int) -> None:
+        mname = module.split('.')[-1]
+        if mname in self._handlers:
+            self._handlers[mname].append((handler, group))
+        else:
+            self._handlers[mname] = [(handler, group)]
+        self.add_handler(handler, group)
+
     def _build_decorator(self,
                          log: str,
                          filters: Filters,
@@ -459,7 +469,7 @@ class Userge(RawClient):
             _LOG.debug(_LOG_STR, f"Loading => [ async def {func.__name__}(message) ] " + \
                 f"from {func.__module__} `{log}`")
             self._add_help(func.__module__, **kwargs)
-            self.add_handler(MessageHandler(_template, filters), group)
+            self._add_handler(func.__module__, MessageHandler(_template, filters), group)
             return func
         return _decorator
 
@@ -469,6 +479,14 @@ class Userge(RawClient):
         self._imported.append(
             importlib.import_module(f"userge.plugins.{name}"))
         _LOG.debug(_LOG_STR, f"Imported {self._imported[-1].__name__} Plugin Successfully")
+
+    def unload_plugin(self, module: str) -> Optional[List[str]]:
+        """unload plugin from userge"""
+        if module not in self._handlers:
+            return None
+        for handler_, group_ in self._handlers[module]:
+            self.remove_handler(handler_, group_)
+        return list(self._help_dict.pop(module))
 
     def load_plugins(self) -> None:
         """Load all Plugins"""

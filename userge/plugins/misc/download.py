@@ -90,7 +90,7 @@ async def down_load_media(message: Message):
                     estimated_total_time)
                 await message.try_to_edit(
                     text=progress_str, disable_web_page_preview=True)
-                await asyncio.sleep(3)
+                await asyncio.sleep(6)
         except Exception as e:
             await message.err(e)
         else:

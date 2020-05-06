@@ -19,6 +19,7 @@ pymongo
 pySmartDL
 python-dotenv
 pytz
+rarfile
 requests
 search-engine-parser
 selenium
