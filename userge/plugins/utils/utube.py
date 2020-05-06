@@ -157,8 +157,11 @@ async def ytDown(message: Message):
             # 1st format must contain the video
             desiredFormat = '+'.join([desiredFormat2, desiredFormat1])
             retcode = tubeDl([message.filtered_input_str], __progress, startTime, desiredFormat)
-        elif len(message.flags) == 1:
-            desiredFormat = desiredFormat2 or desiredFormat1
+        elif 'a' in message.flags:
+            desiredFormat = desiredFormat1
+            retcode = tubeDl([message.filtered_input_str], __progress, startTime, desiredFormat)
+        elif 'v' in message.flags:
+            desiredFormat = desiredFormat2+'bestaudio'
             retcode = tubeDl([message.filtered_input_str], __progress, startTime, desiredFormat)
         else:
             retcode = tubeDl([message.filtered_input_str], __progress, startTime, None)
@@ -171,3 +174,23 @@ async def ytDown(message: Message):
             await upload(Path(_fpath), message.chat.id, message.flags)
     else:
         await message.edit(str(retcode))
+
+
+@userge.on_cmd("ytdes", about={'header': "Get the video description",
+                               'description': 'Get information of the link without downloading',
+                               'examples': '{tr}ytdes link'})
+async def ytdes(message: Message):
+    await message.edit("Hold on \u23f3 ..")
+    try:
+        x = ytdl.YoutubeDL({'no-playlist': True, 'logger': LOGGER}).extract_info(message.input_or_reply_str,
+                                                                                 download=False)
+    except ytdl.utils.YoutubeDLError as e:
+        await message.err(str(e))
+    else:
+        description = x.get('description', '')
+        if description:
+            out = '--Description--\n\n\t'
+            out += description
+        else:
+            out = 'No descriptions found :('
+        await message.edit_or_send_as_file(out)
