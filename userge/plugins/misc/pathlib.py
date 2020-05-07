@@ -448,20 +448,24 @@ async def split_(message: Message) -> None:
         "**Speed** : `{}/s`\n" + \
         "**ETA** : `{}`\n" + \
         "**Completed Files** : `{}/{}`"
+    count = 0
     while not s_obj.finished:
         if message.process_is_canceled:
             s_obj.cancel()
-        await message.try_to_edit(tmp.format(s_obj.progress,
-                                             s_obj.percentage,
-                                             file_path,
-                                             s_obj.final_file_path,
-                                             humanbytes(s_obj.completed),
-                                             humanbytes(s_obj.total),
-                                             humanbytes(s_obj.speed),
-                                             s_obj.eta,
-                                             s_obj.completed_files,
-                                             s_obj.total_files))
-        await sleep(6)
+        count += 1
+        if count >= 5:
+            count = 0
+            await message.try_to_edit(tmp.format(s_obj.progress,
+                                                 s_obj.percentage,
+                                                 file_path,
+                                                 s_obj.final_file_path,
+                                                 humanbytes(s_obj.completed),
+                                                 humanbytes(s_obj.total),
+                                                 humanbytes(s_obj.speed),
+                                                 s_obj.eta,
+                                                 s_obj.completed_files,
+                                                 s_obj.total_files))
+        await sleep(1)
     if s_obj.output:
         await message.err(s_obj.output)
     else:
@@ -503,20 +507,24 @@ async def combine_(message: Message) -> None:
         "**Speed** : `{}/s`\n" + \
         "**ETA** : `{}`\n" + \
         "**Completed Files** : `{}/{}`"
+    count = 0
     while not c_obj.finished:
         if message.process_is_canceled:
             c_obj.cancel()
-        await message.try_to_edit(tmp.format(c_obj.progress,
-                                             c_obj.percentage,
-                                             file_path,
-                                             c_obj.final_file_path,
-                                             humanbytes(c_obj.completed),
-                                             humanbytes(c_obj.total),
-                                             humanbytes(c_obj.speed),
-                                             c_obj.eta,
-                                             c_obj.completed_files,
-                                             c_obj.total_files))
-        await sleep(6)
+        count += 1
+        if count >= 5:
+            count = 0
+            await message.try_to_edit(tmp.format(c_obj.progress,
+                                                 c_obj.percentage,
+                                                 file_path,
+                                                 c_obj.final_file_path,
+                                                 humanbytes(c_obj.completed),
+                                                 humanbytes(c_obj.total),
+                                                 humanbytes(c_obj.speed),
+                                                 c_obj.eta,
+                                                 c_obj.completed_files,
+                                                 c_obj.total_files))
+        await sleep(1)
     if c_obj.output:
         await message.err(c_obj.output)
     else:
@@ -561,16 +569,20 @@ async def _pack_helper(message: Message, tar: bool = False) -> None:
         "**File Path** : `{}`\n" + \
         "**Dest** : `{}`\n" + \
         "**Completed** : `{}/{}`"
+    count = 0
     while not p_obj.finished:
         if message.process_is_canceled:
             p_obj.cancel()
-        await message.try_to_edit(tmp.format(p_obj.progress,
-                                             p_obj.percentage,
-                                             file_path,
-                                             p_obj.final_file_path,
-                                             p_obj.completed_files,
-                                             p_obj.total_files))
-        await sleep(6)
+        count += 1
+        if count >= 5:
+            count = 0
+            await message.try_to_edit(tmp.format(p_obj.progress,
+                                                 p_obj.percentage,
+                                                 file_path,
+                                                 p_obj.final_file_path,
+                                                 p_obj.completed_files,
+                                                 p_obj.total_files))
+        await sleep(1)
     if p_obj.output:
         await message.err(p_obj.output)
     else:
@@ -607,16 +619,20 @@ async def unpack_(message: Message) -> None:
         "**File Path** : `{}`\n" + \
         "**Dest** : `{}`\n" + \
         "**Completed** : `{}/{}`"
+    count = 0
     while not p_obj.finished:
         if message.process_is_canceled:
             p_obj.cancel()
-        await message.try_to_edit(tmp.format(p_obj.progress,
-                                             p_obj.percentage,
-                                             file_path,
-                                             p_obj.final_file_path,
-                                             p_obj.completed_files,
-                                             p_obj.total_files))
-        await sleep(6)
+        count += 1
+        if count >= 5:
+            count = 0
+            await message.try_to_edit(tmp.format(p_obj.progress,
+                                                 p_obj.percentage,
+                                                 file_path,
+                                                 p_obj.final_file_path,
+                                                 p_obj.completed_files,
+                                                 p_obj.total_files))
+        await sleep(1)
     if p_obj.output:
         await message.err(p_obj.output)
     else:

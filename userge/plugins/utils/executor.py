@@ -9,9 +9,14 @@
 
 import io
 import sys
+import shlex
+import asyncio
 import traceback
 from getpass import getuser
 from os import geteuid
+
+from pyrogram.errors.exceptions.bad_request_400 import MessageNotModified
+
 from userge import userge, Message
 from userge.utils import runcmd
 
@@ -64,7 +69,11 @@ async def exec_(message: Message):
     cmd = await init_func(message)
     if cmd is None:
         return
-    out, err, ret, pid = await runcmd(cmd)
+    try:
+        out, err, ret, pid = await runcmd(cmd)
+    except Exception as t_e:
+        await message.err(t_e)
+        return
     out = out or "no output"
     err = err or "no error"
     out = "\n".join(out.split("\n"))
@@ -84,28 +93,102 @@ async def term_(message: Message):
     cmd = await init_func(message)
     if cmd is None:
         return
-    out, err, _, _ = await runcmd(cmd)
+    try:
+        t_obj = await Term.execute(cmd)  # type: Term
+    except Exception as t_e:
+        await message.err(t_e)
+        return
     curruser = getuser()
     try:
         uid = geteuid()
     except ImportError:
         uid = 1
     if uid == 0:
-        output = f"`{curruser}:~# {cmd}\n{str(out) + str(err)}`"
+        output = f"{curruser}:~# {cmd}\n"
     else:
-        output = f"`{curruser}:~$ {cmd}\n{str(out) + str(err)}`"
-    await message.edit_or_send_as_file(text=output,
-                                       filename="term.txt",
-                                       caption=cmd)
+        output = f"{curruser}:~$ {cmd}\n"
+    count = 0
+    while not t_obj.finished:
+        count += 1
+        if message.process_is_canceled:
+            t_obj.cancel()
+            await message.reply("`process canceled!`")
+        await asyncio.sleep(0.5)
+        if count >= 10:
+            count = 0
+            out_data = f"<code>{output}{t_obj.read_line}</code>"
+            await message.try_to_edit(out_data, parse_mode='html')
+    out_data = f"<code>{output}{t_obj.get_output}</code>"
+    try:
+        await message.edit_or_send_as_file(
+            out_data, parse_mode='html', filename="term.txt", caption=cmd)
+    except MessageNotModified:
+        pass
 
 
 async def init_func(message: Message):
-    await message.edit("Processing ...")
+    await message.edit("`Processing ...`")
     cmd = message.input_str
     if not cmd:
-        await message.err(text="No Command Found!")
+        await message.err("No Command Found!")
         return None
     if "config.env" in cmd:
-        await message.err(text="That's a dangerous operation! Not Permitted!")
+        await message.err("That's a dangerous operation! Not Permitted!")
         return None
     return cmd
+
+
+class Term:
+    def __init__(self, process: asyncio.subprocess.Process) -> None:
+        self._process = process
+        self._stdout = b''
+        self._stderr = b''
+        self._stdout_line = b''
+        self._stderr_line = b''
+        self._finished = False
+
+    def cancel(self) -> None:
+        self._process.kill()
+
+    @property
+    def finished(self) -> bool:
+        return self._finished
+
+    @property
+    def read_line(self):
+        return (self._stdout_line + self._stderr_line).decode('utf-8').strip()
+
+    @property
+    def get_output(self) -> str:
+        return (self._stdout + self._stderr).decode('utf-8').strip()
+
+    async def _read_stdout(self) -> None:
+        while True:
+            line = await self._process.stdout.readline()
+            if line:
+                self._stdout_line = line
+                self._stdout += line
+            else:
+                break
+
+    async def _read_stderr(self) -> None:
+        while True:
+            line = await self._process.stderr.readline()
+            if line:
+                self._stderr_line = line
+                self._stderr += line
+            else:
+                break
+
+    async def worker(self) -> None:
+        await asyncio.wait([self._read_stdout(), self._read_stderr()])
+        await self._process.wait()
+        self._finished = True
+
+    @classmethod
+    async def execute(cls, cmd: str) -> 'Term':
+        process = await asyncio.create_subprocess_exec(
+            *shlex.split(cmd), stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+        t_obj = cls(process)
+        asyncio.create_task(t_obj.worker())
+        return t_obj

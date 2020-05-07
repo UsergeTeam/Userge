@@ -683,12 +683,13 @@ class Worker(_GDrive):
                 dl_loc = os.path.join(Config.DOWN_PATH, os.path.basename(dl_loc))
         elif is_url:
             await self._message.edit("`Downloading From URL...`")
-            is_url = is_url[0]
-            file_name = os.path.basename(is_url)
+            url = is_url[0]
+            file_name = os.path.basename(url)
             dl_loc = os.path.join(Config.DOWN_PATH, file_name)
             try:
-                downloader = SmartDL(is_url, dl_loc, progress_bar=False)
+                downloader = SmartDL(url, dl_loc, progress_bar=False)
                 downloader.start(blocking=False)
+                count = 0
                 while not downloader.isFinished():
                     if self._message.process_is_canceled:
                         downloader.stop()
@@ -713,15 +714,18 @@ class Worker(_GDrive):
                         ''.join(["█" for i in range(math.floor(percentage / 5))]),
                         ''.join(["░" for i in range(20 - math.floor(percentage / 5))]),
                         round(percentage, 2),
-                        is_url,
+                        url,
                         file_name,
                         humanbytes(downloaded),
                         humanbytes(total_length),
                         speed,
                         estimated_total_time)
-                    await self._message.try_to_edit(
-                        text=progress_str, disable_web_page_preview=True)
-                    await asyncio.sleep(3)
+                    count += 1
+                    if count >= 5:
+                        count = 0
+                        await self._message.try_to_edit(
+                            progress_str, disable_web_page_preview=True)
+                    await asyncio.sleep(1)
             except Exception as d_e:
                 await self._message.err(d_e)
                 return
@@ -732,12 +736,15 @@ class Worker(_GDrive):
         await self._message.edit("`Loading GDrive Upload...`")
         pool.submit_thread(self._upload, upload_file_name)
         start_t = datetime.now()
+        count = 0
         while not self._is_finished:
+            count += 1
             if self._message.process_is_canceled:
                 self._cancel()
-            if self._progress is not None:
+            if self._progress is not None and count >= 5:
+                count = 0
                 await self._message.try_to_edit(self._progress)
-            await asyncio.sleep(6)
+            await asyncio.sleep(1)
         if dl_loc and os.path.exists(dl_loc):
             os.remove(dl_loc)
         end_t = datetime.now()
@@ -761,12 +768,15 @@ class Worker(_GDrive):
         file_id, _ = self._get_file_id()
         pool.submit_thread(self._download, file_id)
         start_t = datetime.now()
+        count = 0
         while not self._is_finished:
+            count += 1
             if self._message.process_is_canceled:
                 self._cancel()
-            if self._progress is not None:
+            if self._progress is not None and count >= 5:
+                count = 0
                 await self._message.try_to_edit(self._progress)
-            await asyncio.sleep(6)
+            await asyncio.sleep(1)
         end_t = datetime.now()
         m_s = (end_t - start_t).seconds
         if isinstance(self._output, HttpError):
@@ -789,12 +799,15 @@ class Worker(_GDrive):
         file_id, _ = self._get_file_id()
         pool.submit_thread(self._copy, file_id)
         start_t = datetime.now()
+        count = 0
         while not self._is_finished:
+            count += 1
             if self._message.process_is_canceled:
                 self._cancel()
-            if self._progress is not None:
+            if self._progress is not None and count >= 5:
+                count = 0
                 await self._message.try_to_edit(self._progress)
-            await asyncio.sleep(6)
+            await asyncio.sleep(1)
         end_t = datetime.now()
         m_s = (end_t - start_t).seconds
         if isinstance(self._output, HttpError):

@@ -10,6 +10,7 @@ import time
 from math import floor
 
 from pyrogram.errors.exceptions import FloodWait
+from pyrogram.errors.exceptions.bad_request_400 import MessageNotModified
 
 import userge
 from .tools import humanbytes, time_formatter
@@ -26,7 +27,7 @@ async def progress(current: int,
         await client.stop_transmission()
     now = time.time()
     diff = now - start
-    if diff % 10 < 0.25 or current == total:
+    if diff % 10 < 0.3 or current == total:
         percentage = current * 100 / total
         speed = current / diff
         time_to_completion = time_formatter(int((total - current) / speed))
@@ -48,8 +49,9 @@ async def progress(current: int,
             humanbytes(total),
             humanbytes(speed),
             time_to_completion if time_to_completion else "0 s")
-        if message.text != progress_str:
-            try:
-                await message.edit(progress_str)
-            except FloodWait as f_e:
-                time.sleep(f_e.x)
+        try:
+            await message.edit(progress_str)
+        except MessageNotModified:
+            pass
+        except FloodWait as f_e:
+            time.sleep(f_e.x)

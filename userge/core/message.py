@@ -642,7 +642,7 @@ class Message(RawMessage):
                                    parse_mode=parse_mode,
                                    disable_web_page_preview=disable_web_page_preview,
                                    reply_markup=reply_markup)
-        except MessageTooLong:
+        except (MessageTooLong, OSError):
             return await self.send_as_file(text=text, log=log, **kwargs)
 
     async def reply_or_send_as_file(self,
