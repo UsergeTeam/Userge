@@ -663,7 +663,7 @@ class Worker(_GDrive):
             os.mkdir(Config.DOWN_PATH)
         replied = self._message.reply_to_message
         is_url = re.search(
-            r"(?:https?|ftp)://.*\.\S+", self._message.input_str)
+            r"(?:https?|ftp)://[^\|\s]+\.[^\|\s]+", self._message.input_str)
         dl_loc = None
         if replied and replied.media:
             await self._message.edit("`Downloading From TG...`")
@@ -685,6 +685,8 @@ class Worker(_GDrive):
             await self._message.edit("`Downloading From URL...`")
             url = is_url[0]
             file_name = os.path.basename(url)
+            if "|" in self._message.input_str:
+                file_name = self._message.input_str.split("|")[1].strip()
             dl_loc = os.path.join(Config.DOWN_PATH, file_name)
             try:
                 downloader = SmartDL(url, dl_loc, progress_bar=False)

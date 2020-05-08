@@ -105,7 +105,7 @@ async def uploadtotg(message: Message):
     if not path_:
         await message.edit("invalid input!, check `.help .upload`", del_in=5)
         return
-    is_url = re.search(r"(?:https?|ftp)://.*\.\S+", path_)
+    is_url = re.search(r"(?:https?|ftp)://[^\|\s]+\.[^\|\s]+", path_)
     del_path = False
     if is_url:
         del_path = True
