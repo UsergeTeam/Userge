@@ -113,6 +113,7 @@ async def term_(message: Message):
         if message.process_is_canceled:
             t_obj.cancel()
             await message.reply("`process canceled!`")
+            return
         await asyncio.sleep(0.5)
         if count >= 10:
             count = 0

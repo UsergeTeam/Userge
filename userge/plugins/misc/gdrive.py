@@ -663,7 +663,7 @@ class Worker(_GDrive):
             os.mkdir(Config.DOWN_PATH)
         replied = self._message.reply_to_message
         is_url = re.search(
-            r"(?:https?|ftp):\/\/[\w/\-?=%.]+\.[\w/\-?=%.]+", self._message.input_str)
+            r"(?:https?|ftp)://.*\.\S+", self._message.input_str)
         dl_loc = None
         if replied and replied.media:
             await self._message.edit("`Downloading From TG...`")
