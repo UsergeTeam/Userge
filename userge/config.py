@@ -136,8 +136,8 @@ if not os.path.exists('bin'):
     os.mkdir('bin')
 
 _BINS = {
-    #"https://raw.githubusercontent.com/yshalsager/megadown/master/megadown":
-    #"bin/megadown", removed temporary
+    "https://raw.githubusercontent.com/yshalsager/megadown/master/megadown":
+    "bin/megadown",
     "https://raw.githubusercontent.com/yshalsager/cmrudl.py/master/cmrudl.py":
     "bin/cmrudl"}
 

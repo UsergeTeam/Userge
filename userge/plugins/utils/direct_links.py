@@ -50,8 +50,8 @@ async def direct_(message: Message):
         # elif 'zippyshare.com' in link:
             # reply += f" 👉 {zippy_share(link)}\n"
 
-        # elif 'mega.' in link:
-            # reply += f" 👉 {mega_dl(link)}\n"
+        elif 'mega.' in link:
+            reply += f" 👉 {mega_dl(link)}\n"
 
         elif 'yadi.sk' in link:
             reply += f" 👉 {yandex_disk(link)}\n"

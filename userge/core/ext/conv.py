@@ -22,10 +22,8 @@ _LOG_STR = "<<<!  :::::  %s  :::::  !>>>"
 
 _CONV_DICT: Dict[int, asyncio.Queue] = {}
 
-
 class _MsgLimitReached(Exception):
     pass
-
 
 class Conv:
     """Conversation class for userge"""
@@ -114,6 +112,20 @@ class Conv:
             :meth:`~Client.stop_transmission`, None is returned.
         """
         return await self._client.send_document(chat_id=self._chat_id, document=document)
+
+    async def forward_message(self, message: RawMessage) -> RawMessage:
+        """\nForward message to the conversation.
+
+        Parameters:
+            message (:obj: `Message`):
+                single message.
+
+        Returns:
+            On success, forwarded message is returned.
+        """
+        return await self._client.forward_messages(chat_id=self._chat_id,
+                                                   from_chat_id=message.chat.id,
+                                                   message_ids=message.message_id)
 
     @staticmethod
     def init(client: '_client.Userge') -> None:

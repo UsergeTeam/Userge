@@ -25,9 +25,7 @@ async def quotecmd(message: Message):
     async with userge.conversation('QuotLyBot') as conv:
         try:
             if replied:
-                await userge.forward_messages(chat_id=conv.chat_id,
-                                            from_chat_id=message.chat.id,
-                                            message_ids=replied.message_id)
+                await conv.forward_message(replied)
             else:
                 if not args:
                     await message.err('input not found!')
