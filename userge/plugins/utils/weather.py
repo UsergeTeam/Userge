@@ -55,7 +55,7 @@ async def weather_get(message: Message):
     if not message.input_str:
         CITY = DEFCITY
         if not CITY:
-            await message.edit("`Please specify a city or set one as default!`")
+            await message.edit("`Please specify a city or set one as default!`", del_in=0)
             return
     else:
         CITY = message.input_str
@@ -74,7 +74,7 @@ async def weather_get(message: Message):
             try:
                 countrycode = timezone_countries[f'{country}']
             except KeyError:
-                await message.edit("`Invalid country.`")
+                await message.edit("`Invalid country.`", del_in=0)
                 return
             CITY = newcity[0].strip() + "," + countrycode.strip()
 
@@ -83,7 +83,7 @@ async def weather_get(message: Message):
     result = json.loads(request.text)
 
     if request.status_code != 200:
-        await message.edit(f"`Invalid country.`")
+        await message.edit(r"`Invalid country.. ¯\_(ツ)_/¯`", del_in=0)
         return
 
     cityname = result['name']
@@ -135,3 +135,4 @@ async def weather_get(message: Message):
         f"**Sunrise:** `{sun(sunrise)}`\n" +
         f"**Sunset:** `{sun(sunset)}`\n\n\n" + f"**{desc}**\n" +
         f"`{cityname}, {fullc_n}`\n" + f"`{time}`")
+    CHANNEL.log(f"check `{CITY}` weather results")

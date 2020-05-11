@@ -57,7 +57,7 @@ async def ocr_gen(message: Message):
     """
     this function can generate ocr output for a image file
     """
-    if Config.CURRENCY_API is None:
+    if Config.OCR_SPACE_API_KEY is None:
         await message.edit(
             "<code>Oops!!get the OCR API from</code> "
             "<a href='http://eepurl.com/bOLOcf'>HERE</a> "
@@ -83,7 +83,7 @@ async def ocr_gen(message: Message):
             await message.edit(
                 r"`Couldn't read it.. (╯‵□′)╯︵┻━┻`"
                 "\n`I guess I need new glasses.. 👓`"
-                f"\n\n**ERROR**: `{e_f}`")
+                f"\n\n**ERROR**: `{e_f}`", del_in=0)
             os.remove(downloaded_file_name)
             return
         else:
@@ -91,8 +91,9 @@ async def ocr_gen(message: Message):
                 "**Here's what I could read from it:**"
                 f"\n\n`{ParsedText}`")
             os.remove(downloaded_file_name)
+            CHANNEL.log(f"`ocr` command succefully executed")
             return
 
     else:
-        await message.edit(r"`i can't read nothing (°ー°〃) , do .help ocr`")
+        await message.edit(r"`i can't read nothing (°ー°〃) , do .help ocr`", del_in=0)
         return
