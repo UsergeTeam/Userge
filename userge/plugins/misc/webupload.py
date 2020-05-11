@@ -1,4 +1,5 @@
-
+# Special thanks to gotstc and also Userge team.
+# Gotstc helped me in this and supported me.
 import os
 import io
 import re
