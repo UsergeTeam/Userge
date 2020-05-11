@@ -49,12 +49,10 @@ async def web(message: Message):
         return
     cmd = selected_one
 
-    # process = await asyncio.create_subprocess_shell(
-    #    cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
-    # )
-    # stdout, stderr = await process.communicate()
-    # await message.edit(f"{stdout.decode()}")
-    response = subprocess.check_output(shlex.split(cmd))
+    process = await asyncio.create_subprocess_exec(
+       *shlex.split(cmd), stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+    )
+    response, _ = await process.communicate()
     links = '\n'.join(re.findall(r'https?://[^\"\']+', response.decode()))
     print(response, links)
     await message.edit(f"I found these links :\n{links}")
