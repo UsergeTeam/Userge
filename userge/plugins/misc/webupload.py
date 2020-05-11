@@ -17,11 +17,13 @@ from userge import userge, Message, Config
 from userge.utils import progress
 
 
-@userge.on_cmd("web ?(.+?|) (anonfiles|transfer|filebin|anonymousfiles|megaupload|bayfiles)",
+@userge.on_cmd("web ?(.+?|) (anonfiles|transfer|filebin|anonymousfiles|megaupload|bayfiles|vshare|0x0|fileio)",
                about={
                    'header': "upload files to web",
                    'usage': "{tr}web [site name]",
-                   'types': ['anonfiles', 'transfer', 'filebin', 'anonymousfiles', 'megaupload', 'bayfiles']})
+                   'types': [
+                       'anonfiles', 'transfer', 'filebin', 'anonymousfiles',
+                       'megaupload', 'bayfiles', 'vshare', '0x0', 'fileio']})
 async def web(message: Message):
     await message.edit("`Processing ...`")
     input_str = message.matches[0].group(1)
@@ -38,22 +40,30 @@ async def web(message: Message):
                 "trying to download", userge, message, c_time
             )
         )
+        if message.process_is_canceled:
+            await message.err("Process Canceled!")
+            return
     hosts = {
         "anonfiles": "curl -F \"file=@{}\" https://anonfiles.com/api/upload",
         "transfer": "curl --upload-file \"{}\" https://transfer.sh/" + os.path.basename(file_name),
         "filebin": "curl -X POST --data-binary \"@test.png\" -H \"filename: {}\" \"https://filebin.net\"",
         "anonymousfiles": "curl -F file=\"@{}\" https://api.anonymousfiles.io/",
         "megaupload": "curl -F \"file=@{}\" https://megaupload.is/api/upload",
-        "bayfiles": "curl -F \"file=@{}\" https://api.bayfiles.com/upload"
+        "bayfiles": "curl -F \"file=@{}\" https://api.bayfiles.com/upload",
+        "vshare": "curl -F \"file=@{}\" https://api.vshare.is/upload",
+        "0x0": "curl -F \"file=@{}\" https://0x0.st",
+        "fileio": "curl -F \"file =@{}\" https://file.io"
     }
-    try:
-        cmd = hosts[selected_transfer].format(file_name)
-    except KeyError:
-        await message.err("Invalid selected Transfer")
-        return
+    cmd = hosts[selected_transfer].format(file_name)
+    await message.edit(f"`now uploading to {selected_transfer} ...`")
     process = await asyncio.create_subprocess_exec(
-       *shlex.split(cmd), stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
+        *shlex.split(cmd),
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE
     )
-    response, _ = await process.communicate()
+    response, err = await process.communicate()
     links = '\n'.join(re.findall(r'https?://[^\"\']+', response.decode()))
-    await message.edit(f"I found these links :\n{links}")
+    if links:
+        await message.edit(f"**I found these links** :\n{links}")
+    else:
+        await message.edit('`' + response.decode() + err.decode() + '`')
