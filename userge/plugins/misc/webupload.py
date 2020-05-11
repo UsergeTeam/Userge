@@ -8,13 +8,13 @@
 
 
 import os
-import io
 import re
 import shlex
 import time
 import asyncio
 
 from userge import userge, Message, Config
+from userge.utils import progress
 
 
 @userge.on_cmd("web ?(.+?|) (anonfiles|transfer|filebin|anonymousfiles|megaupload|bayfiles)",
@@ -23,16 +23,22 @@ from userge import userge, Message, Config
                    'usage': "{tr}web [site name]",
                    'types': ['anonfiles', 'transfer', 'filebin', 'anonymousfiles', 'megaupload', 'bayfiles']})
 async def web(message: Message):
-    await message.edit("Processing ...")
-    input_str = message.matches[0].group(1).lower()
-    selected_transfer = message.matches[0].group(2)
+    await message.edit("`Processing ...`")
+    input_str = message.matches[0].group(1)
+    selected_transfer = message.matches[0].group(2).lower()
     if input_str:
         file_name = input_str
     else:
-        reply = message.reply_to_message
-        file_name = await userge.download_media(reply, Config.DOWN_PATH)
-    reply_to_id = message.chat.id
-    CMD_WEB = {
+        c_time = time.time()
+        file_name = await userge.download_media(
+            message=message.reply_to_message,
+            file_name=Config.DOWN_PATH,
+            progress=progress,
+            progress_args=(
+                "trying to download", userge, message, c_time
+            )
+        )
+    hosts = {
         "anonfiles": "curl -F \"file=@{}\" https://anonfiles.com/api/upload",
         "transfer": "curl --upload-file \"{}\" https://transfer.sh/" + os.path.basename(file_name),
         "filebin": "curl -X POST --data-binary \"@test.png\" -H \"filename: {}\" \"https://filebin.net\"",
@@ -41,12 +47,10 @@ async def web(message: Message):
         "bayfiles": "curl -F \"file=@{}\" https://api.bayfiles.com/upload"
     }
     try:
-        selected_one = CMD_WEB[selected_transfer].format(
-            file_name)
+        cmd = hosts[selected_transfer].format(file_name)
     except KeyError:
         await message.err("Invalid selected Transfer")
         return
-    cmd = selected_one
     process = await asyncio.create_subprocess_exec(
        *shlex.split(cmd), stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
     )
