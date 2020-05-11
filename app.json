@@ -48,6 +48,11 @@
             "required": false
 
         },
+        "OCR_SPACE_API_KEY": {
+            "description": "get OCR API key from 'http://eepurl.com/bOLOcf'",
+            "required": false
+
+        },
         "WEATHER_DEFCITY": {
             "description": "add default city for weather",
             "required": false

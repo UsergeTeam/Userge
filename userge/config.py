@@ -59,6 +59,8 @@ class Config:
 
     CURRENCY_API = os.environ.get("CURRENCY_API", None)
 
+    OCR_SPACE_API_KEY = os.environ.get("OCR_SPACE_API_KEY", None)
+
     OPEN_WEATHER_MAP = os.environ.get("OPEN_WEATHER_MAP", None)
 
     WEATHER_DEFCITY = os.environ.get("WEATHER_DEFCITY", None)
