@@ -13,7 +13,6 @@ import re
 import shlex
 import time
 import asyncio
-import subprocess
 
 from userge import userge, Message, Config
 
@@ -48,11 +47,9 @@ async def web(message: Message):
         await message.err("Invalid selected Transfer")
         return
     cmd = selected_one
-
     process = await asyncio.create_subprocess_exec(
        *shlex.split(cmd), stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE
     )
     response, _ = await process.communicate()
     links = '\n'.join(re.findall(r'https?://[^\"\']+', response.decode()))
-    print(response, links)
     await message.edit(f"I found these links :\n{links}")
