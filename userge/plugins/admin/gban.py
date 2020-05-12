@@ -28,7 +28,7 @@ async def is_admin(message: Message, me_id):
         return True
 
 
-async def ADMIN_CHECK(chat_id, user_id) -> bool:
+async def guadmin_check(chat_id, user_id) -> bool:
 
     check_status = await userge.get_chat_member(
         chat_id=chat_id,
@@ -98,7 +98,7 @@ async def gban_user(message : Message):
         gban.insert_one({'firstname':firstname, 'user_id':user_id, 'reason':reason})
 
         if can_ban:
-            gbanned_admeme = await ADMIN_CHECK(chat_id, user_id)
+            gbanned_admeme = await guadmin_check(chat_id, user_id)
             if gbanned_admeme:
                 await st.reply(f"**#GBanned_user** is admin of {message.chat.title}\n\n**Failed to Ban** but still they are GBanned")
             else:
