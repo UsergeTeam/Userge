@@ -28,6 +28,22 @@ async def is_admin(message: Message, me_id):
         return True
 
 
+async def ADMIN_CHECK(chat_id, user_id) -> bool:
+
+    check_status = await userge.get_chat_member(
+        chat_id=chat_id,
+        user_id=user_id
+    )
+    admin_strings = [
+        "creator",
+        "administrator"
+    ]
+
+    if check_status.status not in admin_strings:
+        return False
+    else:
+        return True
+
 @userge.on_cmd("gban",about={'header': "GBan Module",'description':"Does this even require a description \nDon't use if u dunno"})
 async def gban_user(message : Message):
     reason = ""
@@ -36,7 +52,7 @@ async def gban_user(message : Message):
     me = await userge.get_me()
     act_chat = await userge.get_chat(chat_id)
     can_ban = await is_admin(message, me.id)
-
+    
     if message.reply_to_message:
         user_id = message.reply_to_message.from_user.id
         reason = message.input_str
@@ -73,7 +89,7 @@ async def gban_user(message : Message):
             return
 
         if reason:
-            await message.edit(f"\\**#GBanned_User**//\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n**User ID:** `{user_id}`\n     **Reason:** `{reason}`")
+            st = await message.edit(f"\\**#GBanned_User**//\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n**User ID:** `{user_id}`\n     **Reason:** `{reason}`")
             #TODO: can we add something like "GBanned by {any_sudo_user_fname}" 
         else:
             await message.edit(f"**#Aborted** \n\n**Gbanning** of [{firstname}](tg://user?id={user_id}) Aborted coz No reason of gban provided by banner") 
@@ -82,7 +98,11 @@ async def gban_user(message : Message):
         gban.insert_one({'firstname':firstname, 'user_id':user_id, 'reason':reason})
 
         if can_ban:
-            await userge.kick_chat_member(chat_id, user_id)
+            gbanned_admeme = await ADMIN_CHECK(chat_id, user_id)
+            if gbanned_admeme:
+                await st.reply(f"**#GBanned_user** is admin of {message.chat.title}\n\n**Failed to Ban** but still they are GBanned")
+            else:
+                await userge.kick_chat_member(chat_id, user_id)
 
         logging.info("G-Banned {}".format(str(user_id)))
 
