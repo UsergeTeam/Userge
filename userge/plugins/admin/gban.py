@@ -68,11 +68,10 @@ async def gban_user(message : Message):
                 "`don't do .help gban for more info. Coz no one's gonna help ya`(｡ŏ_ŏ) ⚠", del_in=0)
             return
 
-    # Will give error if user that is to be banned is not present in Chat
-    get_mem = await userge.get_chat_member(chat_id, user_id)
+    get_mem = await userge.get_user_dict(user_id)
                     
-    firstname = get_mem.user.first_name
-    user_id = get_mem.user.id
+    firstname = get_mem['fname']
+    user_id = get_mem['id']
 
     try:
         c = gban.find({})
@@ -153,10 +152,10 @@ async def ungban_user(message : Message):
                 "`don't do .help gban for more info. Coz no one's gonna help ya`(｡ŏ_ŏ) ⚠", del_in=0)
             return
 
-    get_mem = await userge.get_chat_member(chat_id, user_id)
+    get_mem = await userge.get_user_dict(user_id)
                     
-    firstname = get_mem.user.first_name
-    user_id = get_mem.user.id
+    firstname = get_mem['fname']
+    user_id = get_mem['id']
 
     try:
         gban.delete_one({'firstname':firstname, 'user_id':user_id})
