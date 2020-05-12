@@ -161,7 +161,7 @@ async def ytDown(message: Message):
             desiredFormat = desiredFormat1
             retcode = tubeDl([message.filtered_input_str], __progress, startTime, desiredFormat)
         elif 'v' in message.flags:
-            desiredFormat = desiredFormat2+'bestaudio'
+            desiredFormat = desiredFormat2+'+bestaudio'
             retcode = tubeDl([message.filtered_input_str], __progress, startTime, desiredFormat)
         else:
             retcode = tubeDl([message.filtered_input_str], __progress, startTime, None)
