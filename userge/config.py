@@ -81,8 +81,6 @@ class Config:
 
     LOG_CHANNEL_ID = int(os.environ.get("LOG_CHANNEL_ID", 0))
 
-    GBAN_LOG_CHANNEL = int(os.environ.get("GBAN_LOG_CHANNEL", -100))
-
     UPSTREAM_REPO = os.environ.get("UPSTREAM_REPO", "https://github.com/UsergeTeam/Userge")
 
     HEROKU_API_KEY = os.environ.get("HEROKU_API_KEY", None)
