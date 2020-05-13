@@ -9,8 +9,10 @@
 
 import json
 from datetime import datetime
+
 import requests
 from pytz import country_timezones as c_tz, timezone as tz, country_names as c_n
+
 from userge import userge, Message, Config
 
 CHANNEL = userge.getCLogger(__name__)
@@ -135,4 +137,4 @@ async def weather_get(message: Message):
         f"**Sunrise:** `{sun(sunrise)}`\n" +
         f"**Sunset:** `{sun(sunset)}`\n\n\n" + f"**{desc}**\n" +
         f"`{cityname}, {fullc_n}`\n" + f"`{time}`")
-    CHANNEL.log(f"check `{CITY}` weather results")
+    await CHANNEL.log(f"check `{CITY}` weather results")

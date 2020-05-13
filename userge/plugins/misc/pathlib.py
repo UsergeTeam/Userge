@@ -348,10 +348,13 @@ class SCLib(_BaseLib):
 
 @userge.on_cmd('ls', about={
     'header': "list directory",
-    'usage': "{tr}ls [path]"})
+    'usage': "{tr}ls [path]\n{tr}ls -d : default path"})
 async def ls_dir(message: Message) -> None:
     """list dir"""
-    path = message.input_str or '.'
+    if '-d' in message.flags:
+        path = Config.DOWN_PATH
+    else:
+        path = message.input_str or '.'
     if not exists(path):
         await message.err("path not exists!")
         return
@@ -383,11 +386,11 @@ async def ls_dir(message: Message) -> None:
     await message.edit_or_send_as_file(out, parse_mode='html')
 
 
-@userge.on_cmd('setdir', about={
+@userge.on_cmd('dset', about={
     'header': "set temporary working directory",
-    'usage': "{tr}setdir [path / name]"})
-async def setdir_(message: Message) -> None:
-    """setdir"""
+    'usage': "{tr}dset [path / name]"})
+async def dset_(message: Message) -> None:
+    """dset"""
     path = message.input_str
     if not path:
         await message.err("missing file path!")
@@ -401,9 +404,19 @@ async def setdir_(message: Message) -> None:
         await message.err(p_e)
 
 
-@userge.on_cmd("cleardir", about={'header': "Clear the current working directory"})
-async def clear_dir_(message: Message):
-    """clear dir"""
+@userge.on_cmd('dreset', about={
+    'header': "reset to default working directory",
+    'usage': "{tr}dreset"})
+async def dreset_(message: Message) -> None:
+    """dreset"""
+    path = os.environ.get("DOWN_PATH", "downloads").rstrip('/') + '/'
+    Config.DOWN_PATH = path
+    await message.edit(f"reset **working directory** to `{path}` successfully!", del_in=5)
+
+
+@userge.on_cmd("dclear", about={'header': "Clear the current working directory"})
+async def dclear_(message: Message):
+    """dclear"""
     if not isdir(Config.DOWN_PATH):
         await message.edit(
             f'path : `{Config.DOWN_PATH}` not found and just created!', del_in=5)
@@ -414,11 +427,11 @@ async def clear_dir_(message: Message):
     os.makedirs(Config.DOWN_PATH)
 
 
-@userge.on_cmd('rmdir', about={
-    'header': "delete a directory or file",
-    'usage': "{tr}rmdir [path / name]"})
-async def rmdir_(message: Message) -> None:
-    """rmdir"""
+@userge.on_cmd('dremove', about={
+    'header': "remove a directory or file",
+    'usage': "{tr}dremove [path / name]"})
+async def dremove_(message: Message) -> None:
+    """dremove"""
     path = message.input_str
     if not path:
         await message.err("missing file path!")
@@ -430,7 +443,23 @@ async def rmdir_(message: Message) -> None:
         os.remove(path)
     else:
         rmtree(path)
-    await message.edit(f"path : `{path}` **deleted** successfully!", del_in=5)
+    await message.edit(f"path : `{path}` **removed** successfully!", del_in=5)
+
+
+@userge.on_cmd('drename ([^|]+)\|([^|]+)', about={
+    'header': "rename a directory or file",
+    'usage': "{tr}drename [path / name] | [new name]"})
+async def drename_(message: Message) -> None:
+    """drename"""
+    path = str(message.matches[0].group(1)).strip()
+    new_name = str(message.matches[0].group(2)).strip()
+    print(path, new_name)
+    if not exists(path):
+        await message.err(f"file path : {path} not exists!")
+        return
+    new_path = join(dirname(path), new_name)
+    os.rename(path, new_path)
+    await message.edit(f"path : `{path}` **renamed** to `{new_path}` successfully!", del_in=5)
 
 
 @userge.on_cmd(r'split (\d+) ([\s\S]+)', about={
