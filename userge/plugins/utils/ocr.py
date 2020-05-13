@@ -18,9 +18,9 @@ CHANNEL = userge.getCLogger(__name__)
 
 @pool.run_in_thread
 def ocr_space_file(filename,
+                   language='eng',
                    overlay=False,
-                   api_key=Config.OCR_SPACE_API_KEY,
-                   language='eng'):
+                   api_key=Config.OCR_SPACE_API_KEY):
     """ 
     OCR.space API request with local file.
         Python3.5 - not tested on 2.7
@@ -76,8 +76,7 @@ async def ocr_gen(message: Message):
 
         await message.edit(r"`Trying to Read.. 📖")
         downloaded_file_name = await userge.download_media(message.reply_to_message)
-        test_file = await ocr_space_file(filename=downloaded_file_name,
-                                         language=lang_code)
+        test_file = await ocr_space_file(downloaded_file_name, lang_code)
         try:
             ParsedText = test_file["ParsedResults"][0]["ParsedText"]
         except Exception as e_f:
