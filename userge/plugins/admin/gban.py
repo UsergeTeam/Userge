@@ -52,7 +52,12 @@ async def guadmin_check(chat_id, user_id) -> bool:
     else:
         return True
 
-@userge.on_cmd("gban",about={'header': "GBan Module",'description':"Does this even require a description \nDon't use if u dunno"})
+@userge.on_cmd("gban",about={
+    'header': "Globally Ban A User",
+    'description': "Adds User to your GBan List\n"
+                   "Bans a Globally Banned user if they join or message.\n"
+                   "[NOTE: Works only in groups where you are admin.]",
+    'examples': ".gban [userid | reply] [reason for gban] (mandatory)"})
 async def gban_user(message : Message):
     reason = ""
     chat_id = message.chat.id
@@ -86,11 +91,11 @@ async def gban_user(message : Message):
                 await message.edit("**#Already_GBanned**\n\nUser Already Exists in My Gban List.\n**Reason For GBan:** `{}`".format(i['reason']))
                 return
         if user_id == me.id:
-            await message.edit("Fu*k You **Bitch**... I won't GBan Myself..")
+            await message.edit("LoL. Why would I GBan myself ¯\(°_o)/¯")
             return
 
         if user_id in Config.SUDO_USERS:
-            await message.edit("`Holy Fu*k... I Can't GBan Sudo User...`\n\n**Tip:** Remove them from Sudo List and try again.")
+            await message.edit("That user is in my Sudo List, Hence I can't ban him. \n\n**Tip:** Remove them from Sudo List and try again. (¬_¬)")
             return
 
         if reason:
@@ -134,7 +139,10 @@ async def gban_user(message : Message):
         return
 
 
-@userge.on_cmd("ungban", about={'header': "Me useless sar can't probide info. (coz Not mah stuff)"})
+@userge.on_cmd("ungban", about={
+    'header': "Globally Unban an User"
+    'description': "Removes an user from your Gban List"
+    'examples': ".ungban [userid | reply]"})
 async def ungban_user(message : Message):
 
     chat_id = message.chat.id
@@ -175,7 +183,10 @@ async def ungban_user(message : Message):
         await message.edit("Error: "+str(e))
 
 
-@userge.on_cmd("glist", about={'header':"**Error:404** Help Not Found", 'description':"(｡ŏ_ŏ) dunno it's functioning"})
+@userge.on_cmd("glist", about={
+    'header': "Get a List of Gbanned Users",
+    'description': "Get Up-to-date list of users Gbanned by you. (ofc posted on del.dog)"
+    'examples': "Lol. Just type .glist"})
 async def list_gbanned(message : Message):
 
     try:
