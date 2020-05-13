@@ -105,7 +105,7 @@ async def uploadtotg(message: Message):
     if not path_:
         await message.edit("invalid input!, check `.help .upload`", del_in=5)
         return
-    is_url = re.search(r"(?:https?|ftp)://[^\|\s]+\.[^\|\s]+", path_)
+    is_url = re.search(r"(?:https?|ftp)://[^|\s]+\.[^|\s]+", path_)
     del_path = False
     if is_url:
         del_path = True
@@ -162,10 +162,10 @@ async def uploadtotg(message: Message):
     if "|" in path_:
         path_, file_name = path_.split("|")
         path_ = path_.strip()
-    if os.path.isfile(path_):
-        new_path = os.path.join(Config.DOWN_PATH, file_name.strip())
-        os.rename(path_, new_path)
-        path_ = new_path
+        if os.path.isfile(path_):
+            new_path = os.path.join(Config.DOWN_PATH, file_name.strip())
+            os.rename(path_, new_path)
+            path_ = new_path
     try:
         string = Path(path_)
     except IndexError:
@@ -320,7 +320,7 @@ async def remove_thumb(thumb: str) -> None:
         os.remove(thumb)
 
 
-async def finalize(chat_id: int, message: Message, msg: Message, start_t: int):
+async def finalize(chat_id: int, message: Message, msg: Message, start_t):
     await CHANNEL.fwd_msg(msg)
     await userge.send_chat_action(chat_id, "cancel")
     if message.process_is_canceled:
