@@ -1,13 +1,21 @@
-#(｡ŏ_ŏ) GBan module for userge 
+# Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+#
+# This file is part of < https://github.com/UsergeTeam/Userge > project,
+# and is released under the "GNU v3.0 License Agreement".
+# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+#
+# All rights reserved
+
 
 import requests
 import logging
 import asyncio
 from userge import userge, Message, Config, get_collection, Filters
 
+
 GBAN_USER_BASE = get_collection("GBAN_USER")
-gban = GBAN_USER_BASE
 GBAN_LOG = Config.GBAN_LOG_CHANNEL
+
 
 async def is_admin(message: Message, me_id):
     check_user = await userge.get_chat_member(message.chat.id, me_id)
@@ -48,9 +56,7 @@ async def guadmin_check(chat_id, user_id) -> bool:
 async def gban_user(message : Message):
     reason = ""
     chat_id = message.chat.id
-    get_group = await userge.get_chat(chat_id)
     me = await userge.get_me()
-    act_chat = await userge.get_chat(chat_id)
     can_ban = await is_admin(message, me.id)
     
     if message.reply_to_message:
@@ -74,7 +80,7 @@ async def gban_user(message : Message):
     user_id = get_mem['id']
 
     try:
-        c = gban.find({})
+        c = GBAN_USER_BASE.find({})
         for i in c:
             if i['user_id'] == user_id:
                 await message.edit("**#Already_GBanned**\n\nUser Already Exists in My Gban List.\n**Reason For GBan:** `{}`".format(i['reason']))
@@ -84,7 +90,7 @@ async def gban_user(message : Message):
             return
 
         if user_id in Config.SUDO_USERS:
-            await message.edit("`Holy Fu*k... I Can't GBan Sudo User...`\n**Tip:** Remove them from Sudo List and try again.")
+            await message.edit("`Holy Fu*k... I Can't GBan Sudo User...`\n\n**Tip:** Remove them from Sudo List and try again.")
             return
 
         if reason:
@@ -94,7 +100,7 @@ async def gban_user(message : Message):
             await message.edit(f"**#Aborted** \n\n**Gbanning** of [{firstname}](tg://user?id={user_id}) Aborted coz No reason of gban provided by banner") 
             return
 
-        gban.insert_one({'firstname':firstname, 'user_id':user_id, 'reason':reason})
+        GBAN_USER_BASE.insert_one({'firstname':firstname, 'user_id':user_id, 'reason':reason})
 
         if can_ban:
             gbanned_admeme = await guadmin_check(chat_id, user_id)
@@ -111,7 +117,7 @@ async def gban_user(message : Message):
                   text="\\**#Antispam_Log**//\n"
                   f"**User:** [{firstname}](tg://user?id={user_id})\n"
                   f"**User ID:** `{user_id}`\n"
-                  f"**Chat:** {act_chat.title}\n"
+                  f"**Chat:** {message.chat.title}\n"
                   f"**Chat ID:** `{chat_id}`\n"
                   f"**Reason:** `{reason}`\n\n$GBAN #id{user_id}"
               )
@@ -134,9 +140,7 @@ async def gban_user(message : Message):
 async def ungban_user(message : Message):
 
     chat_id = message.chat.id
-    get_group = await userge.get_chat(chat_id)
     me = await userge.get_me()
-    act_chat = await userge.get_chat(chat_id)
 
     if message.reply_to_message:
         user_id = message.reply_to_message.from_user.id
@@ -158,7 +162,7 @@ async def ungban_user(message : Message):
     user_id = get_mem['id']
 
     try:
-        gban.delete_one({'firstname':firstname, 'user_id':user_id})
+        GBAN_USER_BASE.delete_one({'firstname':firstname, 'user_id':user_id})
         await message.edit(f"\\**#UnGbanned_User**//\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n**User ID:**`{user_id}`")
         logging.info("UnGbanned {}".format(str(user_id)))
         if GBAN_LOG:
@@ -167,7 +171,7 @@ async def ungban_user(message : Message):
                   text="\\**#Antispam_Log**//\n"
                   f"**User:** [{firstname}](tg://user?id={user_id})\n"
                   f"**User ID:** `{user_id}`\n"
-                  f"**Chat:** {act_chat.title}\n"
+                  f"**Chat:** {message.chat.title}\n"
                   f"**Chat ID:** `{chat_id}`\n\n$UNGBAN #id{user_id}"
             )
     except Exception as e:
@@ -179,7 +183,7 @@ async def ungban_user(message : Message):
 async def list_gbanned(message : Message):
 
     try:
-        cur = gban.find({})
+        cur = GBAN_USER_BASE.find({})
         msg = "Globally Banned Users List:\n"
         for c in cur:
             msg += "User: "+str(c['firstname'])+"-> with User ID-> "+str(c['user_id'])+" is GBanned for: "+str(c['reason'])+"\n\n"
@@ -209,7 +213,7 @@ async def gban_at_entry(message : Message):                               #TODO:
         pass
 
     try:
-        curs = gban.find({})
+        curs = GBAN_USER_BASE.find({})
         for c in curs:
             if c['user_id'] == user_id:
                 reason=c['reason']
