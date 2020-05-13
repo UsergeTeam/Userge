@@ -8,16 +8,19 @@
 
 
 import os
+
 import requests
-from userge import userge, Message, Config
+
+from userge import userge, Message, Config, pool
 
 CHANNEL = userge.getCLogger(__name__)
 
 
-async def ocr_space_file(filename,
-                         overlay=False,
-                         api_key=Config.OCR_SPACE_API_KEY,
-                         language='eng'):
+@pool.run_in_thread
+def ocr_space_file(filename,
+                   overlay=False,
+                   api_key=Config.OCR_SPACE_API_KEY,
+                   language='eng'):
     """ 
     OCR.space API request with local file.
         Python3.5 - not tested on 2.7
@@ -31,7 +34,6 @@ async def ocr_space_file(filename,
                     Defaults to 'en'.
     :return: Result in JSON format.
     """
-
     payload = {
         'isOverlayRequired': overlay,
         'apikey': api_key,
@@ -45,7 +47,6 @@ async def ocr_space_file(filename,
         )
     return r.json()
 
-OCR_SPACE_API_KEY = Config.OCR_SPACE_API_KEY
 
 @userge.on_cmd("ocr", about={
     'header': "use this to run ocr reader",
@@ -91,7 +92,7 @@ async def ocr_gen(message: Message):
                 "**Here's what I could read from it:**"
                 f"\n\n`{ParsedText}`")
             os.remove(downloaded_file_name)
-            CHANNEL.log(f"`ocr` command succefully executed")
+            await CHANNEL.log(f"`ocr` command succefully executed")
             return
 
     else:

@@ -15,8 +15,8 @@ from typing import Any, Callable, Optional, Union, Iterable, Iterator
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor, Future
 from functools import wraps
 
-_THREAD_POOL = ThreadPoolExecutor()
-_PROCESS_POOL = ProcessPoolExecutor()
+_THREAD_POOL = ThreadPoolExecutor(4)
+_PROCESS_POOL = ProcessPoolExecutor(4)
 
 def submit_thread(func: Callable[[Any], Any], *args: Any, **kwargs: Any) -> Future:
     """submit thread to thread pool"""

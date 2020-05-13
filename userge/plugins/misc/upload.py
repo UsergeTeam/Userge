@@ -159,6 +159,13 @@ async def uploadtotg(message: Message):
         except Exception as d_e:
             await message.err(d_e)
             return
+    if "|" in path_:
+        path_, file_name = path_.split("|")
+        path_ = path_.strip()
+    if os.path.isfile(path_):
+        new_path = os.path.join(Config.DOWN_PATH, file_name.strip())
+        os.rename(path_, new_path)
+        path_ = new_path
     try:
         string = Path(path_)
     except IndexError:

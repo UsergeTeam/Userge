@@ -1,5 +1,6 @@
 git+https://github.com/pyrogram/pyrogram.git@asyncio-dev
 aiofiles
+aiohttp
 bs4
 cowpy
 dnspython
