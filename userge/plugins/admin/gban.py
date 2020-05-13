@@ -14,7 +14,7 @@ from userge import userge, Message, Config, get_collection, Filters
 
 
 GBAN_USER_BASE = get_collection("GBAN_USER")
-GBAN_LOG = Config.GBAN_LOG_CHANNEL
+GBAN_LOG = userge.getCLogger(__name__)
 
 
 async def is_admin(message: Message, me_id):
@@ -111,20 +111,18 @@ async def gban_user(message : Message):
 
         logging.info("G-Banned {}".format(str(user_id)))
 
-        if GBAN_LOG:
-            await userge.send_message(
-                  chat_id = GBAN_LOG,
-                  text="\\**#Antispam_Log**//\n"
-                  f"**User:** [{firstname}](tg://user?id={user_id})\n"
-                  f"**User ID:** `{user_id}`\n"
-                  f"**Chat:** {message.chat.title}\n"
-                  f"**Chat ID:** `{chat_id}`\n"
-                  f"**Reason:** `{reason}`\n\n$GBAN #id{user_id}"
-              )
+        await GBAN_LOG.log(
+            "\\**#Antispam_Log**//\n"
+            f"**User:** [{firstname}](tg://user?id={user_id})\n"
+            f"**User ID:** `{user_id}`\n"
+            f"**Chat:** {message.chat.title}\n"
+            f"**Chat ID:** `{chat_id}`\n"
+            f"**Reason:** `{reason}`\n\n$GBAN #id{user_id}"
+        )
         try:
             if message.reply_to_message:
-                await message.reply_to_message.forward(chat_id = GBAN_LOG)
-                await userge.send_message(chat_id=GBAN_LOG, text=f'$GBAN #prid{user_id} ⬆️')
+                await GBAN_LOG.fwd_msg(message.reply_to_message)
+                await GBAN_LOG.log(f'$GBAN #prid{user_id} ⬆️')
                 await message.reply_to_message.delete()
         except:
             await message.reply( "`I dont have message nuking rights! But still he got gbanned!`")
@@ -165,15 +163,13 @@ async def ungban_user(message : Message):
         GBAN_USER_BASE.delete_one({'firstname':firstname, 'user_id':user_id})
         await message.edit(f"\\**#UnGbanned_User**//\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n**User ID:**`{user_id}`")
         logging.info("UnGbanned {}".format(str(user_id)))
-        if GBAN_LOG:
-            await userge.send_message(
-                  chat_id= GBAN_LOG,
-                  text="\\**#Antispam_Log**//\n"
-                  f"**User:** [{firstname}](tg://user?id={user_id})\n"
-                  f"**User ID:** `{user_id}`\n"
-                  f"**Chat:** {message.chat.title}\n"
-                  f"**Chat ID:** `{chat_id}`\n\n$UNGBAN #id{user_id}"
-            )
+        await GBAN_LOG.log(
+            "\\**#Antispam_Log**//\n"
+            f"**User:** [{firstname}](tg://user?id={user_id})\n"
+            f"**User ID:** `{user_id}`\n"
+            f"**Chat:** {message.chat.title}\n"
+            f"**Chat ID:** `{chat_id}`\n\n$UNGBAN #id{user_id}"
+        )
     except Exception as e:
         logging.exception('Received exception during ungban')
         await message.edit("Error: "+str(e))
@@ -220,7 +216,7 @@ async def gban_at_entry(message : Message):                               #TODO:
                 try:
                     await userge.kick_chat_member(chat_id, user_id)
                     await message.reply(f"\\**#Userge_Antispam**//\n\n\nGlobally Banned User Detected in this Chat.\n\n**User:** [{firstname}](tg://user?id={user_id})\n**ID:** `{user_id}`\n**Reason:** `{reason}`\n\n**Quick Action:** Banned.")                        
-                    await userge.send_message(chat_id=GBAN_LOG, text=f"\\**#Antispam_Log**//\n**User:** [{firstname}](tg://user?id={user_id})\n**ID:** `{user_id}`\n**Quick Action:** Banned in {message.chat.title}")
+                    await GBAN_LOG.log("\\**#Antispam_Log**//\n\n**GBanned User $SPOTTED**\n**User:** [{firstname}](tg://user?id={user_id})\n**ID:** `{user_id}`\n**Quick Action:** Banned in {message.chat.title}")
                 except:
                     break
     except:
