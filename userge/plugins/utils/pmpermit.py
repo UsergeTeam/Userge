@@ -128,10 +128,9 @@ async def uninvitedPmHandler(message: Message):
         await CHANNEL.log(f"#NEW_MESSAGE\n{user_dict['mention']} has messaged you")
 
 
-@userge.on_filters(Filters.private & ~Config.ALLOWED_CHATS & Filters.outgoing)
+@userge.on_filters(Filters.private & ~Config.ALLOWED_CHATS & Filters.outgoing & ~allowAllFilter)
 async def outgoing_auto_approve(message: Message):
-    if allowAllPms:
-        return
+
     userID = message.chat.id
     if userID in pmCounter:
         del pmCounter[userID]
