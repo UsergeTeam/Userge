@@ -99,11 +99,13 @@ async def get_id(message: Message):
 
 
 @userge.on_filters(Filters.private & ~Filters.me & ~Config.ALLOWED_CHATS & \
-    ~Filters.outgoing & ~allowAllFilter & ~Filters.service)
+    ~Filters.outgoing & ~allowAllFilter & ~Filters.service & ~Filters.bot)
 async def uninvitedPmHandler(message: Message):
     user_dict = await userge.get_user_dict(message.from_user.id)
     user_dict.update({'chat': message.chat.title if message.chat.title else "this group"})
 
+    if message.from_user.is_verified:
+        return
     if message.from_user.id in pmCounter:
         if pmCounter[message.from_user.id] > 3:
             del pmCounter[message.from_user.id]
@@ -126,8 +128,9 @@ async def uninvitedPmHandler(message: Message):
         await CHANNEL.log(f"#NEW_MESSAGE\n{user_dict['mention']} has messaged you")
 
 
-@userge.on_filters(Filters.private & ~Config.ALLOWED_CHATS & Filters.outgoing)
+@userge.on_filters(Filters.private & ~Config.ALLOWED_CHATS & Filters.outgoing & ~allowAllFilter)
 async def outgoing_auto_approve(message: Message):
+
     userID = message.chat.id
     if userID in pmCounter:
         del pmCounter[userID]
