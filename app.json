@@ -35,6 +35,10 @@
             "description": "Set True if it is TeamDrive",
             "value": "True"
         },
+        "LOAD_UNOFFICIAL_PLUGINS": {
+            "description": "Set True if your like to use unofficial plugins",
+            "value": "False"
+        },
         "DOWN_PATH": {
             "description": "Set name to your working directory",
             "required": false

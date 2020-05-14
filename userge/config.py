@@ -87,6 +87,8 @@ class Config:
 
     HEROKU_APP_NAME = os.environ.get("HEROKU_APP_NAME", None)
 
+    LOAD_UNOFFICIAL_PLUGINS = bool(os.environ.get("LOAD_UNOFFICIAL_PLUGINS", False))
+
     HEROKU_APP = None
 
     HEROKU_GIT_URL = None
@@ -150,3 +152,10 @@ for binary, path in _BINS.items():
         downloader = SmartDL(binary, path, progress_bar=False)
         downloader.start()
         os.chmod(path, 0o755)
+
+if Config.LOAD_UNOFFICIAL_PLUGINS:
+    os.system(f"git clone https://github.com/UsergeTeam/Userge-Plugins.git")
+    os.system("pip3 install -r Userge-Plugins/requirements.txt")
+    os.system("rm -rf userge/plugins/unof_plugins/")
+    os.system("mv Userge-Plugins/plugins/ userge/plugins/unof_plugins/")
+    os.system("rm -rf Userge-Plugins/")
