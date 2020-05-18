@@ -158,11 +158,11 @@ for binary, path in _BINS.items():
         os.chmod(path, 0o755)
 
 if Config.LOAD_UNOFFICIAL_PLUGINS:
-    _LOG.debug("Loading UnOfficial Plugins...")
+    _LOG.info("Loading UnOfficial Plugins...")
     os.system(f"git clone https://github.com/UsergeTeam/Userge-Plugins.git")
     os.system("pip3 install -U pip")
     os.system("pip3 install -r Userge-Plugins/requirements.txt")
     os.system("rm -rf userge/plugins/unof_plugins/")
     os.system("mv Userge-Plugins/plugins/ userge/plugins/unof_plugins/")
     os.system("rm -rf Userge-Plugins/")
-    _LOG.debug("UnOfficial Plugins Loaded Successfully!")
+    _LOG.info("UnOfficial Plugins Loaded Successfully!")

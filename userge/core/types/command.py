@@ -83,12 +83,12 @@ def _format_about(about: Union[str, Dict[str, Union[str, List[str], Dict[str, st
             tmp_chelp += f"\n\n✒ --**Usage**-- :\n\n`{about['usage']}`"
             del about['usage']
         if 'examples' in about:
-            tmp_chelp += f"\n\n✏ --**Examples**-- :\n"
+            tmp_chelp += f"\n\n✏ --**Examples**-- :"
             if isinstance(about['examples'], list):
                 for ex_ in about['examples']:
-                    tmp_chelp += f"\n    `{ex_}`\n"
+                    tmp_chelp += f"\n\n    `{ex_}`"
             else:
-                tmp_chelp += f"\n    `{about['examples']}`"
+                tmp_chelp += f"\n\n    `{about['examples']}`"
             del about['examples']
         if 'others' in about:
             tmp_chelp += f"\n\n📎 --**Others**-- :\n\n{about['others']}"

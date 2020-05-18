@@ -126,7 +126,7 @@ class Filtr:
             return ''
         self._enabled = False
         _disable(self.name)
-        _LOG.info(_LOG_STR, f"disabled filter -> {self.name}")
+        _LOG.debug(_LOG_STR, f"disabled filter -> {self.name}")
         return self.name
 
     def load(self) -> str:
@@ -146,5 +146,5 @@ class Filtr:
         self._client.remove_handler(self._handler, self._group)
         self._loaded = False
         _unload(self.name)
-        _LOG.info(_LOG_STR, f"unloaded filter -> {self.name}")
+        _LOG.debug(_LOG_STR, f"unloaded filter -> {self.name}")
         return self.name

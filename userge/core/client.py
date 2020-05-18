@@ -48,9 +48,6 @@ class Userge(Methods):
             importlib.import_module(f"userge.plugins.{name}"))
         _LOG.debug(_LOG_STR, f"Imported {self._imported[-1].__name__} Plugin Successfully")
 
-    def unload_plugin(self, module: str) -> Optional[List[str]]:
-        pass
-
     def load_plugins(self) -> None:
         """Load all Plugins"""
         self._imported.clear()

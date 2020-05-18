@@ -94,19 +94,21 @@ async def status(message: Message):
     elif 'c' in type_:
         if name_:
             if not name_.startswith(Config.CMD_TRIGGER):
-                name_ = Config.CMD_TRIGGER + name_
+                n_name_ = Config.CMD_TRIGGER + name_
             if name_ in userge.manager.commands:
                 cmd = userge.manager.commands[name_]
-                out_str = f"""⚔ **--Command Status--** ⚔
+            elif n_name_ in userge.manager.commands:
+                cmd = userge.manager.commands[n_name_]
+            else:
+                await message.err(f"command : {name_} not found!")
+                return
+            out_str = f"""⚔ **--Command Status--** ⚔
 
 🔖 **Name** : `{cmd.name}`
 📝 **Doc** : `{cmd.doc}`
 ✅ **Loaded** : `{cmd.is_loaded}`
 ➕ **Enabled** : `{cmd.is_enabled}`
 """
-            else:
-                await message.err(f"command : {name_} not found!")
-                return
         else:
             out_str = f"""⚔ **--Commands Status--** ⚔
 
@@ -166,6 +168,7 @@ async def enable(message: Message):
     if not message.filtered_input_str:
         await message.err("name required!")
         return
+    await message.edit("`Enabling...`")
     names_ = message.filtered_input_str.split(' ')
     type_ = list(message.flags)
     if 'p' in type_:
@@ -182,9 +185,9 @@ async def enable(message: Message):
             await message.err(f"plugins : {', '.join(names_)} not found!")
             return
     elif 'c' in type_:
-        for i in range(len(names_)):
-            if not names_[i].startswith(Config.CMD_TRIGGER):
-                names_[i] = Config.CMD_TRIGGER + names_[i]
+        for t_name in names_:
+            if not t_name.startswith(Config.CMD_TRIGGER):
+                names_.append(Config.CMD_TRIGGER + t_name)
         found = set(names_).intersection(set(userge.manager.commands))
         if found:
             out = userge.manager.enable_commands(list(found))
@@ -230,6 +233,7 @@ async def disable(message: Message):
     if not message.filtered_input_str:
         await message.err("name required!")
         return
+    await message.edit("`Disabling...`")
     names_ = message.filtered_input_str.split(' ')
     type_ = list(message.flags)
     if 'p' in type_ and names_:
@@ -246,9 +250,9 @@ async def disable(message: Message):
             await message.err(f"plugins : {', '.join(names_)} not found!")
             return
     elif 'c' in type_ and names_:
-        for i in range(len(names_)):
-            if not names_[i].startswith(Config.CMD_TRIGGER):
-                names_[i] = Config.CMD_TRIGGER + names_[i]
+        for t_name in names_:
+            if not t_name.startswith(Config.CMD_TRIGGER):
+                names_.append(Config.CMD_TRIGGER + t_name)
         found = set(names_).intersection(set(userge.manager.commands))
         if found:
             out = userge.manager.disable_commands(list(found))
@@ -293,6 +297,7 @@ async def load(message: Message):
         if not message.filtered_input_str:
             await message.err("name required!")
             return
+        await message.edit("`Loading...`")
         names_ = message.filtered_input_str.split(' ')
         type_ = list(message.flags)
         if 'p' in type_:
@@ -309,9 +314,9 @@ async def load(message: Message):
                 await message.err(f"plugins : {', '.join(names_)} not found!")
                 return
         elif 'c' in type_:
-            for i in range(len(names_)):
-                if not names_[i].startswith(Config.CMD_TRIGGER):
-                    names_[i] = Config.CMD_TRIGGER + names_[i]
+            for t_name in names_:
+                if not t_name.startswith(Config.CMD_TRIGGER):
+                    names_.append(Config.CMD_TRIGGER + t_name)
             found = set(names_).intersection(set(userge.manager.commands))
             if found:
                 out = userge.manager.load_commands(list(found))
@@ -340,7 +345,7 @@ async def load(message: Message):
             return
         await message.edit(out_str, del_in=0, log=__name__)
     else:
-        await message.edit("Loading...")
+        await message.edit("`Loading...`")
         replied = message.reply_to_message
         if replied and replied.document:
             file_ = replied.document
@@ -381,6 +386,7 @@ async def unload(message: Message):
     if not message.filtered_input_str:
         await message.err("name required!")
         return
+    await message.edit("`UnLoading...`")
     names_ = message.filtered_input_str.split(' ')
     type_ = list(message.flags)
     if 'p' in type_ and names_:
@@ -397,9 +403,9 @@ async def unload(message: Message):
             await message.err(f"plugins : {', '.join(names_)} not found!")
             return
     elif 'c' in type_ and names_:
-        for i in range(len(names_)):
-            if not names_[i].startswith(Config.CMD_TRIGGER):
-                names_[i] = Config.CMD_TRIGGER + names_[i]
+        for t_name in names_:
+            if not t_name.startswith(Config.CMD_TRIGGER):
+                names_.append(Config.CMD_TRIGGER + t_name)
         found = set(names_).intersection(set(userge.manager.commands))
         if found:
             out = userge.manager.unload_commands(list(found))
@@ -438,6 +444,6 @@ async def reload_(message: Message):
 
 @userge.on_cmd('clear', about={'header': "clear all save filters in DB"})
 async def clear_(message: Message):
-    await message.edit("`processiong...`")
+    await message.edit("`Clearing DB...`")
     await message.edit(
         f"**Cleared Filters** : `{userge.manager.clear()}`", del_in=3, log=__name__)
