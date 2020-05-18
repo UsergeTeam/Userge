@@ -94,6 +94,14 @@
         "SUDO_TRIGGER": {
             "description": "set command prefix for SUDO users",
             "required": false
+        },
+        "FINISHED_PROGRESS_STR": {
+          "description": "single character for finished progress",
+          "required": false
+        },
+        "UNFINISHED_PROGRESS_STR": {
+          "description": "single character for unfinished progress",
+          "required": false
         }
     },
     "addons": [

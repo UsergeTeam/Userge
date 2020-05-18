@@ -14,6 +14,7 @@ import time
 import asyncio
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import unquote_plus
 
 from pySmartDL import SmartDL
 from hachoir.metadata import extractMetadata
@@ -113,7 +114,7 @@ async def uploadtotg(message: Message):
         if not os.path.isdir(Config.DOWN_PATH):
             os.mkdir(Config.DOWN_PATH)
         url = is_url[0]
-        file_name = os.path.basename(url)
+        file_name = unquote_plus(os.path.basename(url))
         if "|" in path_:
             file_name = path_.split("|")[1].strip()
         path_ = os.path.join(Config.DOWN_PATH, file_name)
@@ -142,8 +143,10 @@ async def uploadtotg(message: Message):
                     "**ETA** : `{}`"
                 progress_str = progress_str.format(
                     "trying to download",
-                    ''.join(["█" for i in range(math.floor(percentage / 5))]),
-                    ''.join(["░" for i in range(20 - math.floor(percentage / 5))]),
+                    ''.join([Config.FINISHED_PROGRESS_STR \
+                        for i in range(math.floor(percentage / 5))]),
+                    ''.join([Config.UNFINISHED_PROGRESS_STR \
+                        for i in range(20 - math.floor(percentage / 5))]),
                     round(percentage, 2),
                     url,
                     file_name,

@@ -6,6 +6,4 @@
 #
 # All rights reserved.
 
-from .logger import CLogger
-from .conv import Conv
 from . import pool

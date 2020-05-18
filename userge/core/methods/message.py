@@ -19,15 +19,14 @@ from pyrogram.errors.exceptions import MessageAuthorRequired, MessageTooLong
 from pyrogram.errors.exceptions.bad_request_400 import MessageNotModified, MessageIdInvalid
 
 from userge import logging, Config
-from .ext import CLogger
+from . import logger
 
 _CANCEL_LIST: List[int] = []
 _ERROR_MSG_DELETE_TIMEOUT = 5
 _ERROR_STRING = "**ERROR**: `{}`"
 
 _LOG = logging.getLogger(__name__)
-_LOG_STR = "<<<!  [[[[[  %s  ]]]]]  !>>>"
-
+_LOG_STR = "<<<!  :::::  %s  :::::  !>>>"
 
 class Message(RawMessage):
     """Modded Message Class For Userge"""
@@ -40,7 +39,7 @@ class Message(RawMessage):
         self.reply_to_message: Optional[RawMessage]
         if self.reply_to_message:
             self.reply_to_message = self.__class__(self._client, self.reply_to_message)
-        self._channel = CLogger(client, __name__)
+        self._channel = logger.CLogger(client, __name__)
         self._filtered = False
         self._process_canceled = False
         self._filtered_input_str: str = ''

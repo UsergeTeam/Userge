@@ -6,9 +6,6 @@
 #
 # All rights reserved.
 
-from pyrogram import Filters
-
-from .database import get_collection
-from .ext import pool
-from .client import Userge
-from .methods import Message
+from .filtr import Filtr, clear_db
+from .command import Command
+from .plugin import Plugin

@@ -12,16 +12,16 @@ import asyncio
 
 from pyrogram import Message as RawMessage
 from userge import logging, Config
-from .. import client, message
+from . import message
+from .. import client as _client
 
 _LOG = logging.getLogger(__name__)
-_LOG_STR = "<<<!  (((((  %s  )))))  !>>>"
-
+_LOG_STR = "<<<!  :::::  %s  :::::  !>>>"
 
 class CLogger:
     """Channel logger for Userge"""
-    def __init__(self, client_: 'client.Userge', name: str) -> None:
-        self._client = client_
+    def __init__(self, client: '_client.Userge', name: str) -> None:
+        self._client = client
         self._string = self._gen_string(name)
 
     @staticmethod

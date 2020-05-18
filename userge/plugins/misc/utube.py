@@ -17,8 +17,8 @@ from math import floor
 import youtube_dl as ytdl
 
 from userge import userge, Message, Config
-from userge.plugins.misc.upload import upload
 from userge.utils import time_formatter, humanbytes
+from .upload import upload
 
 LOGGER = userge.getLogger(__name__)
 
@@ -141,8 +141,11 @@ async def ytDown(message: Message):
                 if current and total:
                     percentage = int(current) * 100 / int(total)
                     out += f"Progress >> {int(percentage)}%\n"
-                    out += "[{}{}]".format(''.join(["█" for _ in range(floor(percentage / 5))]),
-                                           ''.join(["░" for _ in range(20 - floor(percentage / 5))]))
+                    out += "[{}{}]".format(
+                        ''.join([Config.FINISHED_PROGRESS_STR \
+                            for _ in range(floor(percentage / 5))]),
+                        ''.join([Config.UNFINISHED_PROGRESS_STR \
+                            for _ in range(20 - floor(percentage / 5))]))
                 if message.text != out:
                     asyncio.get_event_loop().run_until_complete(message.edit(out))
 
