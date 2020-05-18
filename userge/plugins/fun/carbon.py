@@ -11,6 +11,7 @@ import random
 import asyncio
 from urllib.parse import quote_plus
 
+import aiofiles
 from selenium import webdriver
 from pyrogram.errors.exceptions.bad_request_400 import YouBlockedUser
 
@@ -63,33 +64,55 @@ async def carbon_(message: Message):
                                      reply_to_message_id=replied.message_id if replied else None)
             )
     else:
-        if message.reply_to_message:
-            code = message.reply_to_message.text
-            message_id = message.reply_to_message.message_id
-        else:
-            code = message.input_str
-            message_id = message.message_id
-        if not code:
-            await message.err("need input text!")
-            return
+        input_str = message.input_str
+        replied = message.reply_to_message
         theme = 'seti'
         lang = 'auto'
-        if '|' in code:
-            args = code.split('|')
-            if len(args) == 3:
-                theme = args[0].strip()
-                lang = args[1].strip()
-                code = args[2].strip()
-            elif len(args) == 2:
-                theme = args[0].strip()
-                code = args[1].strip()
+        if replied and (replied.text
+                        or (replied.document and 'text' in replied.document.mime_type)):
+            message_id = replied.message_id
+            if replied.document:
+                await message.edit("`Downloading File...`")
+                path_ = await userge.download_media(replied, file_name=Config.DOWN_PATH)
+                async with aiofiles.open(path_) as file_:
+                    code = await file_.read()
+                os.remove(path_)
+            else:
+                code = replied.text
+            if input_str:
+                if '|' in input_str:
+                    args = input_str.split('|')
+                    if len(args) == 2:
+                        theme = args[0].strip()
+                        lang = args[1].strip()
+                else:
+                    theme = input_str
+        elif input_str:
+            message_id = message.message_id
+            if '|' in input_str:
+                args = input_str.split('|')
+                if len(args) == 3:
+                    theme = args[0].strip()
+                    lang = args[1].strip()
+                    code = args[2].strip()
+                elif len(args) == 2:
+                    theme = args[0].strip()
+                    code = args[1].strip()
+            else:
+                code = input_str
+        else:
+            await message.err("need input text!")
+            return
         await message.edit("`Creating a Carbon...`")
         code = quote_plus(code)
-        await message.edit("`Processing... 25%`")
+        await message.edit("`Processing... 20%`")
         carbon_path = os.path.join(Config.DOWN_PATH, "carbon.png")
         if os.path.isfile(carbon_path):
             os.remove(carbon_path)
         url = CARBON.format(theme=theme, lang=lang, code=code)
+        if len(url) > 2590:
+            await message.err("input too large!")
+            return
         chrome_options = webdriver.ChromeOptions()
         chrome_options.binary_location = Config.GOOGLE_CHROME_BIN
         chrome_options.add_argument("--headless")
@@ -97,11 +120,11 @@ async def carbon_(message: Message):
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-gpu")
-        prefs = {'download.default_directory': './'}
+        prefs = {'download.default_directory': Config.DOWN_PATH}
         chrome_options.add_experimental_option('prefs', prefs)
         driver = webdriver.Chrome(chrome_options=chrome_options)
         driver.get(url)
-        await message.edit("`Processing... 50%`")
+        await message.edit("`Processing... 40%`")
         driver.command_executor._commands["send_command"] = (
             "POST", '/session/$sessionId/chromium/send_command')
         params = {
@@ -112,10 +135,14 @@ async def carbon_(message: Message):
             }
         }
         driver.execute("send_command", params)
-        driver.find_element_by_xpath("//button[contains(text(),'Export')]").click()
-        #driver.find_element_by_xpath("//button[contains(text(),'4x')]").click()
-        #driver.find_element_by_xpath("//button[contains(text(),'PNG')]").click()
-        await message.edit("`Processing... 75%`")
+        # driver.find_element_by_xpath("//button[contains(text(),'Export')]").click()
+        driver.find_element_by_id("export-menu").click()
+        await asyncio.sleep(1)
+        await message.edit("`Processing... 60%`")
+        driver.find_element_by_xpath("//button[contains(text(),'4x')]").click()
+        await asyncio.sleep(1)
+        driver.find_element_by_xpath("//button[contains(text(),'PNG')]").click()
+        await message.edit("`Processing... 80%`")
         while not os.path.isfile(carbon_path):
             await asyncio.sleep(0.5)
         await message.edit("`Processing... 100%`")

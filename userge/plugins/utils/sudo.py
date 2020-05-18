@@ -102,7 +102,7 @@ async def add_sudo_cmd(message: Message):
     cmd = cmd.lstrip(Config.CMD_TRIGGER)
     if cmd in Config.ALLOWED_COMMANDS:
         await message.edit(f"cmd : `{cmd}` already in **SUDO**!", del_in=5)
-    elif cmd not in [c_d.lstrip('.') for c_d in userge.get_help(all_cmds=True)[0]]:
+    elif cmd not in [c_d.lstrip(Config.CMD_TRIGGER) for c_d in list(userge.manager.enabled_commands)]:
         await message.edit(f"cmd : `{cmd}` 🤔, is that a command ?", del_in=5)
     else:
         Config.ALLOWED_COMMANDS.add(cmd)
