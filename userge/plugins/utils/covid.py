@@ -1,9 +1,3 @@
-# Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
-#
-# This file is part of < https://github.com/UsergeTeam/Userge > project,
-# and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
-
 # Userge Plugin for getting detailed stats of Covid Patients
 # Author: Sumanjay (https://github.com/cyberboysumanjay) (@cyberboysumanjay)
 # All rights reserved.
@@ -22,7 +16,7 @@ from userge import userge, Message
                  "Israel, Japan, Chile, Singapore, Mexico, Pakistan, "
                  "Poland, S. Korea, Romania, UAE......"})
 async def covid(message: Message):
-    ''' Prettify Output '''
+    '''Prettify Output'''
     def fill(nw_c, nw_d, ac_c, cr_c, t_c, t_d, t_r, name,rank):
         output_l = f'''
         <strong><u>COVID-19 ☠ Patients Reported in {name}</u></strong>
@@ -62,9 +56,8 @@ async def covid(message: Message):
             await message.edit(output, disable_web_page_preview=True)
         except Exception:
             await message.edit("Covid API is currently down!\nPlease Try Again Later")
-        
     else:
-        try:      
+        try:
             data = requests.get("https://sjprojectsapi.herokuapp.com/covid/?country=" + input_).json()
             country_data = data['countrydata'][0]
             nw_c = country_data['total_new_cases_today']
