@@ -164,5 +164,6 @@ if Config.LOAD_UNOFFICIAL_PLUGINS:
     os.system("pip3 install -r Userge-Plugins/requirements.txt")
     os.system("rm -rf userge/plugins/unof_plugins/")
     os.system("mv Userge-Plugins/plugins/ userge/plugins/unof_plugins/")
+    os.system("cp -r Userge-Plugins/resources/* resources/")
     os.system("rm -rf Userge-Plugins/")
     _LOG.info("UnOfficial Plugins Loaded Successfully!")

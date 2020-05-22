@@ -53,7 +53,7 @@ class Decorators:
 
         Parameters:
             command (``str``):
-                command name to execute (without trigger!).
+                command or name to execute (without trigger!).
 
             about (``str`` | ``dict``):
                 help string or dict for command.
@@ -76,10 +76,10 @@ class Decorators:
                 name for command.
 
             trigger (``str``, *optional*):
-                trigger to start command, defaults to '.'.
+                trigger to start command.
 
             filter_me (``bool``, *optional*):
-                If ``True``, Filters.me = True,  defaults to True.
+                If ``False``, anyone can access,  defaults to True.
 
             kwargs:
                 prefix (``str``, *optional*):

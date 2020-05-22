@@ -41,13 +41,15 @@ def _init(name: str) -> Tuple[bool, bool]:
 
 def _enable(name: str) -> None:
     name = name.lstrip(Config.CMD_TRIGGER)
-    _DISABLED.remove(name)
-    _DISABLED_FILTERS.delete_one({'filter': name})
+    if name in _DISABLED:
+        _DISABLED.remove(name)
+        _DISABLED_FILTERS.delete_one({'filter': name})
 
 def _disable(name: str) -> None:
     name = name.lstrip(Config.CMD_TRIGGER)
-    _DISABLED.append(name)
-    _DISABLED_FILTERS.insert_one({'filter': name})
+    if name != "enable":
+        _DISABLED.append(name)
+        _DISABLED_FILTERS.insert_one({'filter': name})
 
 def _load(name: str) -> None:
     name = name.lstrip(Config.CMD_TRIGGER)
@@ -57,8 +59,9 @@ def _load(name: str) -> None:
 
 def _unload(name: str) -> None:
     name = name.lstrip(Config.CMD_TRIGGER)
-    _UNLOADED.append(name)
-    _UNLOADED_FILTERS.insert_one({'filter': name})
+    if name != "load":
+        _UNLOADED.append(name)
+        _UNLOADED_FILTERS.insert_one({'filter': name})
 
 def clear_db() -> bool:
     """clear filters in DB"""
