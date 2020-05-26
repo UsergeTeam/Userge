@@ -20,6 +20,8 @@
 
 # Userge 🔥
 
+[![Build Status](https://travis-ci.com/UsergeTeam/Userge.svg?branch=dev)](https://travis-ci.com/UsergeTeam/Userge) [![Codacy Badge](https://app.codacy.com/project/badge/Grade/9ff2867320b049b99a4a77285bb03cc4)](https://www.codacy.com/gh/UsergeTeam/Userge?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=UsergeTeam/Userge&amp;utm_campaign=Badge_Grade) [![DeepSource](https://static.deepsource.io/deepsource-badge-light-mini.svg)](https://deepsource.io/gh/UsergeTeam/Userge/?ref=repository-badge)
+
 > **Userge** is a Powerful , _Pluggable_ Telegram UserBot written in _Python_ using [Pyrogram](https://github.com/pyrogram/pyrogram).
 
 ## Inspiration 😇
@@ -36,10 +38,14 @@
 ## Features 😍
 
 * Powerful and Very Useful **built-in** Plugins
-  * gdrive ( Team Drives Supported! ) 🤥
-  * zip / unzip
-  * telegram upload
-  * telegram download
+  * gdrive [ upload / download / etc ] ( Team Drives Supported! ) 🤥
+  * zip / tar / unzip / untar / unrar
+  * telegram upload / download
+  * pmpermit / afk
+  * notes / filters
+  * split / combine
+  * gadmin
+  * plugin manager
   * etc...
 * Channel & Group log support
 * Database support
@@ -49,8 +55,6 @@
 * Easy to write modules with the modified client
 
 ## Example Plugin 🤨
-
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/dacadcbabdb74de3903ddae25dc95375)](https://app.codacy.com/gh/UsergeTeam/Userge?utm_source=github.com&utm_medium=referral&utm_content=UsergeTeam/Userge&utm_campaign=Badge_Grade_Dashboard)
 
 ```python
 from userge import userge, Message
@@ -70,7 +74,7 @@ async def testing(message: Message):
 
 ## Requirements 🥴
 
-* Python 3.6 or Higher 👻
+* Python 3.7 or Higher 👻
 * Telegram [API Keys](https://my.telegram.org/apps)
 * Google Drive [API Keys](https://console.developers.google.com/)
 * MongoDB [Database URL](https://cloud.mongodb.com/)
@@ -89,7 +93,7 @@ async def testing(message: Message):
 
   > Finally turn on the app and check the logs (settings -> view logs) :)
 
-  [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/UsergeTeam/Userge)
+  [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/UsergeTeam/Userge/tree/master)
 
 * **Other Method** 🔧
 
@@ -100,7 +104,7 @@ async def testing(message: Message):
 
   # create virtualenv
   virtualenv -p /usr/bin/python3 venv
-  . ./venv/bin/activate
+  ../venv/bin/activate
 
   # install requirements
   pip install -r requirements.txt
