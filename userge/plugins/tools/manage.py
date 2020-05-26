@@ -12,8 +12,6 @@ from userge import userge, Message, Config
 from userge.utils import get_import_path
 from userge.plugins import ROOT
 
-TMP_PATH = "userge/plugins/temp/"
-
 
 @userge.on_cmd("status", about={
     'header': "list plugins, commands, filters status",
@@ -350,9 +348,9 @@ async def load(message: Message):
         if replied and replied.document:
             file_ = replied.document
             if file_.file_name.endswith('.py') and file_.file_size < 2 ** 20:
-                if not os.path.isdir(TMP_PATH):
-                    os.makedirs(TMP_PATH)
-                t_path = os.path.join(TMP_PATH, file_.file_name)
+                if not os.path.isdir(Config.TMP_PATH):
+                    os.makedirs(Config.TMP_PATH)
+                t_path = os.path.join(Config.TMP_PATH, file_.file_name)
                 if os.path.isfile(t_path):
                     os.remove(t_path)
                 await replied.download(file_name=t_path)

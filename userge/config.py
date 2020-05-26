@@ -55,6 +55,8 @@ class Config:
 
     DOWN_PATH = os.environ.get("DOWN_PATH", "downloads").rstrip('/') + '/'
 
+    TMP_PATH = "userge/plugins/temp/"
+
     SCREENSHOT_API = os.environ.get("SCREENSHOT_API", None)
 
     CURRENCY_API = os.environ.get("CURRENCY_API", None)

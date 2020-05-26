@@ -28,7 +28,8 @@ UPSTREAM_REMOTE = 'upstream'
         '-master': "select master branch",
         '-beta': "select beta branch",
         '-alpha': "select alpha branch"},
-    'usage': "{tr}update or {tr}update -[branch_name] : check updates from default branch\n"
+    'usage': "{tr}update : check updates from default branch\n"
+             "{tr}update -[branch_name] : check updates from any branch\n"
              "add -pull if you want to pull updates\n"
              "add -push if you want to push updates to heroku",
     'examples': "{tr}update -beta -pull -push"}, del_pre=True)
