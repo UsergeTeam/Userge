@@ -22,6 +22,7 @@ pySmartDL
 python-dotenv
 pytz
 rarfile
+removebg
 requests
 search-engine-parser
 selenium

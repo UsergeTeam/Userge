@@ -64,6 +64,8 @@ class Config:
     OCR_SPACE_API_KEY = os.environ.get("OCR_SPACE_API_KEY", None)
 
     OPEN_WEATHER_MAP = os.environ.get("OPEN_WEATHER_MAP", None)
+    
+    REMOVE_BG_API_KEY = os.environ.get("REMOVE_BG_API_KEY", None)
 
     WEATHER_DEFCITY = os.environ.get("WEATHER_DEFCITY", None)
 
