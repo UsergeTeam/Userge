@@ -23,7 +23,7 @@ from userge.plugins import ROOT
     'examples': [
         "{tr}status", "{tr}status -p",
         "{tr}status -p gdrive", "{tr}status -c {tr}gls"]}, del_pre=True)
-async def status(message: Message):
+async def status(message: Message) -> None:
     name_ = message.filtered_input_str
     type_ = list(message.flags)
     if not type_:
@@ -59,21 +59,21 @@ async def status(message: Message):
 ➕ **Enabled** : `{plg.is_enabled}`
 
 ⚔ **Commands** : `{len(plg.commands)}`
-        `{'`,    `'.join([cmd.name for cmd in plg.commands])}`
+        `{'`,    `'.join((cmd.name for cmd in plg.commands))}`
         ✅ **Loaded** : `{len(plg.loaded_commands)}`
         ➕ **Enabled** : `{len(plg.enabled_commands)}`
         ➖ **Disabled** : `{len(plg.disabled_commands)}`
-        `{'`,    `'.join([cmd.name for cmd in plg.disabled_commands])}`
+        `{'`,    `'.join((cmd.name for cmd in plg.disabled_commands))}`
         ❎ **Unloaded** : `{len(plg.unloaded_commands)}`
-        `{'`,    `'.join([cmd.name for cmd in plg.unloaded_commands])}`
+        `{'`,    `'.join((cmd.name for cmd in plg.unloaded_commands))}`
 ⚖ **Filters** : `{len(plg.filters)}`
         ✅ **Loaded** : `{len(plg.loaded_filters)}`
         ➕ **Enabled** : `{len(plg.enabled_filters)}`
-        `{'`,    `'.join([flt.name for flt in plg.enabled_filters])}`
+        `{'`,    `'.join((flt.name for flt in plg.enabled_filters))}`
         ➖ **Disabled** : `{len(plg.disabled_filters)}`
-        `{'`,    `'.join([flt.name for flt in plg.disabled_filters])}`
+        `{'`,    `'.join((flt.name for flt in plg.disabled_filters))}`
         ❎ **Unloaded** : `{len(plg.unloaded_filters)}`
-        `{'`,    `'.join([flt.name for flt in plg.unloaded_filters])}`
+        `{'`,    `'.join((flt.name for flt in plg.unloaded_filters))}`
 """
             else:
                 await message.err(f"plugin : `{name_}` not found!")
@@ -85,9 +85,9 @@ async def status(message: Message):
 ✅ **Loaded** : `{len(userge.manager.loaded_plugins)}`
 ➕ **Enabled** : `{len(userge.manager.enabled_plugins)}`
 ➖ **Disabled** : `{len(userge.manager.disabled_plugins)}`
-        `{'`,    `'.join([cmd.name for cmd in userge.manager.disabled_plugins])}`
+        `{'`,    `'.join((cmd.name for cmd in userge.manager.disabled_plugins))}`
 ❎ **Unloaded** : `{len(userge.manager.unloaded_plugins)}`
-        `{'`,    `'.join([cmd.name for cmd in userge.manager.unloaded_plugins])}`
+        `{'`,    `'.join((cmd.name for cmd in userge.manager.unloaded_plugins))}`
 """
     elif 'c' in type_:
         if name_:
@@ -114,9 +114,9 @@ async def status(message: Message):
 ✅ **Loaded** : `{len(userge.manager.loaded_commands)}`
 ➕ **Enabled** : `{len(userge.manager.enabled_commands)}`
 ➖ **Disabled** : `{len(userge.manager.disabled_commands)}`
-        `{'`,    `'.join([cmd.name for cmd in userge.manager.disabled_commands])}`
+        `{'`,    `'.join((cmd.name for cmd in userge.manager.disabled_commands))}`
 ❎ **Unloaded** : `{len(userge.manager.unloaded_commands)}`
-        `{'`,    `'.join([cmd.name for cmd in userge.manager.unloaded_commands])}`
+        `{'`,    `'.join((cmd.name for cmd in userge.manager.unloaded_commands))}`
 """
     elif 'f' in type_:
         if name_:
@@ -138,11 +138,11 @@ async def status(message: Message):
 🗂 **Total** : `{len(userge.manager.filters)}`
 ✅ **Loaded** : `{len(userge.manager.loaded_filters)}`
 ➕ **Enabled** : `{len(userge.manager.enabled_filters)}`
-        `{'`,    `'.join([flt.name for flt in userge.manager.enabled_filters])}`
+        `{'`,    `'.join((flt.name for flt in userge.manager.enabled_filters))}`
 ➖ **Disabled** : `{len(userge.manager.disabled_filters)}`
-        `{'`,    `'.join([flt.name for flt in userge.manager.disabled_filters])}`
+        `{'`,    `'.join((flt.name for flt in userge.manager.disabled_filters))}`
 ❎ **Unloaded** : `{len(userge.manager.unloaded_filters)}`
-        `{'`,    `'.join([flt.name for flt in userge.manager.unloaded_filters])}`
+        `{'`,    `'.join((flt.name for flt in userge.manager.unloaded_filters))}`
 """
     else:
         await message.err("invalid input flag!")
@@ -159,7 +159,7 @@ async def status(message: Message):
     'usage': "{tr}enable [flags] [name | names]",
     'examples': [
         "{tr}enable -p gdrive", "{tr}enable -c gls gup"]}, del_pre=True)
-async def enable(message: Message):
+async def enable(message: Message) -> None:
     if not message.flags:
         await message.err("flag required!")
         return
@@ -224,7 +224,7 @@ async def enable(message: Message):
     'usage': "{tr}disable [flags] [name | names]",
     'examples': [
         "{tr}disable -p gdrive", "{tr}disable -c gls gup"]}, del_pre=True)
-async def disable(message: Message):
+async def disable(message: Message) -> None:
     if not message.flags:
         await message.err("flag required!")
         return
@@ -290,7 +290,7 @@ async def disable(message: Message):
              "{tr}load [flags] [name | names]",
     'examples': [
         "{tr}load -p gdrive", "{tr}load -c gls gup"]}, del_pre=True)
-async def load(message: Message):
+async def load(message: Message) -> None:
     if message.flags:
         if not message.filtered_input_str:
             await message.err("name required!")
@@ -377,7 +377,7 @@ async def load(message: Message):
     'usage': "{tr}unload [flags] [name | names]",
     'examples': [
         "{tr}unload -p gdrive", "{tr}unload -c gls gup"]}, del_pre=True)
-async def unload(message: Message):
+async def unload(message: Message) -> None:
     if not message.flags:
         await message.err("flag required!")
         return
@@ -434,14 +434,14 @@ async def unload(message: Message):
 
 
 @userge.on_cmd('reload', about={'header': "Reload all plugins"})
-async def reload_(message: Message):
+async def reload_(message: Message) -> None:
     await message.edit("`Reloading All Plugins`")
     await message.edit(
         f"`Reloaded {await userge.reload_plugins()} Plugins`", del_in=3, log=__name__)
 
 
 @userge.on_cmd('clear', about={'header': "clear all save filters in DB"})
-async def clear_(message: Message):
+async def clear_(message: Message) -> None:
     await message.edit("`Clearing DB...`")
     await message.edit(
         f"**Cleared Filters** : `{userge.manager.clear()}`", del_in=3, log=__name__)

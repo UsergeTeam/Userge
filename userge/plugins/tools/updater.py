@@ -56,7 +56,7 @@ async def check_update(message: Message):
     flags = list(message.flags)
     pull_from_repo = False
     push_to_heroku = False
-    branch = repo.active_branch.name
+    branch = "master"
     if "pull" in flags:
         pull_from_repo = True
         flags.remove("pull")

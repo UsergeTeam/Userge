@@ -69,7 +69,7 @@ def clear_db() -> bool:
     _UNLOADED.clear()
     _DISABLED_FILTERS.drop()
     _UNLOADED_FILTERS.drop()
-    _LOG.info(_LOG_STR, f"cleared filter DB!")
+    _LOG.info(_LOG_STR, "cleared filter DB!")
     return True
 
 class Filtr:

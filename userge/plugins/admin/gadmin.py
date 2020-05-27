@@ -28,39 +28,27 @@ CHANNEL = userge.getCLogger(__name__)
 async def is_admin(message: Message):
     check_user = await userge.get_chat_member(message.chat.id, message.from_user.id)
     user_type = check_user.status
-
     if user_type == "member":
         return False
-
-    elif user_type == "administrator":
+    if user_type == "administrator":
         rm_perm = check_user.can_restrict_members
-
         if rm_perm:
             return True
-        else:
-            return False
-
-    else:
-        return True
+        return False
+    return True
 
 
 async def is_sudoadmin(message: Message):
     check_user = await userge.get_chat_member(message.chat.id, message.from_user.id)
     user_type = check_user.status
-
     if user_type == "member":
         return False
-
-    elif user_type == "administrator":
+    if user_type == "administrator":
         add_adminperm = check_user.can_promote_members
-
         if add_adminperm:
             return True
-        else:
-            return False
-
-    else:
-        return True
+        return False
+    return True
 
 
 @userge.on_cmd("promote", about={
@@ -1068,7 +1056,6 @@ async def pin_msgs(message: Message):
                     f"\n`do .help pin for more info..`\n\n"
                     f"**ERROR:** `{e_f}`"
                     )
-            return
 
         elif silent_pin:
 
@@ -1087,7 +1074,6 @@ async def pin_msgs(message: Message):
                     f"\n`do .help pin for more info..`\n\n"
                     f"**ERROR:** `{e_f}`"
                     )
-            return
 
         else:
 
@@ -1106,7 +1092,6 @@ async def pin_msgs(message: Message):
                     f"\n`do .help pin for more info..`\n\n"
                     f"**ERROR:** `{e_f}`"
                     )
-            return
 
     else:
         await message.edit(r"`i don't have proper permission to do that! (* ￣︿￣)`", del_in=0)

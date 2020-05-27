@@ -33,17 +33,17 @@ class Plugin:
     @property
     def is_enabled(self) -> bool:
         """returns enable status"""
-        return any([flt.is_enabled for flt in self.commands + self.filters])
+        return any((flt.is_enabled for flt in self.commands + self.filters))
 
     @property
     def is_disabled(self) -> bool:
         """returns disable status"""
-        return all([flt.is_disabled for flt in self.commands + self.filters])
+        return all((flt.is_disabled for flt in self.commands + self.filters))
 
     @property
     def is_loaded(self) -> bool:
         """returns load status"""
-        return any([flt.is_loaded for flt in self.commands + self.filters])
+        return any((flt.is_loaded for flt in self.commands + self.filters))
 
     @property
     def enabled_commands(self) -> List['command.Command']:
@@ -95,7 +95,7 @@ class Plugin:
 
     def get_commands(self) -> List[str]:
         """returns all sorted command names in the plugin"""
-        return sorted([cmd.name for cmd in self.enabled_commands])
+        return sorted((cmd.name for cmd in self.enabled_commands))
 
     def enable(self) -> List[str]:
         """enable all commands in the plugin"""

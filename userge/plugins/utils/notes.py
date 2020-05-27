@@ -41,10 +41,10 @@ async def remove_notes(message: Message):
                about={'header': "Gets a note by name",
                       'usage': "#[notename]\nget notename"},
                group=-1,
-               name="note",
+               name="get_note",
                trigger='',
                filter_me=False)
-async def note(message: Message):
+async def get_note(message: Message):
     notename = message.matches[0].group(1)
     found = NOTES_COLLECTION.find_one(
         {'chat_id': message.chat.id, 'name': notename}, {'content': 1})

@@ -91,7 +91,7 @@ async def ocr_gen(message: Message):
                 "**Here's what I could read from it:**"
                 f"\n\n`{ParsedText}`")
             os.remove(downloaded_file_name)
-            await CHANNEL.log(f"`ocr` command succefully executed")
+            await CHANNEL.log("`ocr` command succefully executed")
             return
 
     else:

@@ -153,18 +153,18 @@ class Decorators:
                          flt: Union[Command, Filtr],
                          **kwargs: Union[str, bool]
                          ) -> Callable[[_PYROFUNC], _PYROFUNC]:
-        def _decorator(func: _PYROFUNC) -> _PYROFUNC:
-            async def _template(_: RawClient, __: RawMessage) -> None:
+        def decorator(func: _PYROFUNC) -> _PYROFUNC:
+            async def template(_: RawClient, __: RawMessage) -> None:
                 await func(Message(_, __, **kwargs))
             _LOG.debug(_LOG_STR, f"Loading => [ async def {func.__name__}(message) ] " + \
                 f"from {func.__module__} `{log}`")
             module_name = func.__module__.split('.')[-1]
             self.manager.add_plugin(self, module_name, func.__module__).add(flt)
-            handler = MessageHandler(_template, filters)
+            handler = MessageHandler(template, filters)
             if isinstance(flt, Command):
                 flt.update_command(handler, func.__doc__)
             else:
                 flt.update_filter(f"{module_name }.{func.__name__}", func.__doc__, handler)
             flt.init()
             return func
-        return _decorator
+        return decorator

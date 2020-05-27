@@ -105,4 +105,4 @@ async def dictionary(message: Message):
             await CHANNEL.log(f"Get dictionary results for 👉 {v_word}")
         else:
             await message.edit('`No result found from the database.😔`', del_in=5)
-            await CHANNEL.log(f"Get dictionary results empty")
+            await CHANNEL.log("Get dictionary results empty")

@@ -142,10 +142,10 @@ async def ytDown(message: Message):
                     percentage = int(current) * 100 / int(total)
                     out += f"Progress >> {int(percentage)}%\n"
                     out += "[{}{}]".format(
-                        ''.join([Config.FINISHED_PROGRESS_STR \
-                            for _ in range(floor(percentage / 5))]),
-                        ''.join([Config.UNFINISHED_PROGRESS_STR \
-                            for _ in range(20 - floor(percentage / 5))]))
+                        ''.join((Config.FINISHED_PROGRESS_STR \
+                            for _ in range(floor(percentage / 5)))),
+                        ''.join((Config.UNFINISHED_PROGRESS_STR \
+                            for _ in range(20 - floor(percentage / 5)))))
                 if message.text != out:
                     asyncio.get_event_loop().run_until_complete(message.edit(out))
 

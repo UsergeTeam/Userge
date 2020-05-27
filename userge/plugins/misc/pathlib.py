@@ -62,10 +62,10 @@ class _BaseLib:
         """Returns progress"""
         percentage = self.percentage
         progress_str = "[{}{}]".format(
-            ''.join([Config.FINISHED_PROGRESS_STR \
-                for i in range(floor(percentage / 5))]),
-            ''.join([Config.UNFINISHED_PROGRESS_STR \
-                for i in range(20 - floor(percentage / 5))]))
+            ''.join((Config.FINISHED_PROGRESS_STR \
+                for i in range(floor(percentage / 5)))),
+            ''.join((Config.UNFINISHED_PROGRESS_STR \
+                for i in range(20 - floor(percentage / 5)))))
         return progress_str
 
     @property
@@ -259,10 +259,10 @@ class SCLib(_BaseLib):
         """Returns progress"""
         percentage = self.percentage
         progress_str = "[{}{}]".format(
-            ''.join([Config.FINISHED_PROGRESS_STR \
-                for i in range(floor(percentage / 5))]),
-            ''.join([Config.UNFINISHED_PROGRESS_STR \
-                for i in range(20 - floor(percentage / 5))]))
+            ''.join((Config.FINISHED_PROGRESS_STR \
+                for i in range(floor(percentage / 5)))),
+            ''.join((Config.UNFINISHED_PROGRESS_STR \
+                for i in range(20 - floor(percentage / 5)))))
         return progress_str
 
     @property
@@ -457,7 +457,6 @@ async def drename_(message: Message) -> None:
     """drename"""
     path = str(message.matches[0].group(1)).strip()
     new_name = str(message.matches[0].group(2)).strip()
-    print(path, new_name)
     if not exists(path):
         await message.err(f"file path : {path} not exists!")
         return

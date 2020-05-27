@@ -41,7 +41,7 @@ async def who_is(message: Message):
     if from_user or from_chat is not None:
         message_out_str = ""
 
-        message_out_str += f"<b>USER INFO:</b>\n\n"
+        message_out_str += "<b>USER INFO:</b>\n\n"
         message_out_str += f"<b>🗣 First Name:</b> <code>{from_user.first_name}</code>\n"
         message_out_str += f"<b>🗣 Last Name:</b> <code>{from_user.last_name}</code>\n"
         message_out_str += f"<b>👤 Username:</b> @{from_user.username}\n"

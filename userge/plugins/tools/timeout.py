@@ -42,7 +42,7 @@ async def set_delete_timeout(message: Message):
         await message.edit(
             f"`Set auto message delete timeout as {t_o} seconds!`", del_in=3)
     else:
-        await message.edit(f"`Auto message deletion disabled!`", del_in=3)
+        await message.edit("`Auto message deletion disabled!`", del_in=3)
 
 
 @userge.on_cmd("vdelto", about={'header': "View auto message delete timeout"})
@@ -53,7 +53,7 @@ async def view_delete_timeout(message: Message):
             f"`Messages will be deleted after {Config.MSG_DELETE_TIMEOUT} seconds!`",
             del_in=5)
     else:
-        await message.edit(f"`Auto message deletion disabled!`", del_in=3)
+        await message.edit("`Auto message deletion disabled!`", del_in=3)
 
 
 @userge.on_cmd("swelto (\\d+)", about={
@@ -71,7 +71,7 @@ async def set_welcome_timeout(message: Message):
         await message.edit(
             f"`Set auto welcome/left message delete timeout as {t_o} seconds!`", del_in=3)
     else:
-        await message.edit(f"`Auto welcome/left message deletion disabled!`", del_in=3)
+        await message.edit("`Auto welcome/left message deletion disabled!`", del_in=3)
 
 
 @userge.on_cmd("vwelto", about={'header': "View auto welcome/left message delete timeout"})
@@ -79,11 +79,11 @@ async def view_welcome_timeout(message: Message):
     """view welcome/left timeout"""
     if Config.WELCOME_DELETE_TIMEOUT:
         await message.edit(
-            f"`Welcome/Left messages will be deleted after "
+            "`Welcome/Left messages will be deleted after "
             f"{Config.WELCOME_DELETE_TIMEOUT} seconds!`",
             del_in=5)
     else:
-        await message.edit(f"`Auto welcome/left message deletion disabled!`", del_in=3)
+        await message.edit("`Auto welcome/left message deletion disabled!`", del_in=3)
 
 
 @userge.on_cmd("sapicto (\\d+)", about={

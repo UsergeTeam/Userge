@@ -18,30 +18,22 @@ LOG = userge.getLogger(__name__)
 async def is_admin(message: Message, me_id):
     check_user = await userge.get_chat_member(message.chat.id, me_id)
     user_type = check_user.status
-
     if user_type == "member":
         return False
-
-    elif user_type == "administrator":
+    if user_type == "administrator":
         rm_perm = check_user.can_restrict_members
-
         if rm_perm:
             return True
-        else:
-            return False
-
-    else:
-        return True
+        return False
+    return True
 
 
 async def guadmin_check(chat_id, user_id) -> bool:
     check_status = await userge.get_chat_member(chat_id=chat_id, user_id=user_id)
     admin_strings = ["creator", "administrator"]
-
     if check_status.status not in admin_strings:
         return False
-    else:
-        return True
+    return True
 
 @userge.on_cmd("gban", about={
     'header': "Globally Ban A User",

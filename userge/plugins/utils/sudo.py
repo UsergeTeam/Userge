@@ -69,7 +69,7 @@ async def del_sudo(message: Message):
     if isinstance(user_id, str) and user_id.isdigit():
         user_id = int(user_id)
     if not isinstance(user_id, int):
-        await message.err(f'invalid type!')
+        await message.err('invalid type!')
         return
     if user_id not in Config.SUDO_USERS:
         await message.edit(f"user : `{user_id}` not in **SUDO**!", del_in=5)

@@ -330,8 +330,7 @@ async def view_perm(message: Message):
     def convert_to_emoji(val: bool):
         if val is True:
             return "✅"
-        else:
-            return "❌"
+        return "❌"
 
     vmsg = convert_to_emoji(v_perm.permissions.can_send_messages)
     vmedia = convert_to_emoji(v_perm.permissions.can_send_media_messages)
@@ -349,7 +348,7 @@ async def view_perm(message: Message):
         try:
             permission_view_str = ""
 
-            permission_view_str += f"<b>CHAT PERMISSION INFO:</b>\n\n"
+            permission_view_str += "<b>CHAT PERMISSION INFO:</b>\n\n"
             permission_view_str += f"<b>📩 Send Messages:</b> {vmsg}\n"
             permission_view_str += f"<b>🎭 Send Media:</b> {vmedia}\n"
             permission_view_str += f"<b>🎴 Send Stickers:</b> {vstickers}\n"
