@@ -9,6 +9,7 @@ from userge import userge, Config, Message
 from userge.utils import progress
 from removebg import RemoveBg
 
+
 IMG_PATH = Config.DOWN_PATH + "dl_image.jpg"
 
 @userge.on_cmd('removebg', about={
@@ -17,18 +18,11 @@ IMG_PATH = Config.DOWN_PATH + "dl_image.jpg"
 async def remove_background(message: Message):
     REMOVE_BG_API_KEY = Config.REMOVE_BG_API_KEY
     if not REMOVE_BG_API_KEY:
-        await message.edit(
-                "<code>Get the API from</code> "
-                "<a href='https://www.remove.bg/b/background-removal-api'>HERE</a> "
-                "<code>& add it to Heroku config vars</code> (<code>REMOVE_BG_API_KEY</code>)",
-                disable_web_page_preview=True,
-                parse_mode="html")
+        await message.edit("Get the API from <a href='https://www.remove.bg/b/background-removal-api'>HERE </a> & add it to Heroku Config Vars <code>REMOVE_BG_API_KEY</code>", disable_web_page_preview=True, parse_mode="html")
         return
     await message.edit("Analysing...")
     replied = message.reply_to_message
-    if (replied and replied.media
-            and (replied.photo
-                 or (replied.document and "image" in replied.document.mime_type))):
+    if (replied and replied.media and (replied.photo or (replied.document and "image" in replied.document.mime_type))):
         start_t = datetime.now()
         c_time = time.time()
         if os.path.exists(IMG_PATH):
@@ -62,4 +56,4 @@ async def remove_background(message: Message):
             await message.edit("Something went wrong!\nCheck your usage quota!")
             return
     else:
-        await message.edit("Reply to a photo to remove background!", del_in=3)
+        await message.edit("Reply to a photo to remove background!", del_in=5)
