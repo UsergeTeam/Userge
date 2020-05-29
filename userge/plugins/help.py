@@ -10,7 +10,7 @@ from userge import userge, Message, Config
 
 
 @userge.on_cmd("help", about={'header': "Guide to use USERGE commands"})
-async def helpme(message: Message):
+async def helpme(message: Message) -> None:
     plugins = userge.manager.enabled_plugins
     if not message.input_str:
         out_str = f"""**--Which plugin you want ?--**

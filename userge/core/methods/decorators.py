@@ -25,6 +25,7 @@ _PYROFUNC = Callable[[Message], Any]
 _LOG = logging.getLogger(__name__)
 _LOG_STR = "<<<!  :::::  %s  :::::  !>>>"
 
+
 class Decorators:
     """decoretors for userge"""
     def __init__(self, **kwargs) -> None:
@@ -103,14 +104,14 @@ class Decorators:
         cmd = Command(self, cname, about, group)
 
         filters_ = Filters.regex(pattern=pattern) & Filters.create(lambda _, __: cmd.is_enabled)
-        filter_my_trigger = Filters.create(lambda _, query: \
-            query.text.startswith(trigger) if trigger else True)
-        sudo_filter = Filters.create(lambda _, query: \
-            (query.from_user
-             and query.from_user.id in Config.SUDO_USERS
-             and (query.text.startswith(Config.SUDO_TRIGGER) if trigger else True)))
-        sudo_cmd_filter = Filters.create(lambda _, __: \
-            cname.lstrip(trigger) in Config.ALLOWED_COMMANDS)
+        filter_my_trigger = Filters.create(
+            lambda _, query: query.text.startswith(trigger) if trigger else True)
+        sudo_filter = Filters.create(
+            lambda _, query: query.from_user
+            and query.from_user.id in Config.SUDO_USERS
+            and (query.text.startswith(Config.SUDO_TRIGGER) if trigger else True))
+        sudo_cmd_filter = Filters.create(
+            lambda _, __: cname.lstrip(trigger) in Config.ALLOWED_COMMANDS)
         if filter_me:
             filters_ = (filters_
                         & (((Filters.outgoing | Filters.me) & filter_my_trigger)
@@ -156,8 +157,8 @@ class Decorators:
         def decorator(func: _PYROFUNC) -> _PYROFUNC:
             async def template(_: RawClient, __: RawMessage) -> None:
                 await func(Message(_, __, **kwargs))
-            _LOG.debug(_LOG_STR, f"Loading => [ async def {func.__name__}(message) ] " + \
-                f"from {func.__module__} `{log}`")
+            _LOG.debug(_LOG_STR, f"Loading => [ async def {func.__name__}(message) ] "
+                       f"from {func.__module__} `{log}`")
             module_name = func.__module__.split('.')[-1]
             self.manager.add_plugin(self, module_name, func.__module__).add(flt)
             handler = MessageHandler(template, filters)

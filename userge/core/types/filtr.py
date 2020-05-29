@@ -29,6 +29,7 @@ for flt in _DISABLED_FILTERS.find():
 for flt in _UNLOADED_FILTERS.find():
     _UNLOADED.append(flt['filter'])
 
+
 def _init(name: str) -> Tuple[bool, bool]:
     name = name.lstrip(Config.CMD_TRIGGER)
     enabled = True
@@ -39,11 +40,13 @@ def _init(name: str) -> Tuple[bool, bool]:
         loaded = False
     return enabled, loaded
 
+
 def _enable(name: str) -> None:
     name = name.lstrip(Config.CMD_TRIGGER)
     if name in _DISABLED:
         _DISABLED.remove(name)
         _DISABLED_FILTERS.delete_one({'filter': name})
+
 
 def _disable(name: str) -> None:
     name = name.lstrip(Config.CMD_TRIGGER)
@@ -51,17 +54,20 @@ def _disable(name: str) -> None:
         _DISABLED.append(name)
         _DISABLED_FILTERS.insert_one({'filter': name})
 
+
 def _load(name: str) -> None:
     name = name.lstrip(Config.CMD_TRIGGER)
     if name in _UNLOADED:
         _UNLOADED.remove(name)
         _UNLOADED_FILTERS.delete_one({'filter': name})
 
+
 def _unload(name: str) -> None:
     name = name.lstrip(Config.CMD_TRIGGER)
     if name != "load":
         _UNLOADED.append(name)
         _UNLOADED_FILTERS.insert_one({'filter': name})
+
 
 def clear_db() -> bool:
     """clear filters in DB"""
@@ -71,6 +77,7 @@ def clear_db() -> bool:
     _UNLOADED_FILTERS.drop()
     _LOG.info(_LOG_STR, "cleared filter DB!")
     return True
+
 
 class Filtr:
     """filter class"""

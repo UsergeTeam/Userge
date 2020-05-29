@@ -17,6 +17,7 @@ from .. import client as _client
 _LOG = logging.getLogger(__name__)
 _LOG_STR = "<<<!  [[[[[  %s  ]]]]]  !>>>"
 
+
 class Plugin:
     """plugin class"""
     def __init__(self, client: '_client.Userge', name: str, about: str = '') -> None:

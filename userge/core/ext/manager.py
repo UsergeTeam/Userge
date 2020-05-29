@@ -15,6 +15,7 @@ from .. import client as _client
 
 _FLT = Union[Filtr, Command]
 
+
 class Manager:
     """manager for userge"""
     def __init__(self) -> None:

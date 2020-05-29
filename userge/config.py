@@ -37,6 +37,7 @@ if os.environ.get("_____REMOVE_____THIS_____LINE_____", None):
     _LOG.error("Please remove the line mentioned in the first hashtag from the config.env file")
     sys.exit()
 
+
 class Config:
     """Configs to setup Userge"""
     API_ID = int(os.environ.get("API_ID", 12345))
@@ -78,6 +79,7 @@ class Config:
     HEROKU_APP = None
     HEROKU_GIT_URL = None
 
+
 if Config.SUDO_TRIGGER == Config.CMD_TRIGGER:
     _LOG.info("Invalid SUDO_TRIGGER!, You can't use `%s` as SUDO_TRIGGER", Config.CMD_TRIGGER)
     sys.exit()
@@ -89,8 +91,8 @@ if not os.path.isdir(Config.DOWN_PATH):
 if Config.HEROKU_API_KEY:
     _LOG.info("Checking Heroku App...")
     for heroku_app in heroku3.from_key(Config.HEROKU_API_KEY).apps():
-        if heroku_app and Config.HEROKU_APP_NAME and \
-            heroku_app.name == Config.HEROKU_APP_NAME:
+        if (heroku_app and Config.HEROKU_APP_NAME
+                and heroku_app.name == Config.HEROKU_APP_NAME):
             _LOG.info("Heroku App : %s Found...", heroku_app.name)
             Config.HEROKU_APP = heroku_app
             Config.HEROKU_GIT_URL = heroku_app.git_url.replace(

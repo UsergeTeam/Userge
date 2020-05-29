@@ -6,12 +6,13 @@
 #
 # All rights reserved.
 
+from typing import Dict
 
 from userge import userge, Message, Filters, get_collection
 
 FILTERS_COLLECTION = get_collection("filters")
 
-FILTERS_DATA = {}
+FILTERS_DATA: Dict[int, Dict[str, str]] = {}
 FILTERS_CHATS = Filters.create(lambda _, query: query.chat.id in FILTERS_DATA)
 
 
@@ -21,18 +22,20 @@ def _filter_updater(chat_id: int, name: str, content: str) -> None:
     else:
         FILTERS_DATA[chat_id] = {name: content}
 
+
 def _filter_deleter(chat_id: int, name: str) -> None:
     if chat_id in FILTERS_DATA and name in FILTERS_DATA[chat_id]:
         FILTERS_DATA[chat_id].pop(name)
         if not FILTERS_DATA[chat_id]:
             FILTERS_DATA.pop(chat_id)
 
+
 for flt in FILTERS_COLLECTION.find():
     _filter_updater(flt['chat_id'], flt['name'], flt['content'])
 
 
 @userge.on_cmd("filters", about={'header': "List all saved filters"})
-async def filters_active(message: Message):
+async def filters_active(message: Message) -> None:
     out = ''
     if message.chat.id in FILTERS_DATA:
         for filter_ in FILTERS_DATA[message.chat.id]:
@@ -46,7 +49,7 @@ async def filters_active(message: Message):
 @userge.on_cmd("delfilter", about={
     'header': "Deletes a filter by name",
     'usage': "{tr}delfilter [filter name]"})
-async def delete_filters(message: Message):
+async def delete_filters(message: Message) -> None:
     filter_ = message.input_str
     if not filter_:
         out = "`Wrong syntax`\nNo arguements"
@@ -60,9 +63,9 @@ async def delete_filters(message: Message):
 
 @userge.on_cmd(r"addfilter (\w[^\|]*)(?:\s?\|\s?([\s\S]+))?",
                about={
-    'header': "Adds a filter by name",
-    'usage': "{tr}addfilter [filter name] | [content | reply to msg]"})
-async def add_filter(message: Message):
+                   'header': "Adds a filter by name",
+                   'usage': "{tr}addfilter [filter name] | [content | reply to msg]"})
+async def add_filter(message: Message) -> None:
     filter_ = message.matches[0].group(1).strip()
     content = message.matches[0].group(2)
     if message.reply_to_message:
@@ -83,7 +86,7 @@ async def add_filter(message: Message):
 
 
 @userge.on_filters(~Filters.me & Filters.text & FILTERS_CHATS, group=-1)
-async def chat_filter(message: Message):
+async def chat_filter(message: Message) -> None:
     input_text = message.text.strip()
     for name in FILTERS_DATA[message.chat.id]:
         if (input_text == name

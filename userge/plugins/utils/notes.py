@@ -13,7 +13,7 @@ NOTES_COLLECTION = get_collection("notes")
 
 
 @userge.on_cmd("notes", about={'header': "List all saved notes"})
-async def notes_active(message: Message):
+async def notes_active(message: Message) -> None:
     out = ''
     for note in NOTES_COLLECTION.find({'chat_id': message.chat.id}, {'name': 1}):
         out += " 📌 `{}`\n".format(note['name'])
@@ -26,7 +26,7 @@ async def notes_active(message: Message):
 @userge.on_cmd("delnote", about={
     'header': "Deletes a note by name",
     'usage': "{tr}delnote [note name]"})
-async def remove_notes(message: Message):
+async def remove_notes(message: Message) -> None:
     notename = message.input_str
     if not notename:
         out = "`Wrong syntax`\nNo arguements"
@@ -44,7 +44,7 @@ async def remove_notes(message: Message):
                name="get_note",
                trigger='',
                filter_me=False)
-async def get_note(message: Message):
+async def get_note(message: Message) -> None:
     notename = message.matches[0].group(1)
     found = NOTES_COLLECTION.find_one(
         {'chat_id': message.chat.id, 'name': notename}, {'content': 1})
@@ -55,9 +55,9 @@ async def get_note(message: Message):
 
 @userge.on_cmd(r"addnote (\w[\w_]*)(?:\s([\s\S]+))?",
                about={
-    'header': "Adds a note by name",
-    'usage': "{tr}addnote [note name] [content | reply to msg]"})
-async def add_note(message: Message):
+                   'header': "Adds a note by name",
+                   'usage': "{tr}addnote [note name] [content | reply to msg]"})
+async def add_note(message: Message) -> None:
     notename = message.matches[0].group(1)
     content = message.matches[0].group(2)
     if message.reply_to_message:

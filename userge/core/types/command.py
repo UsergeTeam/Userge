@@ -19,6 +19,7 @@ from .. import client as _client
 _LOG = logging.getLogger(__name__)
 _LOG_STR = "<<<!  [[[[[  %s  ]]]]]  !>>>"
 
+
 class Command(Filtr):
     """command class"""
     def __init__(self,
@@ -44,6 +45,7 @@ class Command(Filtr):
         """update handler and doc in command"""
         self._handler = handler
         self.doc = doc
+
 
 def _format_about(about: Union[str, Dict[str, Union[str, List[str], Dict[str, str]]]]) -> str:
     if isinstance(about, dict):

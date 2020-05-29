@@ -27,6 +27,7 @@ else:
 
 _DATABASE = _MGCLIENT["Userge"]
 
+
 def get_collection(name: str) -> Collection:
     """Create or Get Collection from your database"""
     if name in _DATABASE.list_collection_names():

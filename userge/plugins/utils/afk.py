@@ -20,7 +20,7 @@ AFK_COLLECTION = get_collection("AFK")
 
 IS_AFK = False
 REASON = ''
-TIME = 0
+TIME = 0.0
 USERS = {}
 
 __tmp__ = SAVED_SETTINGS.find_one({'_id': 'AFK'})
@@ -43,7 +43,7 @@ IS_AFK_FILTER = Filters.create(lambda _, __: bool(IS_AFK))
     'description': "Sets your status as AFK. Responds to anyone who tags/PM's.\n"
                    "you telling you are AFK. Switches off AFK when you type back anything.",
     'usage': "{tr}afk or {tr}afk [reason]"})
-async def active_afk(message: Message):
+async def active_afk(message: Message) -> None:
     global REASON, IS_AFK, TIME
     IS_AFK = True
     TIME = time.time()
@@ -55,9 +55,9 @@ async def active_afk(message: Message):
         {'_id': 'AFK'}, {"$set": {'on': True, 'data': REASON, 'time': TIME}}, upsert=True)
 
 
-@userge.on_filters(IS_AFK_FILTER & ~Filters.me & ~Filters.bot & (Filters.mentioned | \
-    (Filters.private & ~Filters.service & Config.ALLOWED_CHATS)))
-async def handle_afk_incomming(message: Message):
+@userge.on_filters(IS_AFK_FILTER & ~Filters.me & ~Filters.bot & (
+    Filters.mentioned | (Filters.private & ~Filters.service & Config.ALLOWED_CHATS)))
+async def handle_afk_incomming(message: Message) -> None:
     user_id = message.from_user.id
     chat = message.chat
     user_dict = await userge.get_user_dict(user_id)
@@ -83,7 +83,7 @@ async def handle_afk_incomming(message: Message):
             USERS[user_id] = [1, 0, user_dict['mention']]
         else:
             USERS[user_id] = [0, 1, user_dict['mention']]
-    if chat.type =='private':
+    if chat.type == 'private':
         await CHANNEL.log(
             f"#PRIVATE\n{user_dict['mention']} send you\n\n"
             f"{message.text}")
@@ -101,11 +101,11 @@ async def handle_afk_incomming(message: Message):
 
 
 @userge.on_filters(IS_AFK_FILTER & Filters.outgoing, group=-1)
-async def handle_afk_outgoing(message: Message):
+async def handle_afk_outgoing(message: Message) -> None:
     global IS_AFK
     IS_AFK = False
     afk_time = time_formatter(round(time.time() - TIME))
-    replied: Message = await message.reply(f"`I'm no longer AFK!`", log=__name__)
+    replied: Message = await message.reply("`I'm no longer AFK!`", log=__name__)
     if USERS:
         p_msg = ''
         g_msg = ''

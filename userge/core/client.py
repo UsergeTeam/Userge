@@ -13,7 +13,7 @@ import sys
 import asyncio
 import importlib
 from types import ModuleType
-from typing import List, Optional
+from typing import List
 
 import psutil
 
@@ -57,8 +57,8 @@ class Userge(Methods):
                 self.load_plugin(name)
             except ImportError as i_e:
                 _LOG.error(_LOG_STR, i_e)
-        _LOG.info(_LOG_STR, f"Imported ({len(self._imported)}) Plugins => " + \
-            str([i.__name__ for i in self._imported]))
+        _LOG.info(_LOG_STR, f"Imported ({len(self._imported)}) Plugins => "
+                  + str([i.__name__ for i in self._imported]))
 
     async def reload_plugins(self) -> int:
         """Reload all Plugins"""

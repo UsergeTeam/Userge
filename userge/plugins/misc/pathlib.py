@@ -346,7 +346,7 @@ class SCLib(_BaseLib):
         self._final_file_path = join(dirname(self._path), file_name)
         file_list = sorted(glob(self._final_file_path + f".{'[0-9]' * len(ext.lstrip('.'))}"))
         self._total = len(file_list)
-        self._file_size = sum([os.stat(f_).st_size for f_ in file_list])
+        self._file_size = sum((os.stat(f_).st_size for f_ in file_list))
         pool.submit_thread(self._combine_worker, file_list)
 
 

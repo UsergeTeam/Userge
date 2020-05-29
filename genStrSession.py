@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 if os.path.isfile("config.env"):
     load_dotenv("config.env")
 
-async def genStrSession():
+async def genStrSession() -> None:
     async with Client(
             "Userge",
             api_id=int(os.environ.get("API_ID") or input("Enter Telegram APP ID: ")),

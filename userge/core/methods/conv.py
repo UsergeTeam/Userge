@@ -22,8 +22,10 @@ _LOG_STR = "<<<!  :::::  %s  :::::  !>>>"
 
 _CONV_DICT: Dict[int, asyncio.Queue] = {}
 
+
 class _MsgLimitReached(Exception):
     pass
+
 
 class Conv:
     """Conversation class for userge"""
@@ -137,8 +139,9 @@ class Conv:
         client.add_handler(
             MessageHandler(
                 _on_conversation,
-                Filters.create(lambda _, query: _CONV_DICT and \
-                    query.from_user and query.from_user.id in _CONV_DICT)), 0)
+                Filters.create(
+                    lambda _, query: _CONV_DICT and query.from_user
+                    and query.from_user.id in _CONV_DICT)), 0)
 
     async def __aenter__(self) -> 'Conv':
         self._chat_id = int(self._user) if isinstance(self._user, int) else \
