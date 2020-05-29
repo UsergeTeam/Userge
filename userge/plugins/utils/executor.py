@@ -36,7 +36,7 @@ async def eval_(message: Message):
 
     async def aexec(code):
         exec("async def __aexec(userge, message):\n "
-             '\n '.join(line for line in code.split('\n')))
+             + '\n '.join(line for line in code.split('\n')))
         return await locals()['__aexec'](userge, message)
     try:
         await aexec(cmd)

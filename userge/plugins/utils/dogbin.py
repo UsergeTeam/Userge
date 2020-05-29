@@ -27,7 +27,7 @@ async def paste_(message: Message) -> None:
     await message.edit("`Processing...`")
     text = message.filtered_input_str
     replied = message.reply_to_message
-    use_neco = False
+    use_neko = False
     file_ext = '.txt'
     if not text and replied and replied.document and replied.document.file_size < 2 ** 20 * 10:
         file_ext = os.path.splitext(replied.document.file_name)[1]
@@ -42,22 +42,22 @@ async def paste_(message: Message) -> None:
         return
     flags = list(message.flags)
     if 'n' in flags:
-        use_neco = True
+        use_neko = True
         flags.remove('n')
     if flags and len(flags) == 1:
         file_ext = '.' + flags[0]
     await message.edit("`Pasting text...`")
-    if use_neco:
+    if use_neko:
         resp = post(NEKOBIN_URL + "api/documents", json={"content": text})
         if resp.status_code == 201:
             response = resp.json()
             key = response['result']['key']
             final_url = NEKOBIN_URL + key + file_ext
             reply_text = "--Pasted successfully!--\n\n"
-            reply_text += f"**Necobin URL** : {final_url}"
+            reply_text += f"**Nekobin URL** : {final_url}"
             await message.edit(reply_text, disable_web_page_preview=True)
         else:
-            await message.err("Failed to reach Necobin")
+            await message.err("Failed to reach Nekobin")
     else:
         resp = post(DOGBIN_URL + "documents", data=text.encode('utf-8'))
         if resp.status_code == 200:

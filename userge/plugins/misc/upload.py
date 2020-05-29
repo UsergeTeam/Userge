@@ -180,7 +180,8 @@ async def uploadtotg(message: Message):
 async def explorer(path: Path, chatid, flags, del_path):
     if path.is_file():
         try:
-            await upload(path, chatid, flags, del_path)
+            if path.stat().st_size:
+                await upload(path, chatid, flags, del_path)
         except FloodWait as x:
             time.sleep(x.x)  # asyncio sleep ?
     elif path.is_dir():
