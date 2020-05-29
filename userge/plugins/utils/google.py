@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 from search_engine_parser import GoogleSearch
 
 from userge import userge, Message

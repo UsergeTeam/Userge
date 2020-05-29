@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 from urllib.error import HTTPError
 import urbandict
 from userge import userge, Message

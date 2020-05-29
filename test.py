@@ -10,13 +10,15 @@ import os
 import asyncio
 from userge import userge
 
-async def worker():
-    chat_id = int(os.environ.get("CHAT_ID"))
+
+async def worker() -> None:
+    chat_id = int(os.environ.get("CHAT_ID") or 0)
     await userge.send_message(chat_id, 'testing_userge')
     print('sleeping 3 sec...!')
     await asyncio.sleep(3)
 
-async def main():
+
+async def main() -> None:
     print('starting client...!')
     await userge.start()
     tasks = []

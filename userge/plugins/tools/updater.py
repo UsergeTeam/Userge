@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 import asyncio
 
 from git import Repo

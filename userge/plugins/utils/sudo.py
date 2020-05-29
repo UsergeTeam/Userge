@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 from pyrogram.errors.exceptions.bad_request_400 import PeerIdInvalid
 
 from userge import userge, Message, Config, get_collection
@@ -102,7 +101,8 @@ async def add_sudo_cmd(message: Message):
     cmd = cmd.lstrip(Config.CMD_TRIGGER)
     if cmd in Config.ALLOWED_COMMANDS:
         await message.edit(f"cmd : `{cmd}` already in **SUDO**!", del_in=5)
-    elif cmd not in [c_d.lstrip(Config.CMD_TRIGGER) for c_d in list(userge.manager.enabled_commands)]:
+    elif cmd not in (c_d.lstrip(Config.CMD_TRIGGER)
+                     for c_d in list(userge.manager.enabled_commands)):
         await message.edit(f"cmd : `{cmd}` 🤔, is that a command ?", del_in=5)
     else:
         Config.ALLOWED_COMMANDS.add(cmd)

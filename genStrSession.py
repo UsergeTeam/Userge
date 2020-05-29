@@ -15,6 +15,7 @@ from dotenv import load_dotenv
 if os.path.isfile("config.env"):
     load_dotenv("config.env")
 
+
 async def genStrSession() -> None:
     async with Client(
             "Userge",

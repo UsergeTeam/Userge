@@ -6,9 +6,7 @@
 #
 # All rights reserved
 
-
 from userge import userge, Message, Config, get_collection, Filters
-
 
 GBAN_USER_BASE = get_collection("GBAN_USER")
 GBAN_LOG = userge.getCLogger(__name__)
@@ -34,6 +32,7 @@ async def guadmin_check(chat_id, user_id) -> bool:
     if check_status.status not in admin_strings:
         return False
     return True
+
 
 @userge.on_cmd("gban", about={
     'header': "Globally Ban A User",
@@ -96,7 +95,7 @@ async def gban_user(message: Message):
                 "Aborted coz No reason of gban provided by banner")
             return
 
-        GBAN_USER_BASE.insert_one({'firstname':firstname, 'user_id':user_id, 'reason':reason})
+        GBAN_USER_BASE.insert_one({'firstname': firstname, 'user_id': user_id, 'reason': reason})
 
         if can_ban:
             gbanned_admeme = await guadmin_check(chat_id, user_id)
@@ -160,7 +159,7 @@ async def ungban_user(message: Message):
     user_id = get_mem['id']
 
     try:
-        GBAN_USER_BASE.delete_one({'firstname':firstname, 'user_id':user_id})
+        GBAN_USER_BASE.delete_one({'firstname': firstname, 'user_id': user_id})
         await message.edit(
             r"\\**#UnGbanned_User**//"
             f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
@@ -195,12 +194,12 @@ async def list_gbanned(message: Message):
         await message.edit("Error: "+str(e))
 
 
-# TODO:1. Add WhiteList chats to disable Gbans in them
+# TODO: Add WhiteList chats to disable Gbans in them
 @userge.on_filters(~Filters.me | Filters.text | Filters.new_chat_members)
-async def gban_at_entry(message: Message): # TODO:2. Ban Users when they join
+async def gban_at_entry(message: Message):  # TODO: Ban Users when they join
     try:
         if message.service:
-            if message.new_chat_members: #New Member still not working 🤔hmmmm
+            if message.new_chat_members:  # New Member still not working 🤔hmmmm
                 chat_id = message.chat.id
                 user_id = message.new_chat_members[0].id
                 firstname = message.new_chat_members[0].first_name

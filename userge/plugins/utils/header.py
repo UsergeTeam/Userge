@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 import requests
 
 from userge import userge, Message

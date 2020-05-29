@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 import os
 import time
 import asyncio
@@ -1005,6 +1004,7 @@ async def zombie_clean(message: Message):
                 r"ZOMBIE COUNT: `WOOHOO group is clean.. \^o^/`"
                 )
 
+
 @userge.on_cmd("pin", about={
     'header': "use this to pin & unpin messages",
     'description': "pin & unpin messages in groups with or without notify to members.",
@@ -1095,6 +1095,7 @@ async def pin_msgs(message: Message):
 
     else:
         await message.edit(r"`i don't have proper permission to do that! (* ￣︿￣)`", del_in=0)
+
 
 @userge.on_cmd("gpic", about={
     'header': "use this to set or delete chat photo",
@@ -1210,7 +1211,7 @@ async def chatpic_func(message: Message):
         '-o': "off"},
     'types': [
         '-s10 = 10 seconds', '-s30 = 30 seconds', '-m1 = 1 minutes',
-        '-m5 = 5 minutes','-m15 = 15 minutes', '-h1 = 1 hour'],
+        '-m5 = 5 minutes', '-m15 = 15 minutes', '-h1 = 1 hour'],
     'examples': [
         "{tr}smode -s30 [send to chat] (turn on 30s slow mode) ",
         "{tr}smode -o [send to chat] (turn off slow mode)"]})

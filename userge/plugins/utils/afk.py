@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 import time
 import asyncio
 from random import choice, randint

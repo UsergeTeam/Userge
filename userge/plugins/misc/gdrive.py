@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 import os
 import io
 import re
@@ -205,10 +204,10 @@ class _GDrive(_DBase):
                         "**Speed** : `{}/s`\n" + \
                         "**ETA** : `{}`"
                     self._progress = tmp.format(
-                        "".join((Config.FINISHED_PROGRESS_STR \
-                            for i in range(math.floor(percentage / 5)))),
-                        "".join((Config.UNFINISHED_PROGRESS_STR \
-                            for i in range(20 - math.floor(percentage / 5)))),
+                        "".join((Config.FINISHED_PROGRESS_STR
+                                 for i in range(math.floor(percentage / 5)))),
+                        "".join((Config.UNFINISHED_PROGRESS_STR
+                                 for i in range(20 - math.floor(percentage / 5)))),
                         round(percentage, 2),
                         file_name,
                         humanbytes(f_size),
@@ -307,10 +306,10 @@ class _GDrive(_DBase):
                         "**Speed** : `{}/s`\n" + \
                         "**ETA** : `{}`"
                     self._progress = tmp.format(
-                        "".join((Config.FINISHED_PROGRESS_STR \
-                            for i in range(math.floor(percentage / 5)))),
-                        "".join((Config.UNFINISHED_PROGRESS_STR \
-                            for i in range(20 - math.floor(percentage / 5)))),
+                        "".join((Config.FINISHED_PROGRESS_STR
+                                 for i in range(math.floor(percentage / 5)))),
+                        "".join((Config.UNFINISHED_PROGRESS_STR
+                                 for i in range(20 - math.floor(percentage / 5)))),
                         round(percentage, 2),
                         name,
                         humanbytes(f_size),
@@ -398,10 +397,10 @@ class _GDrive(_DBase):
             "```[{}{}]({}%)```\n" + \
             "**Completed** : `{}/{}`"
         self._progress = tmp.format(
-            "".join((Config.FINISHED_PROGRESS_STR \
-                for i in range(math.floor(percentage / 5)))),
-            "".join((Config.UNFINISHED_PROGRESS_STR \
-                for i in range(20 - math.floor(percentage / 5)))),
+            "".join((Config.FINISHED_PROGRESS_STR
+                     for i in range(math.floor(percentage / 5)))),
+            "".join((Config.UNFINISHED_PROGRESS_STR
+                     for i in range(20 - math.floor(percentage / 5)))),
             round(percentage, 2),
             self._completed,
             self._list)
@@ -753,10 +752,10 @@ class Worker(_GDrive):
                         "**ETA** : `{}`"
                     progress_str = progress_str.format(
                         "trying to download",
-                        ''.join((Config.FINISHED_PROGRESS_STR \
-                            for i in range(math.floor(percentage / 5)))),
-                        ''.join((Config.UNFINISHED_PROGRESS_STR \
-                            for i in range(20 - math.floor(percentage / 5)))),
+                        ''.join((Config.FINISHED_PROGRESS_STR
+                                 for i in range(math.floor(percentage / 5)))),
+                        ''.join((Config.UNFINISHED_PROGRESS_STR
+                                 for i in range(20 - math.floor(percentage / 5)))),
                         round(percentage, 2),
                         url,
                         file_name,

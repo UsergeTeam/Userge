@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 from userge import userge, Message, get_collection
 
 NOTES_COLLECTION = get_collection("notes")

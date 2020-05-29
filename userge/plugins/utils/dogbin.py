@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 import os
 from requests import get, post
 from requests.exceptions import HTTPError, Timeout, TooManyRedirects
@@ -117,5 +116,5 @@ async def get_paste_(message: Message):
         await message.err(
             f"Request exceeded the configured number of maximum redirections -> {TooManyRedirects}")
     else:
-        await message.edit(
+        await message.edit_or_send_as_file(
             f"--Fetched dogbin URL content successfully!--\n\n**Content** :\n`{resp.text}`")

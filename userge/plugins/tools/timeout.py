@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 from userge import userge, Message, Config, get_collection
 
 SAVED_SETTINGS = get_collection("CONFIGS")

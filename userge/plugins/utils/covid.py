@@ -21,7 +21,7 @@ from userge import userge, Message
                  "Israel, Japan, Chile, Singapore, Mexico, Pakistan, "
                  "Poland, S. Korea, Romania, UAE......"})
 async def covid(message: Message):
-    def fill(nw_c, nw_d, ac_c, cr_c, t_c, t_d, t_r, name,rank):
+    def fill(nw_c, nw_d, ac_c, cr_c, t_c, t_d, t_r, name, rank):
         output_l = f'''
         <strong><u>COVID-19 ☠ Patients Reported in {name}</u></strong>
 
@@ -41,10 +41,9 @@ async def covid(message: Message):
             output_l = output_l + f"🛑 **Danger Rank** : `{rank}`"
         return output_l
 
-
     input_ = message.input_str.strip().title()
 
-    if len(input_)==0:
+    if len(input_) == 0:
         try:
             data = requests.get("https://sjprojectsapi.herokuapp.com/covid/").json()
             global_data = data['results'][0]
@@ -56,13 +55,14 @@ async def covid(message: Message):
             t_d = global_data['total_deaths']
             t_r = global_data['total_recovered']
 
-            output = fill(nw_c,nw_d,ac_c,cr_c,t_c,t_d,t_r,"the world",None)
+            output = fill(nw_c, nw_d, ac_c, cr_c, t_c, t_d, t_r, "the world", None)
             await message.edit(output, disable_web_page_preview=True)
         except Exception:
             await message.edit("Covid API is currently down!\nPlease Try Again Later")
     else:
         try:
-            data = requests.get("https://sjprojectsapi.herokuapp.com/covid/?country=" + input_).json()
+            data = requests.get(
+                "https://sjprojectsapi.herokuapp.com/covid/?country=" + input_).json()
             country_data = data['countrydata'][0]
             nw_c = country_data['total_new_cases_today']
             nw_d = country_data['total_new_deaths_today']
@@ -73,7 +73,8 @@ async def covid(message: Message):
             t_r = country_data['total_recovered']
             rank = country_data['total_danger_rank']
 
-            output = fill(nw_c,nw_d,ac_c,cr_c,t_c,t_d,t_r,input_,rank)
+            output = fill(nw_c, nw_d, ac_c, cr_c, t_c, t_d, t_r, input_, rank)
             await message.edit(output, disable_web_page_preview=True)
         except Exception:
-            await message.edit("Either the country name is not correct or country is not in our database!")
+            await message.edit(
+                "Either the country name is not correct or country is not in our database!")

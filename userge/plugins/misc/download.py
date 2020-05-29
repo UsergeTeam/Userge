@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 import os
 import time
 import math
@@ -82,10 +81,10 @@ async def down_load_media(message: Message):
                     "**ETA** : `{}`"
                 progress_str = progress_str.format(
                     "trying to download",
-                    ''.join((Config.FINISHED_PROGRESS_STR \
-                        for i in range(math.floor(percentage / 5)))),
-                    ''.join((Config.UNFINISHED_PROGRESS_STR \
-                        for i in range(20 - math.floor(percentage / 5)))),
+                    ''.join((Config.FINISHED_PROGRESS_STR
+                             for i in range(math.floor(percentage / 5)))),
+                    ''.join((Config.UNFINISHED_PROGRESS_STR
+                             for i in range(20 - math.floor(percentage / 5)))),
                     round(percentage, 2),
                     url,
                     custom_file_name,

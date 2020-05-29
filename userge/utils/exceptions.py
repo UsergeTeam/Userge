@@ -6,6 +6,7 @@
 #
 # All rights reserved.
 
+
 class StopConversation(Exception):
     """Exception to raise if conversation terminated"""
 

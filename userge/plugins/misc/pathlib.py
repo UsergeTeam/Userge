@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 import os
 from time import time
 from glob import glob
@@ -62,10 +61,10 @@ class _BaseLib:
         """Returns progress"""
         percentage = self.percentage
         progress_str = "[{}{}]".format(
-            ''.join((Config.FINISHED_PROGRESS_STR \
-                for i in range(floor(percentage / 5)))),
-            ''.join((Config.UNFINISHED_PROGRESS_STR \
-                for i in range(20 - floor(percentage / 5)))))
+            ''.join((Config.FINISHED_PROGRESS_STR
+                     for i in range(floor(percentage / 5)))),
+            ''.join((Config.UNFINISHED_PROGRESS_STR
+                     for i in range(20 - floor(percentage / 5)))))
         return progress_str
 
     @property
@@ -163,6 +162,7 @@ class PackLib(_BaseLib):
     def pack_path(self, tar: bool) -> None:
         """PACK file path"""
         file_paths = []
+
         def explorer(path: Path) -> None:
             if path.is_file():
                 self._total += 1
@@ -259,10 +259,10 @@ class SCLib(_BaseLib):
         """Returns progress"""
         percentage = self.percentage
         progress_str = "[{}{}]".format(
-            ''.join((Config.FINISHED_PROGRESS_STR \
-                for i in range(floor(percentage / 5)))),
-            ''.join((Config.UNFINISHED_PROGRESS_STR \
-                for i in range(20 - floor(percentage / 5)))))
+            ''.join((Config.FINISHED_PROGRESS_STR
+                     for i in range(floor(percentage / 5)))),
+            ''.join((Config.UNFINISHED_PROGRESS_STR
+                     for i in range(20 - floor(percentage / 5)))))
         return progress_str
 
     @property

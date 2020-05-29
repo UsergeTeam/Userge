@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 import json
 from datetime import datetime
 
@@ -19,8 +18,9 @@ CHANNEL = userge.getCLogger(__name__)
 
 
 async def get_tz(con):
-    """ Get time zone of the given country. """
-    """ Credits: @aragon12 and @zakaryan2004. """
+    """Get time zone of the given country
+    Credits: @aragon12 and @zakaryan2004
+    """
     for c_code in c_n:
         if con == c_n[c_code]:
             return tz(c_tz[c_code][0])
@@ -30,7 +30,6 @@ async def get_tz(con):
     except KeyError:
         return
 
-DEFCITY = Config.WEATHER_DEFCITY
 
 @userge.on_cmd("weather", about={
     'header': "use this to get weather details",
@@ -55,7 +54,7 @@ async def weather_get(message: Message):
     APPID = OWM_API
 
     if not message.input_str:
-        CITY = DEFCITY
+        CITY = Config.WEATHER_DEFCITY
         if not CITY:
             await message.edit("`Please specify a city or set one as default!`", del_in=0)
             return
