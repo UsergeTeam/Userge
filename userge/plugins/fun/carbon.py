@@ -17,13 +17,20 @@ from pyrogram.errors.exceptions.bad_request_400 import YouBlockedUser
 
 from userge import userge, Message, Config
 
-CARBON = 'https://carbon.now.sh/?t={theme}&l={lang}&code={code}'
+CARBON = 'https://carbon.now.sh/?t={theme}&l={lang}&code={code}&bg={bg}'
 
 
 @userge.on_cmd("carbon", about={
     'header': "create a carbon",
-    'usage': "{tr}carbon [theme] | [language] | [text | reply to msg]",
-    'examples': ["{tr}carbon haha", "{tr}carbon vscode | hoho"],
+    'flags': {
+        '-r': "red -> 0-255",
+        '-g': "green -> 0-255",
+        '-b': "blue -> 0-255",
+        '-a': "alpha -> 0-100"},
+    'usage': "{tr}carbon [flags] [theme] | [language] | [text | reply to msg]",
+    'examples': [
+        "{tr}carbon haha", "{tr}carbon vscode | hoho",
+        "{tr}carbon -r100 -g75 -b50 -a50 blackboard | hola"],
     'themes': [
         '3024-night', 'a11y-dark', 'blackboard', 'base16-dark', 'base16-light',
         'cobalt', 'dracula', 'duotone-dark', 'hopscotch', 'lucario', 'material',
@@ -65,10 +72,15 @@ async def carbon_(message: Message):
                                      reply_to_message_id=replied.message_id if replied else None)
             )
     else:
-        input_str = message.input_str
+        input_str = message.filtered_input_str
         replied = message.reply_to_message
         theme = 'seti'
         lang = 'auto'
+        red = message.flags.get('r', random.randint(0, 255))
+        green = message.flags.get('g', random.randint(0, 255))
+        blue = message.flags.get('b', random.randint(0, 255))
+        alpha = message.flags.get('a', random.randint(0, 100))
+        bg_ = f"rgba({red}, {green}, {blue}, {alpha})"
         if replied and (replied.text
                         or (replied.document and 'text' in replied.document.mime_type)):
             message_id = replied.message_id
@@ -110,7 +122,7 @@ async def carbon_(message: Message):
         carbon_path = os.path.join(Config.DOWN_PATH, "carbon.png")
         if os.path.isfile(carbon_path):
             os.remove(carbon_path)
-        url = CARBON.format(theme=theme, lang=lang, code=code)
+        url = CARBON.format(theme=theme, lang=lang, code=code, bg=bg_)
         if len(url) > 2590:
             await message.err("input too large!")
             return
