@@ -10,7 +10,7 @@ import os
 import shlex
 import asyncio
 from glob import glob
-from os.path import isfile, relpath
+from os.path import isfile, relpath, basename
 from typing import Tuple, Dict, List, Union, Optional
 
 from userge import logging, Config
@@ -60,7 +60,7 @@ async def take_screen_shot(video_file: str, duration: int, path: str = '') -> Op
     """take a screenshot"""
     _LOG.info('[[[Extracting a frame from %s ||| Video duration => %s]]]', video_file, duration)
     ttl = duration // 2
-    thumb_image_path = path or os.path.join(Config.DOWN_PATH, f"{video_file}.jpg")
+    thumb_image_path = path or os.path.join(Config.DOWN_PATH, f"{basename(video_file)}.jpg")
     command = f"ffmpeg -ss {ttl} -i '{video_file}' -vframes 1 '{thumb_image_path}'"
     err = (await runcmd(command))[1]
     if err:

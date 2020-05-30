@@ -317,9 +317,8 @@ async def get_thumb(path: str = ''):
 
 
 async def remove_thumb(thumb: str) -> None:
-    if os.path.exists(thumb) and \
-            thumb != LOGO_PATH and \
-            thumb != THUMB_PATH:
+    if (thumb and os.path.exists(thumb)
+            and thumb != LOGO_PATH and thumb != THUMB_PATH):
         os.remove(thumb)
 
 
