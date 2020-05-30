@@ -309,8 +309,9 @@ async def get_thumb(path: str = ''):
     if path:
         metadata = extractMetadata(createParser(path))
         if metadata and metadata.has("duration"):
+            thumb = os.path.join(Config.DOWN_PATH, "thumb.jpg")
             return await take_screen_shot(
-                path, metadata.get("duration").seconds)
+                path, metadata.get("duration").seconds, thumb)
     if os.path.exists(LOGO_PATH):
         return LOGO_PATH
     return None
