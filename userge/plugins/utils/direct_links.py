@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 import re
 import json
 import urllib.parse
@@ -20,18 +19,13 @@ from userge import userge, Message
 from userge.utils import humanbytes
 
 
-@userge.on_cmd("direct", about="""\
-__Generate a direct download link__
-
-**Supported Links**:
-
-    `Google Drive` , `MEGA.nz` , `Cloud Mail`
-    `Yandex.Disk` , `AFH` , `ZippyShare`
-    `MediaFire` , `SourceForge` , `OSDN` , `GitHub`
-
-**Usage**:
-
-    `.direct [link]`""")
+@userge.on_cmd("direct", about={
+    'header': "Generate a direct download link",
+    'supported links': [
+        'Google Drive', 'MEGA.nz', 'Cloud Mail', 'Yandex.Disk', 'AFH',
+        'ZippyShare', 'MediaFire', 'SourceForge', 'OSDN', 'GitHub'],
+    'usage': "{tr}direct [link]",
+    'others': "MEGA.nz and ZippyShare **DISABLED**"})
 async def direct_(message: Message):
     """direct links generator"""
 
@@ -52,8 +46,8 @@ async def direct_(message: Message):
         if 'drive.google.com' in link:
             reply += f" 👉 {gdrive(link)}\n"
 
-        elif 'zippyshare.com' in link:
-            reply += f" 👉 {zippy_share(link)}\n"
+        # elif 'zippyshare.com' in link:
+            # reply += f" 👉 {zippy_share(link)}\n"
 
         elif 'mega.' in link:
             reply += f" 👉 {mega_dl(link)}\n"
@@ -164,10 +158,10 @@ def zippy_share(url: str) -> str:
                                 script.text).group('url')
             math = re.search(r'= (?P<url>\".+\" \+ (?P<math>\(.+\)) .+);',
                              script.text).group('math')
-            dl_url = url_raw.replace(math, f"\"{eval(math)}\"")
+            dl_url = url_raw.replace(math, '"' + str(eval(math)) + '"')
             break
 
-    dl_url = f"{base_url}{eval(dl_url)}"
+    dl_url = base_url + eval(dl_url)
     name = urllib.parse.unquote(dl_url.split('/')[-1])
     reply += f'[{name}]({dl_url})\n'
 
@@ -353,7 +347,7 @@ def github(url: str) -> str:
         dl_url = download.headers["location"]
     except KeyError:
         reply += "`Error: Can't extract the link`\n"
- 
+
     name = link.split('/')[-1]
     reply += f'[{name}]({dl_url}) '
 

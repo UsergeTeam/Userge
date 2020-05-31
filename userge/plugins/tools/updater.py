@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 import asyncio
 
 from git import Repo
@@ -20,103 +19,94 @@ CHANNEL = userge.getCLogger(__name__)
 UPSTREAM_REMOTE = 'upstream'
 
 
-@userge.on_cmd("update", about="""\
-__Check Updates or Update Userge__
-
-**Usage:**
-
-    `.update` : check updates from default branch
-    `.update -dev` : check updates from dev branch
-    `.update -run` : run updater from default branch
-    `.update -run -dev` : run updater from dev branch""", del_pre=True)
+@userge.on_cmd("update", about={
+    'header': "Check Updates or Update Userge",
+    'flags': {
+        '-pull': "pull updates",
+        '-push': "push updates to heroku",
+        '-master': "select master branch",
+        '-beta': "select beta branch",
+        '-alpha': "select alpha branch"},
+    'usage': "{tr}update : check updates from default branch\n"
+             "{tr}update -[branch_name] : check updates from any branch\n"
+             "add -pull if you want to pull updates\n"
+             "add -push if you want to push updates to heroku",
+    'examples': "{tr}update -beta -pull -push"}, del_pre=True)
 async def check_update(message: Message):
     """check or do updates"""
-
     await message.edit("`Checking for updates, please wait....`")
-
     try:
         repo = Repo()
     except InvalidGitRepositoryError:
         repo = Repo.init()
-
     if UPSTREAM_REMOTE in repo.remotes:
         ups_rem = repo.remote(UPSTREAM_REMOTE)
-
     else:
         ups_rem = repo.create_remote(UPSTREAM_REMOTE, Config.UPSTREAM_REPO)
-
     try:
         ups_rem.fetch()
-
     except GitCommandError as error:
         await message.err(error, del_in=5)
         return
-
     for ref in ups_rem.refs:
         branch = str(ref).split('/')[-1]
-
         if branch not in repo.branches:
             repo.create_head(branch, ref)
-
     flags = list(message.flags)
-
-    if "run" in flags:
-        run_updater = True
-        flags.remove("run")
-
-    else:
-        run_updater = False
-
+    pull_from_repo = False
+    push_to_heroku = False
+    branch = "master"
+    if "pull" in flags:
+        pull_from_repo = True
+        flags.remove("pull")
+    if "push" in flags:
+        push_to_heroku = True
+        flags.remove("push")
     if len(flags) == 1:
         branch = flags[0]
-
-    else:
-        branch = repo.active_branch.name
-
     if branch not in repo.branches:
         await message.err(f'invalid branch name : {branch}')
         return
-
     out = ''
     try:
         for i in repo.iter_commits(f'HEAD..{UPSTREAM_REMOTE}/{branch}'):
-            out += f"🔨 **#{i.count()}** : [{i.summary}]({Config.UPSTREAM_REPO.rstrip('/')}/commit/{i}) " + \
-                    f"👷 __{i.committer}__\n\n"
-
+            out += (f"🔨 **#{i.count()}** : "
+                    f"[{i.summary}]({Config.UPSTREAM_REPO.rstrip('/')}/commit/{i}) "
+                    f"👷 __{i.committer}__\n\n")
     except GitCommandError as error:
         await message.err(error, del_in=5)
         return
-
-    if not out:
+    if out:
+        if pull_from_repo:
+            await message.edit(f'`New update found for [{branch}], Now pulling...`')
+            await asyncio.sleep(1)
+            repo.git.reset('--hard', 'FETCH_HEAD')
+            await CHANNEL.log(f"**UPDATED Userge from [{branch}]:\n\n📄 CHANGELOG 📄**\n\n{out}")
+        elif not push_to_heroku:
+            changelog_str = f'**New UPDATE available for [{branch}]:\n\n📄 CHANGELOG 📄**\n\n'
+            await message.edit_or_send_as_file(changelog_str + out, disable_web_page_preview=True)
+            return
+    elif not push_to_heroku:
         await message.edit(f'**Userge is up-to-date with [{branch}]**', del_in=5)
         return
-
-    if not run_updater:
-        changelog_str = f'**New UPDATE available for [{branch}]:\n\n📄 CHANGELOG 📄**\n\n'
-        await message.edit_or_send_as_file(changelog_str + out, disable_web_page_preview=True)
-
+    if not push_to_heroku:
+        await message.edit(
+            '**Userge Successfully Updated!**\n'
+            '`Now restarting... Wait for a while!`', del_in=3)
+        asyncio.get_event_loop().create_task(userge.restart(update_req=True))
+        return
+    if not Config.HEROKU_GIT_URL:
+        await message.err("please set heroku things...")
+        return
+    await message.edit(
+        f'`Now pushing updates from [{branch}] to heroku...\n'
+        'this will take upto 3 min`\n\n'
+        '* **Restart** me after about 3 min using `.restart -h`\n\n'
+        '* After restarted successfully, check updates again :)')
+    if "heroku" in repo.remotes:
+        remote = repo.remote("heroku")
+        remote.set_url(Config.HEROKU_GIT_URL)
     else:
-        await message.edit(f'`New update found for [{branch}], trying to update...`')
-        repo.git.reset('--hard', 'FETCH_HEAD')
-
-        await CHANNEL.log(f"**UPDATING Userge from [{branch}]:\n\n📄 CHANGELOG 📄**\n\n{out}")
-
-        if Config.HEROKU_GIT_URL:
-            await message.edit(
-                '`Heroku app found, pushing update...\nthis will take upto 1 min`', del_in=3)
-
-            if "heroku" in repo.remotes:
-                remote = repo.remote("heroku")
-                remote.set_url(Config.HEROKU_GIT_URL)
-
-            else:
-                remote = repo.create_remote("heroku", Config.HEROKU_GIT_URL)
-
-            remote.push(refspec=f'{branch}:master', force=True)
-
-        else:
-            await message.edit(
-                '**Userge Successfully Updated!**\n'
-                '__Now restarting... Wait for a while!__`', del_in=3)
-
-            asyncio.get_event_loop().create_task(userge.restart())
+        remote = repo.create_remote("heroku", Config.HEROKU_GIT_URL)
+    remote.push(refspec=f'{branch}:master', force=True)
+    await message.edit(f"**HEROKU APP : {Config.HEROKU_APP.name} is up-to-date with [{branch}]**")

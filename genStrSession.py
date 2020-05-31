@@ -6,19 +6,23 @@
 #
 # All rights reserved.
 
-
-from pyrogram import Client
+import os
 import asyncio
 
+from pyrogram import Client
+from dotenv import load_dotenv
 
-async def genStrSession():
+if os.path.isfile("config.env"):
+    load_dotenv("config.env")
+
+
+async def genStrSession() -> None:
     async with Client(
-        "Userge",
-        api_id=int(input("enter Telegram APP ID: ")),
-        api_hash=input("enter Telegram API HASH: ")
-    ) as Userge:
-        print(Userge.export_session_string())
-
+            "Userge",
+            api_id=int(os.environ.get("API_ID") or input("Enter Telegram APP ID: ")),
+            api_hash=os.environ.get("API_HASH") or input("Enter Telegram API HASH: ")
+    ) as userge:
+        print(f"\nHere Your String -> {userge.export_session_string()}")
 
 if __name__ == "__main__":
     asyncio.get_event_loop().run_until_complete(genStrSession())

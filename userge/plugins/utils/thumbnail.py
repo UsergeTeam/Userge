@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 import os
 import time
 from datetime import datetime
@@ -17,47 +16,45 @@ THUMB_PATH = Config.DOWN_PATH + "thumb_image.jpg"
 CHANNEL = userge.getCLogger(__name__)
 
 
-@userge.on_cmd('sthumb', about="""\
-__Save thumbnail__
-
-**Usage:**
-
-    `.sthumb [reply to any photo]`""")
+@userge.on_cmd('sthumb', about={
+    'header': "Save thumbnail",
+    'usage': "{tr}sthumb [reply to any photo]"})
 async def save_thumb_nail(message: Message):
     await message.edit("processing ...")
-    if message.reply_to_message is not None and message.reply_to_message.photo:
+    replied = message.reply_to_message
+    if (replied and replied.media
+            and (replied.photo
+                 or (replied.document and "image" in replied.document.mime_type))):
         start_t = datetime.now()
         c_time = time.time()
-
         if os.path.exists(THUMB_PATH):
             os.remove(THUMB_PATH)
-
-        await userge.download_media(message=message.reply_to_message,
+        await userge.download_media(message=replied,
                                     file_name=THUMB_PATH,
                                     progress=progress,
                                     progress_args=(
                                         "trying to download", userge, message, c_time))
-
         end_t = datetime.now()
         m_s = (end_t - start_t).seconds
-
         await message.edit(f"thumbnail saved in {m_s} seconds.", del_in=3)
-
     else:
         await message.edit("Reply to a photo to save custom thumbnail", del_in=3)
 
 
-@userge.on_cmd('dthumb', about="__Delete thumbnail__")
+@userge.on_cmd('dthumb', about={'header': "Delete thumbnail"})
 async def clear_thumb_nail(message: Message):
     await message.edit("`processing ...`")
-
     if os.path.exists(THUMB_PATH):
         os.remove(THUMB_PATH)
+        await message.edit("✅ Custom thumbnail deleted succesfully.", del_in=3)
+    elif os.path.exists('resources/userge.png'):
+        os.remove('resources/userge.png')
+        await message.edit("✅ Default thumbnail deleted succesfully.", del_in=3)
+    else:
+        await message.delete()
 
-    await message.edit("✅ Custom thumbnail deleted succesfully.", del_in=3)
 
-
-@userge.on_cmd('vthumb', about="__View thumbnail__")
+@userge.on_cmd('vthumb', about={'header': "View thumbnail"})
 async def get_thumb_nail(message: Message):
     await message.edit("processing ...")
     if os.path.exists(THUMB_PATH):
@@ -67,6 +64,5 @@ async def get_thumb_nail(message: Message):
                                          reply_to_message_id=message.message_id)
         await CHANNEL.fwd_msg(msg)
         await message.delete()
-
     else:
         await message.err("Custom Thumbnail Not Found!")

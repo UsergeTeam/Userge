@@ -6,5 +6,6 @@
 #
 # All rights reserved.
 
-
-# tmp path to save loaded plugins
+from .filtr import Filtr, clear_db
+from .command import Command
+from .plugin import Plugin
