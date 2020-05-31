@@ -12,7 +12,7 @@
     "website": "https://github.com/Userge",
     "success_url": "https://t.me/theUserge",
     "env": {
-        "APP_ID": {
+        "API_ID": {
             "description": "Get this value from https://my.telegram.org"
         },
         "API_HASH": {
