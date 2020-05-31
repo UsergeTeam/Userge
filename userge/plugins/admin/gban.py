@@ -330,7 +330,7 @@ async def gban_at_entry(message: Message):
             if c['user_id'] == user_id:
                 reason = c['reason']
                 try:
-                    if await guadmin_check(chat_id,user_id):
+                    if await guadmin_check(chat_id, user_id):
                         await userge.kick_chat_member(chat_id, user_id)
                         await message.reply(
                             r"\\**#Userge_Antispam**//"
