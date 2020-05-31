@@ -353,7 +353,7 @@ async def gban_at_entry(message: Message):
             if Config.SPAM_WATCH_API is not None:
                 SENTRY = spamwatch.Client(Config.SPAM_WATCH_API)
                 intruder = SENTRY.get_ban(user_id)
-                if intruder:
+                if intruder and await guadmin_check(chat_id, user_id):
                     await userge.kick_chat_member(chat_id, user_id)
                     await message.reply(
                         r"\\**#Userge_Antispam**//"
