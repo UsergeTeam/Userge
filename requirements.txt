@@ -27,6 +27,7 @@ requests
 search-engine-parser
 selenium==3.141.0
 setuptools>=40.3.0
+spamwatch
 speedtest-cli
 telegraph
 tgcrypto
