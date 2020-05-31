@@ -7,7 +7,6 @@
 # All rights reserved
 
 import json
-import logging
 import requests
 import spamwatch
 from userge import userge, Message, Config, get_collection, Filters
@@ -110,7 +109,7 @@ async def gban_user(message: Message):
                 "Aborted coz No reason of gban provided by banner")
             return
 
-        GBAN_USER_BASE.insert_one({'firstname':firstname, 'user_id':user_id, 'reason':reason})
+        GBAN_USER_BASE.insert_one({'firstname': firstname, 'user_id': user_id, 'reason': reason})
 
         if can_ban:
             gbanned_admeme = await guadmin_check(chat_id, user_id)
@@ -173,7 +172,7 @@ async def ungban_user(message: Message):
     user_id = get_mem['id']
 
     try:
-        GBAN_USER_BASE.delete_one({'firstname':firstname, 'user_id':user_id})
+        GBAN_USER_BASE.delete_one({'firstname': firstname, 'user_id': user_id})
         await message.edit(
             r"\\**#UnGbanned_User**//"
             f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
@@ -235,7 +234,7 @@ async def whitelist(message: Message):
     user_id = get_mem['id']
 
     try:
-        WHITELIST.insert_one({'firstname':firstname, 'user_id':user_id})
+        WHITELIST.insert_one({'firstname': firstname, 'user_id': user_id})
         await message.edit(
             r"\\**#Whitelisted_User**//"
             f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
@@ -250,7 +249,7 @@ async def whitelist(message: Message):
         )
     except Exception as e:
         LOG.exception('Received exception during Whitelist')
-        await message.edit("Error: "+str(e))
+        await message.edit("Error: " + str(e))
 
 
 @userge.on_cmd("rmwhite", about={
@@ -258,7 +257,7 @@ async def whitelist(message: Message):
     'description': "Use it to remove users from WhiteList",
     'useage': "{tr}rmwhite [userid | reply to user]",
     'examples': "{tr}rmwhite 5231147869"})
-async def whitelist(message: Message):
+async def rmwhitelist(message: Message):
 
     if message.reply_to_message:
         user_id = message.reply_to_message.from_user.id
@@ -280,7 +279,7 @@ async def whitelist(message: Message):
     user_id = get_mem['id']
 
     try:
-        WHITELIST.delete_one({'firstname':firstname, 'user_id':user_id})
+        WHITELIST.delete_one({'firstname': firstname, 'user_id': user_id})
         await message.edit(
             r"\\**#Removed_Whitelisted_User**//"
             f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
@@ -295,31 +294,31 @@ async def whitelist(message: Message):
         )
     except Exception as e:
         LOG.exception('Received exception during remove whitelist')
-        await message.edit("Error: "+str(e))
+        await message.edit("Error: " + str(e))
 
 
 @userge.on_cmd("listwhite", about={
     'header': "Get a List of Whitelisted Users",
     'description': "Get Up-to-date list of users WhiteListed by you.",
     'examples': "Lol. Just type {tr}listwhite"})
-async def list_gbanned(message: Message):
+async def list_white(message: Message):
     try:
         msg = ''
         for c in WHITELIST.find({}):
-            msg += ("**User** : " + str(c['firstname']) + "-> with **User ID** -> "
-                    + str(c['user_id']) + "\n\n")
+            msg += ("**User** : " + str(c['firstname']) + "-> with **User ID** -> " +
+                     str(c['user_id']) + "\n\n")
         await message.edit_or_send_as_file(
             f"**--Whitelisted Users List--**\n\n{msg}" if msg else "`whitelist empty!`")
     except Exception as e:
         LOG.exception('Received exception during WhiteList')
-        await message.edit("Error: "+str(e))
+        await message.edit("Error: " + str(e))
 
 
 @userge.on_filters(~Filters.me & Filters.group & (Filters.text | Filters.new_chat_members))
-async def gban_at_entry(message: Message): 
+async def gban_at_entry(message: Message):
     try:
         if message.service:
-            if message.new_chat_members: 
+            if message.new_chat_members:
                 chat_id = message.chat.id
                 user_id = message.new_chat_members[0].id
                 firstname = message.new_chat_members[0].first_name
@@ -328,11 +327,11 @@ async def gban_at_entry(message: Message):
             user_id = message.from_user.id
             firstname = message.from_user.first_name
     except:
-        return #Nu use to continue if u can't get id of user from message 🤔
+        return  #  Nu use to continue if u can't get id of user from message 🤔
 
     for w in WHITELIST.find({}):
         if w['user_id'] == user_id:
-            return 
+            return
         else:
             pass
 
@@ -352,7 +351,8 @@ async def gban_at_entry(message: Message):
                         r"\\**#Antispam_Log**//"
                         "\n\n**GBanned User $SPOTTED**\n"
                         f"**User:** [{firstname}](tg://user?id={user_id})\n"
-                        f"**ID:** `{user_id}`\n**Reason:** {reason}\n**Quick Action:** Banned in {message.chat.title}")
+                        f"**ID:** `{user_id}`\n**Reason:** {reason}\n**Quick Action:** "
+                        "Banned in {message.chat.title}")
                 except:
                     break
     except:
@@ -377,7 +377,8 @@ async def gban_at_entry(message: Message):
                     "\n\n**GBanned User $SPOTTED**\n"
                     "**$SENRTY #SPAMWATCH_API BAN**"
                     f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
-                    f"**ID:** `{user_id}`\n**Reason:** `{intruder.reason}`\n**Quick Action:** Banned in {message.chat.title}\n\n$AUTOBAN #id{user_id}")
+                    f"**ID:** `{user_id}`\n**Reason:** `{intruder.reason}`\n"
+                    "**Quick Action:** Banned in {message.chat.title}\n\n$AUTOBAN #id{user_id}")
         except:
           pass
 
@@ -400,7 +401,8 @@ async def gban_at_entry(message: Message):
                     "\n\n**GBanned User $SPOTTED**\n"
                     "**$SENRTY #CAS BAN**"
                     f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
-                    f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n**Quick Action:** Banned in {message.chat.title}\n\n$AUTOBAN #id{user_id}")
+                    f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n**Quick Action:**"
+                    " Banned in {message.chat.title}\n\n$AUTOBAN #id{user_id}")
               except:
                 pass
         except:
