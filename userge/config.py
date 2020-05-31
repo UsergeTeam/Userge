@@ -42,11 +42,13 @@ class Config:
     """Configs to setup Userge"""
     API_ID = int(os.environ.get("API_ID", 12345))
     API_HASH = os.environ.get("API_HASH", None)
+    ANTISPAM_SENTRY = bool(os.environ.get("ANTISPAM_SENTRY", False)
     HU_STRING_SESSION = os.environ.get("HU_STRING_SESSION", None)
     DB_URI = os.environ.get("DATABASE_URL", None)
     LANG = os.environ.get("PREFERRED_LANGUAGE", "en")
     DOWN_PATH = os.environ.get("DOWN_PATH", "downloads").rstrip('/') + '/'
     SCREENSHOT_API = os.environ.get("SCREENSHOT_API", None)
+    SPAM_WATCH_API = os.environ.get("SPAM_WATCH_API", None)
     CURRENCY_API = os.environ.get("CURRENCY_API", None)
     OCR_SPACE_API_KEY = os.environ.get("OCR_SPACE_API_KEY", None)
     OPEN_WEATHER_MAP = os.environ.get("OPEN_WEATHER_MAP", None)
