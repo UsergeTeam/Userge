@@ -17,7 +17,6 @@ GBAN_USER_BASE = get_collection("GBAN_USER")
 WHITELIST = get_collection("WHITELIST_USER")
 GBAN_LOG = userge.getCLogger(__name__)
 LOG = userge.getLogger(__name__)
-API_BANS = Config.ANTISPAM_SENTRY
 
 
 async def is_admin(message: Message, me_id):
@@ -349,7 +348,7 @@ async def gban_at_entry(message: Message):
     except Exception:
         pass
 
-    if API_BANS:
+    if Config.ANTISPAM_SENTRY:
         try:
             if Config.SPAM_WATCH_API is not None:
                 SENTRY = spamwatch.Client(Config.SPAM_WATCH_API)
