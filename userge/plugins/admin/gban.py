@@ -325,8 +325,6 @@ async def gban_at_entry(message: Message):
     for w in WHITELIST.find({}):
         if w['user_id'] == user_id:
             return
-        else:
-            pass
 
     try:
         for c in GBAN_USER_BASE.find({}):
