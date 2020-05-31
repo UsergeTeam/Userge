@@ -13,7 +13,7 @@ from pyrogram import __version__ as __pyro_version__
 __version_major__ = 0
 __version_minor__ = 1
 __version_micro__ = 5
-__version_beta__ = 10
+__version_beta__ = 11
 
 __version__ = "{}.{}.{}".format(__version_major__,
                                 __version_minor__,

@@ -85,7 +85,7 @@ class CLogger:
             _LOG_STR, f"forwarding msg : {message_} to channel : {Config.LOG_CHANNEL_ID}")
         if Config.LOG_CHANNEL_ID and isinstance(message_, RawMessage):
             if message_.media:
-                asyncio.create_task(self.log("**Forwarding Message...**"))
+                asyncio.get_event_loop().create_task(self.log("**Forwarding Message...**"))
                 await self._client.forward_messages(chat_id=Config.LOG_CHANNEL_ID,
                                                     from_chat_id=message_.chat.id,
                                                     message_ids=message_.message_id,

@@ -23,8 +23,8 @@ from userge import logging
 
 _LOG = logging.getLogger(__name__)
 
-if sys.version_info[0] < 3 or sys.version_info[1] < 6:
-    _LOG.info("You MUST have a python version of at least 3.6 !")
+if sys.version_info[0] < 3 or sys.version_info[1] < 7:
+    _LOG.info("You MUST have a python version of at least 3.7 !")
     sys.exit()
 
 _CONFIG_FILE = "config.env"
@@ -124,7 +124,7 @@ for binary, path in _BINS.items():
 
 if Config.LOAD_UNOFFICIAL_PLUGINS:
     _LOG.info("Loading UnOfficial Plugins...")
-    os.system("git clone https://github.com/UsergeTeam/Userge-Plugins.git")
+    os.system("git clone --depth=1 https://github.com/UsergeTeam/Userge-Plugins.git")
     os.system("pip3 install -U pip")
     os.system("pip3 install -r Userge-Plugins/requirements.txt")
     os.system("rm -rf userge/plugins/unof_plugins/")

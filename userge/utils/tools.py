@@ -50,8 +50,8 @@ async def runcmd(cmd: str) -> Tuple[str, str, int, int]:
                                                    stdout=asyncio.subprocess.PIPE,
                                                    stderr=asyncio.subprocess.PIPE)
     stdout, stderr = await process.communicate()
-    return (stdout.decode().strip(),
-            stderr.decode().strip(),
+    return (stdout.decode('utf-8', 'replace').strip(),
+            stderr.decode('utf-8', 'replace').strip(),
             process.returncode,
             process.pid)
 

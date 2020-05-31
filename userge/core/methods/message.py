@@ -165,7 +165,7 @@ class Message(RawMessage):
                 self._channel.update(log)
             await self._channel.fwd_msg(msg)
         if delete_message:
-            asyncio.create_task(self.delete())
+            asyncio.get_event_loop().create_task(self.delete())
         return Message(self._client, msg)
 
     async def reply(self,

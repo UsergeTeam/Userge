@@ -79,7 +79,7 @@ async def autopic(message: Message):
                               {"$set": data_dict}, upsert=True)
     await message.edit(
         'auto profile picture updation has been **started**', del_in=3, log=__name__)
-    UPDATE_PIC = asyncio.create_task(apic_worker())
+    UPDATE_PIC = asyncio.get_event_loop().create_task(apic_worker())
 
 
 @userge.add_task

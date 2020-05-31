@@ -18,7 +18,7 @@ from userge import userge, Message
     'usage': "{tr}quote [text or reply to msg]"})
 async def quotecmd(message: Message):
     """quotecmd"""
-    asyncio.create_task(message.delete())
+    asyncio.get_event_loop().create_task(message.delete())
     args = message.input_str
     replied = message.reply_to_message
     async with userge.conversation('QuotLyBot') as conv:

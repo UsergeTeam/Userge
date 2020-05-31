@@ -12,7 +12,6 @@ from requests.exceptions import HTTPError, Timeout, TooManyRedirects
 
 from userge import userge, Message, Config
 
-
 DOGBIN_URL = "https://del.dog/"
 NEKOBIN_URL = "https://nekobin.com/"
 

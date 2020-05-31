@@ -104,7 +104,7 @@ async def testing(message: Message):
 
   # create virtualenv
   virtualenv -p /usr/bin/python3 venv
-  ../venv/bin/activate
+  . ./venv/bin/activate
 
   # install requirements
   pip install -r requirements.txt
