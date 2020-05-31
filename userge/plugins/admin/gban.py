@@ -101,7 +101,8 @@ async def gban_user(message: Message):
                 "Aborted coz No reason of gban provided by banner")
             return
 
-        GBAN_USER_BASE.insert_one({'firstname': firstname, 'user_id': user_id, 'reason': reason})
+        GBAN_USER_BASE.insert_one(
+            {'firstname': firstname, 'user_id': user_id, 'reason': reason})
 
         if can_ban:
             gbanned_admeme = await guadmin_check(chat_id, user_id)
@@ -330,26 +331,25 @@ async def gban_at_entry(message: Message):
             if c['user_id'] == user_id:
                 reason = c['reason']
                 try:
-                    if await guadmin_check(chat_id, user_id):
-                        await userge.kick_chat_member(chat_id, user_id)
-                        await message.reply(
-                            r"\\**#Userge_Antispam**//"
-                            "\n\n\nGlobally Banned User Detected in this Chat.\n\n"
-                            f"**User:** [{firstname}](tg://user?id={user_id})\n"
-                            f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n\n"
-                            "**Quick Action:** Banned.")
-                        await GBAN_LOG.log(
-                            r"\\**#Antispam_Log**//"
-                            "\n\n**GBanned User $SPOTTED**\n"
-                            f"**User:** [{firstname}](tg://user?id={user_id})\n"
-                            f"**ID:** `{user_id}`\n**Reason:** {reason}\n**Quick Action:** "
-                            "Banned in {message.chat.title}")
+                    await userge.kick_chat_member(chat_id, user_id)
+                    await message.reply(
+                        r"\\**#Userge_Antispam**//"
+                        "\n\n\nGlobally Banned User Detected in this Chat.\n\n"
+                        f"**User:** [{firstname}](tg://user?id={user_id})\n"
+                        f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n\n"
+                        "**Quick Action:** Banned.")
+                    await GBAN_LOG.log(
+                        r"\\**#Antispam_Log**//"
+                        "\n\n**GBanned User $SPOTTED**\n"
+                        f"**User:** [{firstname}](tg://user?id={user_id})\n"
+                        f"**ID:** `{user_id}`\n**Reason:** {reason}\n**Quick Action:** "
+                        "Banned in {message.chat.title}")
                 except Exception:
                     break
     except Exception:
         pass
 
-    if Config.ANTISPAM_SENTRY:
+    if API_BANS:
         try:
             if Config.SPAM_WATCH_API is not None:
                 SENTRY = spamwatch.Client(Config.SPAM_WATCH_API)
@@ -374,9 +374,10 @@ async def gban_at_entry(message: Message):
             pass
 
         try:
-            res = requests.get(f'https://combot.org/api/cas/check?user_id={user_id}')
+            res = requests.get(
+                f'https://combot.org/api/cas/check?user_id={user_id}')
             res_dict = json.loads(res.text)
-            if res_dict['ok'] and await guadmin_check(chat_id, user_id):
+            if res_dict['ok']:
                 try:
                     reason = res_dict['result']['offenses']
                     await userge.kick_chat_member(chat_id, user_id)
