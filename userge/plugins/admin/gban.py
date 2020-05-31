@@ -6,11 +6,18 @@
 #
 # All rights reserved
 
+import json
+
+import requests
+import spamwatch
+
 from userge import userge, Message, Config, get_collection, Filters
 
 GBAN_USER_BASE = get_collection("GBAN_USER")
+WHITELIST = get_collection("WHITELIST_USER")
 GBAN_LOG = userge.getCLogger(__name__)
 LOG = userge.getLogger(__name__)
+API_BANS = Config.ANTISPAM_SENTRY
 
 
 async def is_admin(message: Message, me_id):
@@ -121,7 +128,7 @@ async def gban_user(message: Message):
                 await GBAN_LOG.fwd_msg(message.reply_to_message)
                 await GBAN_LOG.log(f'$GBAN #prid{user_id} ⬆️')
                 await message.reply_to_message.delete()
-        except:
+        except Exception:
             await message.reply("`I dont have message nuking rights! But still he got gbanned!`")
             return
 
@@ -137,7 +144,6 @@ async def gban_user(message: Message):
     'examples': "{tr}ungban [userid | reply]"})
 async def ungban_user(message: Message):
     chat_id = message.chat.id
-    # me = await userge.get_me()
 
     if message.reply_to_message:
         user_id = message.reply_to_message.from_user.id
@@ -179,7 +185,7 @@ async def ungban_user(message: Message):
 
 @userge.on_cmd("glist", about={
     'header': "Get a List of Gbanned Users",
-    'description': "Get Up-to-date list of users Gbanned by you. (ofc posted on del.dog)",
+    'description': "Get Up-to-date list of users Gbanned by you.",
     'examples': "Lol. Just type {tr}glist"})
 async def list_gbanned(message: Message):
     try:
@@ -194,21 +200,131 @@ async def list_gbanned(message: Message):
         await message.edit("Error: "+str(e))
 
 
-# TODO: Add WhiteList chats to disable Gbans in them
-@userge.on_filters(~Filters.me | Filters.text | Filters.new_chat_members)
-async def gban_at_entry(message: Message):  # TODO: Ban Users when they join
+@userge.on_cmd("whitelist", about={
+    'header': "Whitelist a User",
+    'description': "Use whitelist to add users to bypass API Bans",
+    'useage': "{tr}whitelist [userid | reply to user]",
+    'examples': "{tr}whitelist 5231147869"})
+async def whitelist(message: Message):
+
+    if message.reply_to_message:
+        user_id = message.reply_to_message.from_user.id
+    else:
+        args = message.input_str.split(maxsplit=1)
+        if len(args) == 2:
+            user_id, _ = args
+        elif len(args) == 1:
+            user_id = args[0]
+        else:
+            await message.edit(
+                "`no valid user_id or message specified,`"
+                "`don't do .help gban for more info. "
+                "Coz no one's gonna help ya`(｡ŏ_ŏ) ⚠", del_in=0)
+            return
+
+    get_mem = await userge.get_user_dict(user_id)
+    firstname = get_mem['fname']
+    user_id = get_mem['id']
+
+    try:
+        WHITELIST.insert_one({'firstname': firstname, 'user_id': user_id})
+        await message.edit(
+            r"\\**#Whitelisted_User**//"
+            f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
+            f"**User ID:** `{user_id}`")
+        LOG.info("WhiteListed %s", str(user_id))
+        await GBAN_LOG.log(
+            r"\\**#Antispam_Log**//"
+            f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
+            f"**User ID:** `{user_id}`\n"
+            f"**Chat:** {message.chat.title}\n"
+            f"**Chat ID:** `{message.chat.id}`\n\n$WHITELISTED #id{user_id}"
+        )
+    except Exception as e:
+        LOG.exception('Received exception during Whitelist')
+        await message.edit("Error: " + str(e))
+
+
+@userge.on_cmd("rmwhite", about={
+    'header': "Removes a User from Whitelist",
+    'description': "Use it to remove users from WhiteList",
+    'useage': "{tr}rmwhite [userid | reply to user]",
+    'examples': "{tr}rmwhite 5231147869"})
+async def rmwhitelist(message: Message):
+
+    if message.reply_to_message:
+        user_id = message.reply_to_message.from_user.id
+    else:
+        args = message.input_str.split(maxsplit=1)
+        if len(args) == 2:
+            user_id, _ = args
+        elif len(args) == 1:
+            user_id = args[0]
+        else:
+            await message.edit(
+                "`no valid user_id or message specified,`"
+                "`don't do .help gban for more info. "
+                "Coz no one's gonna help ya`(｡ŏ_ŏ) ⚠", del_in=0)
+            return
+
+    get_mem = await userge.get_user_dict(user_id)
+    firstname = get_mem['fname']
+    user_id = get_mem['id']
+
+    try:
+        WHITELIST.delete_one({'firstname': firstname, 'user_id': user_id})
+        await message.edit(
+            r"\\**#Removed_Whitelisted_User**//"
+            f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
+            f"**User ID:** `{user_id}`")
+        LOG.info("WhiteListed %s", str(user_id))
+        await GBAN_LOG.log(
+            r"\\**#Antispam_Log**//"
+            f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
+            f"**User ID:** `{user_id}`\n"
+            f"**Chat:** {message.chat.title}\n"
+            f"**Chat ID:** `{message.chat.id}`\n\n$RMWHITELISTED #id{user_id}"
+        )
+    except Exception as e:
+        LOG.exception('Received exception during remove whitelist')
+        await message.edit("Error: " + str(e))
+
+
+@userge.on_cmd("listwhite", about={
+    'header': "Get a List of Whitelisted Users",
+    'description': "Get Up-to-date list of users WhiteListed by you.",
+    'examples': "Lol. Just type {tr}listwhite"})
+async def list_white(message: Message):
+    try:
+        msg = ''
+        for c in WHITELIST.find({}):
+            msg += ("**User** : " + str(c['firstname']) + "-> with **User ID** -> " +
+                    str(c['user_id']) + "\n\n")
+        await message.edit_or_send_as_file(
+            f"**--Whitelisted Users List--**\n\n{msg}" if msg else "`whitelist empty!`")
+    except Exception as e:
+        LOG.exception('Received exception during WhiteList')
+        await message.edit("Error: " + str(e))
+
+
+@userge.on_filters(~Filters.me & Filters.group & (Filters.text | Filters.new_chat_members))
+async def gban_at_entry(message: Message):
     try:
         if message.service:
-            if message.new_chat_members:  # New Member still not working 🤔hmmmm
+            if message.new_chat_members:
                 chat_id = message.chat.id
                 user_id = message.new_chat_members[0].id
                 firstname = message.new_chat_members[0].first_name
-        else:
+        elif message.from_user:
             chat_id = message.chat.id
             user_id = message.from_user.id
             firstname = message.from_user.first_name
-    except:
-        pass
+    except Exception:
+        return  # Nu use to continue if u can't get id of user from message 🤔
+
+    for w in WHITELIST.find({}):
+        if w['user_id'] == user_id:
+            return
 
     try:
         for c in GBAN_USER_BASE.find({}):
@@ -226,9 +342,60 @@ async def gban_at_entry(message: Message):  # TODO: Ban Users when they join
                         r"\\**#Antispam_Log**//"
                         "\n\n**GBanned User $SPOTTED**\n"
                         f"**User:** [{firstname}](tg://user?id={user_id})\n"
-                        f"**ID:** `{user_id}`\n**Quick Action:** Banned in {message.chat.title}")
-                except:
+                        f"**ID:** `{user_id}`\n**Reason:** {reason}\n**Quick Action:** "
+                        "Banned in {message.chat.title}")
+                except Exception:
                     break
-    except:
+    except Exception:
         pass
+
+    if API_BANS:
+        try:
+            if Config.SPAM_WATCH_API is not None:
+                SENTRY = spamwatch.Client(Config.SPAM_WATCH_API)
+                intruder = SENTRY.get_ban(user_id)
+                if intruder:
+                    await userge.kick_chat_member(chat_id, user_id)
+                    await message.reply(
+                        r"\\**#Userge_Antispam**//"
+                        "\n\n\nGlobally Banned User Detected in this Chat.\n\n"
+                        "**$SENTRY SpamWatch Federation Ban**\n"
+                        f"**User:** [{firstname}](tg://user?id={user_id})\n"
+                        f"**ID:** `{user_id}`\n**Reason:** `{intruder.reason}`\n\n"
+                        "**Quick Action:** Banned.")
+                    await GBAN_LOG.log(
+                        r"\\**#Antispam_Log**//"
+                        "\n\n**GBanned User $SPOTTED**\n"
+                        "**$SENRTY #SPAMWATCH_API BAN**"
+                        f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
+                        f"**ID:** `{user_id}`\n**Reason:** `{intruder.reason}`\n"
+                        "**Quick Action:** Banned in {message.chat.title}\n\n$AUTOBAN #id{user_id}")
+        except Exception:
+            pass
+
+        try:
+            res = requests.get(f'https://combot.org/api/cas/check?user_id={user_id}')
+            res_dict = json.loads(res.text)
+            if res_dict['ok']:
+                try:
+                    reason = res_dict['result']['offenses']
+                    await userge.kick_chat_member(chat_id, user_id)
+                    await message.reply(
+                        r"\\**#Userge_Antispam**//"
+                        "\n\n\nGlobally Banned User Detected in this Chat.\n\n"
+                        "**$SENTRY CAS Federation Ban**\n"
+                        f"**User:** [{firstname}](tg://user?id={user_id})\n"
+                        f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n\n"
+                        "**Quick Action:** Banned.")
+                    await GBAN_LOG.log(
+                        r"\\**#Antispam_Log**//"
+                        "\n\n**GBanned User $SPOTTED**\n"
+                        "**$SENRTY #CAS BAN**"
+                        f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
+                        f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n**Quick Action:**"
+                        " Banned in {message.chat.title}\n\n$AUTOBAN #id{user_id}")
+                except Exception:
+                    pass
+        except Exception:
+            pass
     message.continue_propagation()
