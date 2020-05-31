@@ -376,7 +376,7 @@ async def gban_at_entry(message: Message):
         try:
             res = requests.get(f'https://combot.org/api/cas/check?user_id={user_id}')
             res_dict = json.loads(res.text)
-            if res_dict['ok'] and and await guadmin_check(chat_id, user_id):
+            if res_dict['ok'] and  await guadmin_check(chat_id, user_id):
                 try:
                     reason = res_dict['result']['offenses']
                     await userge.kick_chat_member(chat_id, user_id)
