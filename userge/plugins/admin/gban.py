@@ -344,8 +344,8 @@ async def gban_at_entry(message: Message):
                             f"**User:** [{firstname}](tg://user?id={user_id})\n"
                             f"**ID:** `{user_id}`\n**Reason:** {reason}\n**Quick Action:** "
                             "Banned in {message.chat.title}")
-                    except Exception:
-                        break
+                except Exception:
+                    break
     except Exception:
         pass
 
