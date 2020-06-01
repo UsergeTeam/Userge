@@ -85,7 +85,7 @@ async def add_filter(message: Message) -> None:
     await message.edit(text=out, del_in=3, log=True)
 
 
-@userge.on_filters(~Filters.me & Filters.text & FILTERS_CHATS, group=-1)
+@userge.on_filters(~Filters.me & Filters.text & FILTERS_CHATS, group=1)
 async def chat_filter(message: Message) -> None:
     input_text = message.text.strip()
     for name in FILTERS_DATA[message.chat.id]:

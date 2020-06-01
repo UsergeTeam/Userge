@@ -306,7 +306,8 @@ async def list_white(message: Message):
         await message.edit("Error: " + str(e))
 
 
-@userge.on_filters(~Filters.me & Filters.group & (Filters.text | Filters.new_chat_members))
+@userge.on_filters(
+    ~Filters.me & Filters.group & (Filters.text | Filters.new_chat_members), group=1)
 async def gban_at_entry(message: Message):
     try:
         if message.service:
