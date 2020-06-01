@@ -307,7 +307,7 @@ async def list_white(message: Message):
 
 
 @userge.on_filters(
-    ~Filters.me & Filters.group & (Filters.text | Filters.new_chat_members), group=1)
+    ~Filters.me & Filters.group & Filters.new_chat_members, group=1)
 async def gban_at_entry(message: Message):
     try:
         if message.service:
@@ -315,10 +315,6 @@ async def gban_at_entry(message: Message):
                 chat_id = message.chat.id
                 user_id = message.new_chat_members[0].id
                 firstname = message.new_chat_members[0].first_name
-        elif message.from_user:
-            chat_id = message.chat.id
-            user_id = message.from_user.id
-            firstname = message.from_user.first_name
     except Exception:
         return  # Nu use to continue if u can't get id of user from message 🤔
 
