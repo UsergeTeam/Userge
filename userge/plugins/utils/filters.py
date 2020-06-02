@@ -30,8 +30,9 @@ def _filter_deleter(chat_id: int, name: str) -> None:
             FILTERS_DATA.pop(chat_id)
 
 
-for flt in FILTERS_COLLECTION.find():
-    _filter_updater(flt['chat_id'], flt['name'], flt['content'])
+async def _init() -> None:
+    async for flt in FILTERS_COLLECTION.find():
+        _filter_updater(flt['chat_id'], flt['name'], flt['content'])
 
 
 @userge.on_cmd("filters", about={'header': "List all saved filters"})
@@ -53,7 +54,8 @@ async def delete_filters(message: Message) -> None:
     filter_ = message.input_str
     if not filter_:
         out = "`Wrong syntax`\nNo arguements"
-    elif FILTERS_COLLECTION.find_one_and_delete({'chat_id': message.chat.id, 'name': filter_}):
+    elif await FILTERS_COLLECTION.find_one_and_delete(
+            {'chat_id': message.chat.id, 'name': filter_}):
         out = "`Successfully deleted filter:` **{}**".format(filter_)
         _filter_deleter(message.chat.id, filter_)
     else:
@@ -75,9 +77,9 @@ async def add_filter(message: Message) -> None:
         return
     _filter_updater(message.chat.id, filter_, content.strip())
     out = "`{} filter -> {}`"
-    result = FILTERS_COLLECTION.update_one({'chat_id': message.chat.id, 'name': filter_},
-                                           {"$set": {'content': content.strip()}},
-                                           upsert=True)
+    result = await FILTERS_COLLECTION.update_one(
+        {'chat_id': message.chat.id, 'name': filter_},
+        {"$set": {'content': content.strip()}}, upsert=True)
     if result.upserted_id:
         out = out.format('Added', filter_)
     else:

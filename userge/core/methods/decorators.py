@@ -166,6 +166,5 @@ class Decorators:
                 flt.update_command(handler, func.__doc__)
             else:
                 flt.update_filter(f"{module_name }.{func.__name__}", func.__doc__, handler)
-            flt.init()
             return func
         return decorator

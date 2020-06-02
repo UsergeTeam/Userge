@@ -49,11 +49,14 @@ _GDRIVE_COLLECTION = get_collection("gdrive")
 class _DBase:
     """Database Class for GDrive"""
     def __init__(self, id_: str) -> None:
-        global _CREDS
         self._id = id_
+        asyncio.get_event_loop().run_until_complete(self._init())
+
+    async def _init(self) -> None:
+        global _CREDS
         _LOG.debug("Setting GDrive DBase...")
         if not _CREDS:
-            result = _GDRIVE_COLLECTION.find_one({'_id': self._id}, {'creds': 1})
+            result = await _GDRIVE_COLLECTION.find_one({'_id': self._id}, {'creds': 1})
             _CREDS = pickle.loads(result['creds']) if result else None
         if _CREDS:
             try:
@@ -61,23 +64,23 @@ class _DBase:
                 _CREDS.refresh(Http())
             except HttpAccessTokenRefreshError as h_e:
                 _LOG.exception(h_e)
-                self._clear_creds()
+                await self._clear_creds()
 
-    def _set_creds(self, creds) -> str:
+    async def _set_creds(self, creds) -> str:
         global _CREDS
         _LOG.info("Setting Creds...")
         _CREDS = creds
-        result = _GDRIVE_COLLECTION.update_one(
+        result = await _GDRIVE_COLLECTION.update_one(
             {'_id': self._id}, {"$set": {'creds': pickle.dumps(creds)}}, upsert=True)
         if result.upserted_id:
             return "`Creds Added`"
         return "`Creds Updated`"
 
-    def _clear_creds(self) -> str:
+    async def _clear_creds(self) -> str:
         global _CREDS
         _CREDS = None
         _LOG.info("Creds Cleared!")
-        if _GDRIVE_COLLECTION.find_one_and_delete({'_id': self._id}):
+        if await _GDRIVE_COLLECTION.find_one_and_delete({'_id': self._id}):
             return "`Creds Cleared`"
         return "`Creds Not Found`"
 
@@ -614,13 +617,14 @@ class Worker(_GDrive):
             _LOG.exception(c_i)
             await self._message.err(c_i)
         else:
-            self._set_creds(cred)
             _AUTH_FLOW = None
-            await self._message.edit("`Saved GDrive Creds!`", del_in=3, log=True)
+            await asyncio.gather(
+                self._set_creds(cred),
+                self._message.edit("`Saved GDrive Creds!`", del_in=3, log=True))
 
     async def clear(self) -> None:
         """Clear Creds"""
-        await self._message.edit(self._clear_creds(), del_in=3, log=True)
+        await self._message.edit(await self._clear_creds(), del_in=3, log=True)
 
     async def set_parent(self) -> None:
         """Set Parent id"""

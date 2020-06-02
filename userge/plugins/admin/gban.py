@@ -73,7 +73,7 @@ async def gban_user(message: Message):
     user_id = get_mem['id']
 
     try:
-        for i in GBAN_USER_BASE.find({}):
+        async for i in GBAN_USER_BASE.find({}):
             if i['user_id'] == user_id:
                 await message.edit(
                     "**#Already_GBanned**\n\nUser Already Exists in My Gban List.\n"
@@ -101,7 +101,8 @@ async def gban_user(message: Message):
                 "Aborted coz No reason of gban provided by banner")
             return
 
-        GBAN_USER_BASE.insert_one({'firstname': firstname, 'user_id': user_id, 'reason': reason})
+        await GBAN_USER_BASE.insert_one(
+            {'firstname': firstname, 'user_id': user_id, 'reason': reason})
 
         if can_ban:
             gbanned_admeme = await guadmin_check(chat_id, user_id)
@@ -164,7 +165,7 @@ async def ungban_user(message: Message):
     user_id = get_mem['id']
 
     try:
-        GBAN_USER_BASE.delete_one({'firstname': firstname, 'user_id': user_id})
+        await GBAN_USER_BASE.delete_one({'firstname': firstname, 'user_id': user_id})
         await message.edit(
             r"\\**#UnGbanned_User**//"
             f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
@@ -189,7 +190,7 @@ async def ungban_user(message: Message):
 async def list_gbanned(message: Message):
     try:
         msg = ''
-        for c in GBAN_USER_BASE.find({}):
+        async for c in GBAN_USER_BASE.find({}):
             msg += ("**User** : " + str(c['firstname']) + "-> with **User ID** -> "
                     + str(c['user_id']) + " is **GBanned for** : " + str(c['reason']) + "\n\n")
         await message.edit_or_send_as_file(
@@ -226,7 +227,7 @@ async def whitelist(message: Message):
     user_id = get_mem['id']
 
     try:
-        WHITELIST.insert_one({'firstname': firstname, 'user_id': user_id})
+        await WHITELIST.insert_one({'firstname': firstname, 'user_id': user_id})
         await message.edit(
             r"\\**#Whitelisted_User**//"
             f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
@@ -271,7 +272,7 @@ async def rmwhitelist(message: Message):
     user_id = get_mem['id']
 
     try:
-        WHITELIST.delete_one({'firstname': firstname, 'user_id': user_id})
+        await WHITELIST.delete_one({'firstname': firstname, 'user_id': user_id})
         await message.edit(
             r"\\**#Removed_Whitelisted_User**//"
             f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
@@ -296,7 +297,7 @@ async def rmwhitelist(message: Message):
 async def list_white(message: Message):
     try:
         msg = ''
-        for c in WHITELIST.find({}):
+        async for c in WHITELIST.find({}):
             msg += ("**User** : " + str(c['firstname']) + "-> with **User ID** -> " +
                     str(c['user_id']) + "\n\n")
         await message.edit_or_send_as_file(
@@ -318,12 +319,12 @@ async def gban_at_entry(message: Message):
     except Exception:
         return  # Nu use to continue if u can't get id of user from message 🤔
 
-    for w in WHITELIST.find({}):
+    async for w in WHITELIST.find({}):
         if w['user_id'] == user_id:
             return
 
     try:
-        for c in GBAN_USER_BASE.find({}):
+        async for c in GBAN_USER_BASE.find({}):
             if c['user_id'] == user_id:
                 reason = c['reason']
                 try:

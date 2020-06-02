@@ -25,18 +25,15 @@ THUMB_PATH = Config.DOWN_PATH + "thumb_image.jpg"
 
 WELCOME_COLLECTION = get_collection("welcome")
 LEFT_COLLECTION = get_collection("left")
-
-WELCOME_LIST = WELCOME_COLLECTION.find({'on': True}, {'_id': 1})
-LEFT_LIST = LEFT_COLLECTION.find({'on': True}, {'_id': 1})
-
 WELCOME_CHATS = Filters.chat([])
 LEFT_CHATS = Filters.chat([])
 
-for i in WELCOME_LIST:
-    WELCOME_CHATS.add(i.get('_id'))
 
-for i in LEFT_LIST:
-    LEFT_CHATS.add(i.get('_id'))
+async def _init() -> None:
+    async for i in WELCOME_COLLECTION.find({'on': True}, {'_id': 1}):
+        WELCOME_CHATS.add(i.get('_id'))
+    async for i in LEFT_COLLECTION.find({'on': True}, {'_id': 1}):
+        LEFT_CHATS.add(i.get('_id'))
 
 
 @userge.on_cmd("setwelcome", about={
@@ -211,15 +208,15 @@ async def raw_set(message: Message, name, collection, chats):
             file_name = os.path.basename(tmp_path)
             os.remove(tmp_path)
 
-        collection.update_one({'_id': message.chat.id},
-                              {"$set": {'data': string,
-                                        'media': media,
-                                        'type': file_type,
-                                        'name': file_name,
-                                        'fid': file_id,
-                                        'fref': file_ref,
-                                        'on': True}},
-                              upsert=True)
+        await collection.update_one({'_id': message.chat.id},
+                                    {"$set": {'data': string,
+                                              'media': media,
+                                              'type': file_type,
+                                              'name': file_name,
+                                              'fid': file_id,
+                                              'fref': file_ref,
+                                              'on': True}},
+                                    upsert=True)
         chats.add(message.chat.id)
         out = f"{name} __message has been set for the__\n`{message.chat.title}`"
     await message.edit(text=out, del_in=3)
@@ -227,7 +224,8 @@ async def raw_set(message: Message, name, collection, chats):
 
 async def raw_no(message: Message, name, collection, chats):
     out = f"`First Set {name} Message!`"
-    if collection.find_one_and_update({'_id': message.chat.id}, {"$set": {'on': False}}):
+    if await collection.find_one_and_update(
+            {'_id': message.chat.id}, {"$set": {'on': False}}):
         if message.chat.id in chats:
             chats.remove(message.chat.id)
         out = f"`{name} Disabled Successfully!`"
@@ -236,7 +234,8 @@ async def raw_no(message: Message, name, collection, chats):
 
 async def raw_do(message: Message, name, collection, chats):
     out = f'Please set the {name} message with `.set{name.lower()}`'
-    if collection.find_one_and_update({'_id': message.chat.id}, {"$set": {'on': True}}):
+    if await collection.find_one_and_update(
+            {'_id': message.chat.id}, {"$set": {'on': True}}):
         chats.add(message.chat.id)
         out = f'`I will {name} new members XD`'
     await message.edit(text=out, del_in=3)
@@ -244,7 +243,7 @@ async def raw_do(message: Message, name, collection, chats):
 
 async def raw_del(message: Message, name, collection, chats):
     out = f"`First Set {name} Message!`"
-    if collection.find_one_and_delete({'_id': message.chat.id}):
+    if await collection.find_one_and_delete({'_id': message.chat.id}):
         if message.chat.id in chats:
             chats.remove(message.chat.id)
         out = f"`{name} Removed Successfully!`"
@@ -253,7 +252,7 @@ async def raw_del(message: Message, name, collection, chats):
 
 async def raw_view(message: Message, name, collection):
     liststr = ""
-    found = collection.find_one(
+    found = await collection.find_one(
         {'_id': message.chat.id}, {'data': 1, 'type': 1, 'on': 1})
     if found:
         liststr += f"**{(await userge.get_chat(message.chat.id)).title}**\n"
@@ -268,7 +267,7 @@ async def raw_view(message: Message, name, collection):
 
 async def raw_ls(message: Message, name, collection):
     liststr = ""
-    for c_l in collection.find({}, {'media': 0}):
+    async for c_l in collection.find({}, {'media': 0}):
         liststr += f"**{(await userge.get_chat(c_l['_id'])).title}**\n"
         if 'type' in c_l and c_l['type']:
             liststr += f"`{c_l['type']}`\n"
@@ -284,7 +283,7 @@ async def raw_say(message: Message, name, collection):
         else message.left_chat_member
     user_dict = await userge.get_user_dict(user.id)
     user_dict.update({'chat': message.chat.title if message.chat.title else "this group"})
-    found = collection.find_one({'_id': message.chat.id}, {'media': 0, 'name': 0})
+    found = await collection.find_one({'_id': message.chat.id}, {'media': 0, 'name': 0})
     caption = found['data']
     file_type = found['type'] if 'type' in found else ''
     file_id = found['fid'] if 'fid' in found else ''
@@ -295,16 +294,16 @@ async def raw_say(message: Message, name, collection):
         try:
             await send_proper_type(message, caption, file_type, file_id, file_ref)
         except (FileIdInvalid, FileReferenceEmpty, BadRequest):
-            found = collection.find_one({'_id': message.chat.id}, {'media': 1, 'name': 1})
+            found = await collection.find_one({'_id': message.chat.id}, {'media': 1, 'name': 1})
             file_name = found['name']
             media = found['media']
             tmp_media_path = os.path.join(Config.DOWN_PATH, file_name)
             async with aiofiles.open(tmp_media_path, "wb") as media_file:
                 await media_file.write(base64.b64decode(media))
             file_id, file_ref = await send_proper_type(message, caption, file_type, tmp_media_path)
-            collection.update_one({'_id': message.chat.id},
-                                  {"$set": {'fid': file_id, 'fref': file_ref}},
-                                  upsert=True)
+            await collection.update_one({'_id': message.chat.id},
+                                        {"$set": {'fid': file_id, 'fref': file_ref}},
+                                        upsert=True)
             os.remove(tmp_media_path)
     else:
         await message.reply(caption, del_in=Config.WELCOME_DELETE_TIMEOUT)

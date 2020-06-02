@@ -12,32 +12,28 @@ from typing import Dict
 from userge import userge, Filters, Message, Config, get_collection
 from userge.utils import SafeDict
 
-CHANNEL = userge.getCLogger(__name__)  # channel logger object
+CHANNEL = userge.getCLogger(__name__)
 SAVED_SETTINGS = get_collection("CONFIGS")
 ALLOWED_COLLECTION = get_collection("PM_PERMIT")
 
-for chat in ALLOWED_COLLECTION.find({"status": 'allowed'}):
-    Config.ALLOWED_CHATS.add(chat.get("_id"))
-
-_pm = SAVED_SETTINGS.find_one({'_id': 'PM GUARD STATUS'})
-_pmMsg = SAVED_SETTINGS.find_one({'_id': 'CUSTOM NOPM MESSAGE'})
-
-if _pm:
-    allowAllPms = bool(_pm.get('data'))
-else:
-    allowAllPms = True
-
+allowAllPms = True
 pmCounter: Dict[int, int] = {}
 allowAllFilter = Filters.create(lambda _, query: bool(allowAllPms))
+noPmMessage = ("Hello {fname} this is an automated message\n"
+               "Please wait untill you get approved to direct message "
+               "And please dont spam untill then ")
 
-if _pmMsg:
-    noPmMessage = _pmMsg.get('data')
-else:
-    noPmMessage = ("Hello {fname} this is an automated message\n"
-                   "Please wait untill you get approved to direct message "
-                   "And please dont spam untill then ")
 
-del _pm, _pmMsg
+async def _init() -> None:
+    global allowAllPms, noPmMessage
+    async for chat in ALLOWED_COLLECTION.find({"status": 'allowed'}):
+        Config.ALLOWED_CHATS.add(chat.get("_id"))
+    _pm = await SAVED_SETTINGS.find_one({'_id': 'PM GUARD STATUS'})
+    if _pm:
+        allowAllPms = bool(_pm.get('data'))
+    _pmMsg = await SAVED_SETTINGS.find_one({'_id': 'CUSTOM NOPM MESSAGE'})
+    if _pmMsg:
+        noPmMessage = _pmMsg.get('data')
 
 
 @userge.on_cmd("allow", about={
@@ -52,7 +48,7 @@ async def allow(message: Message):
         if userid in pmCounter:
             del pmCounter[userid]
         Config.ALLOWED_CHATS.add(userid)
-        a = ALLOWED_COLLECTION.update_one(
+        a = await ALLOWED_COLLECTION.update_one(
             {'_id': userid}, {"$set": {'status': 'allowed'}}, upsert=True)
         if a.matched_count:
             await message.edit("`Already approved to direct message`")
@@ -77,7 +73,7 @@ async def denyToPm(message: Message):
     if userid:
         if userid in Config.ALLOWED_CHATS:
             Config.ALLOWED_CHATS.remove(userid)
-        a = ALLOWED_COLLECTION.delete_one({'_id': userid})
+        a = await ALLOWED_COLLECTION.delete_one({'_id': userid})
         if a.deleted_count:
             await message.edit("`Prohibitted to direct message`")
         else:
@@ -140,7 +136,8 @@ async def outgoing_auto_approve(message: Message):
     if userID in pmCounter:
         del pmCounter[userID]
     Config.ALLOWED_CHATS.add(userID)
-    ALLOWED_COLLECTION.update_one({'_id': userID}, {"$set": {'status': 'allowed'}}, upsert=True)
+    await ALLOWED_COLLECTION.update_one(
+        {'_id': userID}, {"$set": {'status': 'allowed'}}, upsert=True)
     user_dict = await userge.get_user_dict(userID)
     await CHANNEL.log(f"**#AUTO_APPROVED**\n{user_dict['mention']}")
 
@@ -160,7 +157,7 @@ async def pmguard(message: Message):
         allowAllPms = True
         await message.edit("`PM_guard deactivated`", del_in=0, log=True)
         pmCounter = {}
-    SAVED_SETTINGS.update_one(
+    await SAVED_SETTINGS.update_one(
         {'_id': 'PM GUARD STATUS'}, {"$set": {'data': allowAllPms}}, upsert=True)
 
 
@@ -184,7 +181,7 @@ async def set_custom_nopm_message(message: Message):
         string = message.input_str
     if string:
         noPmMessage = string
-        SAVED_SETTINGS.update_one(
+        await SAVED_SETTINGS.update_one(
             {'_id': 'CUSTOM NOPM MESSAGE'}, {"$set": {'data': string}}, upsert=True)
 
 
