@@ -26,9 +26,9 @@ _LOG_STR = "<<<!  #####  %s  #####  !>>>"
 
 
 class Userge(Methods):
-    """Userge, the userbot"""
+    """ Userge, the userbot """
     def __init__(self) -> None:
-        self._tmp_tasks: List[asyncio.Task] = []
+        self._init_tasks: List[asyncio.Task] = []
         self._imported: List[ModuleType] = []
         _LOG.info(_LOG_STR, "Setting Userge Configs")
         super().__init__(client=self,
@@ -38,39 +38,41 @@ class Userge(Methods):
 
     @staticmethod
     def getLogger(name: str) -> logging.Logger:
-        """This returns new logger object"""
+        """ This returns new logger object """
         _LOG.debug(_LOG_STR, f"Creating Logger => {name}")
         return logging.getLogger(name)
 
+    async def complete_init_tasks(self) -> None:
+        """ wait for init tasks """
+        await asyncio.gather(*self._init_tasks)
+        self._init_tasks.clear()
+
     async def load_plugin(self, name: str) -> None:
-        """Load plugin to Userge"""
+        """ Load plugin to Userge """
         _LOG.debug(_LOG_STR, f"Importing {name}")
         self._imported.append(
             importlib.import_module(f"userge.plugins.{name}"))
         if hasattr(self._imported[-1], '_init'):
-            tmp_func = getattr(self._imported[-1], '_init')
-            if asyncio.iscoroutinefunction(tmp_func):
-                self._tmp_tasks.append(asyncio.get_event_loop().create_task(tmp_func()))
+            if asyncio.iscoroutinefunction(self._imported[-1]._init):
+                self._init_tasks.append(
+                    asyncio.get_event_loop().create_task(self._imported[-1]._init()))
         _LOG.debug(_LOG_STR, f"Imported {self._imported[-1].__name__} Plugin Successfully")
 
     async def _load_plugins(self) -> None:
         self._imported.clear()
-        self._tmp_tasks.clear()
+        self._init_tasks.clear()
         _LOG.info(_LOG_STR, "Importing All Plugins")
         for name in get_all_plugins():
             try:
                 await self.load_plugin(name)
             except ImportError as i_e:
                 _LOG.error(_LOG_STR, i_e)
+        await asyncio.gather(self.complete_init_tasks(), self.manager.init())
         _LOG.info(_LOG_STR, f"Imported ({len(self._imported)}) Plugins => "
                   + str([i.__name__ for i in self._imported]))
-        await asyncio.gather(
-            asyncio.gather(*self._tmp_tasks),
-            self.manager.init())
-        self._tmp_tasks.clear()
 
     async def reload_plugins(self) -> int:
-        """Reload all Plugins"""
+        """ Reload all Plugins """
         self.manager.clear_plugins()
         reloaded: List[str] = []
         _LOG.info(_LOG_STR, "Reloading All Plugins")
@@ -82,11 +84,10 @@ class Userge(Methods):
             else:
                 reloaded.append(reloaded_.__name__)
         _LOG.info(_LOG_STR, f"Reloaded {len(reloaded)} Plugins => {reloaded}")
-        # await self.manager.init()
         return len(reloaded)
 
     async def restart(self, update_req: bool = False) -> None:
-        """Restart the Userge"""
+        """ Restart the Userge """
         _LOG.info(_LOG_STR, "Restarting Userge")
         await self.stop()
         try:
@@ -102,13 +103,16 @@ class Userge(Methods):
         os.execl(sys.executable, sys.executable, '-m', 'userge')
         sys.exit()
 
+    async def _start(self) -> None:
+        await self.start()
+        await self._load_plugins()
+
     def begin(self) -> None:
-        """This will start the Userge"""
+        """ This will start the Userge """
         loop = asyncio.get_event_loop()
         run = loop.run_until_complete
         _LOG.info(_LOG_STR, "Starting Userge")
-        run(self.start())
-        run(self._load_plugins())
+        run(self._start())
         running_tasks: List[asyncio.Task] = []
         for task in self._tasks:
             running_tasks.append(loop.create_task(task()))

@@ -357,6 +357,7 @@ async def load(message: Message) -> None:
                 plugin = get_import_path(ROOT, t_path)
                 try:
                     await userge.load_plugin(plugin)
+                    await userge.complete_init_tasks()
                 except (ImportError, SyntaxError) as i_e:
                     os.remove(t_path)
                     await message.err(i_e)
@@ -435,11 +436,9 @@ async def unload(message: Message) -> None:
 
 @userge.on_cmd('reload', about={'header': "Reload all plugins"})
 async def reload_(message: Message) -> None:
-    await message.err("currently disabled!")
-    # await message.edit("`Reloading All Plugins`")
-    # count = await userge.reload_plugins()
-    # print(count)
-    # await message.edit(f"`Reloaded {count} Plugins`", del_in=3, log=__name__)
+    await message.edit("`Reloading All Plugins`")
+    await message.edit(
+        f"`Reloaded {await userge.reload_plugins()} Plugins`", del_in=3, log=__name__)
 
 
 @userge.on_cmd('clear', about={'header': "clear all save filters in DB"})

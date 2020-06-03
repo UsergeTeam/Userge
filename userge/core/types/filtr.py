@@ -25,15 +25,6 @@ _DISABLED: List[str] = []
 _UNLOADED: List[str] = []
 
 
-async def _main() -> None:
-    async for flt in _DISABLED_FILTERS.find():
-        _DISABLED.append(flt['filter'])
-    async for flt in _UNLOADED_FILTERS.find():
-        _UNLOADED.append(flt['filter'])
-
-asyncio.get_event_loop().run_until_complete(_main())
-
-
 def _init(name: str) -> Tuple[bool, bool]:
     name = name.lstrip(Config.CMD_TRIGGER)
     enabled = True
@@ -43,6 +34,13 @@ def _init(name: str) -> Tuple[bool, bool]:
     if name in _UNLOADED:
         loaded = False
     return enabled, loaded
+
+
+async def _main() -> None:
+    async for flt in _DISABLED_FILTERS.find():
+        _DISABLED.append(flt['filter'])
+    async for flt in _UNLOADED_FILTERS.find():
+        _UNLOADED.append(flt['filter'])
 
 
 async def _enable(name: str) -> None:
@@ -81,6 +79,8 @@ async def clear_db() -> bool:
     await _UNLOADED_FILTERS.drop()
     _LOG.info(_LOG_STR, "cleared filter DB!")
     return True
+
+asyncio.get_event_loop().run_until_complete(_main())
 
 
 class Filtr:
