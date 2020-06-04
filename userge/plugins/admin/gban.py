@@ -347,7 +347,6 @@ async def gban_at_entry(message: Message):
                     break
     except Exception as e:
         LOG.exception(e)
-        pass
 
     if Config.ANTISPAM_SENTRY:
         try:
@@ -398,5 +397,5 @@ async def gban_at_entry(message: Message):
                     pass
         except Exception as e:
             LOG.exception(e)
-            pass
+
     message.continue_propagation()
