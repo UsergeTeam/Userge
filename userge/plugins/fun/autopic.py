@@ -19,21 +19,20 @@ from PIL import Image, ImageFont, ImageDraw
 from userge import userge, Message, Config, get_collection
 
 SAVED_SETTINGS = get_collection("CONFIGS")
-
-__tmp__ = SAVED_SETTINGS.find_one({'_id': 'UPDATE_PIC'})
-
 UPDATE_PIC = False
 BASE_PIC = "resources/base_profile_pic.jpg"
 MDFY_PIC = "resources/mdfy_profile_pic.jpg"
-if __tmp__:
-    UPDATE_PIC = __tmp__['on']
-    if not os.path.exists(BASE_PIC):
-        with open(BASE_PIC, "wb") as media_file_:
-            media_file_.write(base64.b64decode(__tmp__['media']))
-
-del __tmp__
-
 LOG = userge.getLogger(__name__)
+
+
+async def _init() -> None:
+    global UPDATE_PIC
+    data = await SAVED_SETTINGS.find_one({'_id': 'UPDATE_PIC'})
+    if data:
+        UPDATE_PIC = data['on']
+        if not os.path.exists(BASE_PIC):
+            with open(BASE_PIC, "wb") as media_file_:
+                media_file_.write(base64.b64decode(data['media']))
 
 
 @userge.on_cmd("autopic", about={

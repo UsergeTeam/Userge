@@ -8,6 +8,7 @@
 
 __all__ = ['Filtr', 'clear_db']
 
+import asyncio
 from typing import List, Tuple
 
 from pyrogram.client.handlers.handler import Handler
@@ -23,12 +24,6 @@ _LOG_STR = "<<<!  [[[[[  %s  ]]]]]  !>>>"
 _DISABLED: List[str] = []
 _UNLOADED: List[str] = []
 
-for flt in _DISABLED_FILTERS.find():
-    _DISABLED.append(flt['filter'])
-
-for flt in _UNLOADED_FILTERS.find():
-    _UNLOADED.append(flt['filter'])
-
 
 def _init(name: str) -> Tuple[bool, bool]:
     name = name.lstrip(Config.CMD_TRIGGER)
@@ -41,42 +36,51 @@ def _init(name: str) -> Tuple[bool, bool]:
     return enabled, loaded
 
 
-def _enable(name: str) -> None:
+async def _main() -> None:
+    async for flt in _DISABLED_FILTERS.find():
+        _DISABLED.append(flt['filter'])
+    async for flt in _UNLOADED_FILTERS.find():
+        _UNLOADED.append(flt['filter'])
+
+
+async def _enable(name: str) -> None:
     name = name.lstrip(Config.CMD_TRIGGER)
     if name in _DISABLED:
         _DISABLED.remove(name)
-        _DISABLED_FILTERS.delete_one({'filter': name})
+        await _DISABLED_FILTERS.delete_one({'filter': name})
 
 
-def _disable(name: str) -> None:
+async def _disable(name: str) -> None:
     name = name.lstrip(Config.CMD_TRIGGER)
     if name != "enable":
         _DISABLED.append(name)
-        _DISABLED_FILTERS.insert_one({'filter': name})
+        await _DISABLED_FILTERS.insert_one({'filter': name})
 
 
-def _load(name: str) -> None:
+async def _load(name: str) -> None:
     name = name.lstrip(Config.CMD_TRIGGER)
     if name in _UNLOADED:
         _UNLOADED.remove(name)
-        _UNLOADED_FILTERS.delete_one({'filter': name})
+        await _UNLOADED_FILTERS.delete_one({'filter': name})
 
 
-def _unload(name: str) -> None:
+async def _unload(name: str) -> None:
     name = name.lstrip(Config.CMD_TRIGGER)
     if name != "load":
         _UNLOADED.append(name)
-        _UNLOADED_FILTERS.insert_one({'filter': name})
+        await _UNLOADED_FILTERS.insert_one({'filter': name})
 
 
-def clear_db() -> bool:
+async def clear_db() -> bool:
     """clear filters in DB"""
     _DISABLED.clear()
     _UNLOADED.clear()
-    _DISABLED_FILTERS.drop()
-    _UNLOADED_FILTERS.drop()
+    await _DISABLED_FILTERS.drop()
+    await _UNLOADED_FILTERS.drop()
     _LOG.info(_LOG_STR, "cleared filter DB!")
     return True
+
+asyncio.get_event_loop().run_until_complete(_main())
 
 
 class Filtr:
@@ -93,11 +97,11 @@ class Filtr:
     def __repr__(self) -> str:
         return f"<filter - {self.name}>"
 
-    def init(self) -> None:
+    async def init(self) -> None:
         """initialize the filter"""
         self._enabled, loaded = _init(self.name)
         if loaded:
-            self.load()
+            await self.load()
 
     @property
     def is_enabled(self) -> bool:
@@ -121,40 +125,40 @@ class Filtr:
         self._handler = handler
         _LOG.debug(_LOG_STR, f"created filter -> {self.name}")
 
-    def enable(self) -> str:
+    async def enable(self) -> str:
         """enable the filter"""
         if self._enabled:
             return ''
         self._enabled = True
-        _enable(self.name)
+        await _enable(self.name)
         _LOG.debug(_LOG_STR, f"enabled filter -> {self.name}")
         return self.name
 
-    def disable(self) -> str:
+    async def disable(self) -> str:
         """disable the filter"""
         if not self._enabled:
             return ''
         self._enabled = False
-        _disable(self.name)
+        await _disable(self.name)
         _LOG.debug(_LOG_STR, f"disabled filter -> {self.name}")
         return self.name
 
-    def load(self) -> str:
+    async def load(self) -> str:
         """load the filter"""
         if self._loaded:
             return ''
         self._client.add_handler(self._handler, self._group)
         self._loaded = True
-        _load(self.name)
+        await _load(self.name)
         _LOG.debug(_LOG_STR, f"loaded filter -> {self.name}")
         return self.name
 
-    def unload(self) -> str:
+    async def unload(self) -> str:
         """unload the filter"""
         if not self._loaded:
             return ''
         self._client.remove_handler(self._handler, self._group)
         self._loaded = False
-        _unload(self.name)
+        await _unload(self.name)
         _LOG.debug(_LOG_STR, f"unloaded filter -> {self.name}")
         return self.name

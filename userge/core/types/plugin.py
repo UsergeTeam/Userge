@@ -8,6 +8,7 @@
 
 __all__ = ['Plugin']
 
+import asyncio
 from typing import Union, List
 
 from userge import logging
@@ -98,52 +99,56 @@ class Plugin:
         """returns all sorted command names in the plugin"""
         return sorted((cmd.name for cmd in self.enabled_commands))
 
-    def enable(self) -> List[str]:
+    async def init(self) -> None:
+        """initialize the plugin"""
+        await asyncio.gather(*[flt.init() for flt in self.commands + self.filters])
+
+    async def enable(self) -> List[str]:
         """enable all commands in the plugin"""
         if self.is_enabled:
             return []
         enabled: List[str] = []
         for flt in self.commands + self.filters:
-            tmp = flt.enable()
+            tmp = await flt.enable()
             if tmp:
                 enabled.append(tmp)
         if enabled:
             _LOG.info(_LOG_STR, f"enabled plugin -> {self.name}")
         return enabled
 
-    def disable(self) -> List[str]:
+    async def disable(self) -> List[str]:
         """disable all commands in the plugin"""
         if not self.is_enabled:
             return []
         disabled: List[str] = []
         for flt in self.commands + self.filters:
-            tmp = flt.disable()
+            tmp = await flt.disable()
             if tmp:
                 disabled.append(tmp)
         if disabled:
             _LOG.info(_LOG_STR, f"disabled plugin -> {self.name}")
         return disabled
 
-    def load(self) -> List[str]:
+    async def load(self) -> List[str]:
         """load all commands in the plugin"""
         if self.is_loaded:
             return []
         loaded: List[str] = []
         for flt in self.commands + self.filters:
-            tmp = flt.load()
+            tmp = await flt.load()
             if tmp:
                 loaded.append(tmp)
         if loaded:
             _LOG.info(_LOG_STR, f"loaded plugin -> {self.name}")
         return loaded
 
-    def unload(self) -> List[str]:
+    async def unload(self) -> List[str]:
         """unload all commands in the plugin"""
         if not self.is_loaded:
             return []
         unloaded: List[str] = []
         for flt in self.commands + self.filters:
-            tmp = flt.unload()
+            tmp = await flt.unload()
             if tmp:
                 unloaded.append(tmp)
         if unloaded:

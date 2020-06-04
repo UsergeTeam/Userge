@@ -172,7 +172,7 @@ async def enable(message: Message) -> None:
     if 'p' in type_:
         found = set(names_).intersection(set(userge.manager.plugins))
         if found:
-            out = userge.manager.enable_plugins(list(found))
+            out = await userge.manager.enable_plugins(list(found))
             if out:
                 out_str = "**--Enabled Plugins--**\n\n"
                 for plg_name, cmds in out.items():
@@ -188,7 +188,7 @@ async def enable(message: Message) -> None:
                 names_.append(Config.CMD_TRIGGER + t_name)
         found = set(names_).intersection(set(userge.manager.commands))
         if found:
-            out = userge.manager.enable_commands(list(found))
+            out = await userge.manager.enable_commands(list(found))
             if out:
                 out_str = "**--Enabled Commands--**\n\n"
                 out_str += f"`{'`,    `'.join(out)}`"
@@ -200,7 +200,7 @@ async def enable(message: Message) -> None:
     elif 'f' in type_:
         found = set(names_).intersection(set(userge.manager.filters))
         if found:
-            out = userge.manager.enable_filters(list(found))
+            out = await userge.manager.enable_filters(list(found))
             if out:
                 out_str = "**--Enabled Filters--**\n\n"
                 out_str += f"`{'`,    `'.join(out)}`"
@@ -237,7 +237,7 @@ async def disable(message: Message) -> None:
     if 'p' in type_ and names_:
         found = set(names_).intersection(set(userge.manager.plugins))
         if found:
-            out = userge.manager.disable_plugins(list(found))
+            out = await userge.manager.disable_plugins(list(found))
             if out:
                 out_str = "**--Disabled Plugins--**\n\n"
                 for plg_name, cmds in out.items():
@@ -253,7 +253,7 @@ async def disable(message: Message) -> None:
                 names_.append(Config.CMD_TRIGGER + t_name)
         found = set(names_).intersection(set(userge.manager.commands))
         if found:
-            out = userge.manager.disable_commands(list(found))
+            out = await userge.manager.disable_commands(list(found))
             if out:
                 out_str = "**--Disabled Commands--**\n\n"
                 out_str += f"`{'`,    `'.join(out)}`"
@@ -265,7 +265,7 @@ async def disable(message: Message) -> None:
     elif 'f' in type_ and names_:
         found = set(names_).intersection(set(userge.manager.filters))
         if found:
-            out = userge.manager.disable_filters(list(found))
+            out = await userge.manager.disable_filters(list(found))
             if out:
                 out_str = "**--Disabled Filters--**\n\n"
                 out_str += f"`{'`,    `'.join(out)}`"
@@ -301,7 +301,7 @@ async def load(message: Message) -> None:
         if 'p' in type_:
             found = set(names_).intersection(set(userge.manager.plugins))
             if found:
-                out = userge.manager.load_plugins(list(found))
+                out = await userge.manager.load_plugins(list(found))
                 if out:
                     out_str = "**--Loaded Plugins--**\n\n"
                     for plg_name, cmds in out.items():
@@ -317,7 +317,7 @@ async def load(message: Message) -> None:
                     names_.append(Config.CMD_TRIGGER + t_name)
             found = set(names_).intersection(set(userge.manager.commands))
             if found:
-                out = userge.manager.load_commands(list(found))
+                out = await userge.manager.load_commands(list(found))
                 if out:
                     out_str = "**--Loaded Commands--**\n\n"
                     out_str += f"`{'`,    `'.join(out)}`"
@@ -329,7 +329,7 @@ async def load(message: Message) -> None:
         elif 'f' in type_:
             found = set(names_).intersection(set(userge.manager.filters))
             if found:
-                out = userge.manager.load_filters(list(found))
+                out = await userge.manager.load_filters(list(found))
                 if out:
                     out_str = "**--Loaded Filters--**\n\n"
                     out_str += f"`{'`,    `'.join(out)}`"
@@ -356,7 +356,8 @@ async def load(message: Message) -> None:
                 await replied.download(file_name=t_path)
                 plugin = get_import_path(ROOT, t_path)
                 try:
-                    userge.load_plugin(plugin)
+                    await userge.load_plugin(plugin)
+                    await userge.complete_init_tasks()
                 except (ImportError, SyntaxError) as i_e:
                     os.remove(t_path)
                     await message.err(i_e)
@@ -390,7 +391,7 @@ async def unload(message: Message) -> None:
     if 'p' in type_ and names_:
         found = set(names_).intersection(set(userge.manager.plugins))
         if found:
-            out = userge.manager.unload_plugins(list(found))
+            out = await userge.manager.unload_plugins(list(found))
             if out:
                 out_str = "**--Unloaded Plugins--**\n\n"
                 for plg_name, cmds in out.items():
@@ -406,7 +407,7 @@ async def unload(message: Message) -> None:
                 names_.append(Config.CMD_TRIGGER + t_name)
         found = set(names_).intersection(set(userge.manager.commands))
         if found:
-            out = userge.manager.unload_commands(list(found))
+            out = await userge.manager.unload_commands(list(found))
             if out:
                 out_str = "**--Unloaded Commands--**\n\n"
                 out_str += f"`{'`,    `'.join(out)}`"
@@ -418,7 +419,7 @@ async def unload(message: Message) -> None:
     elif 'f' in type_ and names_:
         found = set(names_).intersection(set(userge.manager.filters))
         if found:
-            out = userge.manager.unload_filters(list(found))
+            out = await userge.manager.unload_filters(list(found))
             if out:
                 out_str = "**--Unloaded Filters--**\n\n"
                 out_str += f"`{'`,    `'.join(out)}`"
@@ -444,4 +445,4 @@ async def reload_(message: Message) -> None:
 async def clear_(message: Message) -> None:
     await message.edit("`Clearing DB...`")
     await message.edit(
-        f"**Cleared Filters** : `{userge.manager.clear()}`", del_in=3, log=__name__)
+        f"**Cleared Filters** : `{await userge.manager.clear()}`", del_in=3, log=__name__)

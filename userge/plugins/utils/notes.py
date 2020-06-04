@@ -14,7 +14,7 @@ NOTES_COLLECTION = get_collection("notes")
 @userge.on_cmd("notes", about={'header': "List all saved notes"})
 async def notes_active(message: Message) -> None:
     out = ''
-    for note in NOTES_COLLECTION.find({'chat_id': message.chat.id}, {'name': 1}):
+    async for note in NOTES_COLLECTION.find({'chat_id': message.chat.id}, {'name': 1}):
         out += " 📌 `{}`\n".format(note['name'])
     if out:
         await message.edit("**--Notes saved in this chat:--**\n\n" + out, del_in=0)
@@ -29,7 +29,8 @@ async def remove_notes(message: Message) -> None:
     notename = message.input_str
     if not notename:
         out = "`Wrong syntax`\nNo arguements"
-    elif NOTES_COLLECTION.find_one_and_delete({'chat_id': message.chat.id, 'name': notename}):
+    elif await NOTES_COLLECTION.find_one_and_delete(
+            {'chat_id': message.chat.id, 'name': notename}):
         out = "`Successfully deleted note:` **{}**".format(notename)
     else:
         out = "`Couldn't find note:` **{}**".format(notename)
@@ -45,7 +46,7 @@ async def remove_notes(message: Message) -> None:
                filter_me=False)
 async def get_note(message: Message) -> None:
     notename = message.matches[0].group(1)
-    found = NOTES_COLLECTION.find_one(
+    found = await NOTES_COLLECTION.find_one(
         {'chat_id': message.chat.id, 'name': notename}, {'content': 1})
     if found:
         out = "**--{}--**\n\n{}".format(notename, found['content'])
@@ -65,9 +66,9 @@ async def add_note(message: Message) -> None:
         await message.err(text="No Content Found!")
         return
     out = "`{} note #{}`"
-    result = NOTES_COLLECTION.update_one({'chat_id': message.chat.id, 'name': notename},
-                                         {"$set": {'content': content}},
-                                         upsert=True)
+    result = await NOTES_COLLECTION.update_one(
+        {'chat_id': message.chat.id, 'name': notename},
+        {"$set": {'content': content}}, upsert=True)
     if result.upserted_id:
         out = out.format('Added', notename)
     else:

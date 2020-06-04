@@ -12,12 +12,12 @@ google-auth-oauthlib
 googletrans
 hachoir==3.1.1
 heroku3
+motor
 nest_asyncio
 oauth2client
 Pillow
 psutil
 pybase64
-pymongo
 pySmartDL
 python-dotenv
 pytz
