@@ -11,6 +11,8 @@ import json
 import requests
 import spamwatch
 
+from pyrogram.errors import ChatAdminRequired
+
 from userge import userge, Message, Config, get_collection, Filters
 
 GBAN_USER_BASE = get_collection("GBAN_USER")
@@ -73,7 +75,7 @@ async def gban_user(message: Message):
     user_id = get_mem['id']
 
     try:
-        for i in GBAN_USER_BASE.find({}):
+        async for i in GBAN_USER_BASE.find({}):
             if i['user_id'] == user_id:
                 await message.edit(
                     "**#Already_GBanned**\n\nUser Already Exists in My Gban List.\n"
@@ -101,7 +103,7 @@ async def gban_user(message: Message):
                 "Aborted coz No reason of gban provided by banner")
             return
 
-        GBAN_USER_BASE.insert_one(
+        await GBAN_USER_BASE.insert_one(
             {'firstname': firstname, 'user_id': user_id, 'reason': reason})
 
         if can_ban:
@@ -165,7 +167,7 @@ async def ungban_user(message: Message):
     user_id = get_mem['id']
 
     try:
-        GBAN_USER_BASE.delete_one({'firstname': firstname, 'user_id': user_id})
+        await GBAN_USER_BASE.delete_one({'firstname': firstname, 'user_id': user_id})
         await message.edit(
             r"\\**#UnGbanned_User**//"
             f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
@@ -190,7 +192,7 @@ async def ungban_user(message: Message):
 async def list_gbanned(message: Message):
     try:
         msg = ''
-        for c in GBAN_USER_BASE.find({}):
+        async for c in GBAN_USER_BASE.find({}):
             msg += ("**User** : " + str(c['firstname']) + "-> with **User ID** -> "
                     + str(c['user_id']) + " is **GBanned for** : " + str(c['reason']) + "\n\n")
         await message.edit_or_send_as_file(
@@ -227,7 +229,7 @@ async def whitelist(message: Message):
     user_id = get_mem['id']
 
     try:
-        WHITELIST.insert_one({'firstname': firstname, 'user_id': user_id})
+        await WHITELIST.insert_one({'firstname': firstname, 'user_id': user_id})
         await message.edit(
             r"\\**#Whitelisted_User**//"
             f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
@@ -272,7 +274,7 @@ async def rmwhitelist(message: Message):
     user_id = get_mem['id']
 
     try:
-        WHITELIST.delete_one({'firstname': firstname, 'user_id': user_id})
+        await WHITELIST.delete_one({'firstname': firstname, 'user_id': user_id})
         await message.edit(
             r"\\**#Removed_Whitelisted_User**//"
             f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
@@ -297,7 +299,7 @@ async def rmwhitelist(message: Message):
 async def list_white(message: Message):
     try:
         msg = ''
-        for c in WHITELIST.find({}):
+        async for c in WHITELIST.find({}):
             msg += ("**User** : " + str(c['firstname']) + "-> with **User ID** -> " +
                     str(c['user_id']) + "\n\n")
         await message.edit_or_send_as_file(
@@ -307,7 +309,8 @@ async def list_white(message: Message):
         await message.edit("Error: " + str(e))
 
 
-@userge.on_filters(~Filters.me & Filters.group & (Filters.text | Filters.new_chat_members))
+@userge.on_filters(
+    ~Filters.me & Filters.group & Filters.new_chat_members, group=1)
 async def gban_at_entry(message: Message):
     try:
         if message.service:
@@ -315,19 +318,15 @@ async def gban_at_entry(message: Message):
                 chat_id = message.chat.id
                 user_id = message.new_chat_members[0].id
                 firstname = message.new_chat_members[0].first_name
-        elif message.from_user:
-            chat_id = message.chat.id
-            user_id = message.from_user.id
-            firstname = message.from_user.first_name
     except Exception:
         return  # Nu use to continue if u can't get id of user from message 🤔
 
-    for w in WHITELIST.find({}):
+    async for w in WHITELIST.find({}):
         if w['user_id'] == user_id:
             return
 
     try:
-        for c in GBAN_USER_BASE.find({}):
+        async for c in GBAN_USER_BASE.find({}):
             if c['user_id'] == user_id:
                 reason = c['reason']
                 try:
@@ -344,17 +343,17 @@ async def gban_at_entry(message: Message):
                         f"**User:** [{firstname}](tg://user?id={user_id})\n"
                         f"**ID:** `{user_id}`\n**Reason:** {reason}\n**Quick Action:** "
                         "Banned in {message.chat.title}")
-                except Exception:
+                except ChatAdminRequired:
                     break
-    except Exception:
-        pass
+    except Exception as e:
+        LOG.exception(e)
 
     if API_BANS:
         try:
             if Config.SPAM_WATCH_API is not None:
                 SENTRY = spamwatch.Client(Config.SPAM_WATCH_API)
                 intruder = SENTRY.get_ban(user_id)
-                if intruder and await guadmin_check(chat_id, user_id):
+                if intruder:
                     await userge.kick_chat_member(chat_id, user_id)
                     await message.reply(
                         r"\\**#Userge_Antispam**//"
@@ -370,7 +369,7 @@ async def gban_at_entry(message: Message):
                         f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
                         f"**ID:** `{user_id}`\n**Reason:** `{intruder.reason}`\n"
                         "**Quick Action:** Banned in {message.chat.title}\n\n$AUTOBAN #id{user_id}")
-        except Exception:
+        except ChatAdminRequired:
             pass
 
         try:
@@ -395,8 +394,9 @@ async def gban_at_entry(message: Message):
                         f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
                         f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n**Quick Action:**"
                         " Banned in {message.chat.title}\n\n$AUTOBAN #id{user_id}")
-                except Exception:
+                except ChatAdminRequired:
                     pass
-        except Exception:
-            pass
+        except Exception as e:
+            LOG.exception(e)
+
     message.continue_propagation()

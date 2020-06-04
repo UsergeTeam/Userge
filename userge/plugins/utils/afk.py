@@ -18,23 +18,21 @@ SAVED_SETTINGS = get_collection("CONFIGS")
 AFK_COLLECTION = get_collection("AFK")
 
 IS_AFK = False
+IS_AFK_FILTER = Filters.create(lambda _, __: bool(IS_AFK))
 REASON = ''
 TIME = 0.0
 USERS = {}
 
-__tmp__ = SAVED_SETTINGS.find_one({'_id': 'AFK'})
 
-if __tmp__:
-    IS_AFK = __tmp__['on']
-    REASON = __tmp__['data']
-    TIME = __tmp__['time'] if 'time' in __tmp__ else 0
-
-del __tmp__
-
-for _user in AFK_COLLECTION.find():
-    USERS.update({_user['_id']:  [_user['pcount'], _user['gcount'], _user['men']]})
-
-IS_AFK_FILTER = Filters.create(lambda _, __: bool(IS_AFK))
+async def _init() -> None:
+    global IS_AFK, REASON, TIME
+    data = await SAVED_SETTINGS.find_one({'_id': 'AFK'})
+    if data:
+        IS_AFK = data['on']
+        REASON = data['data']
+        TIME = data['time'] if 'time' in data else 0
+    async for _user in AFK_COLLECTION.find():
+        USERS.update({_user['_id']:  [_user['pcount'], _user['gcount'], _user['men']]})
 
 
 @userge.on_cmd("afk", about={
@@ -47,11 +45,12 @@ async def active_afk(message: Message) -> None:
     IS_AFK = True
     TIME = time.time()
     REASON = message.input_str
-    await CHANNEL.log(f"You went AFK! : `{REASON}`")
-    await message.edit("`You went AFK!`", del_in=1)
-    AFK_COLLECTION.drop()
-    SAVED_SETTINGS.update_one(
-        {'_id': 'AFK'}, {"$set": {'on': True, 'data': REASON, 'time': TIME}}, upsert=True)
+    await asyncio.gather(
+        CHANNEL.log(f"You went AFK! : `{REASON}`"),
+        message.edit("`You went AFK!`", del_in=1),
+        AFK_COLLECTION.drop(),
+        SAVED_SETTINGS.update_one(
+            {'_id': 'AFK'}, {"$set": {'on': True, 'data': REASON, 'time': TIME}}, upsert=True))
 
 
 @userge.on_filters(IS_AFK_FILTER & ~Filters.me & ~Filters.bot & (
@@ -61,13 +60,14 @@ async def handle_afk_incomming(message: Message) -> None:
     chat = message.chat
     user_dict = await userge.get_user_dict(user_id)
     afk_time = time_formatter(round(time.time() - TIME))
+    coro_list = []
     if user_id in USERS:
         if not (USERS[user_id][0] + USERS[user_id][1]) % randint(2, 4):
             if REASON:
                 out_str = f"I'm still **AFK**.\nReason: `{REASON}`\nLast Seen: `{afk_time} ago`"
             else:
                 out_str = choice(AFK_REASONS)
-            await message.reply(out_str)
+            coro_list.append(message.reply(out_str))
         if chat.type == 'private':
             USERS[user_id][0] += 1
         else:
@@ -77,26 +77,28 @@ async def handle_afk_incomming(message: Message) -> None:
             out_str = f"I'm **AFK** right now.\nReason: `{REASON}`\nLast Seen: `{afk_time} ago`"
         else:
             out_str = choice(AFK_REASONS)
-        await message.reply(out_str)
+        coro_list.append(message.reply(out_str))
         if chat.type == 'private':
             USERS[user_id] = [1, 0, user_dict['mention']]
         else:
             USERS[user_id] = [0, 1, user_dict['mention']]
     if chat.type == 'private':
-        await CHANNEL.log(
+        coro_list.append(CHANNEL.log(
             f"#PRIVATE\n{user_dict['mention']} send you\n\n"
-            f"{message.text}")
+            f"{message.text}"))
     else:
-        await CHANNEL.log(
+        coro_list.append(CHANNEL.log(
             "#GROUP\n"
             f"{user_dict['mention']} tagged you in [{chat.title}](http://t.me/{chat.username})\n\n"
-            f"{message.text}\n\n[goto_msg](https://t.me/c/{str(chat.id)[4:]}/{message.message_id})")
-    AFK_COLLECTION.update_one({'_id': user_id},
-                              {"$set": {
-                                  'pcount': USERS[user_id][0],
-                                  'gcount': USERS[user_id][1],
-                                  'men': USERS[user_id][2]}},
-                              upsert=True)
+            f"{message.text}\n\n"
+            "[goto_msg](https://t.me/c/{str(chat.id)[4:]}/{message.message_id})"))
+    coro_list.append(AFK_COLLECTION.update_one({'_id': user_id},
+                                               {"$set": {
+                                                   'pcount': USERS[user_id][0],
+                                                   'gcount': USERS[user_id][1],
+                                                   'men': USERS[user_id][2]}},
+                                               upsert=True))
+    await asyncio.gather(*coro_list)
 
 
 @userge.on_filters(IS_AFK_FILTER & Filters.outgoing, group=-1)
@@ -105,6 +107,7 @@ async def handle_afk_outgoing(message: Message) -> None:
     IS_AFK = False
     afk_time = time_formatter(round(time.time() - TIME))
     replied: Message = await message.reply("`I'm no longer AFK!`", log=__name__)
+    coro_list = []
     if USERS:
         p_msg = ''
         g_msg = ''
@@ -117,23 +120,25 @@ async def handle_afk_outgoing(message: Message) -> None:
             if gcount:
                 g_msg += f"👥 {men} ✉️ **{gcount}**\n"
                 g_count += gcount
-        await replied.edit(
+        coro_list.append(replied.edit(
             f"`You recieved {p_count + g_count} messages while you were away. "
-            f"Check log for more details.`\n\n**AFK time** : __{afk_time}__", del_in=3)
+            f"Check log for more details.`\n\n**AFK time** : __{afk_time}__", del_in=3))
         out_str = f"You've recieved **{p_count + g_count}** messages " + \
             f"from **{len(USERS)}** users while you were away!\n\n**AFK time** : __{afk_time}__\n"
         if p_count:
             out_str += f"\n**{p_count} Private Messages:**\n\n{p_msg}"
         if g_count:
             out_str += f"\n**{g_count} Group Messages:**\n\n{g_msg}"
-        await CHANNEL.log(out_str)
+        coro_list.append(CHANNEL.log(out_str))
         USERS.clear()
     else:
         await asyncio.sleep(3)
-        await replied.delete()
-    AFK_COLLECTION.drop()
-    SAVED_SETTINGS.update_one(
-        {'_id': 'AFK'}, {"$set": {'on': False}}, upsert=True)
+        coro_list.append(replied.delete())
+    coro_list.append(asyncio.gather(
+        AFK_COLLECTION.drop(),
+        SAVED_SETTINGS.update_one(
+            {'_id': 'AFK'}, {"$set": {'on': False}}, upsert=True)))
+    await asyncio.gather(*coro_list)
 
 
 AFK_REASONS = (
