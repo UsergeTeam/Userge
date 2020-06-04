@@ -135,7 +135,9 @@ class Decorators:
         flt = Filtr(self, group)
         welcome_chats = welcome_chats & Filters.create(lambda _, __: flt.is_enabled)
         return self._build_decorator(log=f"On New Member in {welcome_chats}",
-                                     filters=Filters.new_chat_members & welcome_chats,
+                                     filters=(
+                                         Filters.group & Filters.new_chat_members
+                                         & welcome_chats),
                                      flt=flt)
 
     def on_left_member(self,
@@ -145,7 +147,9 @@ class Decorators:
         flt = Filtr(self, group)
         leaving_chats = leaving_chats & Filters.create(lambda _, __: flt.is_enabled)
         return self._build_decorator(log=f"On Left Member in {leaving_chats}",
-                                     filters=Filters.left_chat_member & leaving_chats,
+                                     filters=(
+                                         Filters.group & Filters.left_chat_member
+                                         & leaving_chats),
                                      flt=flt)
 
     def _build_decorator(self,
@@ -160,7 +164,8 @@ class Decorators:
             _LOG.debug(_LOG_STR, f"Loading => [ async def {func.__name__}(message) ] "
                        f"from {func.__module__} `{log}`")
             module_name = func.__module__.split('.')[-1]
-            self.manager.add_plugin(self, module_name, func.__module__).add(flt)
+            parent_name = func.__module__.split('.')[-2]
+            self.manager.add_plugin(self, module_name, parent_name, func.__module__).add(flt)
             handler = MessageHandler(template, filters)
             if isinstance(flt, Command):
                 flt.update_command(handler, func.__doc__)

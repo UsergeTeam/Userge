@@ -44,6 +44,8 @@ class Userge(Methods):
 
     async def complete_init_tasks(self) -> None:
         """ wait for init tasks """
+        if not self._init_tasks:
+            return
         await asyncio.gather(*self._init_tasks)
         self._init_tasks.clear()
 

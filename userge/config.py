@@ -15,16 +15,18 @@ from typing import Set
 
 import heroku3
 from git import Repo
+from git.exc import InvalidGitRepositoryError, GitCommandError
 from pySmartDL import SmartDL
 from dotenv import load_dotenv
 from pyrogram import Filters
 
 from userge import logging
+from . import versions
 
 _LOG = logging.getLogger(__name__)
 
 if sys.version_info[0] < 3 or sys.version_info[1] < 7:
-    _LOG.info("You MUST have a python version of at least 3.7 !")
+    _LOG.error("You MUST have a python version of at least 3.7 !")
     sys.exit()
 
 _CONFIG_FILE = "config.env"
@@ -78,6 +80,7 @@ class Config:
     ALLOWED_CHATS = Filters.chat([])
     SUDO_USERS: Set[int] = set()
     ALLOWED_COMMANDS: Set[str] = set()
+    UPSTREAM_REMOTE = 'upstream'
     HEROKU_APP = None
     HEROKU_GIT_URL = None
 
@@ -107,6 +110,19 @@ if Config.HEROKU_API_KEY:
                 shutil.rmtree(tmp_heroku_git_path)
             break
 
+_LOG.info("Checking REPO...")
+try:
+    _REPO = Repo()
+except InvalidGitRepositoryError:
+    _REPO = Repo.init()
+if Config.UPSTREAM_REMOTE not in _REPO.remotes:
+    _REPO.create_remote(Config.UPSTREAM_REMOTE, Config.UPSTREAM_REPO)
+try:
+    _REPO.remote(Config.UPSTREAM_REMOTE).fetch()
+except GitCommandError as error:
+    _LOG.error(error)
+    sys.exit()
+
 if not os.path.exists('bin'):
     _LOG.info("Creating BIN...")
     os.mkdir('bin')
@@ -129,8 +145,17 @@ if Config.LOAD_UNOFFICIAL_PLUGINS:
     os.system("git clone --depth=1 https://github.com/UsergeTeam/Userge-Plugins.git")
     os.system("pip3 install -U pip")
     os.system("pip3 install -r Userge-Plugins/requirements.txt")
-    os.system("rm -rf userge/plugins/unof_plugins/")
-    os.system("mv Userge-Plugins/plugins/ userge/plugins/unof_plugins/")
+    os.system("rm -rf userge/plugins/unofficial/")
+    os.system("mv Userge-Plugins/plugins/ userge/plugins/unofficial/")
     os.system("cp -r Userge-Plugins/resources/* resources/")
     os.system("rm -rf Userge-Plugins/")
     _LOG.info("UnOfficial Plugins Loaded Successfully!")
+
+
+def get_version() -> str:
+    """ get userge version """
+    ver = f"{versions.__major__}.{versions.__minor__}.{versions.__micro__}"
+    diff = list(Repo().iter_commits(f'{Config.UPSTREAM_REMOTE}/master..HEAD'))
+    if diff:
+        return f"{ver}-beta.{len(diff)}"
+    return ver

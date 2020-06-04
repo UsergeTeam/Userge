@@ -13,20 +13,12 @@ from userge import userge, Message, Config
 async def helpme(message: Message) -> None:
     plugins = userge.manager.enabled_plugins
     if not message.input_str:
-        out_str = f"""**--Which plugin you want ?--**
-
-**Usage**:
-
-    `{Config.CMD_TRIGGER}help [plugin_name]`
-
-**Hint**:
-
-    use `{Config.CMD_TRIGGER}s` for search commands.
-    ex: `{Config.CMD_TRIGGER}s wel`
-
-**({len(plugins)}) Plugins Available:**\n\n"""
-        for i in sorted(plugins):
-            out_str += f"`{i}`    "
+        out_str = f"""⚒ **--(`{len(plugins)}`) Plugins Available--**\n\n"""
+        cat_plugins = userge.manager.get_plugins()
+        for cat in sorted(cat_plugins):
+            out_str += (f"    ✪ **{cat}** :   `"
+                        + "`    `".join(sorted(cat_plugins[cat])) + "`\n\n")
+        out_str += f"""📕 **Usage:**  `{Config.CMD_TRIGGER}help [plugin_name]`"""
     else:
         key = message.input_str
         if (not key.startswith(Config.CMD_TRIGGER)
@@ -34,20 +26,12 @@ async def helpme(message: Message) -> None:
                 and (len(plugins[key].enabled_commands) > 1
                      or plugins[key].enabled_commands[0].name.lstrip(Config.CMD_TRIGGER) != key)):
             commands = plugins[key].get_commands()
-            out_str = f"""**--Which command you want ?--**
+            out_str = f"""⚔ **--(`{len(commands)}`) Commands Available--**
 
-**Usage**:
-
-    `{Config.CMD_TRIGGER}help [command_name | command_name_with_prefix]`
-
-**Hint**:
-
-    use `{Config.CMD_TRIGGER}s` for search commands.
-    ex: `{Config.CMD_TRIGGER}s wel`
-
-**({len(commands)}) Commands Available Under `{key}` Plugin:**\n\n"""
+🔧 **Plugin:**  `{key}`\n\n"""
             for i in commands:
-                out_str += f"`{i}`    "
+                out_str += f"    〔 `{i}` 〕\n"
+            out_str += f"""\n📕 **Usage:**  `{Config.CMD_TRIGGER}help [command_name]`"""
         else:
             commands = userge.manager.enabled_commands
             key = key.lstrip(Config.CMD_TRIGGER)
@@ -58,4 +42,4 @@ async def helpme(message: Message) -> None:
                 out_str = f"`{key_}`\n\n{commands[key_].about}"
             else:
                 out_str = f"__No Module or Command Found for__: `{message.input_str}`"
-    await message.edit(text=out_str, del_in=0)
+    await message.edit(out_str, del_in=0)

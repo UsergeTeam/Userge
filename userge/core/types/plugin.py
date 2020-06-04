@@ -20,10 +20,12 @@ _LOG_STR = "<<<!  [[[[[  %s  ]]]]]  !>>>"
 
 
 class Plugin:
-    """plugin class"""
-    def __init__(self, client: '_client.Userge', name: str, about: str = '') -> None:
+    """ plugin class """
+    def __init__(self, client: '_client.Userge', name: str,
+                 parent: str, about: str = '') -> None:
         self._client = client
         self.name = name
+        self.parent = parent
         self.about = about
         self.commands: List['command.Command'] = []
         self.filters: List['filtr.Filtr'] = []

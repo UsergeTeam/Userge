@@ -9,6 +9,7 @@
 __all__ = ['get_collection']
 
 import asyncio
+from typing import List
 
 from motor.motor_asyncio import AsyncIOMotorClient
 from motor.core import AgnosticClient, AgnosticDatabase, AgnosticCollection
@@ -29,7 +30,7 @@ else:
     _LOG.info(_LOG_STR, "Userge Database Not Found :( => Creating New Database...")
 
 _DATABASE: AgnosticDatabase = _MGCLIENT["Userge"]
-_COL_LIST = _RUN(_DATABASE.list_collection_names())
+_COL_LIST: List[str] = _RUN(_DATABASE.list_collection_names())
 
 
 def get_collection(name: str) -> AgnosticCollection:

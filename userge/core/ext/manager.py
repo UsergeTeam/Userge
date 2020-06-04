@@ -97,13 +97,22 @@ class Manager:
         await asyncio.gather(*[plg.init() for _, plg in self.plugins.items()])
 
     def add_plugin(self, client: '_client.Userge',
-                   name: str, about: str = '') -> Plugin:
+                   name: str, parent: str, about: str = '') -> Plugin:
         """add plugin to manager"""
         if name in self.plugins:
             return self.plugins[name]
-        plg = Plugin(client, name, about)
+        plg = Plugin(client, name, parent, about)
         self.plugins[name] = plg
         return plg
+
+    def get_plugins(self) -> Dict[str, List[str]]:
+        """ returns categorized plugins """
+        ret_dict: Dict[str, List[str]] = {}
+        for _, plg in self.enabled_plugins.items():
+            if plg.parent not in ret_dict:
+                ret_dict[plg.parent] = []
+            ret_dict[plg.parent].append(plg.name)
+        return ret_dict
 
     def clear_plugins(self) -> None:
         """clear all plugins"""
