@@ -83,7 +83,6 @@ class Config:
     ALLOWED_COMMANDS: Set[str] = set()
     HEROKU_APP = None
     HEROKU_GIT_URL = None
-    API_BANS = os.environ.get("API_BANS", True)
 
 
 if Config.SUDO_TRIGGER == Config.CMD_TRIGGER:
