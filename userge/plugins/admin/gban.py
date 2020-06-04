@@ -11,6 +11,8 @@ import json
 import requests
 import spamwatch
 
+from pyrogram.errors import ChatAdminRequired
+
 from userge import userge, Message, Config, get_collection, Filters
 
 GBAN_USER_BASE = get_collection("GBAN_USER")
