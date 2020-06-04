@@ -34,7 +34,8 @@ if os.path.isfile(_CONFIG_FILE):
     load_dotenv(_CONFIG_FILE)
 
 if os.environ.get("_____REMOVE_____THIS_____LINE_____", None):
-    _LOG.error("Please remove the line mentioned in the first hashtag from the config.env file")
+    _LOG.error(
+        "Please remove the line mentioned in the first hashtag from the config.env file")
     sys.exit()
 
 
@@ -62,10 +63,12 @@ class Config:
     GOOGLE_CHROME_DRIVER = os.environ.get("GOOGLE_CHROME_DRIVER", None)
     GOOGLE_CHROME_BIN = os.environ.get("GOOGLE_CHROME_BIN", None)
     LOG_CHANNEL_ID = int(os.environ.get("LOG_CHANNEL_ID", 0))
-    UPSTREAM_REPO = os.environ.get("UPSTREAM_REPO", "https://github.com/UsergeTeam/Userge")
+    UPSTREAM_REPO = os.environ.get(
+        "UPSTREAM_REPO", "https://github.com/UsergeTeam/Userge")
     HEROKU_API_KEY = os.environ.get("HEROKU_API_KEY", None)
     HEROKU_APP_NAME = os.environ.get("HEROKU_APP_NAME", None)
-    LOAD_UNOFFICIAL_PLUGINS = bool(os.environ.get("LOAD_UNOFFICIAL_PLUGINS", False))
+    LOAD_UNOFFICIAL_PLUGINS = bool(
+        os.environ.get("LOAD_UNOFFICIAL_PLUGINS", False))
     CMD_TRIGGER = os.environ.get("CMD_TRIGGER", '.')
     SUDO_TRIGGER = os.environ.get("SUDO_TRIGGER", '!')
     FINISHED_PROGRESS_STR = os.environ.get("FINISHED_PROGRESS_STR", '█')
@@ -80,10 +83,12 @@ class Config:
     ALLOWED_COMMANDS: Set[str] = set()
     HEROKU_APP = None
     HEROKU_GIT_URL = None
+    API_BANS = os.environ.get("API_BANS", True)
 
 
 if Config.SUDO_TRIGGER == Config.CMD_TRIGGER:
-    _LOG.info("Invalid SUDO_TRIGGER!, You can't use `%s` as SUDO_TRIGGER", Config.CMD_TRIGGER)
+    _LOG.info(
+        "Invalid SUDO_TRIGGER!, You can't use `%s` as SUDO_TRIGGER", Config.CMD_TRIGGER)
     sys.exit()
 
 if not os.path.isdir(Config.DOWN_PATH):
@@ -100,10 +105,12 @@ if Config.HEROKU_API_KEY:
             Config.HEROKU_GIT_URL = heroku_app.git_url.replace(
                 "https://", "https://api:" + Config.HEROKU_API_KEY + "@")
             if not os.path.isdir(os.path.join(os.getcwd(), '.git')):
-                tmp_heroku_git_path = os.path.join(os.getcwd(), 'tmp_heroku_git')
+                tmp_heroku_git_path = os.path.join(
+                    os.getcwd(), 'tmp_heroku_git')
                 _LOG.info("Cloning Heroku GIT...")
                 Repo.clone_from(Config.HEROKU_GIT_URL, tmp_heroku_git_path)
-                shutil.move(os.path.join(tmp_heroku_git_path, '.git'), os.getcwd())
+                shutil.move(os.path.join(
+                    tmp_heroku_git_path, '.git'), os.getcwd())
                 shutil.rmtree(tmp_heroku_git_path)
             break
 
