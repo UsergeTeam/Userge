@@ -9,7 +9,6 @@
 from userge.logger import logging
 from userge.config import Config
 from userge.core import (
-    Userge, Filters, Message,
-    get_collection, pool)
+    Userge, Filters, Message, get_collection, pool)
 
 userge = Userge()  # userge is the client name

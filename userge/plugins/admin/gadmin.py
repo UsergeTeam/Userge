@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 import os
 import time
 import asyncio
@@ -28,39 +27,27 @@ CHANNEL = userge.getCLogger(__name__)
 async def is_admin(message: Message):
     check_user = await userge.get_chat_member(message.chat.id, message.from_user.id)
     user_type = check_user.status
-
     if user_type == "member":
         return False
-
-    elif user_type == "administrator":
+    if user_type == "administrator":
         rm_perm = check_user.can_restrict_members
-
         if rm_perm:
             return True
-        else:
-            return False
-
-    else:
-        return True
+        return False
+    return True
 
 
 async def is_sudoadmin(message: Message):
     check_user = await userge.get_chat_member(message.chat.id, message.from_user.id)
     user_type = check_user.status
-
     if user_type == "member":
         return False
-
-    elif user_type == "administrator":
+    if user_type == "administrator":
         add_adminperm = check_user.can_promote_members
-
         if add_adminperm:
             return True
-        else:
-            return False
-
-    else:
-        return True
+        return False
+    return True
 
 
 @userge.on_cmd("promote", about={
@@ -1017,6 +1004,7 @@ async def zombie_clean(message: Message):
                 r"ZOMBIE COUNT: `WOOHOO group is clean.. \^o^/`"
                 )
 
+
 @userge.on_cmd("pin", about={
     'header': "use this to pin & unpin messages",
     'description': "pin & unpin messages in groups with or without notify to members.",
@@ -1068,7 +1056,6 @@ async def pin_msgs(message: Message):
                     f"\n`do .help pin for more info..`\n\n"
                     f"**ERROR:** `{e_f}`"
                     )
-            return
 
         elif silent_pin:
 
@@ -1087,7 +1074,6 @@ async def pin_msgs(message: Message):
                     f"\n`do .help pin for more info..`\n\n"
                     f"**ERROR:** `{e_f}`"
                     )
-            return
 
         else:
 
@@ -1106,10 +1092,10 @@ async def pin_msgs(message: Message):
                     f"\n`do .help pin for more info..`\n\n"
                     f"**ERROR:** `{e_f}`"
                     )
-            return
 
     else:
         await message.edit(r"`i don't have proper permission to do that! (* ￣︿￣)`", del_in=0)
+
 
 @userge.on_cmd("gpic", about={
     'header': "use this to set or delete chat photo",
@@ -1225,7 +1211,7 @@ async def chatpic_func(message: Message):
         '-o': "off"},
     'types': [
         '-s10 = 10 seconds', '-s30 = 30 seconds', '-m1 = 1 minutes',
-        '-m5 = 5 minutes','-m15 = 15 minutes', '-h1 = 1 hour'],
+        '-m5 = 5 minutes', '-m15 = 15 minutes', '-h1 = 1 hour'],
     'examples': [
         "{tr}smode -s30 [send to chat] (turn on 30s slow mode) ",
         "{tr}smode -o [send to chat] (turn off slow mode)"]})

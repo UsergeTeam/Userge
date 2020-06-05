@@ -6,25 +6,21 @@
 #
 # All rights reserved.
 
-
 from userge import userge, Message, Config, get_collection
 
 SAVED_SETTINGS = get_collection("CONFIGS")
 
-__tmp_msg__ = SAVED_SETTINGS.find_one({'_id': 'MSG_DELETE_TIMEOUT'})
-__tmp_wel__ = SAVED_SETTINGS.find_one({'_id': 'WELCOME_DELETE_TIMEOUT'})
-__tmp_pp__ = SAVED_SETTINGS.find_one({'_id': 'AUTOPIC_TIMEOUT'})
 
-if __tmp_msg__:
-    Config.MSG_DELETE_TIMEOUT = __tmp_msg__['data']
-
-if __tmp_wel__:
-    Config.WELCOME_DELETE_TIMEOUT = __tmp_wel__['data']
-
-if __tmp_pp__:
-    Config.AUTOPIC_TIMEOUT = __tmp_pp__['data']
-
-del __tmp_msg__, __tmp_wel__, __tmp_pp__
+async def _init() -> None:
+    msg_t = await SAVED_SETTINGS.find_one({'_id': 'MSG_DELETE_TIMEOUT'})
+    if msg_t:
+        Config.MSG_DELETE_TIMEOUT = msg_t['data']
+    wel_t = await SAVED_SETTINGS.find_one({'_id': 'WELCOME_DELETE_TIMEOUT'})
+    if wel_t:
+        Config.WELCOME_DELETE_TIMEOUT = wel_t['data']
+    pp_t = await SAVED_SETTINGS.find_one({'_id': 'AUTOPIC_TIMEOUT'})
+    if pp_t:
+        Config.AUTOPIC_TIMEOUT = pp_t['data']
 
 
 @userge.on_cmd("sdelto (\\d+)", about={
@@ -36,13 +32,13 @@ async def set_delete_timeout(message: Message):
     await message.edit("`Setting auto message delete timeout...`")
     t_o = int(message.matches[0].group(1))
     Config.MSG_DELETE_TIMEOUT = t_o
-    SAVED_SETTINGS.update_one(
+    await SAVED_SETTINGS.update_one(
         {'_id': 'MSG_DELETE_TIMEOUT'}, {"$set": {'data': t_o}}, upsert=True)
     if t_o:
         await message.edit(
             f"`Set auto message delete timeout as {t_o} seconds!`", del_in=3)
     else:
-        await message.edit(f"`Auto message deletion disabled!`", del_in=3)
+        await message.edit("`Auto message deletion disabled!`", del_in=3)
 
 
 @userge.on_cmd("vdelto", about={'header': "View auto message delete timeout"})
@@ -53,7 +49,7 @@ async def view_delete_timeout(message: Message):
             f"`Messages will be deleted after {Config.MSG_DELETE_TIMEOUT} seconds!`",
             del_in=5)
     else:
-        await message.edit(f"`Auto message deletion disabled!`", del_in=3)
+        await message.edit("`Auto message deletion disabled!`", del_in=3)
 
 
 @userge.on_cmd("swelto (\\d+)", about={
@@ -65,13 +61,13 @@ async def set_welcome_timeout(message: Message):
     await message.edit("`Setting auto welcome/left message delete timeout...`")
     t_o = int(message.matches[0].group(1))
     Config.WELCOME_DELETE_TIMEOUT = t_o
-    SAVED_SETTINGS.update_one(
+    await SAVED_SETTINGS.update_one(
         {'_id': 'WELCOME_DELETE_TIMEOUT'}, {"$set": {'data': t_o}}, upsert=True)
     if t_o:
         await message.edit(
             f"`Set auto welcome/left message delete timeout as {t_o} seconds!`", del_in=3)
     else:
-        await message.edit(f"`Auto welcome/left message deletion disabled!`", del_in=3)
+        await message.edit("`Auto welcome/left message deletion disabled!`", del_in=3)
 
 
 @userge.on_cmd("vwelto", about={'header': "View auto welcome/left message delete timeout"})
@@ -79,11 +75,11 @@ async def view_welcome_timeout(message: Message):
     """view welcome/left timeout"""
     if Config.WELCOME_DELETE_TIMEOUT:
         await message.edit(
-            f"`Welcome/Left messages will be deleted after "
+            "`Welcome/Left messages will be deleted after "
             f"{Config.WELCOME_DELETE_TIMEOUT} seconds!`",
             del_in=5)
     else:
-        await message.edit(f"`Auto welcome/left message deletion disabled!`", del_in=3)
+        await message.edit("`Auto welcome/left message deletion disabled!`", del_in=3)
 
 
 @userge.on_cmd("sapicto (\\d+)", about={
@@ -98,7 +94,7 @@ async def set_app_timeout(message: Message):
         return
     await message.edit("`Setting auto profile picture timeout...`")
     Config.AUTOPIC_TIMEOUT = t_o
-    SAVED_SETTINGS.update_one(
+    await SAVED_SETTINGS.update_one(
         {'_id': 'AUTOPIC_TIMEOUT'}, {"$set": {'data': t_o}}, upsert=True)
     await message.edit(
         f"`Set auto profile picture timeout as {t_o} seconds!`", del_in=3)

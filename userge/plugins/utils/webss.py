@@ -6,10 +6,9 @@
 #
 # All rights reserved.
 
-
 import os
+import asyncio
 from re import match
-from asyncio import sleep
 
 import aiofiles
 from selenium import webdriver
@@ -19,14 +18,14 @@ from userge import userge, Message, Config
 
 @userge.on_cmd("webss", about={'header': "Get snapshot of a website"})
 async def webss(message: Message):
+    if Config.GOOGLE_CHROME_BIN is None:
+        await message.err("need to install Google Chrome. Module Stopping")
+        return
     link_match = match(r'\bhttps?://.*\.\S+', message.input_str)
     if not link_match:
         await message.err("`I need a valid link to take screenshots from.`")
         return
     link = link_match.group()
-    if Config.GOOGLE_CHROME_BIN is None:
-        await message.err("need to install Google Chrome. Module Stopping")
-        return
     await message.edit("`Processing ...`")
     chrome_options = webdriver.ChromeOptions()
     chrome_options.binary_location = Config.GOOGLE_CHROME_BIN
@@ -53,7 +52,7 @@ async def webss(message: Message):
                        f"\n`Height of page = {height}px`"
                        f"\n`Width of page = {width}px`"
                        f"\n`Waiting ({int(wait_for)}s) for the page to load.`")
-    await sleep(int(wait_for))
+    await asyncio.sleep(int(wait_for))
     im_png = driver.get_screenshot_as_png()
     driver.close()
     message_id = message.message_id
@@ -62,8 +61,12 @@ async def webss(message: Message):
     file_path = os.path.join(Config.DOWN_PATH, "webss.png")
     async with aiofiles.open(file_path, 'wb') as out_file:
         await out_file.write(im_png)
-    await userge.send_document(chat_id=message.chat.id,
-                               document=file_path,
-                               caption=link,
-                               reply_to_message_id=message_id)
+    await asyncio.gather(
+        message.delete(),
+        userge.send_document(chat_id=message.chat.id,
+                             document=file_path,
+                             caption=link,
+                             reply_to_message_id=message_id)
+    )
     os.remove(file_path)
+    driver.quit()

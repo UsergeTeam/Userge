@@ -22,8 +22,10 @@ _LOG_STR = "<<<!  :::::  %s  :::::  !>>>"
 
 _CONV_DICT: Dict[int, asyncio.Queue] = {}
 
+
 class _MsgLimitReached(Exception):
     pass
+
 
 class Conv:
     """Conversation class for userge"""
@@ -78,7 +80,8 @@ class Conv:
         Returns:
             On success, True is returned.
         """
-        return await self._client.send_read_acknowledge(chat_id=self._chat_id, message=message)
+        return bool(
+            await self._client.send_read_acknowledge(chat_id=self._chat_id, message=message))
 
     async def send_message(self, text: str) -> RawMessage:
         """\nSend text messages to the conversation.
@@ -136,8 +139,9 @@ class Conv:
         client.add_handler(
             MessageHandler(
                 _on_conversation,
-                Filters.create(lambda _, query: _CONV_DICT and \
-                    query.from_user and query.from_user.id in _CONV_DICT)), 0)
+                Filters.create(
+                    lambda _, query: _CONV_DICT and query.from_user
+                    and query.from_user.id in _CONV_DICT)), 0)
 
     async def __aenter__(self) -> 'Conv':
         self._chat_id = int(self._user) if isinstance(self._user, int) else \
@@ -145,7 +149,7 @@ class Conv:
         _CONV_DICT[self._chat_id] = asyncio.Queue(self._limit)
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb) -> bool:
+    async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
         _CONV_DICT[self._chat_id].put_nowait(None)
         del _CONV_DICT[self._chat_id]
         error = ''

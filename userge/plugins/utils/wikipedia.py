@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 import wikipedia
 from userge import userge, Message
 

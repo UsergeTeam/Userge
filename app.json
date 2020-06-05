@@ -12,7 +12,7 @@
     "website": "https://github.com/Userge",
     "success_url": "https://t.me/theUserge",
     "env": {
-        "APP_ID": {
+        "API_ID": {
             "description": "Get this value from https://my.telegram.org"
         },
         "API_HASH": {
@@ -35,6 +35,10 @@
             "description": "Set True if it is TeamDrive",
             "value": "True"
         },
+        "LOAD_UNOFFICIAL_PLUGINS": {
+            "description": "Set True if your like to use unofficial plugins",
+            "required": false
+        },
         "DOWN_PATH": {
             "description": "Set name to your working directory",
             "required": false
@@ -46,22 +50,30 @@
         "CURRENCY_API": {
             "description": "get API key from 'https://free.currencyconverterapi.com'",
             "required": false
-
         },
         "OCR_SPACE_API_KEY": {
             "description": "get OCR API key from 'http://eepurl.com/bOLOcf'",
             "required": false
-
         },
         "WEATHER_DEFCITY": {
             "description": "add default city for weather",
             "required": false
-
         },
         "OPEN_WEATHER_MAP": {
             "description": "Weather API get it from 'https://openweathermap.org/",
             "required": false
-
+        },
+        "ANTISPAM_SENTRY": {
+            "description": "Toggle API Auto Bans, Active if set to True",
+            "required": false
+        },
+        "SPAM_WATCH_API": {
+            "description": "SpamWatch API get it from @SpamWatch in Telegram",
+            "required": false
+        },
+        "REMOVE_BG_API_KEY": {
+            "description": "RemoveBg API Key get it from https://www.remove.bg/api",
+            "required": false
         },
         "G_DRIVE_PARENT_ID": {
             "description": "GDrive Folder ID",
@@ -90,6 +102,14 @@
         "SUDO_TRIGGER": {
             "description": "set command prefix for SUDO users",
             "required": false
+        },
+        "FINISHED_PROGRESS_STR": {
+            "description": "single character for finished progress",
+            "required": false
+        },
+        "UNFINISHED_PROGRESS_STR": {
+            "description": "single character for unfinished progress",
+            "required": false
         }
     },
     "addons": [
@@ -102,9 +122,9 @@
         }, {
             "url": "https://github.com/opendoor-labs/heroku-buildpack-p7zip"
         }, {
-            "url": "https://github.com/heroku/heroku-buildpack-google-chrome"
+            "url": "https://github.com/rking32/heroku-buildpack-google-chrome"
         }, {
-            "url": "https://github.com/heroku/heroku-buildpack-chromedriver"
+            "url": "https://github.com/rking32/heroku-buildpack-chromedriver"
         }, {
             "url": "https://github.com/heroku/heroku-buildpack-apt.git"
         }, {

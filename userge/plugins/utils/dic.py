@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 import requests
 from userge import userge, Message
 
@@ -32,9 +31,9 @@ async def dictionary(message: Message):
             if "definition" in i:
                 if "example" in i:
                     w_word += ("\n👩‍🏫 **Definition** 👨‍🏫\n<pre>" + i["definition"] +
-                               "</pre>\n\t\t❓<b>Example</b>❔\n<pre>" + i["example"]+"</pre>")
+                               "</pre>\n\t\t❓<b>Example</b>❔\n<pre>" + i["example"] + "</pre>")
                 else:
-                    w_word += "\n👩‍🏫 **Definition** 👨‍🏫\n" +"<pre>"+ i["definition"]+"</pre>"
+                    w_word += "\n👩‍🏫 **Definition** 👨‍🏫\n" + "<pre>" + i["definition"] + "</pre>"
         w_word += "\n\n"
         return w_word
 
@@ -101,8 +100,8 @@ async def dictionary(message: Message):
             v_word = r_dec['word']
         last_output = out_print(r_dec)
         if last_output:
-            await message.edit("`📌Search reasult for   `"+f"👉 {v_word}\n\n"+last_output)
+            await message.edit("`📌Search reasult for   `" + f"👉 {v_word}\n\n" + last_output)
             await CHANNEL.log(f"Get dictionary results for 👉 {v_word}")
         else:
             await message.edit('`No result found from the database.😔`', del_in=5)
-            await CHANNEL.log(f"Get dictionary results empty")
+            await CHANNEL.log("Get dictionary results empty")

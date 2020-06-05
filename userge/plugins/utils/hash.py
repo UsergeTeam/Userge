@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 import pybase64
 
 from userge import userge, Message

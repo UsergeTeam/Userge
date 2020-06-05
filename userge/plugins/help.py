@@ -10,30 +10,31 @@ from userge import userge, Message, Config
 
 
 @userge.on_cmd("help", about={'header': "Guide to use USERGE commands"})
-async def helpme(message: Message):
-    out, is_mdl_or_key = userge.get_help(message.input_str)
-    cmd = message.input_str
-    if not out:
-        out_str = "__No Module or Command Found!__"
-    elif isinstance(out, str):
-        out_str = f"`{is_mdl_or_key}`\n\n{out}"
-    elif isinstance(out, list) and is_mdl_or_key:
-        out_str = f"""**--Which module you want ?--**
+async def helpme(message: Message) -> None:
+    plugins = userge.manager.enabled_plugins
+    if not message.input_str:
+        out_str = f"""**--Which plugin you want ?--**
 
 **Usage**:
 
-    `{Config.CMD_TRIGGER}help [module_name]`
+    `{Config.CMD_TRIGGER}help [plugin_name]`
 
 **Hint**:
 
     use `{Config.CMD_TRIGGER}s` for search commands.
     ex: `{Config.CMD_TRIGGER}s wel`
 
-**({len(out)}) Modules Available:**\n\n"""
-        for i in out:
+**({len(plugins)}) Plugins Available:**\n\n"""
+        for i in sorted(plugins):
             out_str += f"`{i}`    "
-    elif isinstance(out, list) and not is_mdl_or_key:
-        out_str = f"""**--Which command you want ?--**
+    else:
+        key = message.input_str
+        if (not key.startswith(Config.CMD_TRIGGER)
+                and key in plugins
+                and (len(plugins[key].enabled_commands) > 1
+                     or plugins[key].enabled_commands[0].name.lstrip(Config.CMD_TRIGGER) != key)):
+            commands = plugins[key].get_commands()
+            out_str = f"""**--Which command you want ?--**
 
 **Usage**:
 
@@ -44,7 +45,17 @@ async def helpme(message: Message):
     use `{Config.CMD_TRIGGER}s` for search commands.
     ex: `{Config.CMD_TRIGGER}s wel`
 
-**({len(out)}) Commands Available Under `{cmd}` Module:**\n\n"""
-        for i in out:
-            out_str += f"`{i}`    "
+**({len(commands)}) Commands Available Under `{key}` Plugin:**\n\n"""
+            for i in commands:
+                out_str += f"`{i}`    "
+        else:
+            commands = userge.manager.enabled_commands
+            key = key.lstrip(Config.CMD_TRIGGER)
+            key_ = Config.CMD_TRIGGER + key
+            if key in commands:
+                out_str = f"`{key}`\n\n{commands[key].about}"
+            elif key_ in commands:
+                out_str = f"`{key_}`\n\n{commands[key_].about}"
+            else:
+                out_str = f"__No Module or Command Found for__: `{message.input_str}`"
     await message.edit(text=out_str, del_in=0)

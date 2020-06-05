@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 from datetime import datetime
 
 from userge import userge, Message

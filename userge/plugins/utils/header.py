@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 import requests
 
 from userge import userge, Message
@@ -24,8 +23,8 @@ async def req_head(message: Message):
     await message.edit("Processing ...")
     link = message.filtered_input_str
     flags = message.flags
-    red = True if '-r' in flags else False
-    stm = True if '-s' in flags else False
+    red = '-r' in flags
+    stm = '-s' in flags
     tout = int(flags.get('-t', 3))
     if not link:
         await message.err(text="Please give me a link link!")

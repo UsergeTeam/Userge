@@ -6,12 +6,12 @@
 #
 # All rights reserved.
 
-
 import os
 import time
 import math
 import asyncio
 from datetime import datetime
+from urllib.parse import unquote_plus
 
 from pySmartDL import SmartDL
 
@@ -50,7 +50,7 @@ async def down_load_media(message: Message):
     elif message.input_str:
         start_t = datetime.now()
         url = message.input_str
-        custom_file_name = os.path.basename(url)
+        custom_file_name = unquote_plus(os.path.basename(url))
         if "|" in url:
             url, custom_file_name = url.split("|")
             url = url.strip()
@@ -81,8 +81,10 @@ async def down_load_media(message: Message):
                     "**ETA** : `{}`"
                 progress_str = progress_str.format(
                     "trying to download",
-                    ''.join(["█" for i in range(math.floor(percentage / 5))]),
-                    ''.join(["░" for i in range(20 - math.floor(percentage / 5))]),
+                    ''.join((Config.FINISHED_PROGRESS_STR
+                             for i in range(math.floor(percentage / 5)))),
+                    ''.join((Config.UNFINISHED_PROGRESS_STR
+                             for i in range(20 - math.floor(percentage / 5)))),
                     round(percentage, 2),
                     url,
                     custom_file_name,

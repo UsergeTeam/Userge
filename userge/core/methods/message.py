@@ -19,14 +19,14 @@ from pyrogram.errors.exceptions import MessageAuthorRequired, MessageTooLong
 from pyrogram.errors.exceptions.bad_request_400 import MessageNotModified, MessageIdInvalid
 
 from userge import logging, Config
-from .ext import CLogger
+from . import logger
 
 _CANCEL_LIST: List[int] = []
 _ERROR_MSG_DELETE_TIMEOUT = 5
 _ERROR_STRING = "**ERROR**: `{}`"
 
 _LOG = logging.getLogger(__name__)
-_LOG_STR = "<<<!  [[[[[  %s  ]]]]]  !>>>"
+_LOG_STR = "<<<!  :::::  %s  :::::  !>>>"
 
 
 class Message(RawMessage):
@@ -40,7 +40,7 @@ class Message(RawMessage):
         self.reply_to_message: Optional[RawMessage]
         if self.reply_to_message:
             self.reply_to_message = self.__class__(self._client, self.reply_to_message)
-        self._channel = CLogger(client, __name__)
+        self._channel = logger.CLogger(client, __name__)
         self._filtered = False
         self._process_canceled = False
         self._filtered_input_str: str = ''
@@ -106,8 +106,8 @@ class Message(RawMessage):
                 match = re.match(f"({prefix}[a-zA-Z]+)([0-9]*)$", i)
                 if match:
                     items: Sequence[str] = match.groups()
-                    self._flags[items[0].lstrip(prefix).lower() if del_pre \
-                        else items[0].lower()] = items[1] or ''
+                    self._flags[items[0].lstrip(prefix).lower() if del_pre
+                                else items[0].lower()] = items[1] or ''
                 else:
                     self._filtered_input_str += ' ' + i
             self._filtered_input_str = self._filtered_input_str.strip()
@@ -165,7 +165,7 @@ class Message(RawMessage):
                 self._channel.update(log)
             await self._channel.fwd_msg(msg)
         if delete_message:
-            asyncio.create_task(self.delete())
+            asyncio.get_event_loop().create_task(self.delete())
         return Message(self._client, msg)
 
     async def reply(self,
@@ -306,12 +306,13 @@ class Message(RawMessage):
             RPCError: In case of a Telegram RPC error.
         """
         try:
-            msg_ = await self._client.edit_message_text(chat_id=self.chat.id,
-                                                        message_id=self.message_id,
-                                                        text=text,
-                                                        parse_mode=parse_mode,
-                                                        disable_web_page_preview=disable_web_page_preview,
-                                                        reply_markup=reply_markup)
+            msg_ = await self._client.edit_message_text(
+                chat_id=self.chat.id,
+                message_id=self.message_id,
+                text=text,
+                parse_mode=parse_mode,
+                disable_web_page_preview=disable_web_page_preview,
+                reply_markup=reply_markup)
         except (MessageAuthorRequired, MessageIdInvalid) as m_er:
             if sudo:
                 msg = await self.reply(text=text,
@@ -781,19 +782,21 @@ class Message(RawMessage):
             :obj:`Message` or True is returned.
         """
         try:
-            return await self.edit_or_send_as_file(text=text,
-                                                   del_in=del_in,
-                                                   log=log,
-                                                   sudo=False,
-                                                   parse_mode=parse_mode,
-                                                   disable_web_page_preview=disable_web_page_preview,
-                                                   reply_markup=reply_markup,
-                                                   **kwargs)
+            return await self.edit_or_send_as_file(
+                text=text,
+                del_in=del_in,
+                log=log,
+                sudo=False,
+                parse_mode=parse_mode,
+                disable_web_page_preview=disable_web_page_preview,
+                reply_markup=reply_markup,
+                **kwargs)
         except (MessageAuthorRequired, MessageIdInvalid):
-            return await self.reply_or_send_as_file(text=text,
-                                                    del_in=del_in,
-                                                    log=log,
-                                                    parse_mode=parse_mode,
-                                                    disable_web_page_preview=disable_web_page_preview,
-                                                    reply_markup=reply_markup,
-                                                    **kwargs)
+            return await self.reply_or_send_as_file(
+                text=text,
+                del_in=del_in,
+                log=log,
+                parse_mode=parse_mode,
+                disable_web_page_preview=disable_web_page_preview,
+                reply_markup=reply_markup,
+                **kwargs)

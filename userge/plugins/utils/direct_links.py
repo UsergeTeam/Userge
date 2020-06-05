@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 import re
 import json
 import urllib.parse
@@ -348,7 +347,7 @@ def github(url: str) -> str:
         dl_url = download.headers["location"]
     except KeyError:
         reply += "`Error: Can't extract the link`\n"
- 
+
     name = link.split('/')[-1]
     reply += f'[{name}]({dl_url}) '
 

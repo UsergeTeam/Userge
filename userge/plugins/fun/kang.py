@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 import os
 import math
 import random
@@ -77,6 +76,7 @@ async def kang_(message: Message):
             packname += "_anim"
             packnick += " (Animated)"
             cmd = '/newanimated'
+
         @pool.run_in_thread
         def get_response():
             response = urllib.request.urlopen(
@@ -84,7 +84,7 @@ async def kang_(message: Message):
             return response.read().decode("utf8").split('\n')
         htmlstr = await get_response()
         if ("  A <strong>Telegram</strong> user has created "
-            "the <strong>Sticker&nbsp;Set</strong>.") not in htmlstr:
+                "the <strong>Sticker&nbsp;Set</strong>.") not in htmlstr:
             async with userge.conversation('Stickers') as conv:
                 try:
                     await conv.send_message('/addsticker')

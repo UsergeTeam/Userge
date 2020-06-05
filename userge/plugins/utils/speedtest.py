@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 import os
 import wget
 import speedtest

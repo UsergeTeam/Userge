@@ -42,8 +42,10 @@ async def progress(current: int,
         progress_str = progress_str.format(
             ud_type,
             file_name,
-            ''.join(["█" for i in range(floor(percentage / 5))]),
-            ''.join(["░" for i in range(20 - floor(percentage / 5))]),
+            ''.join((userge.Config.FINISHED_PROGRESS_STR
+                     for i in range(floor(percentage / 5)))),
+            ''.join((userge.Config.UNFINISHED_PROGRESS_STR
+                     for i in range(20 - floor(percentage / 5)))),
             round(percentage, 2),
             humanbytes(current),
             humanbytes(total),

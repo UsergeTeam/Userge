@@ -6,8 +6,7 @@
 #
 # All rights reserved.
 
-
-from time import sleep
+import asyncio
 
 from userge import userge, Message
 
@@ -15,8 +14,14 @@ from userge import userge, Message
 @userge.on_cmd("sleep (\\d+)", about={
     'header': "sleep userge :P",
     'usage': "{tr}sleep [timeout in seconds]"})
-async def sleep_(message: Message):
+async def sleep_(message: Message) -> None:
     seconds = int(message.matches[0].group(1))
-    await message.edit(text=f"`sleeping {seconds} seconds...`")
-    sleep(seconds)
-    await message.delete()
+    await message.edit(f"`sleeping {seconds} seconds...`")
+    asyncio.get_event_loop().create_task(_slp_wrkr(seconds))
+
+
+async def _slp_wrkr(seconds: int) -> None:
+    await userge.stop()
+    await asyncio.sleep(seconds)
+    await userge.reload_plugins()
+    await userge.start()

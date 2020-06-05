@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 import time
 import random
 from pyrogram.errors.exceptions import FloodWait

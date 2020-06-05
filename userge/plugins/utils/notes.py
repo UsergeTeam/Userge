@@ -6,16 +6,15 @@
 #
 # All rights reserved.
 
-
 from userge import userge, Message, get_collection
 
 NOTES_COLLECTION = get_collection("notes")
 
 
 @userge.on_cmd("notes", about={'header': "List all saved notes"})
-async def notes_active(message: Message):
+async def notes_active(message: Message) -> None:
     out = ''
-    for note in NOTES_COLLECTION.find({'chat_id': message.chat.id}, {'name': 1}):
+    async for note in NOTES_COLLECTION.find({'chat_id': message.chat.id}, {'name': 1}):
         out += " 📌 `{}`\n".format(note['name'])
     if out:
         await message.edit("**--Notes saved in this chat:--**\n\n" + out, del_in=0)
@@ -26,11 +25,12 @@ async def notes_active(message: Message):
 @userge.on_cmd("delnote", about={
     'header': "Deletes a note by name",
     'usage': "{tr}delnote [note name]"})
-async def remove_notes(message: Message):
+async def remove_notes(message: Message) -> None:
     notename = message.input_str
     if not notename:
         out = "`Wrong syntax`\nNo arguements"
-    elif NOTES_COLLECTION.find_one_and_delete({'chat_id': message.chat.id, 'name': notename}):
+    elif await NOTES_COLLECTION.find_one_and_delete(
+            {'chat_id': message.chat.id, 'name': notename}):
         out = "`Successfully deleted note:` **{}**".format(notename)
     else:
         out = "`Couldn't find note:` **{}**".format(notename)
@@ -41,12 +41,12 @@ async def remove_notes(message: Message):
                about={'header': "Gets a note by name",
                       'usage': "#[notename]\nget notename"},
                group=-1,
-               name="note",
+               name="get_note",
                trigger='',
                filter_me=False)
-async def note(message: Message):
+async def get_note(message: Message) -> None:
     notename = message.matches[0].group(1)
-    found = NOTES_COLLECTION.find_one(
+    found = await NOTES_COLLECTION.find_one(
         {'chat_id': message.chat.id, 'name': notename}, {'content': 1})
     if found:
         out = "**--{}--**\n\n{}".format(notename, found['content'])
@@ -55,9 +55,9 @@ async def note(message: Message):
 
 @userge.on_cmd(r"addnote (\w[\w_]*)(?:\s([\s\S]+))?",
                about={
-    'header': "Adds a note by name",
-    'usage': "{tr}addnote [note name] [content | reply to msg]"})
-async def add_note(message: Message):
+                   'header': "Adds a note by name",
+                   'usage': "{tr}addnote [note name] [content | reply to msg]"})
+async def add_note(message: Message) -> None:
     notename = message.matches[0].group(1)
     content = message.matches[0].group(2)
     if message.reply_to_message:
@@ -66,9 +66,9 @@ async def add_note(message: Message):
         await message.err(text="No Content Found!")
         return
     out = "`{} note #{}`"
-    result = NOTES_COLLECTION.update_one({'chat_id': message.chat.id, 'name': notename},
-                                         {"$set": {'content': content}},
-                                         upsert=True)
+    result = await NOTES_COLLECTION.update_one(
+        {'chat_id': message.chat.id, 'name': notename},
+        {"$set": {'content': content}}, upsert=True)
     if result.upserted_id:
         out = out.format('Added', notename)
     else:

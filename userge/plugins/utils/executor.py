@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 import io
 import sys
 import shlex
@@ -34,9 +33,10 @@ async def eval_(message: Message):
     redirected_output = sys.stdout = io.StringIO()
     redirected_error = sys.stderr = io.StringIO()
     stdout, stderr, exc = None, None, None
+
     async def aexec(code):
-        exec("async def __aexec(userge, message):\n " + \
-                '\n '.join(line for line in code.split('\n')))
+        exec("async def __aexec(userge, message):\n "
+             + '\n '.join(line for line in code.split('\n')))
         return await locals()['__aexec'](userge, message)
     try:
         await aexec(cmd)
@@ -191,5 +191,5 @@ class Term:
         process = await asyncio.create_subprocess_exec(
             *shlex.split(cmd), stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
         t_obj = cls(process)
-        asyncio.create_task(t_obj.worker())
+        asyncio.get_event_loop().create_task(t_obj.worker())
         return t_obj

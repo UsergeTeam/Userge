@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 import asyncio
 
 from pyrogram.errors.exceptions.bad_request_400 import YouBlockedUser
@@ -19,12 +18,12 @@ from userge import userge, Message
     'usage': "{tr}quote [text or reply to msg]"})
 async def quotecmd(message: Message):
     """quotecmd"""
-    asyncio.create_task(message.delete())
+    asyncio.get_event_loop().create_task(message.delete())
     args = message.input_str
     replied = message.reply_to_message
     async with userge.conversation('QuotLyBot') as conv:
         try:
-            if replied:
+            if replied and not args:
                 await conv.forward_message(replied)
             else:
                 if not args:
@@ -35,7 +34,11 @@ async def quotecmd(message: Message):
             await message.edit('first **unblock** @QuotLyBot')
             return
         quote = await conv.get_response(mark_read=True)
-        await userge.forward_messages(chat_id=message.chat.id,
-                                      from_chat_id=conv.chat_id,
-                                      message_ids=quote.message_id,
-                                      as_copy=True)
+        if not quote.sticker:
+            await message.err('something went wrong!')
+        else:
+            message_id = replied.message_id if replied else None
+            await userge.send_sticker(chat_id=message.chat.id,
+                                      sticker=quote.sticker.file_id,
+                                      file_ref=quote.sticker.file_ref,
+                                      reply_to_message_id=message_id)

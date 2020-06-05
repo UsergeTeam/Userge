@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 from requests import get
 from emoji import get_emoji_regexp
 
@@ -43,8 +42,8 @@ async def cur_conv(message: Message):
 
     if amount.isdigit():
         data = get(
-            f"https://free.currconv.com/api/v7/convert?apiKey={Config.CURRENCY_API}&q={currency_from}_{currency_to}&compact=ultra"
-            ).json()
+            "https://free.currconv.com/api/v7/convert?"
+            f"apiKey={Config.CURRENCY_API}&q={currency_from}_{currency_to}&compact=ultra").json()
         result = data[f'{currency_from}_{currency_to}']
         result = float(amount) / float(result)
         result = round(result, 5)
@@ -55,6 +54,5 @@ async def cur_conv(message: Message):
 
     else:
         await message.edit(
-            r"`This seems to be some alien currency, which I can't convert right now.. (⊙_⊙;)`"
-            , del_in=0)
-        return
+            r"`This seems to be some alien currency, which I can't convert right now.. (⊙_⊙;)`",
+            del_in=0)

@@ -6,7 +6,9 @@
 #
 # All rights reserved.
 
+from pyrogram import Filters
+
 from .database import get_collection
-from .client import Userge, Filters
-from .message import Message
 from .ext import pool
+from .client import Userge
+from .methods import Message

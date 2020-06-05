@@ -6,12 +6,12 @@
 #
 # All rights reserved.
 
-
 from datetime import datetime
 from userge import userge, Message
 
 
-@userge.on_cmd("ping", about={'header': "check how long it takes to ping your userbot"})
+@userge.on_cmd(
+    "ping", about={'header': "check how long it takes to ping your userbot"}, group=-1)
 async def pingme(message: Message):
     start = datetime.now()
     await message.edit('`Pong!`')

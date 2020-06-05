@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 import os
 
 import requests
@@ -21,7 +20,7 @@ def ocr_space_file(filename,
                    language='eng',
                    overlay=False,
                    api_key=Config.OCR_SPACE_API_KEY):
-    """ 
+    """
     OCR.space API request with local file.
         Python3.5 - not tested on 2.7
     :param filename: Your file path & name.
@@ -91,7 +90,7 @@ async def ocr_gen(message: Message):
                 "**Here's what I could read from it:**"
                 f"\n\n`{ParsedText}`")
             os.remove(downloaded_file_name)
-            await CHANNEL.log(f"`ocr` command succefully executed")
+            await CHANNEL.log("`ocr` command succefully executed")
             return
 
     else:

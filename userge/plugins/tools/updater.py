@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 import asyncio
 
 from git import Repo
@@ -25,11 +24,14 @@ UPSTREAM_REMOTE = 'upstream'
     'flags': {
         '-pull': "pull updates",
         '-push': "push updates to heroku",
-        '-dev': "select develop branch"},
-    'usage': "{tr}update : check updates to default/master branch\n"
-             "{tr}update -dev : check updates to develop branch\n"
-             "{tr}update -pull : pull updates to default branch\n"
-             "{tr}update -dev -pull : pull updates to dev branch"}, del_pre=True)
+        '-master': "select master branch",
+        '-beta': "select beta branch",
+        '-alpha': "select alpha branch"},
+    'usage': "{tr}update : check updates from default branch\n"
+             "{tr}update -[branch_name] : check updates from any branch\n"
+             "add -pull if you want to pull updates\n"
+             "add -push if you want to push updates to heroku",
+    'examples': "{tr}update -beta -pull -push"}, del_pre=True)
 async def check_update(message: Message):
     """check or do updates"""
     await message.edit("`Checking for updates, please wait....`")
@@ -53,7 +55,7 @@ async def check_update(message: Message):
     flags = list(message.flags)
     pull_from_repo = False
     push_to_heroku = False
-    branch = repo.active_branch.name
+    branch = "master"
     if "pull" in flags:
         pull_from_repo = True
         flags.remove("pull")

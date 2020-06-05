@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 import os
 from time import time
 from glob import glob
@@ -62,8 +61,10 @@ class _BaseLib:
         """Returns progress"""
         percentage = self.percentage
         progress_str = "[{}{}]".format(
-            ''.join(["█" for i in range(floor(percentage / 5))]),
-            ''.join(["░" for i in range(20 - floor(percentage / 5))]))
+            ''.join((Config.FINISHED_PROGRESS_STR
+                     for i in range(floor(percentage / 5)))),
+            ''.join((Config.UNFINISHED_PROGRESS_STR
+                     for i in range(20 - floor(percentage / 5)))))
         return progress_str
 
     @property
@@ -161,6 +162,7 @@ class PackLib(_BaseLib):
     def pack_path(self, tar: bool) -> None:
         """PACK file path"""
         file_paths = []
+
         def explorer(path: Path) -> None:
             if path.is_file():
                 self._total += 1
@@ -257,8 +259,10 @@ class SCLib(_BaseLib):
         """Returns progress"""
         percentage = self.percentage
         progress_str = "[{}{}]".format(
-            ''.join(["█" for i in range(floor(percentage / 5))]),
-            ''.join(["░" for i in range(20 - floor(percentage / 5))]))
+            ''.join((Config.FINISHED_PROGRESS_STR
+                     for i in range(floor(percentage / 5)))),
+            ''.join((Config.UNFINISHED_PROGRESS_STR
+                     for i in range(20 - floor(percentage / 5)))))
         return progress_str
 
     @property
@@ -342,7 +346,7 @@ class SCLib(_BaseLib):
         self._final_file_path = join(dirname(self._path), file_name)
         file_list = sorted(glob(self._final_file_path + f".{'[0-9]' * len(ext.lstrip('.'))}"))
         self._total = len(file_list)
-        self._file_size = sum([os.stat(f_).st_size for f_ in file_list])
+        self._file_size = sum((os.stat(f_).st_size for f_ in file_list))
         pool.submit_thread(self._combine_worker, file_list)
 
 
@@ -453,7 +457,6 @@ async def drename_(message: Message) -> None:
     """drename"""
     path = str(message.matches[0].group(1)).strip()
     new_name = str(message.matches[0].group(2)).strip()
-    print(path, new_name)
     if not exists(path):
         await message.err(f"file path : {path} not exists!")
         return

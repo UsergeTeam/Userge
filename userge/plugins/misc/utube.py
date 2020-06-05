@@ -6,7 +6,6 @@
 #
 # All rights reserved.
 
-
 import asyncio
 import glob
 from os import path
@@ -17,26 +16,29 @@ from math import floor
 import youtube_dl as ytdl
 
 from userge import userge, Message, Config
-from userge.plugins.misc.upload import upload
 from userge.utils import time_formatter, humanbytes
+from .upload import upload
 
 LOGGER = userge.getLogger(__name__)
 
 
 def yt_getInfo(link):
     try:
-        x = ytdl.YoutubeDL({'no-playlist': True, 'logger': LOGGER}).extract_info(link, download=False)
+        x = ytdl.YoutubeDL(
+            {'no-playlist': True, 'logger': LOGGER}).extract_info(link, download=False)
         thumb = x.get('thumbnail', '')
         formats = x.get('formats', [x])
         out = "No formats found :("
         if formats:
             out = "--U-ID   |   Reso.  |   Extension--\n"
         for i in formats:
-            out += f"`{i.get('format_id', '')} | {i.get('format_note', None)} | {i.get('ext', None)}`\n"
+            out += (f"`{i.get('format_id', '')} | {i.get('format_note', None)}"
+                    f" | {i.get('ext', None)}`\n")
     except ytdl.utils.YoutubeDLError as e:
         return e
     else:
-        return {'thumb': thumb, 'table': out, 'uploader': x.get('uploader_id', None), 'title': x.get('title', None)}
+        return {'thumb': thumb, 'table': out, 'uploader': x.get('uploader_id', None),
+                'title': x.get('title', None)}
 
 
 def supported(url):
@@ -102,7 +104,7 @@ async def ytinfo(message: Message):
         await message.err(str(_exracted))
         return
     out = """
-**Title** >> 
+**Title** >>
 __{title}__
     
 **Uploader** >>
@@ -125,7 +127,8 @@ __{uploader}__
                               'examples': ['{tr}ytdl link',
                                            '{tr}ytdl -a12 -v120 link',
                                            '{tr}ytdl -m -t link will upload the mp3',
-                                           '{tr}ytdl -m -t -d link will upload the mp3 as a document']}, del_pre=True)
+                                           '{tr}ytdl -m -t -d link will upload '
+                                           'the mp3 as a document']}, del_pre=True)
 async def ytDown(message: Message):
     def __progress(data: dict):
         if ((time() - startTime) % 4) > 3.9:
@@ -134,15 +137,19 @@ async def ytDown(message: Message):
                 speed = data.get('speed')
                 if not (eta and speed):
                     return
-                out = "**Speed** >> {}/s\n**ETA** >> {}\n".format(humanbytes(speed), time_formatter(eta))
+                out = "**Speed** >> {}/s\n**ETA** >> {}\n".format(
+                    humanbytes(speed), time_formatter(eta))
                 out += f'**File Name** >> `{data["filename"]}`\n\n'
                 current = data.get('downloaded_bytes')
                 total = data.get("total_bytes")
                 if current and total:
                     percentage = int(current) * 100 / int(total)
                     out += f"Progress >> {int(percentage)}%\n"
-                    out += "[{}{}]".format(''.join(["█" for _ in range(floor(percentage / 5))]),
-                                           ''.join(["░" for _ in range(20 - floor(percentage / 5))]))
+                    out += "[{}{}]".format(
+                        ''.join((Config.FINISHED_PROGRESS_STR
+                                 for _ in range(floor(percentage / 5)))),
+                        ''.join((Config.UNFINISHED_PROGRESS_STR
+                                 for _ in range(20 - floor(percentage / 5)))))
                 if message.text != out:
                     asyncio.get_event_loop().run_until_complete(message.edit(out))
 
@@ -182,8 +189,8 @@ async def ytDown(message: Message):
 async def ytdes(message: Message):
     await message.edit("Hold on \u23f3 ..")
     try:
-        x = ytdl.YoutubeDL({'no-playlist': True, 'logger': LOGGER}).extract_info(message.input_or_reply_str,
-                                                                                 download=False)
+        x = ytdl.YoutubeDL({'no-playlist': True, 'logger': LOGGER}).extract_info(
+            message.input_or_reply_str, download=False)
     except ytdl.utils.YoutubeDLError as e:
         await message.err(str(e))
     else:
