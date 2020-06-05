@@ -1,3 +1,5 @@
+""" setup gban """
+
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -40,6 +42,7 @@ async def guadmin_check(chat_id, user_id) -> bool:
                    "[NOTE: Works only in groups where you are admin.]",
     'examples': "{tr}gban [userid | reply] [reason for gban] (mandatory)"})
 async def gban_user(message: Message):
+    """ ban a user globally """
     reason = ""
     chat_id = message.chat.id
     can_ban = await me_is_admin(chat_id)
@@ -119,6 +122,7 @@ async def gban_user(message: Message):
     'description': "Removes an user from your Gban List",
     'examples': "{tr}ungban [userid | reply]"})
 async def ungban_user(message: Message):
+    """ unban a user globally """
     chat_id = message.chat.id
     if message.reply_to_message:
         user_id = message.reply_to_message.from_user.id
@@ -157,6 +161,7 @@ async def ungban_user(message: Message):
     'description': "Get Up-to-date list of users Gbanned by you.",
     'examples': "Lol. Just type {tr}glist"})
 async def list_gbanned(message: Message):
+    """ vies gbanned users """
     msg = ''
     async for c in GBAN_USER_BASE.find({}):
         msg += ("**User** : " + str(c['firstname']) + "-> with **User ID** -> "
@@ -171,6 +176,7 @@ async def list_gbanned(message: Message):
     'useage': "{tr}whitelist [userid | reply to user]",
     'examples': "{tr}whitelist 5231147869"})
 async def whitelist(message: Message):
+    """ add user to whitelist """
     if message.reply_to_message:
         user_id = message.reply_to_message.from_user.id
     else:
@@ -209,6 +215,7 @@ async def whitelist(message: Message):
     'useage': "{tr}rmwhite [userid | reply to user]",
     'examples': "{tr}rmwhite 5231147869"})
 async def rmwhitelist(message: Message):
+    """ remove a user from whitelist """
     if message.reply_to_message:
         user_id = message.reply_to_message.from_user.id
     else:
@@ -246,6 +253,7 @@ async def rmwhitelist(message: Message):
     'description': "Get Up-to-date list of users WhiteListed by you.",
     'examples': "Lol. Just type {tr}listwhite"})
 async def list_white(message: Message):
+    """ list whitelist """
     msg = ''
     async for c in WHITELIST.find({}):
         msg += ("**User** : " + str(c['firstname']) + "-> with **User ID** -> " +
@@ -256,6 +264,7 @@ async def list_white(message: Message):
 
 @userge.on_filters(Filters.group & Filters.new_chat_members & ~Filters.me, group=1)
 async def gban_at_entry(message: Message):
+    """ handle gbans """
     chat_id = message.chat.id
     for user in message.new_chat_members:
         user_id = user.id
@@ -267,7 +276,7 @@ async def gban_at_entry(message: Message):
                 break
         if skip_user:
             continue
-        if me_is_admin(chat_id):
+        if await me_is_admin(chat_id):
             async for c in GBAN_USER_BASE.find({}):
                 if c['user_id'] == user_id:
                     reason = c['reason']

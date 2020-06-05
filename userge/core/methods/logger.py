@@ -20,7 +20,7 @@ _LOG_STR = "<<<!  :::::  %s  :::::  !>>>"
 
 
 class CLogger:
-    """Channel logger for Userge"""
+    """ Channel logger for Userge """
     def __init__(self, client: '_client.Userge', name: str) -> None:
         self._client = client
         self._string = self._gen_string(name)

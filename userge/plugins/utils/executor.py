@@ -1,3 +1,5 @@
+""" run shell or python command """
+
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -25,6 +27,7 @@ from userge.utils import runcmd
     'usage': "{tr}eval [code lines]",
     'examples': "{tr}eval print('Userge')"})
 async def eval_(message: Message):
+    """ run python code """
     cmd = await init_func(message)
     if cmd is None:
         return
@@ -66,6 +69,7 @@ async def eval_(message: Message):
     'usage': "{tr}exec [commands]",
     'examples': "{tr}exec echo \"Userge\""})
 async def exec_(message: Message):
+    """ run shell command """
     cmd = await init_func(message)
     if cmd is None:
         return
@@ -90,6 +94,7 @@ __Command:__\n`{cmd}`\n__PID:__\n`{pid}`\n__RETURN:__\n`{ret}`\n\n\
     'usage': "{tr}term [commands]",
     'examples': "{tr}term echo \"Userge\""})
 async def term_(message: Message):
+    """ run shell command (live update) """
     cmd = await init_func(message)
     if cmd is None:
         return
@@ -140,6 +145,7 @@ async def init_func(message: Message):
 
 
 class Term:
+    """ live update term class """
     def __init__(self, process: asyncio.subprocess.Process) -> None:
         self._process = process
         self._stdout = b''

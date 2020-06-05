@@ -34,7 +34,7 @@ _COL_LIST: List[str] = _RUN(_DATABASE.list_collection_names())
 
 
 def get_collection(name: str) -> AgnosticCollection:
-    """Create or Get Collection from your database"""
+    """ Create or Get Collection from your database """
     if name in _COL_LIST:
         _LOG.debug(_LOG_STR, f"{name} Collection Found :) => Now Logging to it...")
     else:

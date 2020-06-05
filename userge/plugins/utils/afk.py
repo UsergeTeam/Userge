@@ -1,3 +1,5 @@
+""" setup AFK mode """
+
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -41,6 +43,7 @@ async def _init() -> None:
                    "you telling you are AFK. Switches off AFK when you type back anything.",
     'usage': "{tr}afk or {tr}afk [reason]"})
 async def active_afk(message: Message) -> None:
+    """ turn on or off afk mode """
     global REASON, IS_AFK, TIME
     IS_AFK = True
     TIME = time.time()
@@ -56,6 +59,7 @@ async def active_afk(message: Message) -> None:
 @userge.on_filters(IS_AFK_FILTER & ~Filters.me & ~Filters.bot & (
     Filters.mentioned | (Filters.private & ~Filters.service & Config.ALLOWED_CHATS)))
 async def handle_afk_incomming(message: Message) -> None:
+    """ handle incomming messages when you afk """
     user_id = message.from_user.id
     chat = message.chat
     user_dict = await userge.get_user_dict(user_id)
@@ -103,6 +107,7 @@ async def handle_afk_incomming(message: Message) -> None:
 
 @userge.on_filters(IS_AFK_FILTER & Filters.outgoing, group=-1)
 async def handle_afk_outgoing(message: Message) -> None:
+    """ handle outgoing messages when you afk """
     global IS_AFK
     IS_AFK = False
     afk_time = time_formatter(round(time.time() - TIME))

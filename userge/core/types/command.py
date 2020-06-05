@@ -8,7 +8,7 @@
 
 __all__ = ['Command']
 
-from typing import Union, Dict, List
+from typing import Union, Dict, List, Optional
 
 from pyrogram.client.handlers.handler import Handler
 
@@ -21,7 +21,7 @@ _LOG_STR = "<<<!  [[[[[  %s  ]]]]]  !>>>"
 
 
 class Command(Filtr):
-    """command class"""
+    """ command class """
     def __init__(self,
                  client: '_client.Userge',
                  name: str,
@@ -35,16 +35,16 @@ class Command(Filtr):
         self._enabled = True
         self._loaded = False
         self._handler: Handler
-        self.doc: str
+        self.doc: Optional[str]
         _LOG.debug(_LOG_STR, f"created command -> {self.name}")
 
     def __repr__(self) -> str:
         return f"<command - {self.name}>"
 
-    def update_command(self, handler: Handler, doc: str) -> None:
-        """update handler and doc in command"""
+    def update_command(self, handler: Handler, doc: Optional[str]) -> None:
+        """ update handler and doc in command """
         self._handler = handler
-        self.doc = doc
+        self.doc = doc.strip() if doc else None
 
 
 def _format_about(about: Union[str, Dict[str, Union[str, List[str], Dict[str, str]]]]) -> str:

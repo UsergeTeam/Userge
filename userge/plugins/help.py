@@ -16,7 +16,7 @@ async def helpme(message: Message) -> None:
         out_str = f"""⚒ **--(`{len(plugins)}`) Plugins Available--**\n\n"""
         cat_plugins = userge.manager.get_plugins()
         for cat in sorted(cat_plugins):
-            out_str += (f"    ✪ **{cat}** :   `"
+            out_str += (f"    ✪ **{cat}** (`{len(cat_plugins[cat])}`) :   `"
                         + "`    `".join(sorted(cat_plugins[cat])) + "`\n\n")
         out_str += f"""📕 **Usage:**  `{Config.CMD_TRIGGER}help [plugin_name]`"""
     else:
@@ -25,13 +25,15 @@ async def helpme(message: Message) -> None:
                 and key in plugins
                 and (len(plugins[key].enabled_commands) > 1
                      or plugins[key].enabled_commands[0].name.lstrip(Config.CMD_TRIGGER) != key)):
-            commands = plugins[key].get_commands()
+            commands = plugins[key].enabled_commands
             out_str = f"""⚔ **--(`{len(commands)}`) Commands Available--**
 
-🔧 **Plugin:**  `{key}`\n\n"""
-            for i in commands:
-                out_str += f"    〔 `{i}` 〕\n"
-            out_str += f"""\n📕 **Usage:**  `{Config.CMD_TRIGGER}help [command_name]`"""
+🔧 **Plugin:**  `{key}`
+📘 **About:**  `{plugins[key].about}`\n\n"""
+            for i, cmd in enumerate(commands, start=1):
+                out_str += (f"    📎 **cmd(`{i}`):**  `{cmd.name}`\n"
+                            f"    📗 **doc:**  __{cmd.doc}__\n\n")
+            out_str += f"""📕 **Usage:**  `{Config.CMD_TRIGGER}help [command_name]`"""
         else:
             commands = userge.manager.enabled_commands
             key = key.lstrip(Config.CMD_TRIGGER)
