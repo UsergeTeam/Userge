@@ -1,5 +1,3 @@
-""" set permissions to users """
-
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -25,7 +23,7 @@ CHANNEL = userge.getCLogger(__name__)
     'examples': "{tr}lock [all | type]"})
 async def lock_perm(message: Message):
     """
-    lock chat permissions from tg group
+    this function can lock chat permissions from tg group
     """
     msg = ""
     media = ""
@@ -164,7 +162,7 @@ async def lock_perm(message: Message):
     'examples': "{tr}unlock [all | type]"})
 async def unlock_perm(message: Message):
     """
-    unlock chat permissions from tg group
+    this function can unlock chat permissions from tg group
     """
     umsg = ""
     umedia = ""
@@ -308,7 +306,7 @@ async def unlock_perm(message: Message):
     'description': "Allows you to view permission types on/off status in the chat."})
 async def view_perm(message: Message):
     """
-    check chat permissions from tg group
+    this function can check chat permissions from tg group
     """
 
     v_perm = ""

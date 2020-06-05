@@ -20,7 +20,7 @@ async def worker() -> None:
 
 async def main() -> None:
     print('starting client...!')
-    await userge._start()
+    await userge.start()
     tasks = []
     print('adding tasks...!')
     for task in userge._tasks:

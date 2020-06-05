@@ -1,5 +1,3 @@
-""" setup sudos """
-
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -31,7 +29,6 @@ async def _init() -> None:
     'header': "add sudo user",
     'usage': "{tr}addsudo [username | reply to msg]"})
 async def add_sudo(message: Message):
-    """ add sudo user """
     user_id = message.input_str
     if message.reply_to_message:
         user_id = message.reply_to_message.from_user.id
@@ -60,7 +57,6 @@ async def add_sudo(message: Message):
     'flags': {'-all': "remove all sudo users"},
     'usage': "{tr}delsudo [user_id | reply to msg]\n{tr}delsudo -all"})
 async def del_sudo(message: Message):
-    """ delete sudo user """
     user_id = message.filtered_input_str
     if message.reply_to_message:
         user_id = message.reply_to_message.from_user.id
@@ -90,7 +86,6 @@ async def del_sudo(message: Message):
 
 @userge.on_cmd("vsudo", about={'header': "view sudo users"})
 async def view_sudo(message: Message):
-    """ view sudo users """
     if not Config.SUDO_USERS:
         await message.edit("**SUDO** users not found!", del_in=5)
         return
@@ -104,7 +99,6 @@ async def view_sudo(message: Message):
     'header': "add sudo command",
     'usage': "{tr}addscmd [command name]"})
 async def add_sudo_cmd(message: Message):
-    """ add sudo cmd """
     cmd = message.input_str
     if not cmd:
         await message.err('input not found!')
@@ -128,7 +122,6 @@ async def add_sudo_cmd(message: Message):
     'flags': {'-all': "remove all sudo commands"},
     'usage': "{tr}delscmd [command name]\n{tr}delscmd -all"})
 async def del_sudo_cmd(message: Message):
-    """ delete sudo cmd """
     cmd = message.filtered_input_str
     if '-all' in message.flags:
         Config.ALLOWED_COMMANDS.clear()
@@ -151,7 +144,6 @@ async def del_sudo_cmd(message: Message):
 
 @userge.on_cmd("vscmd", about={'header': "view sudo cmds"})
 async def view_sudo_cmd(message: Message):
-    """ view sudo cmds """
     if not Config.ALLOWED_COMMANDS:
         await message.edit("**SUDO** cmds not found!", del_in=5)
         return

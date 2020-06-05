@@ -1,5 +1,3 @@
-""" convert text """
-
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -15,7 +13,6 @@ from userge import userge, Message
     'header': "Make caps smaller",
     'usage': "{tr}small [text | reply to msg]"})
 async def small_(message: Message):
-    """ text to small """
     text = message.input_str
     if message.reply_to_message:
         text = message.reply_to_message.text
@@ -30,7 +27,6 @@ async def small_(message: Message):
     'header': "Convert text to lowwer",
     'usage': "{tr}lower [text | reply to msg]"})
 async def lower_(message: Message):
-    """ text to lower """
     text = message.input_str
     if message.reply_to_message:
         text = message.reply_to_message.text
@@ -44,7 +40,6 @@ async def lower_(message: Message):
     'header': "Convert text to upper",
     'usage': "{tr}upper [text | reply to msg]"})
 async def upper_(message: Message):
-    """ text to upper """
     text = message.input_str
     if message.reply_to_message:
         text = message.reply_to_message.text

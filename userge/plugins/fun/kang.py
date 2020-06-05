@@ -1,5 +1,3 @@
-""" kang stickers """
-
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -27,7 +25,7 @@ from userge import userge, Message, Config, pool
              "an image to kang it to your userbot pack.",
     'examples': ["{tr}kang", "{tr}kang 🤔", "{tr}kang 2", "{tr}kang 🤔 2"]})
 async def kang_(message: Message):
-    """ kang a sticker """
+    """kang"""
     user = message.from_user
     if not user.username:
         user.username = user.first_name or user.id
@@ -175,7 +173,7 @@ async def kang_(message: Message):
     'header': "get sticker pack info",
     'usage': "reply {tr}stkrinfo to any sticker"})
 async def sticker_pack_info_(message: Message):
-    """ get sticker pack info """
+    """get sticker pack info"""
     replied = message.reply_to_message
     if not replied:
         await message.edit("`I can't fetch info from nothing, can I ?!`")

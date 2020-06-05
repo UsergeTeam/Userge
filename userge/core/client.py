@@ -44,8 +44,6 @@ class Userge(Methods):
 
     async def complete_init_tasks(self) -> None:
         """ wait for init tasks """
-        if not self._init_tasks:
-            return
         await asyncio.gather(*self._init_tasks)
         self._init_tasks.clear()
 
@@ -54,12 +52,10 @@ class Userge(Methods):
         _LOG.debug(_LOG_STR, f"Importing {name}")
         self._imported.append(
             importlib.import_module(f"userge.plugins.{name}"))
-        plg = self._imported[-1]
-        self.manager.update_plugin(name.split('.')[-1], plg.__doc__)
-        if hasattr(plg, '_init'):
-            if asyncio.iscoroutinefunction(plg._init):
+        if hasattr(self._imported[-1], '_init'):
+            if asyncio.iscoroutinefunction(self._imported[-1]._init):
                 self._init_tasks.append(
-                    asyncio.get_event_loop().create_task(plg._init()))
+                    asyncio.get_event_loop().create_task(self._imported[-1]._init()))
         _LOG.debug(_LOG_STR, f"Imported {self._imported[-1].__name__} Plugin Successfully")
 
     async def _load_plugins(self) -> None:

@@ -1,5 +1,3 @@
-""" work with youtube """
-
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -100,7 +98,6 @@ def mp3Dl(url, prog, starttime):
                                 'examples': '{tr}ytinfo link',
                                 'others': 'To get info about direct links, use `{tr}head link`'})
 async def ytinfo(message: Message):
-    """ get info from a link """
     await message.edit("Hold on \u23f3 ..")
     _exracted = yt_getInfo(message.input_or_reply_str)
     if isinstance(_exracted, ytdl.utils.YoutubeDLError):
@@ -133,7 +130,6 @@ __{uploader}__
                                            '{tr}ytdl -m -t -d link will upload '
                                            'the mp3 as a document']}, del_pre=True)
 async def ytDown(message: Message):
-    """ download from a link """
     def __progress(data: dict):
         if ((time() - startTime) % 4) > 3.9:
             if data['status'] == "downloading":
@@ -191,7 +187,6 @@ async def ytDown(message: Message):
                                'description': 'Get information of the link without downloading',
                                'examples': '{tr}ytdes link'})
 async def ytdes(message: Message):
-    """ get description from a link """
     await message.edit("Hold on \u23f3 ..")
     try:
         x = ytdl.YoutubeDL({'no-playlist': True, 'logger': LOGGER}).extract_info(

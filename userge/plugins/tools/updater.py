@@ -9,12 +9,14 @@
 import asyncio
 
 from git import Repo
-from git.exc import GitCommandError
+from git.exc import InvalidGitRepositoryError, GitCommandError
 
 from userge import userge, Message, Config
 
 LOG = userge.getLogger(__name__)
 CHANNEL = userge.getCLogger(__name__)
+
+UPSTREAM_REMOTE = 'upstream'
 
 
 @userge.on_cmd("update", about={
@@ -33,8 +35,14 @@ CHANNEL = userge.getCLogger(__name__)
 async def check_update(message: Message):
     """check or do updates"""
     await message.edit("`Checking for updates, please wait....`")
-    repo = Repo()
-    ups_rem = repo.remote(Config.UPSTREAM_REMOTE)
+    try:
+        repo = Repo()
+    except InvalidGitRepositoryError:
+        repo = Repo.init()
+    if UPSTREAM_REMOTE in repo.remotes:
+        ups_rem = repo.remote(UPSTREAM_REMOTE)
+    else:
+        ups_rem = repo.create_remote(UPSTREAM_REMOTE, Config.UPSTREAM_REPO)
     try:
         ups_rem.fetch()
     except GitCommandError as error:
@@ -61,7 +69,7 @@ async def check_update(message: Message):
         return
     out = ''
     try:
-        for i in repo.iter_commits(f'HEAD..{Config.UPSTREAM_REMOTE}/{branch}'):
+        for i in repo.iter_commits(f'HEAD..{UPSTREAM_REMOTE}/{branch}'):
             out += (f"🔨 **#{i.count()}** : "
                     f"[{i.summary}]({Config.UPSTREAM_REPO.rstrip('/')}/commit/{i}) "
                     f"👷 __{i.committer}__\n\n")

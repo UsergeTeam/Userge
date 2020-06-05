@@ -1,5 +1,3 @@
-""" manage your group """
-
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -62,7 +60,7 @@ async def is_sudoadmin(message: Message):
         "{tr}promote @someusername/userid/replytouser Staff (custom title)"]})
 async def promote_usr(message: Message):
     """
-    promote members in tg group
+    this function can promote members in tg group
     """
     custom_rank = ""
     chat_id = message.chat.id
@@ -166,7 +164,7 @@ async def promote_usr(message: Message):
     'examples': "{tr}demote [username | userid] or [reply to user]"})
 async def demote_usr(message: Message):
     """
-    demote members in tg group
+    this function can demote members in tg group
     """
     chat_id = message.chat.id
     get_group = await userge.get_chat(chat_id)
@@ -280,7 +278,7 @@ async def demote_usr(message: Message):
     'examples': "{tr}ban [username | userid] or [reply to user] :reason (optional)"})
 async def ban_usr(message: Message):
     """
-    ban user from tg group
+    this function can ban user from tg group
     """
     reason = ""
     chat_id = message.chat.id
@@ -361,7 +359,7 @@ async def ban_usr(message: Message):
     'examples': "{tr}unban [username | userid] or [reply to user]"})
 async def unban_usr(message: Message):
     """
-    unban user from tg group
+    this function can unban user from tg group
     """
     chat_id = message.chat.id
     get_group = await userge.get_chat(chat_id)
@@ -451,7 +449,7 @@ async def unban_usr(message: Message):
     'examples': "{tr}kick [username | userid] or [reply to user]"})
 async def kick_usr(message: Message):
     """
-    kick user from tg group
+    this function can kick user from tg group
     """
     chat_id = message.chat.id
     get_group = await userge.get_chat(chat_id)
@@ -557,7 +555,7 @@ async def kick_usr(message: Message):
         "{tr}mute -d1 @someusername/userid/replytouser SPAM (mute for one day:reason SPAM)"]})
 async def mute_usr(message: Message):
     """
-    mute user from tg group
+    this function can mute user from tg group
     """
     reason = ""
     chat_id = message.chat.id
@@ -786,7 +784,7 @@ async def mute_usr(message: Message):
     'examples': "{tr}unmute [username | userid]  or [reply to user]"})
 async def unmute_usr(message: Message):
     """
-    unmute user from tg group
+    this function can unmute user from tg group
     """
     chat_id = message.chat.id
     get_group = await userge.get_chat(chat_id)
@@ -917,7 +915,7 @@ async def unmute_usr(message: Message):
         "{tr}zombies -c [remove deleted accounts from group]"]})
 async def zombie_clean(message: Message):
     """
-    remove deleted accounts from tg group
+    this function can remove deleted accounts from tg group
     """
     chat_id = message.chat.id
     get_group = await userge.get_chat(chat_id)
@@ -1019,7 +1017,7 @@ async def zombie_clean(message: Message):
         "{tr}pin -u [send to chat]"]})
 async def pin_msgs(message: Message):
     """
-    pin & unpin message in groups
+    this function can pin & unpin message in groups
     """
     chat_id = message.chat.id
     flags = message.flags
@@ -1110,7 +1108,7 @@ async def pin_msgs(message: Message):
         "{tr}gpic -d [send to chat]"]})
 async def chatpic_func(message: Message):
     """
-    change chat photo
+    this function can change chat photo
     """
     chat_id = message.chat.id
     flags = message.flags

@@ -1,5 +1,3 @@
-""" custom thumbnail """
-
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -22,7 +20,6 @@ CHANNEL = userge.getCLogger(__name__)
     'header': "Save thumbnail",
     'usage': "{tr}sthumb [reply to any photo]"})
 async def save_thumb_nail(message: Message):
-    """ setup thumbnail """
     await message.edit("processing ...")
     replied = message.reply_to_message
     if (replied and replied.media
@@ -46,7 +43,6 @@ async def save_thumb_nail(message: Message):
 
 @userge.on_cmd('dthumb', about={'header': "Delete thumbnail"})
 async def clear_thumb_nail(message: Message):
-    """ delete thumbnail """
     await message.edit("`processing ...`")
     if os.path.exists(THUMB_PATH):
         os.remove(THUMB_PATH)
@@ -60,7 +56,6 @@ async def clear_thumb_nail(message: Message):
 
 @userge.on_cmd('vthumb', about={'header': "View thumbnail"})
 async def get_thumb_nail(message: Message):
-    """ view current thumbnail """
     await message.edit("processing ...")
     if os.path.exists(THUMB_PATH):
         msg = await userge.send_document(chat_id=message.chat.id,
