@@ -1,3 +1,5 @@
+""" manage your userge :) """
+
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -24,6 +26,7 @@ from userge.plugins import ROOT
         "{tr}status", "{tr}status -p",
         "{tr}status -p gdrive", "{tr}status -c {tr}gls"]}, del_pre=True)
 async def status(message: Message) -> None:
+    """ view current status """
     name_ = message.filtered_input_str
     type_ = list(message.flags)
     if not type_:
@@ -160,6 +163,7 @@ async def status(message: Message) -> None:
     'examples': [
         "{tr}enable -p gdrive", "{tr}enable -c gls gup"]}, del_pre=True)
 async def enable(message: Message) -> None:
+    """ enable plugins, commands, filters """
     if not message.flags:
         await message.err("flag required!")
         return
@@ -225,6 +229,7 @@ async def enable(message: Message) -> None:
     'examples': [
         "{tr}disable -p gdrive", "{tr}disable -c gls gup"]}, del_pre=True)
 async def disable(message: Message) -> None:
+    """ disable plugins, commands, filters """
     if not message.flags:
         await message.err("flag required!")
         return
@@ -291,6 +296,7 @@ async def disable(message: Message) -> None:
     'examples': [
         "{tr}load -p gdrive", "{tr}load -c gls gup"]}, del_pre=True)
 async def load(message: Message) -> None:
+    """ load plugins, commands, filters """
     if message.flags:
         if not message.filtered_input_str:
             await message.err("name required!")
@@ -379,6 +385,7 @@ async def load(message: Message) -> None:
     'examples': [
         "{tr}unload -p gdrive", "{tr}unload -c gls gup"]}, del_pre=True)
 async def unload(message: Message) -> None:
+    """ unload plugins, commands, filters """
     if not message.flags:
         await message.err("flag required!")
         return
@@ -436,6 +443,7 @@ async def unload(message: Message) -> None:
 
 @userge.on_cmd('reload', about={'header': "Reload all plugins"})
 async def reload_(message: Message) -> None:
+    """ Reload all plugins """
     await message.edit("`Reloading All Plugins`")
     await message.edit(
         f"`Reloaded {await userge.reload_plugins()} Plugins`", del_in=3, log=__name__)
@@ -443,6 +451,7 @@ async def reload_(message: Message) -> None:
 
 @userge.on_cmd('clear', about={'header': "clear all save filters in DB"})
 async def clear_(message: Message) -> None:
+    """ clear all save filters in DB """
     await message.edit("`Clearing DB...`")
     await message.edit(
         f"**Cleared Filters** : `{await userge.manager.clear()}`", del_in=3, log=__name__)

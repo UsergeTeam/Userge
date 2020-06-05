@@ -1,3 +1,5 @@
+""" paste text to bin """
+
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -22,7 +24,7 @@ NEKOBIN_URL = "https://nekobin.com/"
     'usage': "{tr}paste [flags] [file_type] [text | reply to msg]",
     'examples': "{tr}paste -py import os"}, del_pre=True)
 async def paste_(message: Message) -> None:
-    """pastes the text directly to dogbin"""
+    """ pastes the text directly to dogbin or nekobin """
     await message.edit("`Processing...`")
     text = message.filtered_input_str
     replied = message.reply_to_message
@@ -78,7 +80,7 @@ async def paste_(message: Message) -> None:
     'header': "Gets the content of a del.dog paste",
     'usage': "{tr}getpaste [del.dog or nekobin link]"})
 async def get_paste_(message: Message):
-    """fetches the content of a dogbin URL"""
+    """ fetches the content of a dogbin or nekobin URL """
     link = message.input_str
     if not link:
         await message.err("input not found!")

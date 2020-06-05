@@ -7,7 +7,7 @@
 # All rights reserved.
 
 from userge.logger import logging
-from userge.config import Config
+from userge.config import Config, get_version
 from userge.core import (
     Userge, Filters, Message, get_collection, pool)
 

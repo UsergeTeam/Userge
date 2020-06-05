@@ -1,3 +1,5 @@
+""" upload , rename and convert telegram files """
+
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -36,6 +38,7 @@ THUMB_PATH = Config.DOWN_PATH + "thumb_image.jpg"
     'usage': "{tr}rename [flags] [new_name_with_extention] : reply to telegram media",
     'examples': "{tr}rename -d test.mp4"}, del_pre=True)
 async def rename_(message: Message):
+    """ rename telegram files """
     if not message.filtered_input_str:
         await message.err("new name not found!")
         return
@@ -68,6 +71,7 @@ async def rename_(message: Message):
     'header': "Convert telegram files",
     'usage': "reply {tr}convert to any media"})
 async def convert_(message: Message):
+    """ convert telegram files """
     await message.edit("Trying to Convert...")
     if not os.path.isdir(Config.DOWN_PATH):
         os.mkdir(Config.DOWN_PATH)
@@ -100,6 +104,7 @@ async def convert_(message: Message):
         "{tr}upload -d https://speed.hetzner.de/100MB.bin | test.bin",
         "{tr}upload downloads/test.mp4"]}, del_pre=True)
 async def uploadtotg(message: Message):
+    """ upload to telegram """
     flags = message.flags
     path_ = message.filtered_input_str
     if not path_:

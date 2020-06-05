@@ -1,3 +1,5 @@
+""" work with paths or files """
+
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -32,7 +34,7 @@ _LOG = userge.getLogger(__name__)
 
 
 class _BaseLib:
-    """Base Class for PackLib and SCLib"""
+    """ Base Class for PackLib and SCLib """
     def __init__(self) -> None:
         self._final_file_path = ""
         self._current = Manager().Value(c_int, 0)
@@ -43,22 +45,22 @@ class _BaseLib:
 
     @property
     def completed_files(self) -> int:
-        """Returns completed files"""
+        """ Returns completed files """
         return self._current.value
 
     @property
     def total_files(self) -> int:
-        """Returns total files"""
+        """ Returns total files """
         return self._total
 
     @property
     def percentage(self) -> int:
-        """Returns percentage"""
+        """ Returns percentage """
         return int(round((self._current.value / self._total) * 100, 2))
 
     @property
     def progress(self) -> str:
-        """Returns progress"""
+        """ Returns progress """
         percentage = self.percentage
         progress_str = "[{}{}]".format(
             ''.join((Config.FINISHED_PROGRESS_STR
@@ -69,16 +71,16 @@ class _BaseLib:
 
     @property
     def canceled(self) -> bool:
-        """Returns True if canceled"""
+        """ Returns True if canceled """
         return self._is_canceled.value
 
     @property
     def finished(self) -> bool:
-        """Returns True if finished"""
+        """ Returns True if finished """
         return self._current.value == self._total or self._is_finished.value
 
     def cancel(self) -> None:
-        """Cancel running thread"""
+        """ Cancel running thread """
         self._is_canceled.value = True
 
     def _finish(self) -> None:
@@ -86,17 +88,17 @@ class _BaseLib:
 
     @property
     def output(self) -> str:
-        """Returns output"""
+        """ Returns output """
         return self._output.value
 
     @property
     def final_file_path(self) -> str:
-        """Returns final file path"""
+        """ Returns final file path """
         return self._final_file_path
 
 
 class PackLib(_BaseLib):
-    """Class for PACK / UNPACK / LISTPACK (files / folders)"""
+    """ Class for PACK / UNPACK / LISTPACK (files / folders) """
     def __init__(self, file_path: str) -> None:
         self._file_path = file_path
         super().__init__()
@@ -160,7 +162,7 @@ class PackLib(_BaseLib):
                     counter.value += 1
 
     def pack_path(self, tar: bool) -> None:
-        """PACK file path"""
+        """ PACK file path """
         file_paths = []
 
         def explorer(path: Path) -> None:
@@ -182,7 +184,7 @@ class PackLib(_BaseLib):
         pool.submit_thread(self._zip, p_type, file_paths, self._final_file_path)
 
     def unpack_path(self) -> None:
-        """UNPACK file path"""
+        """ UNPACK file path """
         chunked_file_names = []
         temp_file_names = []
         temp_size = 0
@@ -212,7 +214,7 @@ class PackLib(_BaseLib):
                                 self._is_finished)
 
     def get_info(self) -> Sequence[Tuple[str, int]]:
-        """Returns PACK info"""
+        """ Returns PACK info """
         if is_zipfile(self._file_path):
             with ZipFile(self._file_path, 'r') as z_f:
                 return tuple((z_.filename, z_.file_size) for z_ in z_f.infolist())
@@ -225,12 +227,12 @@ class PackLib(_BaseLib):
 
     @staticmethod
     def is_supported(file_path: str) -> bool:
-        """Returns file is supported or not"""
+        """ Returns file is supported or not """
         return is_zipfile(file_path) or is_tarfile(file_path) or is_rarfile(file_path)
 
 
 class SCLib(_BaseLib):
-    """Class for split / combine files"""
+    """ Class for split / combine files """
     def __init__(self, file_path: str) -> None:
         self._chunk_size = 1024 * 1024
         self._s_time = time()
@@ -241,22 +243,22 @@ class SCLib(_BaseLib):
 
     @property
     def completed(self) -> int:
-        """Returns completed file size"""
+        """ Returns completed file size """
         return self._cmp_size
 
     @property
     def total(self) -> int:
-        """Returns total file size"""
+        """ Returns total file size """
         return self._file_size
 
     @property
     def percentage(self) -> int:
-        """Returns percentage"""
+        """ Returns percentage """
         return int(round((self._cmp_size / self._file_size) * 100, 2))
 
     @property
     def progress(self) -> str:
-        """Returns progress"""
+        """ Returns progress """
         percentage = self.percentage
         progress_str = "[{}{}]".format(
             ''.join((Config.FINISHED_PROGRESS_STR
@@ -267,12 +269,12 @@ class SCLib(_BaseLib):
 
     @property
     def speed(self) -> float:
-        """Returns speed"""
+        """ Returns speed """
         return int(round(self._cmp_size / (time() - self._s_time), 2))
 
     @property
     def eta(self) -> str:
-        """Returns eta"""
+        """ Returns eta """
         return time_formatter(
             (self._file_size - self._cmp_size) / self.speed if self.speed else 0)
 
@@ -327,7 +329,7 @@ class SCLib(_BaseLib):
             self._finish()
 
     def split(self, split_size: int) -> None:
-        """Split files"""
+        """ Split files """
         split_size = int(split_size) * 1024 * 1024
         self._file_size = os.stat(self._path).st_size
         if self._chunk_size > split_size:
@@ -341,7 +343,7 @@ class SCLib(_BaseLib):
         pool.submit_thread(self._split_worker, times)
 
     def combine(self) -> None:
-        """Combine Split files"""
+        """ Combine Split files """
         file_name, ext = splitext(basename(self._path))
         self._final_file_path = join(dirname(self._path), file_name)
         file_list = sorted(glob(self._final_file_path + f".{'[0-9]' * len(ext.lstrip('.'))}"))
@@ -354,7 +356,7 @@ class SCLib(_BaseLib):
     'header': "list directory",
     'usage': "{tr}ls [path]\n{tr}ls -d : default path"})
 async def ls_dir(message: Message) -> None:
-    """list dir"""
+    """ list dir """
     if '-d' in message.flags:
         path = Config.DOWN_PATH
     else:
@@ -394,7 +396,7 @@ async def ls_dir(message: Message) -> None:
     'header': "set temporary working directory",
     'usage': "{tr}dset [path / name]"})
 async def dset_(message: Message) -> None:
-    """dset"""
+    """ set dir """
     path = message.input_str
     if not path:
         await message.err("missing file path!")
@@ -412,7 +414,7 @@ async def dset_(message: Message) -> None:
     'header': "reset to default working directory",
     'usage': "{tr}dreset"})
 async def dreset_(message: Message) -> None:
-    """dreset"""
+    """ reset dir """
     path = os.environ.get("DOWN_PATH", "downloads").rstrip('/') + '/'
     Config.DOWN_PATH = path
     await message.edit(f"reset **working directory** to `{path}` successfully!", del_in=5)
@@ -420,7 +422,7 @@ async def dreset_(message: Message) -> None:
 
 @userge.on_cmd("dclear", about={'header': "Clear the current working directory"})
 async def dclear_(message: Message):
-    """dclear"""
+    """ clear dir """
     if not isdir(Config.DOWN_PATH):
         await message.edit(
             f'path : `{Config.DOWN_PATH}` not found and just created!', del_in=5)
@@ -435,7 +437,7 @@ async def dclear_(message: Message):
     'header': "remove a directory or file",
     'usage': "{tr}dremove [path / name]"})
 async def dremove_(message: Message) -> None:
-    """dremove"""
+    """ remove dir """
     path = message.input_str
     if not path:
         await message.err("missing file path!")
@@ -454,7 +456,7 @@ async def dremove_(message: Message) -> None:
     'header': "rename a directory or file",
     'usage': "{tr}drename [path / name] | [new name]"})
 async def drename_(message: Message) -> None:
-    """drename"""
+    """ rename dir """
     path = str(message.matches[0].group(1)).strip()
     new_name = str(message.matches[0].group(2)).strip()
     if not exists(path):
@@ -470,7 +472,7 @@ async def drename_(message: Message) -> None:
     'usage': "{tr}split [split size (MB)] [file path]",
     'examples': "{tr}split 5 downloads/test.zip"})
 async def split_(message: Message) -> None:
-    """split"""
+    """ split files """
     split_size = int(message.matches[0].group(1))
     file_path = str(message.matches[0].group(2))
     if not file_path:
@@ -526,7 +528,7 @@ async def split_(message: Message) -> None:
     'usage': "{tr}combine [file path]",
     'examples': "{tr}combine downloads/test.tar.00000"})
 async def combine_(message: Message) -> None:
-    """combine"""
+    """ combine split files """
     file_path = message.input_str
     if not file_path:
         await message.err("missing file path!")
@@ -584,7 +586,7 @@ async def combine_(message: Message) -> None:
     'header': "Zip file / folder",
     'usage': "{tr}zip [file path | folder path]"})
 async def zip_(message: Message) -> None:
-    """zip"""
+    """ zip files """
     await _pack_helper(message)
 
 
@@ -592,7 +594,7 @@ async def zip_(message: Message) -> None:
     'header': "Tar file / folder",
     'usage': "{tr}tar [file path | folder path]"})
 async def tar_(message: Message) -> None:
-    """tar"""
+    """ tar fils """
     await _pack_helper(message, True)
 
 
@@ -643,7 +645,7 @@ async def _pack_helper(message: Message, tar: bool = False) -> None:
     'usage': "{tr}unpack [file path]",
     'types': ['zip', 'tar', 'rar']})
 async def unpack_(message: Message) -> None:
-    """unpack"""
+    """ unpack packed file """
     file_path = message.input_str
     if not file_path:
         await message.err("missing file path!")
@@ -693,7 +695,7 @@ async def unpack_(message: Message) -> None:
     'usage': "{tr}packinfo [file path]",
     'types': ['zip', 'tar', 'rar']})
 async def packinfo_(message: Message) -> None:
-    """packinfo"""
+    """ view packed file info """
     file_path = message.input_str
     if not file_path:
         await message.err("missing file path!")

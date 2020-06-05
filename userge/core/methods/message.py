@@ -30,7 +30,7 @@ _LOG_STR = "<<<!  :::::  %s  :::::  !>>>"
 
 
 class Message(RawMessage):
-    """Modded Message Class For Userge"""
+    """ Modded Message Class For Userge """
     def __init__(self,
                  client: RawClient,
                  message: RawMessage,
@@ -49,7 +49,7 @@ class Message(RawMessage):
 
     @property
     def input_str(self) -> str:
-        """Returns the input string without command"""
+        """ Returns the input string without command """
         input_ = self.text
         if ' ' in input_:
             return str(input_.split(maxsplit=1)[1].strip())
@@ -57,7 +57,7 @@ class Message(RawMessage):
 
     @property
     def input_or_reply_str(self) -> str:
-        """Returns the input string  or replied msg text without command"""
+        """ Returns the input string  or replied msg text without command """
         input_ = self.input_str
         if not input_ and self.reply_to_message:
             input_ = (self.reply_to_message.text or '').strip()
@@ -65,26 +65,26 @@ class Message(RawMessage):
 
     @property
     def filtered_input_str(self) -> str:
-        """Returns the filtered input string without command and flags"""
+        """ Returns the filtered input string without command and flags """
         self._filter()
         return self._filtered_input_str
 
     @property
     def flags(self) -> Dict[str, str]:
-        """Returns all flags in input string as `Dict`"""
+        """ Returns all flags in input string as `Dict` """
         self._filter()
         return self._flags
 
     @property
     def process_is_canceled(self) -> bool:
-        """Returns True if process canceled"""
+        """ Returns True if process canceled """
         if self.message_id in _CANCEL_LIST:
             _CANCEL_LIST.remove(self.message_id)
             self._process_canceled = True
         return self._process_canceled
 
     def cancel_the_process(self) -> None:
-        """Set True to the self.process_is_canceled"""
+        """ Set True to the self.process_is_canceled """
         _CANCEL_LIST.append(self.message_id)
 
     @staticmethod
