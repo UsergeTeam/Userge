@@ -1,3 +1,5 @@
+""" setup auto pm message """
+
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -43,6 +45,7 @@ async def _init() -> None:
     'usage': "{tr}allow [username | userID]\nreply {tr}allow to a message, "
              "do {tr}allow in the private chat"})
 async def allow(message: Message):
+    """ allows to pm """
     userid = await get_id(message)
     if userid:
         if userid in pmCounter:
@@ -69,6 +72,7 @@ async def allow(message: Message):
     'usage': "{tr}nopm [username | userID]\nreply {tr}nopm to a message, "
              "do {tr}nopm in the private chat"})
 async def denyToPm(message: Message):
+    """ disallows to pm """
     userid = await get_id(message)
     if userid:
         if userid in Config.ALLOWED_CHATS:
@@ -101,6 +105,7 @@ async def get_id(message: Message):
 @userge.on_filters(Filters.private & ~Filters.me & ~Config.ALLOWED_CHATS
                    & ~Filters.outgoing & ~allowAllFilter & ~Filters.service & ~Filters.bot)
 async def uninvitedPmHandler(message: Message):
+    """ pm message handler """
     user_dict = await userge.get_user_dict(message.from_user.id)
     user_dict.update({'chat': message.chat.title if message.chat.title else "this group"})
 
@@ -132,6 +137,7 @@ async def uninvitedPmHandler(message: Message):
 
 @userge.on_filters(Filters.private & ~Config.ALLOWED_CHATS & Filters.outgoing & ~allowAllFilter)
 async def outgoing_auto_approve(message: Message):
+    """ outgoing handler """
     userID = message.chat.id
     if userID in pmCounter:
         del pmCounter[userID]
@@ -149,6 +155,7 @@ async def outgoing_auto_approve(message: Message):
                    "When you turn on this next time, "
                    "the previously allowed chats will be there !"})
 async def pmguard(message: Message):
+    """ enable or disable auto pm handler """
     global allowAllPms, pmCounter
     if allowAllPms:
         allowAllPms = False
@@ -172,6 +179,7 @@ async def pmguard(message: Message):
         '{chat}': "chat name",
         '{mention}': "mention user"}})
 async def set_custom_nopm_message(message: Message):
+    """ setup custom pm message """
     global noPmMessage
     await message.edit('`Custom NOpm message saved`', log=True)
     if message.reply_to_message:
@@ -187,4 +195,5 @@ async def set_custom_nopm_message(message: Message):
 
 @userge.on_cmd("vpmmsg", about={'header': "Displays the reply message for uninvited PMs"})
 async def view_current_noPM_msg(message: Message):
+    """ view current pm message """
     await message.edit(noPmMessage)

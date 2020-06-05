@@ -27,14 +27,14 @@ _LOG_STR = "<<<!  :::::  %s  :::::  !>>>"
 
 
 class Decorators:
-    """decoretors for userge"""
+    """ decoretors for userge """
     def __init__(self, **kwargs) -> None:
         self.manager = Manager()
         self._tasks: List[Callable[[Any], Any]] = []
         super().__init__(**kwargs)
 
     def add_task(self, func: Callable[[Any], Any]) -> Callable[[Any], Any]:
-        """add tasks"""
+        """ add tasks """
         self._tasks.append(func)
         return func
 
@@ -122,7 +122,7 @@ class Decorators:
     def on_filters(self,
                    filters: Filters,
                    group: int = 0) -> Callable[[_PYROFUNC], _PYROFUNC]:
-        """Decorator for handling filters"""
+        """ Decorator for handling filters """
         flt = Filtr(self, group)
         filters = filters & Filters.create(lambda _, __: flt.is_enabled)
         return self._build_decorator(log=f"On Filters {filters}",
@@ -131,21 +131,25 @@ class Decorators:
     def on_new_member(self,
                       welcome_chats: Filters.chat,
                       group: int = -2) -> Callable[[_PYROFUNC], _PYROFUNC]:
-        """Decorator for handling new members"""
+        """ Decorator for handling new members """
         flt = Filtr(self, group)
         welcome_chats = welcome_chats & Filters.create(lambda _, __: flt.is_enabled)
         return self._build_decorator(log=f"On New Member in {welcome_chats}",
-                                     filters=Filters.new_chat_members & welcome_chats,
+                                     filters=(
+                                         Filters.group & Filters.new_chat_members
+                                         & welcome_chats),
                                      flt=flt)
 
     def on_left_member(self,
                        leaving_chats: Filters.chat,
                        group: int = -2) -> Callable[[_PYROFUNC], _PYROFUNC]:
-        """Decorator for handling left members"""
+        """ Decorator for handling left members """
         flt = Filtr(self, group)
         leaving_chats = leaving_chats & Filters.create(lambda _, __: flt.is_enabled)
         return self._build_decorator(log=f"On Left Member in {leaving_chats}",
-                                     filters=Filters.left_chat_member & leaving_chats,
+                                     filters=(
+                                         Filters.group & Filters.left_chat_member
+                                         & leaving_chats),
                                      flt=flt)
 
     def _build_decorator(self,
@@ -160,11 +164,12 @@ class Decorators:
             _LOG.debug(_LOG_STR, f"Loading => [ async def {func.__name__}(message) ] "
                        f"from {func.__module__} `{log}`")
             module_name = func.__module__.split('.')[-1]
-            self.manager.add_plugin(self, module_name, func.__module__).add(flt)
+            parent_name = func.__module__.split('.')[-2]
+            self.manager.add_plugin(self, module_name, parent_name).add(flt)
             handler = MessageHandler(template, filters)
             if isinstance(flt, Command):
                 flt.update_command(handler, func.__doc__)
             else:
-                flt.update_filter(f"{module_name }.{func.__name__}", func.__doc__, handler)
+                flt.update_filter(f"{module_name}.{func.__name__}", func.__doc__, handler)
             return func
         return decorator

@@ -1,3 +1,5 @@
+""" hash , encode and decode """
+
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -17,6 +19,7 @@ from userge.utils import runcmd
     'description': "Find the md5, sha1, sha256, sha512 of the string when written into a txt file",
     'usage': "{tr}hash [text or reply to msg]"})
 async def gethash(message: Message):
+    """ find hash of text """
     input_ = message.input_or_reply_str
     if not input_:
         await message.err("input not found!")
@@ -38,6 +41,7 @@ async def gethash(message: Message):
     'usage': "{tr}base64 [text or reply to msg] : encode\n"
              "{tr}base64 -d [text or reply to msg] : decode"}, del_pre=True)
 async def endecrypt(message: Message):
+    """ encode or decode """
     if message.reply_to_message:
         input_ = message.reply_to_message.text
     else:

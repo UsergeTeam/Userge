@@ -1,3 +1,5 @@
+""" setup notes """
+
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -11,8 +13,9 @@ from userge import userge, Message, get_collection
 NOTES_COLLECTION = get_collection("notes")
 
 
-@userge.on_cmd("notes", about={'header': "List all saved notes"})
+@userge.on_cmd("notes", about={'header': "List all saved notes in current chat"})
 async def notes_active(message: Message) -> None:
+    """ list notes in current chat """
     out = ''
     async for note in NOTES_COLLECTION.find({'chat_id': message.chat.id}, {'name': 1}):
         out += " 📌 `{}`\n".format(note['name'])
@@ -26,6 +29,7 @@ async def notes_active(message: Message) -> None:
     'header': "Deletes a note by name",
     'usage': "{tr}delnote [note name]"})
 async def remove_notes(message: Message) -> None:
+    """ delete note in current chat """
     notename = message.input_str
     if not notename:
         out = "`Wrong syntax`\nNo arguements"
@@ -45,6 +49,7 @@ async def remove_notes(message: Message) -> None:
                trigger='',
                filter_me=False)
 async def get_note(message: Message) -> None:
+    """ get any saved note """
     notename = message.matches[0].group(1)
     found = await NOTES_COLLECTION.find_one(
         {'chat_id': message.chat.id, 'name': notename}, {'content': 1})
@@ -58,6 +63,7 @@ async def get_note(message: Message) -> None:
                    'header': "Adds a note by name",
                    'usage': "{tr}addnote [note name] [content | reply to msg]"})
 async def add_note(message: Message) -> None:
+    """ add note to curent chat """
     notename = message.matches[0].group(1)
     content = message.matches[0].group(2)
     if message.reply_to_message:

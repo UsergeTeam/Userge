@@ -28,7 +28,7 @@ class _MsgLimitReached(Exception):
 
 
 class Conv:
-    """Conversation class for userge"""
+    """ Conversation class for userge """
     def __init__(self,
                  client: '_client.Userge',
                  user: Union[str, int],
@@ -43,7 +43,7 @@ class Conv:
 
     @property
     def chat_id(self) -> int:
-        """Returns chat_id"""
+        """ Returns chat_id """
         return self._chat_id
 
     async def get_response(self, *, timeout: Union[int, float] = 0,
@@ -132,7 +132,7 @@ class Conv:
 
     @staticmethod
     def init(client: '_client.Userge') -> None:
-        """initialize the conversation method"""
+        """ initialize the conversation method """
         async def _on_conversation(_, msg: RawMessage) -> None:
             _CONV_DICT[msg.from_user.id].put_nowait(msg)
             msg.continue_propagation()
