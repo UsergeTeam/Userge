@@ -42,12 +42,15 @@ class Userge(Methods):
         _LOG.debug(_LOG_STR, f"Creating Logger => {name}")
         return logging.getLogger(name)
 
-    async def complete_init_tasks(self) -> None:
-        """ wait for init tasks """
+    async def _complete_init_tasks(self) -> None:
         if not self._init_tasks:
             return
         await asyncio.gather(*self._init_tasks)
         self._init_tasks.clear()
+
+    async def finalize_load(self) -> None:
+        """ finalize the plugins load """
+        await asyncio.gather(self._complete_init_tasks(), self.manager.init())
 
     async def load_plugin(self, name: str) -> None:
         """ Load plugin to Userge """
@@ -71,7 +74,7 @@ class Userge(Methods):
                 await self.load_plugin(name)
             except ImportError as i_e:
                 _LOG.error(_LOG_STR, i_e)
-        await asyncio.gather(self.complete_init_tasks(), self.manager.init())
+        await self.finalize_load()
         _LOG.info(_LOG_STR, f"Imported ({len(self._imported)}) Plugins => "
                   + str([i.__name__ for i in self._imported]))
 

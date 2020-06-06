@@ -155,7 +155,7 @@ if Config.LOAD_UNOFFICIAL_PLUGINS:
 def get_version() -> str:
     """ get userge version """
     ver = f"{versions.__major__}.{versions.__minor__}.{versions.__micro__}"
-    diff = list(Repo().iter_commits(f'{Config.UPSTREAM_REMOTE}/master..HEAD'))
+    diff = list(_REPO.iter_commits(f'{Config.UPSTREAM_REMOTE}/master..HEAD'))
     if diff:
         return f"{ver}-beta.{len(diff)}"
     return ver
