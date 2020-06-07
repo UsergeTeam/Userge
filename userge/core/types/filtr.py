@@ -121,7 +121,7 @@ class Filtr:
     def update_filter(self, name: str, about: Optional[str], handler: Handler) -> None:
         """ update name, about and handler in filter """
         self.name = name
-        self.about = about.strip() if about else None
+        self.about = about.strip() if isinstance(about, str) else None
         self._handler = handler
         _LOG.debug(_LOG_STR, f"created filter -> {self.name}")
 
