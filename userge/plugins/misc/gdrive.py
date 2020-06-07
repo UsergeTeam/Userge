@@ -581,7 +581,7 @@ class Worker(_GDrive):
         link = self._message.input_str
         if filter_str:
             link = self._message.filtered_input_str
-        found = re.search(r'https://drive.google.com/[\w\?\./&=]+([-\w]{33}|0A[-\w]{17})', link)
+        found = re.search(r'https://drive.google.com/[\w\?\./&=]+([-\w]{33}|/0A[-\w]{17})', link)
         if found and 'folder' in link:
             out = (found.group(1), "folder")
         elif found:
