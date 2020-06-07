@@ -8,6 +8,17 @@
 
 from userge import userge, Message, Config
 
+_CATEGORY = {
+    'admin': '👨‍✈️',
+    'fun': '🎨',
+    'misc': '⚙️',
+    'tools': '🧰',
+    'utils': '🗂',
+    'unofficial': '🃏',
+    'temp': '♻️',
+    'plugins': '💎'
+}
+
 
 @userge.on_cmd("help", about={'header': "Guide to use USERGE commands"})
 async def helpme(message: Message) -> None:
@@ -16,7 +27,7 @@ async def helpme(message: Message) -> None:
         out_str = f"""⚒ **--(`{len(plugins)}`) Plugins Available--**\n\n"""
         cat_plugins = userge.manager.get_plugins()
         for cat in sorted(cat_plugins):
-            out_str += (f"    ✪ **{cat}** (`{len(cat_plugins[cat])}`) :   `"
+            out_str += (f"    {_CATEGORY[cat]} **{cat}** (`{len(cat_plugins[cat])}`) :   `"
                         + "`    `".join(sorted(cat_plugins[cat])) + "`\n\n")
         out_str += f"""📕 **Usage:**  `{Config.CMD_TRIGGER}help [plugin_name]`"""
     else:
@@ -31,8 +42,8 @@ async def helpme(message: Message) -> None:
 🔧 **Plugin:**  `{key}`
 📘 **About:**  `{plugins[key].about}`\n\n"""
             for i, cmd in enumerate(commands, start=1):
-                out_str += (f"    📎 **cmd(`{i}`):**  `{cmd.name}`\n"
-                            f"    📗 **doc:**  __{cmd.doc}__\n\n")
+                out_str += (f"    🤖 **cmd(`{i}`):**  `{cmd.name}`\n"
+                            f"    📚 **info:**  __{cmd.doc}__\n\n")
             out_str += f"""📕 **Usage:**  `{Config.CMD_TRIGGER}help [command_name]`"""
         else:
             commands = userge.manager.enabled_commands

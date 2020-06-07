@@ -363,7 +363,7 @@ async def load(message: Message) -> None:
                 plugin = get_import_path(ROOT, t_path)
                 try:
                     await userge.load_plugin(plugin)
-                    await userge.complete_init_tasks()
+                    await userge.finalize_load()
                 except (ImportError, SyntaxError) as i_e:
                     os.remove(t_path)
                     await message.err(i_e)
