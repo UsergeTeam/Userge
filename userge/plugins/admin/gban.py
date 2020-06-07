@@ -47,7 +47,6 @@ async def user_is_admin(chat_id: int, user_id: int) -> bool:
     'examples': "{tr}gban [userid | reply] [reason for gban] (mandatory)"})
 async def gban_user(message: Message):
     """ ban a user globally """
-    reason = ""
     chat_id = message.chat.id
     if message.reply_to_message:
         user_id = message.reply_to_message.from_user.id
@@ -56,8 +55,6 @@ async def gban_user(message: Message):
         args = message.input_str.split(maxsplit=1)
         if len(args) == 2:
             user_id, reason = args
-        elif len(args) == 1:
-            user_id = args[0]
         else:
             await message.edit(
                 "`no valid user_id or message specified,`"
@@ -66,32 +63,31 @@ async def gban_user(message: Message):
             return
     get_mem = await userge.get_user_dict(user_id)
     firstname = get_mem['fname']
+    if not reason:
+        await message.edit(
+            f"**#Aborted**\n\n**Gbanning** of [{firstname}](tg://user?id={user_id}) "
+            "Aborted coz No reason of gban provided by banner", del_in=5)
+        return
     user_id = get_mem['id']
+    if user_id == (await userge.get_me()).id:
+        await message.edit(r"LoL. Why would I GBan myself ¯\(°_o)/¯")
+        return
+    if user_id in Config.SUDO_USERS:
+        await message.edit(
+            "That user is in my Sudo List, Hence I can't ban him.\n\n"
+            "**Tip:** Remove them from Sudo List and try again. (¬_¬)", del_in=5)
+        return
     found = await GBAN_USER_BASE.find_one({'user_id': user_id})
     if found:
         await message.edit(
             "**#Already_GBanned**\n\nUser Already Exists in My Gban List.\n"
             f"**Reason For GBan:** `{found['reason']}`", del_in=5)
         return
-    if user_id == (await userge.get_me()).id:
-        await message.edit(r"LoL. Why would I GBan myself ¯\(°_o)/¯")
-        return
-    if user_id in Config.SUDO_USERS:
-        await message.edit(
-            "That user is in my Sudo List, Hence I can't ban him. \n\n"
-            "**Tip:** Remove them from Sudo List and try again. (¬_¬)", del_in=5)
-        return
-    if reason:
-        sent = await message.edit(
-            r"\\**#GBanned_User**//"
-            f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
-            f"**User ID:** `{user_id}`\n     **Reason:** `{reason}`")
-        # TODO: can we add something like "GBanned by {any_sudo_user_fname}"
-    else:
-        await message.edit(
-            f"**#Aborted** \n\n**Gbanning** of [{firstname}](tg://user?id={user_id}) "
-            "Aborted coz No reason of gban provided by banner", del_in=5)
-        return
+    sent = await message.edit(
+        r"\\**#GBanned_User**//"
+        f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
+        f"**User ID:** `{user_id}`\n**Reason:** `{reason}`")
+    # TODO: can we add something like "GBanned by {any_sudo_user_fname}"
     await GBAN_USER_BASE.insert_one(
         {'firstname': firstname, 'user_id': user_id, 'reason': reason})
     if message.chat.type not in ('private', 'bot') and await me_can_restrict_members(chat_id):
@@ -129,17 +125,10 @@ async def ungban_user(message: Message):
     if message.reply_to_message:
         user_id = message.reply_to_message.from_user.id
     else:
-        args = message.input_str.split(maxsplit=1)
-        if len(args) == 2:
-            user_id, _ = args
-        elif len(args) == 1:
-            user_id = args[0]
-        else:
-            await message.edit(
-                "`no valid user_id or message specified,`"
-                "`don't do .help gban for more info. "
-                "Coz no one's gonna help ya`(｡ŏ_ŏ) ⚠", del_in=0)
-            return
+        user_id = message.input_str
+    if not user_id:
+        await message.err("user-id not found")
+        return
     get_mem = await userge.get_user_dict(user_id)
     firstname = get_mem['fname']
     user_id = get_mem['id']
@@ -187,17 +176,10 @@ async def whitelist(message: Message):
     if message.reply_to_message:
         user_id = message.reply_to_message.from_user.id
     else:
-        args = message.input_str.split(maxsplit=1)
-        if len(args) == 2:
-            user_id, _ = args
-        elif len(args) == 1:
-            user_id = args[0]
-        else:
-            await message.edit(
-                "`no valid user_id or message specified,`"
-                "`don't do .help gban for more info. "
-                "Coz no one's gonna help ya`(｡ŏ_ŏ) ⚠", del_in=0)
-            return
+        user_id = message.input_str
+    if not user_id:
+        await message.err("user-id not found")
+        return
     get_mem = await userge.get_user_dict(user_id)
     firstname = get_mem['fname']
     user_id = get_mem['id']
@@ -231,17 +213,10 @@ async def rmwhitelist(message: Message):
     if message.reply_to_message:
         user_id = message.reply_to_message.from_user.id
     else:
-        args = message.input_str.split(maxsplit=1)
-        if len(args) == 2:
-            user_id, _ = args
-        elif len(args) == 1:
-            user_id = args[0]
-        else:
-            await message.edit(
-                "`no valid user_id or message specified,`"
-                "`don't do .help gban for more info. "
-                "Coz no one's gonna help ya`(｡ŏ_ŏ) ⚠", del_in=0)
-            return
+        user_id = message.input_str
+    if not user_id:
+        await message.err("user-id not found")
+        return
     get_mem = await userge.get_user_dict(user_id)
     firstname = get_mem['fname']
     user_id = get_mem['id']
@@ -295,10 +270,10 @@ async def gban_at_entry(message: Message):
                     userge.kick_chat_member(chat_id, user_id),
                     message.reply(
                         r"\\**#Userge_Antispam**//"
-                        "\n\n\nGlobally Banned User Detected in this Chat.\n\n"
+                        "\n\nGlobally Banned User Detected in this Chat.\n\n"
                         f"**User:** [{first_name}](tg://user?id={user_id})\n"
                         f"**ID:** `{user_id}`\n**Reason:** `{gbanned['reason']}`\n\n"
-                        "**Quick Action:** Banned."),
+                        "**Quick Action:** Banned"),
                     CHANNEL.log(
                         r"\\**#Antispam_Log**//"
                         "\n\n**GBanned User $SPOTTED**\n"
@@ -313,11 +288,11 @@ async def gban_at_entry(message: Message):
                         userge.kick_chat_member(chat_id, user_id),
                         message.reply(
                             r"\\**#Userge_Antispam**//"
-                            "\n\n\nGlobally Banned User Detected in this Chat.\n\n"
+                            "\n\nGlobally Banned User Detected in this Chat.\n\n"
                             "**$SENTRY SpamWatch Federation Ban**\n"
                             f"**User:** [{first_name}](tg://user?id={user_id})\n"
                             f"**ID:** `{user_id}`\n**Reason:** `{intruder.reason}`\n\n"
-                            "**Quick Action:** Banned."),
+                            "**Quick Action:** Banned"),
                         CHANNEL.log(
                             r"\\**#Antispam_Log**//"
                             "\n\n**GBanned User $SPOTTED**\n"
@@ -335,11 +310,11 @@ async def gban_at_entry(message: Message):
                         userge.kick_chat_member(chat_id, user_id),
                         message.reply(
                             r"\\**#Userge_Antispam**//"
-                            "\n\n\nGlobally Banned User Detected in this Chat.\n\n"
+                            "\n\nGlobally Banned User Detected in this Chat.\n\n"
                             "**$SENTRY CAS Federation Ban**\n"
                             f"**User:** [{first_name}](tg://user?id={user_id})\n"
                             f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n\n"
-                            "**Quick Action:** Banned."),
+                            "**Quick Action:** Banned"),
                         CHANNEL.log(
                             r"\\**#Antispam_Log**//"
                             "\n\n**GBanned User $SPOTTED**\n"

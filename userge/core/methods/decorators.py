@@ -104,18 +104,19 @@ class Decorators:
         cmd = Command(self, cname, about, group)
 
         filters_ = Filters.regex(pattern=pattern) & Filters.create(lambda _, __: cmd.is_enabled)
-        filter_my_trigger = Filters.create(
-            lambda _, query: query.text.startswith(trigger) if trigger else True)
-        sudo_filter = Filters.create(
-            lambda _, query: query.from_user
-            and query.from_user.id in Config.SUDO_USERS
-            and (query.text.startswith(Config.SUDO_TRIGGER) if trigger else True))
-        sudo_cmd_filter = Filters.create(
-            lambda _, __: cname.lstrip(trigger) in Config.ALLOWED_COMMANDS)
         if filter_me:
-            filters_ = (filters_
-                        & (((Filters.outgoing | Filters.me) & filter_my_trigger)
-                           | (Filters.incoming & sudo_filter & sudo_cmd_filter)))
+            outgoing_flt = Filters.create(
+                lambda _, m:
+                (m.outgoing or (m.from_user and m.from_user.is_self))
+                and not (m.chat and m.chat.type == "channel" and m.edit_date)
+                and (m.text.startswith(trigger) if trigger else True))
+            incoming_flt = Filters.create(
+                lambda _, m:
+                (cname.lstrip(trigger) in Config.ALLOWED_COMMANDS)
+                and not m.outgoing
+                and (m.from_user and m.from_user.id in Config.SUDO_USERS)
+                and (m.text.startswith(Config.SUDO_TRIGGER) if trigger else True))
+            filters_ = filters_ & (outgoing_flt | incoming_flt)
         return self._build_decorator(log=f"On {pattern}", filters=filters_,
                                      flt=cmd, **kwargs)
 
