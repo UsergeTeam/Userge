@@ -8,6 +8,8 @@
 #
 # All rights reserved
 
+import asyncio
+
 import spamwatch
 
 from userge import userge, Message, Config, get_collection, Filters
@@ -141,19 +143,20 @@ async def ungban_user(message: Message):
     get_mem = await userge.get_user_dict(user_id)
     firstname = get_mem['fname']
     user_id = get_mem['id']
-    await GBAN_USER_BASE.delete_one({'firstname': firstname, 'user_id': user_id})
-    await message.edit(
-        r"\\**#UnGbanned_User**//"
-        f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
-        f"**User ID:** `{user_id}`")
-    LOG.info("UnGbanned %s", str(user_id))
-    await GBAN_LOG.log(
-        r"\\**#Antispam_Log**//"
-        f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
-        f"**User ID:** `{user_id}`\n"
-        f"**Chat:** {message.chat.title}\n"
-        f"**Chat ID:** `{chat_id}`\n\n$UNGBAN #id{user_id}"
+    await asyncio.gather(
+        GBAN_USER_BASE.delete_one({'firstname': firstname, 'user_id': user_id}),
+        message.edit(
+            r"\\**#UnGbanned_User**//"
+            f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
+            f"**User ID:** `{user_id}`"),
+        GBAN_LOG.log(
+            r"\\**#Antispam_Log**//"
+            f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
+            f"**User ID:** `{user_id}`\n"
+            f"**Chat:** {message.chat.title}\n"
+            f"**Chat ID:** `{chat_id}`\n\n$UNGBAN #id{user_id}")
     )
+    LOG.info("UnGbanned %s", str(user_id))
 
 
 @userge.on_cmd("glist", about={
@@ -194,19 +197,20 @@ async def whitelist(message: Message):
     get_mem = await userge.get_user_dict(user_id)
     firstname = get_mem['fname']
     user_id = get_mem['id']
-    await WHITELIST.insert_one({'firstname': firstname, 'user_id': user_id})
-    await message.edit(
-        r"\\**#Whitelisted_User**//"
-        f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
-        f"**User ID:** `{user_id}`")
-    LOG.info("WhiteListed %s", str(user_id))
-    await GBAN_LOG.log(
-        r"\\**#Antispam_Log**//"
-        f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
-        f"**User ID:** `{user_id}`\n"
-        f"**Chat:** {message.chat.title}\n"
-        f"**Chat ID:** `{message.chat.id}`\n\n$WHITELISTED #id{user_id}"
+    await asyncio.gather(
+        WHITELIST.insert_one({'firstname': firstname, 'user_id': user_id}),
+        message.edit(
+            r"\\**#Whitelisted_User**//"
+            f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
+            f"**User ID:** `{user_id}`"),
+        GBAN_LOG.log(
+            r"\\**#Antispam_Log**//"
+            f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
+            f"**User ID:** `{user_id}`\n"
+            f"**Chat:** {message.chat.title}\n"
+            f"**Chat ID:** `{message.chat.id}`\n\n$WHITELISTED #id{user_id}")
     )
+    LOG.info("WhiteListed %s", str(user_id))
 
 
 @userge.on_cmd("rmwhite", about={
@@ -233,19 +237,20 @@ async def rmwhitelist(message: Message):
     get_mem = await userge.get_user_dict(user_id)
     firstname = get_mem['fname']
     user_id = get_mem['id']
-    await WHITELIST.delete_one({'firstname': firstname, 'user_id': user_id})
-    await message.edit(
-        r"\\**#Removed_Whitelisted_User**//"
-        f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
-        f"**User ID:** `{user_id}`")
-    LOG.info("WhiteListed %s", str(user_id))
-    await GBAN_LOG.log(
-        r"\\**#Antispam_Log**//"
-        f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
-        f"**User ID:** `{user_id}`\n"
-        f"**Chat:** {message.chat.title}\n"
-        f"**Chat ID:** `{message.chat.id}`\n\n$RMWHITELISTED #id{user_id}"
+    await asyncio.gather(
+        WHITELIST.delete_one({'firstname': firstname, 'user_id': user_id}),
+        message.edit(
+            r"\\**#Removed_Whitelisted_User**//"
+            f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
+            f"**User ID:** `{user_id}`"),
+        GBAN_LOG.log(
+            r"\\**#Antispam_Log**//"
+            f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
+            f"**User ID:** `{user_id}`\n"
+            f"**Chat:** {message.chat.title}\n"
+            f"**Chat ID:** `{message.chat.id}`\n\n$RMWHITELISTED #id{user_id}")
     )
+    LOG.info("WhiteListed %s", str(user_id))
 
 
 @userge.on_cmd("listwhite", about={
@@ -280,37 +285,41 @@ async def gban_at_entry(message: Message):
             async for c in GBAN_USER_BASE.find({}):
                 if c['user_id'] == user_id:
                     reason = c['reason']
-                    await userge.kick_chat_member(chat_id, user_id)
-                    await message.reply(
-                        r"\\**#Userge_Antispam**//"
-                        "\n\n\nGlobally Banned User Detected in this Chat.\n\n"
-                        f"**User:** [{first_name}](tg://user?id={user_id})\n"
-                        f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n\n"
-                        "**Quick Action:** Banned.")
-                    await GBAN_LOG.log(
-                        r"\\**#Antispam_Log**//"
-                        "\n\n**GBanned User $SPOTTED**\n"
-                        f"**User:** [{first_name}](tg://user?id={user_id})\n"
-                        f"**ID:** `{user_id}`\n**Reason:** {reason}\n**Quick Action:** "
-                        f"Banned in {message.chat.title}")
+                    await asyncio.gather(
+                        userge.kick_chat_member(chat_id, user_id),
+                        message.reply(
+                            r"\\**#Userge_Antispam**//"
+                            "\n\n\nGlobally Banned User Detected in this Chat.\n\n"
+                            f"**User:** [{first_name}](tg://user?id={user_id})\n"
+                            f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n\n"
+                            "**Quick Action:** Banned."),
+                        GBAN_LOG.log(
+                            r"\\**#Antispam_Log**//"
+                            "\n\n**GBanned User $SPOTTED**\n"
+                            f"**User:** [{first_name}](tg://user?id={user_id})\n"
+                            f"**ID:** `{user_id}`\n**Reason:** {reason}\n**Quick Action:** "
+                            f"Banned in {message.chat.title}")
+                    )
                     break
             if Config.ANTISPAM_SENTRY and Config.SPAM_WATCH_API:
                 intruder = spamwatch.Client(Config.SPAM_WATCH_API).get_ban(user_id)
                 if intruder:
-                    await userge.kick_chat_member(chat_id, user_id)
-                    await message.reply(
-                        r"\\**#Userge_Antispam**//"
-                        "\n\n\nGlobally Banned User Detected in this Chat.\n\n"
-                        "**$SENTRY SpamWatch Federation Ban**\n"
-                        f"**User:** [{first_name}](tg://user?id={user_id})\n"
-                        f"**ID:** `{user_id}`\n**Reason:** `{intruder.reason}`\n\n"
-                        "**Quick Action:** Banned.")
-                    await GBAN_LOG.log(
-                        r"\\**#Antispam_Log**//"
-                        "\n\n**GBanned User $SPOTTED**\n"
-                        "**$SENRTY #SPAMWATCH_API BAN**"
-                        f"\n**User:** [{first_name}](tg://user?id={user_id})\n"
-                        f"**ID:** `{user_id}`\n**Reason:** `{intruder.reason}`\n"
-                        f"**Quick Action:** Banned in {message.chat.title}\n\n"
-                        f"$AUTOBAN #id{user_id}")
+                    await asyncio.gather(
+                        userge.kick_chat_member(chat_id, user_id),
+                        message.reply(
+                            r"\\**#Userge_Antispam**//"
+                            "\n\n\nGlobally Banned User Detected in this Chat.\n\n"
+                            "**$SENTRY SpamWatch Federation Ban**\n"
+                            f"**User:** [{first_name}](tg://user?id={user_id})\n"
+                            f"**ID:** `{user_id}`\n**Reason:** `{intruder.reason}`\n\n"
+                            "**Quick Action:** Banned."),
+                        GBAN_LOG.log(
+                            r"\\**#Antispam_Log**//"
+                            "\n\n**GBanned User $SPOTTED**\n"
+                            "**$SENRTY #SPAMWATCH_API BAN**"
+                            f"\n**User:** [{first_name}](tg://user?id={user_id})\n"
+                            f"**ID:** `{user_id}`\n**Reason:** `{intruder.reason}`\n"
+                            f"**Quick Action:** Banned in {message.chat.title}\n\n"
+                            f"$AUTOBAN #id{user_id}")
+                    )
     message.continue_propagation()
