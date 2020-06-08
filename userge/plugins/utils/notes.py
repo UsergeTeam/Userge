@@ -8,17 +8,17 @@
 #
 # All rights reserved.
 
-from userge import userge, Message, get_collection
+from userge import userge, Message, get_collection, Config
 
 NOTES_COLLECTION = get_collection("notes")
 
 
 @userge.on_cmd("notes", about={'header': "List all saved notes in current chat"})
-async def notes_active(message: Message) -> None:
+async def view_notes(message: Message) -> None:
     """ list notes in current chat """
     out = ''
-    async for note in NOTES_COLLECTION.find({'chat_id': message.chat.id}, {'name': 1}):
-        out += " 📌 `{}`\n".format(note['name'])
+    async for note in NOTES_COLLECTION.find({'chat_id': message.chat.id}, {'name': 1, 'global': 1}):
+        out += " 📌 `{}` [**{}**]\n".format(note['name'], 'G' if note['global'] else 'L')
     if out:
         await message.edit("**--Notes saved in this chat:--**\n\n" + out, del_in=0)
     else:
@@ -28,7 +28,7 @@ async def notes_active(message: Message) -> None:
 @userge.on_cmd("delnote", about={
     'header': "Deletes a note by name",
     'usage': "{tr}delnote [note name]"})
-async def remove_notes(message: Message) -> None:
+async def remove_note(message: Message) -> None:
     """ delete note in current chat """
     notename = message.input_str
     if not notename:
@@ -41,6 +41,42 @@ async def remove_notes(message: Message) -> None:
     await message.edit(text=out, del_in=3)
 
 
+@userge.on_cmd("gtlnote", about={
+    'header': "global note to local note",
+    'description': "only sudos and owner can access local notes",
+    'usage': "{tr}gtlnote [note name]"})
+async def mv_to_local_note(message: Message) -> None:
+    """ global to local note """
+    notename = message.input_str
+    if not notename:
+        out = "`Wrong syntax`\nNo arguements"
+    elif await NOTES_COLLECTION.find_one_and_update(
+            {'chat_id': message.chat.id, 'name': notename, 'global': True},
+            {"$set": {'global': False}}):
+        out = "`Successfully transferred to local note:` **{}**".format(notename)
+    else:
+        out = "`Couldn't find global note:` **{}**".format(notename)
+    await message.edit(text=out, del_in=3)
+
+
+@userge.on_cmd("ltgnote", about={
+    'header': "local note to global note",
+    'description': "anyone can access global notes",
+    'usage': "{tr}ltgnote [note name]"})
+async def mv_to_global_note(message: Message) -> None:
+    """ local to global note """
+    notename = message.input_str
+    if not notename:
+        out = "`Wrong syntax`\nNo arguements"
+    elif await NOTES_COLLECTION.find_one_and_update(
+            {'chat_id': message.chat.id, 'name': notename, 'global': False},
+            {"$set": {'global': True}}):
+        out = "`Successfully transferred to global note:` **{}**".format(notename)
+    else:
+        out = "`Couldn't find local note:` **{}**".format(notename)
+    await message.edit(text=out, del_in=3)
+
+
 @userge.on_cmd(r"(?:#|get\s)(\w[\w_]*)",
                about={'header': "Gets a note by name",
                       'usage': "#[notename]\nget notename"},
@@ -50,9 +86,10 @@ async def remove_notes(message: Message) -> None:
                filter_me=False)
 async def get_note(message: Message) -> None:
     """ get any saved note """
+    is_global = not(message.from_user.is_self or message.from_user.id in Config.SUDO_USERS)
     notename = message.matches[0].group(1)
     found = await NOTES_COLLECTION.find_one(
-        {'chat_id': message.chat.id, 'name': notename}, {'content': 1})
+        {'chat_id': message.chat.id, 'name': notename, 'global': is_global}, {'content': 1})
     if found:
         out = "**--{}--**\n\n{}".format(notename, found['content'])
         await message.force_edit(text=out)
@@ -74,7 +111,7 @@ async def add_note(message: Message) -> None:
     out = "`{} note #{}`"
     result = await NOTES_COLLECTION.update_one(
         {'chat_id': message.chat.id, 'name': notename},
-        {"$set": {'content': content}}, upsert=True)
+        {"$set": {'content': content, 'global': False}}, upsert=True)
     if result.upserted_id:
         out = out.format('Added', notename)
     else:
