@@ -22,8 +22,10 @@ allowAllPms = True
 pmCounter: Dict[int, int] = {}
 allowAllFilter = Filters.create(lambda _, query: bool(allowAllPms))
 noPmMessage = ("Hello {fname} this is an automated message\n"
-               "Please wait untill you get approved to direct message "
-               "And please dont spam untill then ")
+               "My master hasn't approved you to PM\n"
+               "he mostly approves PMs\n"
+               "Please wait untill you get approved to direct message\n"
+               "Don't spam untill then !!!\n ")
 
 
 async def _init() -> None:
@@ -130,7 +132,7 @@ async def uninvitedPmHandler(message: Message):
         pmCounter.update({message.from_user.id: 1})
 
         await message.reply(
-            noPmMessage.format_map(SafeDict(**user_dict)) + '\n`- Protected by userge`')
+            noPmMessage.format_map(SafeDict(**user_dict)) + '\n`- Protected by GOD`')
         await asyncio.sleep(1)
         await CHANNEL.log(f"#NEW_MESSAGE\n{user_dict['mention']} has messaged you")
 
