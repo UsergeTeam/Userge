@@ -15,7 +15,8 @@ from userge import userge, Message
 async def getids(message: Message):
     out_str = f"💁 Current Chat ID: `{message.chat.id}`"
     if message.reply_to_message:
-        out_str += f"\n🙋‍♂️ From User ID: `{message.reply_to_message.from_user.id}`"
+        if message.reply_to_message.from_user:
+            out_str += f"\n🙋‍♂️ From User ID: `{message.reply_to_message.from_user.id}`"
         file_id = None
         if message.reply_to_message.media:
             if message.reply_to_message.audio:

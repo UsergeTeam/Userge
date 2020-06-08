@@ -25,7 +25,7 @@ from userge.utils import runcmd
 @userge.on_cmd("eval", about={
     'header': "run python code line | lines",
     'usage': "{tr}eval [code lines]",
-    'examples': "{tr}eval print('Userge')"})
+    'examples': "{tr}eval print('Userge')"}, allow_channels=False)
 async def eval_(message: Message):
     """ run python code """
     cmd = await init_func(message)
@@ -67,7 +67,7 @@ async def eval_(message: Message):
 @userge.on_cmd("exec", about={
     'header': "run shell commands",
     'usage': "{tr}exec [commands]",
-    'examples': "{tr}exec echo \"Userge\""})
+    'examples': "{tr}exec echo \"Userge\""}, allow_channels=False)
 async def exec_(message: Message):
     """ run shell command """
     cmd = await init_func(message)
@@ -92,7 +92,7 @@ __Command:__\n`{cmd}`\n__PID:__\n`{pid}`\n__RETURN:__\n`{ret}`\n\n\
 @userge.on_cmd("term", about={
     'header': "run terminal commands",
     'usage': "{tr}term [commands]",
-    'examples': "{tr}term echo \"Userge\""})
+    'examples': "{tr}term echo \"Userge\""}, allow_channels=False)
 async def term_(message: Message):
     """ run shell command (live update) """
     cmd = await init_func(message)

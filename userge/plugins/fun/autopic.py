@@ -37,7 +37,8 @@ async def _init() -> None:
 
 @userge.on_cmd("autopic", about={
     'header': "set profile picture",
-    'usage': "{tr}autopic\n{tr}autopic [image path]\nset timeout using {tr}sapicto"})
+    'usage': "{tr}autopic\n{tr}autopic [image path]\nset timeout using {tr}sapicto"},
+    allow_channels=False)
 async def autopic(message: Message):
     global UPDATE_PIC
     await message.edit('`processing...`')

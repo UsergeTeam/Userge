@@ -9,7 +9,8 @@
 __all__ = ['Decorators']
 
 import re
-from typing import Dict, List, Union, Any, Callable
+import asyncio
+from typing import Dict, List, Union, Any, Callable, Optional
 
 from pyrogram import (
     Client as RawClient, Message as RawMessage,
@@ -45,6 +46,10 @@ class Decorators:
                name: str = '',
                trigger: str = Config.CMD_TRIGGER,
                filter_me: bool = True,
+               allow_private: bool = True,
+               allow_bots: bool = True,
+               allow_groups: bool = True,
+               allow_channels: bool = True,
                **kwargs: Union[str, bool]
                ) -> Callable[[_PYROFUNC], _PYROFUNC]:
         """\nDecorator for handling messages.
@@ -82,6 +87,18 @@ class Decorators:
             filter_me (``bool``, *optional*):
                 If ``False``, anyone can access,  defaults to True.
 
+            allow_private (``bool``, *optional*):
+                If ``False``, don't allow private cahts,  defaults to True.
+
+            allow_bots (``bool``, *optional*):
+                If ``False``, don't allow private cahts,  defaults to True.
+
+            allow_groups (``bool``, *optional*):
+                If ``False``, don't allow private cahts,  defaults to True.
+
+            allow_channels (``bool``, *optional*):
+                If ``False``, don't allow private cahts,  defaults to True.
+
             kwargs:
                 prefix (``str``, *optional*):
                     set prefix for flags, defaults to '-'.
@@ -102,7 +119,15 @@ class Decorators:
             cname = name or cname
             pattern += r"(?:\s([\S\s]+))?$"
         cmd = Command(self, cname, about, group)
-
+        scope: List[str] = []
+        if allow_private:
+            scope.append('private')
+        if allow_bots:
+            scope.append('bot')
+        if allow_groups:
+            scope += ['group', 'supergroup']
+        if allow_channels:
+            scope.append('channel')
         filters_ = Filters.regex(pattern=pattern) & Filters.create(lambda _, __: cmd.is_enabled)
         if filter_me:
             outgoing_flt = Filters.create(
@@ -118,7 +143,7 @@ class Decorators:
                 and (m.text.startswith(Config.SUDO_TRIGGER) if trigger else True))
             filters_ = filters_ & (outgoing_flt | incoming_flt)
         return self._build_decorator(log=f"On {pattern}", filters=filters_,
-                                     flt=cmd, **kwargs)
+                                     flt=cmd, scope=scope, **kwargs)
 
     def on_filters(self,
                    filters: Filters,
@@ -157,11 +182,19 @@ class Decorators:
                          log: str,
                          filters: Filters,
                          flt: Union[Command, Filtr],
+                         scope: Optional[List[str]] = None,
                          **kwargs: Union[str, bool]
                          ) -> Callable[[_PYROFUNC], _PYROFUNC]:
         def decorator(func: _PYROFUNC) -> _PYROFUNC:
-            async def template(_: RawClient, __: RawMessage) -> None:
-                await func(Message(_, __, **kwargs))
+            async def template(_: RawClient, r_m: RawMessage) -> None:
+                if isinstance(flt, Command) and r_m.chat and (r_m.chat.type not in scope):
+                    _sent = await r_m.reply(
+                        f"**ERROR** : `Sorry!, this command not supported "
+                        f"in this chat type [{r_m.chat.type}] !`")
+                    await asyncio.sleep(3)
+                    await _sent.delete()
+                else:
+                    await func(Message(_, r_m, **kwargs))
             _LOG.debug(_LOG_STR, f"Loading => [ async def {func.__name__}(message) ] "
                        f"from {func.__module__} `{log}`")
             module_name = func.__module__.split('.')[-1]

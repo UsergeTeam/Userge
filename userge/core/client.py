@@ -110,8 +110,9 @@ class Userge(Methods):
         os.execl(sys.executable, sys.executable, '-m', 'userge')
         sys.exit()
 
-    async def _start(self) -> None:
-        await self.start()
+    async def start(self) -> None:
+        """ Start Client """
+        await super().start()
         await self._load_plugins()
 
     def begin(self) -> None:
@@ -119,7 +120,7 @@ class Userge(Methods):
         loop = asyncio.get_event_loop()
         run = loop.run_until_complete
         _LOG.info(_LOG_STR, "Starting Userge")
-        run(self._start())
+        run(self.start())
         running_tasks: List[asyncio.Task] = []
         for task in self._tasks:
             running_tasks.append(loop.create_task(task()))

@@ -981,7 +981,8 @@ class Worker(_GDrive):
             caption=f"removed perm results for `{file_id}`")
 
 
-@userge.on_cmd("gsetup", about={'header': "Setup GDrive Creds"})
+@userge.on_cmd("gsetup", about={
+    'header': "Setup GDrive Creds"}, allow_channels=False)
 async def gsetup_(message: Message):
     """ setup creds """
     await Worker(message).setup()
@@ -989,13 +990,15 @@ async def gsetup_(message: Message):
 
 @userge.on_cmd("gconf", about={
     'header': "Confirm GDrive Setup",
-    'usage': "{tr}gconf [auth token]"})
+    'usage': "{tr}gconf [auth token]"},
+    allow_channels=False, allow_groups=False, allow_bots=False)
 async def gconf_(message: Message):
     """ confirm creds """
     await Worker(message).confirm_setup()
 
 
-@userge.on_cmd("gclear", about={'header': "Clear GDrive Creds"})
+@userge.on_cmd("gclear", about={
+    'header': "Clear GDrive Creds"}, allow_channels=False)
 async def gclear_(message: Message):
     """ clear creds """
     await Worker(message).clear()
@@ -1005,13 +1008,14 @@ async def gclear_(message: Message):
     'header': "Set parent id",
     'description': "set destination by setting parent_id (root path). "
                    "this path is like working directory :)",
-    'usage': "{tr}gset [drive folder link]"})
+    'usage': "{tr}gset [drive folder link]"}, allow_channels=False)
 async def gset_(message: Message):
     """ setup path """
     await Worker(message).set_parent()
 
 
-@userge.on_cmd("greset", about={'header': "Reset parent id"})
+@userge.on_cmd("greset", about={
+    'header': "Reset parent id"}, allow_channels=False)
 async def greset_(message: Message):
     """ clear path """
     await Worker(message).reset_parent()
@@ -1022,7 +1026,8 @@ async def greset_(message: Message):
     'flags': {
         '-l': "add limit to search (default limit 20)",
         '-f': "add to do a force search"},
-    'usage': "{tr}gfind [search query]\n{tr}gfind -l10 [search query]"})
+    'usage': "{tr}gfind [search query]\n{tr}gfind -l10 [search query]"},
+    allow_channels=False)
 async def gfind_(message: Message):
     """ search files """
     await Worker(message).search()
@@ -1033,7 +1038,7 @@ async def gfind_(message: Message):
     'flags': {'-l': "add limit to list (default limit 20)"},
     'usage': "{tr}gls for view content in root\n{tr}gls -l10 add limit to it\n"
              "{tr}gls [drive folder link] (default limit 20)\n"
-             "{tr}gls -l10 [drive folder link] (add limit)"})
+             "{tr}gls -l10 [drive folder link] (add limit)"}, allow_channels=False)
 async def gls_(message: Message):
     """ list files """
     await Worker(message).list_folder()
@@ -1041,7 +1046,7 @@ async def gls_(message: Message):
 
 @userge.on_cmd("gmake", about={
     'header': "Make folders in GDrive parent",
-    'usage': "{tr}gmake [folder name]"})
+    'usage': "{tr}gmake [folder name]"}, allow_channels=False)
 async def gmake_(message: Message):
     """ make folder """
     await Worker(message).make_folder()
@@ -1055,7 +1060,8 @@ async def gmake_(message: Message):
              "| [new name]",
     'examples': [
         "{tr}gup test.bin : reply to tg file", "{tr}gup downloads/100MB.bin | test.bin",
-        "{tr}gup https://speed.hetzner.de/100MB.bin | testing upload.bin"]})
+        "{tr}gup https://speed.hetzner.de/100MB.bin | testing upload.bin"]},
+    allow_channels=False)
 async def gup_(message: Message):
     """ upload to gdrive """
     await Worker(message).upload()
@@ -1063,7 +1069,7 @@ async def gup_(message: Message):
 
 @userge.on_cmd("gdown", about={
     'header': "Download files from GDrive",
-    'usage': "{tr}gdown [file_id | file/folder link]"})
+    'usage': "{tr}gdown [file_id | file/folder link]"}, allow_channels=False)
 async def gdown_(message: Message):
     """ download from gdrive """
     await Worker(message).download()
@@ -1073,7 +1079,7 @@ async def gdown_(message: Message):
     'header': "Copy files in GDrive",
     'description': "set destination by setting parent_id, "
                    "use `{tr}gset` to set parent_id (root path).",
-    'usage': "{tr}gcopy [file_id | file/folder link]"})
+    'usage': "{tr}gcopy [file_id | file/folder link]"}, allow_channels=False)
 async def gcopy_(message: Message):
     """ copy files in gdrive """
     await Worker(message).copy()
@@ -1083,7 +1089,7 @@ async def gcopy_(message: Message):
     'header': "Move files in GDrive",
     'description': "set destination by setting parent_id, "
                    "use `{tr}gset` to set parent_id (root path).",
-    'usage': "{tr}gmove [file_id | file/folder link]"})
+    'usage': "{tr}gmove [file_id | file/folder link]"}, allow_channels=False)
 async def gmove_(message: Message):
     """ move files in gdrive """
     await Worker(message).move()
@@ -1091,13 +1097,14 @@ async def gmove_(message: Message):
 
 @userge.on_cmd("gdel", about={
     'header': "Delete files in GDrive",
-    'usage': "{tr}gdel [file_id | file/folder link]"})
+    'usage': "{tr}gdel [file_id | file/folder link]"}, allow_channels=False)
 async def gdel_(message: Message):
     """ delete files in gdrive """
     await Worker(message).delete()
 
 
-@userge.on_cmd("gempty", about={'header': "Empty the Trash"})
+@userge.on_cmd("gempty", about={
+    'header': "Empty the Trash"}, allow_channels=False)
 async def gempty_(message: Message):
     """ empty trash """
     await Worker(message).empty()
@@ -1105,7 +1112,7 @@ async def gempty_(message: Message):
 
 @userge.on_cmd("gget", about={
     'header': "Get metadata from the given link in GDrive",
-    'usage': "{tr}gget [file_id | file/folder link]"})
+    'usage': "{tr}gget [file_id | file/folder link]"}, allow_channels=False)
 async def gget_(message: Message):
     """ get details """
     await Worker(message).get()
@@ -1113,7 +1120,7 @@ async def gget_(message: Message):
 
 @userge.on_cmd("ggetperm", about={
     'header': "Get permissions of file/folder in GDrive",
-    'usage': "{tr}ggetperm [file_id | file/folder link]"})
+    'usage': "{tr}ggetperm [file_id | file/folder link]"}, allow_channels=False)
 async def ggetperm_(message: Message):
     """ get permissions """
     await Worker(message).get_perms()
@@ -1121,7 +1128,7 @@ async def ggetperm_(message: Message):
 
 @userge.on_cmd("gsetperm", about={
     'header': "Set permissions to file/folder in GDrive",
-    'usage': "{tr}gsetperm [file_id | file/folder link]"})
+    'usage': "{tr}gsetperm [file_id | file/folder link]"}, allow_channels=False)
 async def gsetperm_(message: Message):
     """ set permissions """
     await Worker(message).set_perms()
@@ -1129,7 +1136,7 @@ async def gsetperm_(message: Message):
 
 @userge.on_cmd("gdelperm", about={
     'header': "Remove all permissions of file/folder in GDrive",
-    'usage': "{tr}gdelperm [file_id | file/folder link]"})
+    'usage': "{tr}gdelperm [file_id | file/folder link]"}, allow_channels=False)
 async def gdelperm_(message: Message):
     """ delete permissions """
     await Worker(message).del_perms()
