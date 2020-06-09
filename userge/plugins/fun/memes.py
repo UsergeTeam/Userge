@@ -310,7 +310,7 @@ async def coin_(message: Message):
 
 @userge.on_cmd("slap", about={
     'header': "reply to slap them with random objects !!",
-    'usage': "{tr}slap [input | reply to msg]"})
+    'usage': "{tr}slap [input | reply to msg]"}, allow_channels=False)
 async def slap_(message: Message):
     """slap"""
     u_id = message.input_str

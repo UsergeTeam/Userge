@@ -43,10 +43,9 @@ async def purge_(message: Message):
                                              revoke=True)
 
                 purged_messages_count += len(list_of_messages_to_delete)
-                list_of_messages_to_delete = []
-            if from_user is not None:
-                if a_message.from_user == from_user:
-                    list_of_messages_to_delete.append(a_message.message_id)
+                list_of_messages_to_delete.clear()
+            if from_user and from_user == a_message.from_user:
+                list_of_messages_to_delete.append(a_message.message_id)
             else:
                 list_of_messages_to_delete.append(a_message.message_id)
         await userge.delete_messages(chat_id=message.chat.id,

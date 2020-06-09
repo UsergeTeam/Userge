@@ -25,7 +25,8 @@ from userge import userge, Message, Config, pool
     'header': "kangs stickers or creates new ones",
     'usage': "Reply {tr}kang [emoji('s)] [pack number] to a sticker or "
              "an image to kang it to your userbot pack.",
-    'examples': ["{tr}kang", "{tr}kang 🤔", "{tr}kang 2", "{tr}kang 🤔 2"]})
+    'examples': ["{tr}kang", "{tr}kang 🤔", "{tr}kang 2", "{tr}kang 🤔 2"]},
+    allow_channels=False)
 async def kang_(message: Message):
     """ kang a sticker """
     user = message.from_user

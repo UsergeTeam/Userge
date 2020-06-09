@@ -354,7 +354,7 @@ class SCLib(_BaseLib):
 
 @userge.on_cmd('ls', about={
     'header': "list directory",
-    'usage': "{tr}ls [path]\n{tr}ls -d : default path"})
+    'usage': "{tr}ls [path]\n{tr}ls -d : default path"}, allow_channels=False)
 async def ls_dir(message: Message) -> None:
     """ list dir """
     if '-d' in message.flags:
@@ -394,7 +394,7 @@ async def ls_dir(message: Message) -> None:
 
 @userge.on_cmd('dset', about={
     'header': "set temporary working directory",
-    'usage': "{tr}dset [path / name]"})
+    'usage': "{tr}dset [path / name]"}, allow_channels=False)
 async def dset_(message: Message) -> None:
     """ set dir """
     path = message.input_str
@@ -412,7 +412,7 @@ async def dset_(message: Message) -> None:
 
 @userge.on_cmd('dreset', about={
     'header': "reset to default working directory",
-    'usage': "{tr}dreset"})
+    'usage': "{tr}dreset"}, allow_channels=False)
 async def dreset_(message: Message) -> None:
     """ reset dir """
     path = os.environ.get("DOWN_PATH", "downloads").rstrip('/') + '/'
@@ -420,7 +420,8 @@ async def dreset_(message: Message) -> None:
     await message.edit(f"reset **working directory** to `{path}` successfully!", del_in=5)
 
 
-@userge.on_cmd("dclear", about={'header': "Clear the current working directory"})
+@userge.on_cmd("dclear", about={
+    'header': "Clear the current working directory"}, allow_channels=False)
 async def dclear_(message: Message):
     """ clear dir """
     if not isdir(Config.DOWN_PATH):
@@ -435,7 +436,7 @@ async def dclear_(message: Message):
 
 @userge.on_cmd('dremove', about={
     'header': "remove a directory or file",
-    'usage': "{tr}dremove [path / name]"})
+    'usage': "{tr}dremove [path / name]"}, allow_channels=False)
 async def dremove_(message: Message) -> None:
     """ remove dir """
     path = message.input_str
@@ -454,7 +455,7 @@ async def dremove_(message: Message) -> None:
 
 @userge.on_cmd('drename ([^|]+)\|([^|]+)', about={
     'header': "rename a directory or file",
-    'usage': "{tr}drename [path / name] | [new name]"})
+    'usage': "{tr}drename [path / name] | [new name]"}, allow_channels=False)
 async def drename_(message: Message) -> None:
     """ rename dir """
     path = str(message.matches[0].group(1)).strip()

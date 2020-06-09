@@ -12,7 +12,6 @@ import asyncio
 
 import requests
 import spamwatch
-from pyrogram.errors import ChatAdminRequired
 
 from userge import userge, Message, Config, get_collection, Filters
 
@@ -20,7 +19,8 @@ GBAN_USER_BASE = get_collection("GBAN_USER")
 WHITELIST = get_collection("WHITELIST_USER")
 CHANNEL = userge.getCLogger(__name__)
 LOG = userge.getLogger(__name__)
-API_BANS = Config.ANTISPAM_SENTRY
+ADMEME_CHATS = []
+PATHETIC_CHATS = []
 
 
 async def me_can_restrict_members(chat_id: int):
@@ -45,7 +45,8 @@ async def user_is_admin(chat_id: int, user_id: int) -> bool:
     'description': "Adds User to your GBan List. "
                    "Bans a Globally Banned user if they join or message. "
                    "[NOTE: Works only in groups where you are admin.]",
-    'examples': "{tr}gban [userid | reply] [reason for gban] (mandatory)"})
+    'examples': "{tr}gban [userid | reply] [reason for gban] (mandatory)"},
+    allow_channels=False, allow_bots=False)
 async def gban_user(message: Message):
     """ ban a user globally """
     chat_id = message.chat.id
@@ -119,7 +120,8 @@ async def gban_user(message: Message):
 @userge.on_cmd("ungban", about={
     'header': "Globally Unban an User",
     'description': "Removes an user from your Gban List",
-    'examples': "{tr}ungban [userid | reply]"})
+    'examples': "{tr}ungban [userid | reply]"},
+    allow_channels=False, allow_bots=False)
 async def ungban_user(message: Message):
     """ unban a user globally """
     chat_id = message.chat.id
@@ -157,7 +159,8 @@ async def ungban_user(message: Message):
 @userge.on_cmd("glist", about={
     'header': "Get a List of Gbanned Users",
     'description': "Get Up-to-date list of users Gbanned by you.",
-    'examples': "Lol. Just type {tr}glist"})
+    'examples': "Lol. Just type {tr}glist"},
+    allow_channels=False)
 async def list_gbanned(message: Message):
     """ vies gbanned users """
     msg = ''
@@ -172,7 +175,8 @@ async def list_gbanned(message: Message):
     'header': "Whitelist a User",
     'description': "Use whitelist to add users to bypass API Bans",
     'useage': "{tr}whitelist [userid | reply to user]",
-    'examples': "{tr}whitelist 5231147869"})
+    'examples': "{tr}whitelist 5231147869"},
+    allow_channels=False, allow_bots=False)
 async def whitelist(message: Message):
     """ add user to whitelist """
     if message.reply_to_message:
@@ -209,7 +213,8 @@ async def whitelist(message: Message):
     'header': "Removes a User from Whitelist",
     'description': "Use it to remove users from WhiteList",
     'useage': "{tr}rmwhite [userid | reply to user]",
-    'examples': "{tr}rmwhite 5231147869"})
+    'examples': "{tr}rmwhite 5231147869"},
+    allow_channels=False, allow_bots=False)
 async def rmwhitelist(message: Message):
     """ remove a user from whitelist """
     if message.reply_to_message:
@@ -245,7 +250,8 @@ async def rmwhitelist(message: Message):
 @userge.on_cmd("listwhite", about={
     'header': "Get a List of Whitelisted Users",
     'description': "Get Up-to-date list of users WhiteListed by you.",
-    'examples': "Lol. Just type {tr}listwhite"})
+    'examples': "Lol. Just type {tr}listwhite"},
+    allow_channels=False)
 async def list_white(message: Message):
     """ list whitelist """
     msg = ''
@@ -260,30 +266,61 @@ async def list_white(message: Message):
 async def gban_at_entry(message: Message):
     """ handle gbans """
     chat_id = message.chat.id
+    # Trying To Avoid Flood Waits
+    if chat_id not in ADMEME_CHATS + PATHETIC_CHATS:
+        if await me_can_restrict_members(chat_id):
+            ADMEME_CHATS.append(chat_id)
+        else:
+            PATHETIC_CHATS.append(chat_id)
+
+    if chat_id in PATHETIC_CHATS:
+        return
+
     for user in message.new_chat_members:
         user_id = user.id
         first_name = user.first_name
         if await WHITELIST.find_one({'user_id': user_id}):
             continue
-        try:
-            gbanned = await GBAN_USER_BASE.find_one({'user_id': user_id})
-            if gbanned:
+        gbanned = await GBAN_USER_BASE.find_one({'user_id': user_id})
+        if gbanned:
+            await asyncio.gather(
+                userge.kick_chat_member(chat_id, user_id),
+                message.reply(
+                    r"\\**#Userge_Antispam**//"
+                    "\n\nGlobally Banned User Detected in this Chat.\n\n"
+                    f"**User:** [{first_name}](tg://user?id={user_id})\n"
+                    f"**ID:** `{user_id}`\n**Reason:** `{gbanned['reason']}`\n\n"
+                    "**Quick Action:** Banned"),
+                CHANNEL.log(
+                    r"\\**#Antispam_Log**//"
+                    "\n\n**GBanned User $SPOTTED**\n"
+                    f"**User:** [{first_name}](tg://user?id={user_id})\n"
+                    f"**ID:** `{user_id}`\n**Reason:** {gbanned['reason']}\n**Quick Action:** "
+                    f"Banned in {message.chat.title}")
+            )
+        elif Config.ANTISPAM_SENTRY:
+            res = requests.get(
+                f'https://api.cas.chat/check?user_id={user_id}').json()
+            if res['ok']:
+                reason = res['description'] if 'description' in res else None
                 await asyncio.gather(
                     userge.kick_chat_member(chat_id, user_id),
                     message.reply(
                         r"\\**#Userge_Antispam**//"
                         "\n\nGlobally Banned User Detected in this Chat.\n\n"
+                        "**$SENTRY CAS Federation Ban**\n"
                         f"**User:** [{first_name}](tg://user?id={user_id})\n"
-                        f"**ID:** `{user_id}`\n**Reason:** `{gbanned['reason']}`\n\n"
+                        f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n\n"
                         "**Quick Action:** Banned"),
                     CHANNEL.log(
                         r"\\**#Antispam_Log**//"
                         "\n\n**GBanned User $SPOTTED**\n"
-                        f"**User:** [{first_name}](tg://user?id={user_id})\n"
-                        f"**ID:** `{user_id}`\n**Reason:** {gbanned['reason']}\n**Quick Action:** "
-                        f"Banned in {message.chat.title}")
+                        "**$SENRTY #CAS BAN**"
+                        f"\n**User:** [{first_name}](tg://user?id={user_id})\n"
+                        f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n**Quick Action:**"
+                        f" Banned in {message.chat.title}\n\n$AUTOBAN #id{user_id}")
                 )
-            elif Config.ANTISPAM_SENTRY and Config.SPAM_WATCH_API:
+            elif Config.SPAM_WATCH_API:
                 intruder = spamwatch.Client(
                     Config.SPAM_WATCH_API).get_ban(user_id)
                 if intruder:
@@ -305,28 +342,4 @@ async def gban_at_entry(message: Message):
                             f"**Quick Action:** Banned in {message.chat.title}\n\n"
                             f"$AUTOBAN #id{user_id}")
                     )
-            else:
-                res = requests.get(
-                    f'https://api.cas.chat/check?user_id={user_id}').json()
-                if res['ok']:
-                    reason = res['description']
-                    await asyncio.gather(
-                        userge.kick_chat_member(chat_id, user_id),
-                        message.reply(
-                            r"\\**#Userge_Antispam**//"
-                            "\n\nGlobally Banned User Detected in this Chat.\n\n"
-                            "**$SENTRY CAS Federation Ban**\n"
-                            f"**User:** [{first_name}](tg://user?id={user_id})\n"
-                            f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n\n"
-                            "**Quick Action:** Banned"),
-                        CHANNEL.log(
-                            r"\\**#Antispam_Log**//"
-                            "\n\n**GBanned User $SPOTTED**\n"
-                            "**$SENRTY #CAS BAN**"
-                            f"\n**User:** [{first_name}](tg://user?id={user_id})\n"
-                            f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n**Quick Action:**"
-                            f" Banned in {message.chat.title}\n\n$AUTOBAN #id{user_id}")
-                    )
-        except ChatAdminRequired:
-            pass
     message.continue_propagation()

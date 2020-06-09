@@ -22,7 +22,8 @@ CHANNEL = userge.getCLogger(__name__)
     'types': [
         'all', 'msg', 'media', 'polls', 'invite', 'pin', 'info',
         'webprev', 'inlinebots', 'animations', 'games', 'stickers'],
-    'examples': "{tr}lock [all | type]"})
+    'examples': "{tr}lock [all | type]"},
+    allow_channels=False, allow_bots=False, allow_private=False)
 async def lock_perm(message: Message):
     """
     lock chat permissions from tg group
@@ -161,7 +162,8 @@ async def lock_perm(message: Message):
     'types': [
         'all', 'msg', 'media', 'polls', 'invite', 'pin', 'info',
         'webprev', 'inlinebots', 'animations', 'games', 'stickers'],
-    'examples': "{tr}unlock [all | type]"})
+    'examples': "{tr}unlock [all | type]"},
+    allow_channels=False, allow_bots=False, allow_private=False)
 async def unlock_perm(message: Message):
     """
     unlock chat permissions from tg group
@@ -305,7 +307,8 @@ async def unlock_perm(message: Message):
 
 @userge.on_cmd("vperm", about={
     'header': "use this to view group permissions",
-    'description': "Allows you to view permission types on/off status in the chat."})
+    'description': "Allows you to view permission types on/off status in the chat."},
+    allow_channels=False, allow_bots=False, allow_private=False)
 async def view_perm(message: Message):
     """
     check chat permissions from tg group

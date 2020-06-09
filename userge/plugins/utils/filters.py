@@ -37,7 +37,8 @@ async def _init() -> None:
         _filter_updater(flt['chat_id'], flt['name'], flt['content'])
 
 
-@userge.on_cmd("filters", about={'header': "List all saved filters in current chat"})
+@userge.on_cmd("filters", about={
+    'header': "List all saved filters in current chat"}, allow_channels=False)
 async def filters_active(message: Message) -> None:
     """ list filters in current chat """
     out = ''
@@ -52,7 +53,7 @@ async def filters_active(message: Message) -> None:
 
 @userge.on_cmd("delfilter", about={
     'header': "Deletes a filter by name",
-    'usage': "{tr}delfilter [filter name]"})
+    'usage': "{tr}delfilter [filter name]"}, allow_channels=False)
 async def delete_filters(message: Message) -> None:
     """ delete filter in current chat """
     filter_ = message.input_str
@@ -70,7 +71,8 @@ async def delete_filters(message: Message) -> None:
 @userge.on_cmd(r"addfilter (\w[^\|]*)(?:\s?\|\s?([\s\S]+))?",
                about={
                    'header': "Adds a filter by name",
-                   'usage': "{tr}addfilter [filter name] | [content | reply to msg]"})
+                   'usage': "{tr}addfilter [filter name] | [content | reply to msg]"},
+               allow_channels=False)
 async def add_filter(message: Message) -> None:
     """ add filter to current chat """
     filter_ = message.matches[0].group(1).strip()
