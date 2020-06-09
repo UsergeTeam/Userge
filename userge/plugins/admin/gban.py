@@ -276,8 +276,6 @@ async def gban_at_entry(message: Message):
 
     if chat_id in PATHETIC_CHATS:
         return
-    if chat_id in ADMEME_CHATS:
-        pass
 
     for user in message.new_chat_members:
         user_id = user.id
