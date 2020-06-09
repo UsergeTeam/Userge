@@ -12,8 +12,6 @@ import asyncio
 
 import requests
 import spamwatch
-from pyrogram.errors import ChatAdminRequired
-from pyrogram.errors.exceptions.bad_request_400 import PeerIdInvalid
 
 from userge import userge, Message, Config, get_collection, Filters
 
@@ -21,6 +19,8 @@ GBAN_USER_BASE = get_collection("GBAN_USER")
 WHITELIST = get_collection("WHITELIST_USER")
 CHANNEL = userge.getCLogger(__name__)
 LOG = userge.getLogger(__name__)
+ADMEME_CHATS = []
+PATHETIC_CHATS = []
 
 
 async def me_can_restrict_members(chat_id: int):
@@ -265,34 +265,64 @@ async def list_white(message: Message):
 async def gban_at_entry(message: Message):
     """ handle gbans """
     chat_id = message.chat.id
+    # Trying To Avoid Flood Waits
+    if chat_id not in ADMEME_CHATS + PATHETIC_CHATS:
+        if await me_can_restrict_members(chat_id):
+            ADMEME_CHATS.append(chat_id)
+        else:
+            PATHETIC_CHATS.append(chat_id)
+
+    if chat_id in PATHETIC_CHATS:
+        return
+
     for user in message.new_chat_members:
         user_id = user.id
         first_name = user.first_name
         if await WHITELIST.find_one({'user_id': user_id}):
             continue
-        try:
-            gbanned = await GBAN_USER_BASE.find_one({'user_id': user_id})
-            if gbanned:
-                await userge.kick_chat_member(chat_id, user_id)
+        gbanned = await GBAN_USER_BASE.find_one({'user_id': user_id})
+        if gbanned:
+            await asyncio.gather(
+                userge.kick_chat_member(chat_id, user_id),
+                message.reply(
+                    r"\\**#Userge_Antispam**//"
+                    "\n\nGlobally Banned User Detected in this Chat.\n\n"
+                    f"**User:** [{first_name}](tg://user?id={user_id})\n"
+                    f"**ID:** `{user_id}`\n**Reason:** `{gbanned['reason']}`\n\n"
+                    "**Quick Action:** Banned"),
+                CHANNEL.log(
+                    r"\\**#Antispam_Log**//"
+                    "\n\n**GBanned User $SPOTTED**\n"
+                    f"**User:** [{first_name}](tg://user?id={user_id})\n"
+                    f"**ID:** `{user_id}`\n**Reason:** {gbanned['reason']}\n**Quick Action:** "
+                    f"Banned in {message.chat.title}")
+            )
+        elif Config.ANTISPAM_SENTRY:
+            res = requests.get(f'https://api.cas.chat/check?user_id={user_id}').json()
+            if res['ok']:
+                reason = res['description'] if 'description' in res else None
                 await asyncio.gather(
+                    userge.kick_chat_member(chat_id, user_id),
                     message.reply(
                         r"\\**#Userge_Antispam**//"
                         "\n\nGlobally Banned User Detected in this Chat.\n\n"
+                        "**$SENTRY CAS Federation Ban**\n"
                         f"**User:** [{first_name}](tg://user?id={user_id})\n"
-                        f"**ID:** `{user_id}`\n**Reason:** `{gbanned['reason']}`\n\n"
+                        f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n\n"
                         "**Quick Action:** Banned"),
                     CHANNEL.log(
                         r"\\**#Antispam_Log**//"
                         "\n\n**GBanned User $SPOTTED**\n"
-                        f"**User:** [{first_name}](tg://user?id={user_id})\n"
-                        f"**ID:** `{user_id}`\n**Reason:** {gbanned['reason']}\n**Quick Action:** "
-                        f"Banned in {message.chat.title}")
+                        "**$SENRTY #CAS BAN**"
+                        f"\n**User:** [{first_name}](tg://user?id={user_id})\n"
+                        f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n**Quick Action:**"
+                        f" Banned in {message.chat.title}\n\n$AUTOBAN #id{user_id}")
                 )
-            elif Config.ANTISPAM_SENTRY and Config.SPAM_WATCH_API:
+            elif Config.SPAM_WATCH_API:
                 intruder = spamwatch.Client(Config.SPAM_WATCH_API).get_ban(user_id)
                 if intruder:
-                    await userge.kick_chat_member(chat_id, user_id)
                     await asyncio.gather(
+                        userge.kick_chat_member(chat_id, user_id),
                         message.reply(
                             r"\\**#Userge_Antispam**//"
                             "\n\nGlobally Banned User Detected in this Chat.\n\n"
@@ -309,27 +339,4 @@ async def gban_at_entry(message: Message):
                             f"**Quick Action:** Banned in {message.chat.title}\n\n"
                             f"$AUTOBAN #id{user_id}")
                     )
-            else:
-                res = requests.get(f'https://api.cas.chat/check?user_id={user_id}').json()
-                if res['ok']:
-                    reason = res['description'] if 'description' in res else None
-                    await userge.kick_chat_member(chat_id, user_id)
-                    await asyncio.gather(
-                        message.reply(
-                            r"\\**#Userge_Antispam**//"
-                            "\n\nGlobally Banned User Detected in this Chat.\n\n"
-                            "**$SENTRY CAS Federation Ban**\n"
-                            f"**User:** [{first_name}](tg://user?id={user_id})\n"
-                            f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n\n"
-                            "**Quick Action:** Banned"),
-                        CHANNEL.log(
-                            r"\\**#Antispam_Log**//"
-                            "\n\n**GBanned User $SPOTTED**\n"
-                            "**$SENRTY #CAS BAN**"
-                            f"\n**User:** [{first_name}](tg://user?id={user_id})\n"
-                            f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n**Quick Action:**"
-                            f" Banned in {message.chat.title}\n\n$AUTOBAN #id{user_id}")
-                    )
-        except (ChatAdminRequired, PeerIdInvalid):
-            pass
     message.continue_propagation()
