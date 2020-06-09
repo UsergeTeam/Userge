@@ -269,7 +269,7 @@ async def gban_at_entry(message: Message):
     chat_id = message.chat.id
     # Trying To Avoid Flood Waits
     if chat_id not in (ADMEME_CHATS or PATHETIC_CHATS):
-        if me_can_restrict_members(chat_id):
+        if await me_can_restrict_members(chat_id):
             ADMEME_CHATS.append(chat_id)
         else:
             PATHETIC_CHATS.append(chat_id)
