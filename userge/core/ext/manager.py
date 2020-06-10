@@ -96,11 +96,12 @@ class Manager:
         """ initialize all plugins """
         await asyncio.gather(*[plg.init() for _, plg in self.plugins.items()])
 
-    def add_plugin(self, client: '_client.Userge',
-                   name: str, parent: str) -> Plugin:
+    def add_plugin(self, client: '_client.Userge', module_name: str) -> Plugin:
         """ add plugin to manager """
+        name = module_name.split('.')[-1]
         if name in self.plugins:
             return self.plugins[name]
+        parent = module_name.split('.')[-2]
         plg = Plugin(client, name, parent)
         self.plugins[name] = plg
         return plg

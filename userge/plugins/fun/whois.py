@@ -33,6 +33,7 @@ async def who_is(message: Message):
         return
     if from_user or from_chat is not None:
         pp_c = await userge.get_profile_photos_count(from_user.id)
+        cc_no = len(await userge.get_common_chats(from_user.id))
         message_out_str = "<b>USER INFO:</b>\n\n"
         message_out_str += f"<b>🗣 First Name:</b> <code>{from_user.first_name}</code>\n"
         message_out_str += f"<b>🗣 Last Name:</b> <code>{from_user.last_name}</code>\n"
@@ -44,6 +45,7 @@ async def who_is(message: Message):
         message_out_str += f"<code>{from_user.is_verified}</code>\n"
         message_out_str += f"<b>🕵️‍♂️ User ID:</b> <code>{from_user.id}</code>\n"
         message_out_str += f"<b>🖼 Profile Photos:</b> <code>{pp_c}</code>\n"
+        message_out_str += f"<b>👥 Common Chats:</b> <code>{cc_no}</code>\n"
         message_out_str += f"<b>📝 Bio:</b> <code>{from_chat.description}</code>\n\n"
         message_out_str += f"<b>👁 Last Seen:</b> <code>{from_user.status}</code>\n"
         message_out_str += "<b>🔗 Permanent Link To Profile:</b> "

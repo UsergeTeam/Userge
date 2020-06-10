@@ -52,11 +52,13 @@ class Userge(Methods):
         """ finalize the plugins load """
         await asyncio.gather(self._complete_init_tasks(), self.manager.init())
 
-    async def load_plugin(self, name: str) -> None:
+    async def load_plugin(self, name: str, reload_plugin: bool = False) -> None:
         """ Load plugin to Userge """
         _LOG.debug(_LOG_STR, f"Importing {name}")
         self._imported.append(
             importlib.import_module(f"userge.plugins.{name}"))
+        if reload_plugin:
+            self._imported[-1] = importlib.reload(self._imported[-1])
         plg = self._imported[-1]
         self.manager.update_plugin(name.split('.')[-1], plg.__doc__)
         if hasattr(plg, '_init'):

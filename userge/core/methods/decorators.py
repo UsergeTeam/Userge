@@ -12,12 +12,11 @@ import re
 import asyncio
 from typing import Dict, List, Union, Any, Callable, Optional
 
-from pyrogram import (
-    Client as RawClient, Message as RawMessage,
-    Filters, MessageHandler)
+from pyrogram import Message as RawMessage, Filters, MessageHandler
 
 from userge import logging, Config
 from .message import Message
+from .. import client as _client
 from ..ext.manager import Manager
 from ..types import Command, Filtr
 
@@ -88,16 +87,16 @@ class Decorators:
                 If ``False``, anyone can access,  defaults to True.
 
             allow_private (``bool``, *optional*):
-                If ``False``, don't allow private cahts,  defaults to True.
+                If ``False``, deny private cahts,  defaults to True.
 
             allow_bots (``bool``, *optional*):
-                If ``False``, don't allow private cahts,  defaults to True.
+                If ``False``, deny bot cahts,  defaults to True.
 
             allow_groups (``bool``, *optional*):
-                If ``False``, don't allow private cahts,  defaults to True.
+                If ``False``, deny group cahts,  defaults to True.
 
             allow_channels (``bool``, *optional*):
-                If ``False``, don't allow private cahts,  defaults to True.
+                If ``False``, deny channel cahts,  defaults to True.
 
             kwargs:
                 prefix (``str``, *optional*):
@@ -186,10 +185,10 @@ class Decorators:
                          **kwargs: Union[str, bool]
                          ) -> Callable[[_PYROFUNC], _PYROFUNC]:
         def decorator(func: _PYROFUNC) -> _PYROFUNC:
-            async def template(_: RawClient, r_m: RawMessage) -> None:
+            async def template(_: '_client.Userge', r_m: RawMessage) -> None:
                 if isinstance(flt, Command) and r_m.chat and (r_m.chat.type not in scope):
                     _sent = await r_m.reply(
-                        f"**ERROR** : `Sorry!, this command not supported "
+                        "**ERROR** : `Sorry!, this command not supported "
                         f"in this chat type [{r_m.chat.type}] !`")
                     await asyncio.sleep(3)
                     await _sent.delete()
@@ -197,13 +196,7 @@ class Decorators:
                     await func(Message(_, r_m, **kwargs))
             _LOG.debug(_LOG_STR, f"Loading => [ async def {func.__name__}(message) ] "
                        f"from {func.__module__} `{log}`")
-            module_name = func.__module__.split('.')[-1]
-            parent_name = func.__module__.split('.')[-2]
-            self.manager.add_plugin(self, module_name, parent_name).add(flt)
-            handler = MessageHandler(template, filters)
-            if isinstance(flt, Command):
-                flt.update_command(handler, func.__doc__)
-            else:
-                flt.update_filter(f"{module_name}.{func.__name__}", func.__doc__, handler)
+            flt.update(func, MessageHandler(template, filters))
+            self.manager.add_plugin(self, func.__module__).add(flt)
             return func
         return decorator

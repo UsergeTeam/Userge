@@ -91,9 +91,14 @@ class Plugin:
     def add(self, obj: Union['command.Command', 'filtr.Filtr']) -> None:
         """ add command or filter to plugin """
         if isinstance(obj, command.Command):
-            self.commands.append(obj)
+            type_ = self.commands
         else:
-            self.filters.append(obj)
+            type_ = self.filters
+        for flt in type_:
+            if flt.name == obj.name:
+                type_.remove(flt)
+                break
+        type_.append(obj)
         _LOG.debug(_LOG_STR, f"add filter to plugin -> {self.name}")
 
     def get_commands(self) -> List[str]:

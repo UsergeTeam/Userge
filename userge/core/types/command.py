@@ -8,7 +8,7 @@
 
 __all__ = ['Command']
 
-from typing import Union, Dict, List, Optional
+from typing import Union, Dict, List, Optional, Callable, Any
 
 from pyrogram.client.handlers.handler import Handler
 
@@ -41,10 +41,11 @@ class Command(Filtr):
     def __repr__(self) -> str:
         return f"<command - {self.name}>"
 
-    def update_command(self, handler: Handler, doc: Optional[str]) -> None:
-        """ update handler and doc in command """
+    def update(self, func: Callable[[Any], Any], handler: Handler) -> None:
+        """ update command """
         self._handler = handler
-        self.doc = doc.strip() if doc else None
+        self.doc = func.__doc__
+        _LOG.debug(_LOG_STR, f"created command -> {self.name}")
 
 
 def _format_about(about: Union[str, Dict[str, Union[str, List[str], Dict[str, str]]]]) -> str:
