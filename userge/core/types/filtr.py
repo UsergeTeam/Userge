@@ -9,7 +9,7 @@
 __all__ = ['Filtr', 'clear_db']
 
 import asyncio
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Callable, Any, Optional
 
 from pyrogram.client.handlers.handler import Handler
 
@@ -91,7 +91,7 @@ class Filtr:
         self._enabled = True
         self._loaded = False
         self.name: str
-        self.about: str
+        self.about: Optional[str]
         self._handler: Handler
 
     def __repr__(self) -> str:
@@ -118,10 +118,10 @@ class Filtr:
         """ returns load status """
         return self._loaded
 
-    def update_filter(self, name: str, about: Optional[str], handler: Handler) -> None:
-        """ update name, about and handler in filter """
-        self.name = name
-        self.about = about.strip() if isinstance(about, str) else None
+    def update(self, func: Callable[[Any], Any], handler: Handler) -> None:
+        """ update filter """
+        self.name = f"{func.__module__.split('.')[-1]}.{func.__name__}"
+        self.about = func.__doc__
         self._handler = handler
         _LOG.debug(_LOG_STR, f"created filter -> {self.name}")
 

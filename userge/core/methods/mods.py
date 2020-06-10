@@ -32,7 +32,7 @@ class Mods(RawClient):
     """ some mods for userge """
     def __init__(self, client: '_client.Userge', **kwargs) -> None:
         super().__init__(**kwargs)
-        self._channel = self.getCLogger(__name__)
+        self._channel = self.getCLogger("CORE")
         Conv.init(client)
         nest_asyncio.apply()
 

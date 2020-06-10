@@ -362,7 +362,7 @@ async def load(message: Message) -> None:
                 await replied.download(file_name=t_path)
                 plugin = get_import_path(ROOT, t_path)
                 try:
-                    await userge.load_plugin(plugin)
+                    await userge.load_plugin(plugin, reload_plugin=True)
                     await userge.finalize_load()
                 except (ImportError, SyntaxError) as i_e:
                     os.remove(t_path)
