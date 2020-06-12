@@ -13,6 +13,7 @@ import asyncio
 from typing import Dict, List, Union, Any, Callable, Optional
 
 from pyrogram import Message as RawMessage, Filters, MessageHandler
+from pyrogram.errors.exceptions.bad_request_400 import ChatAdminRequired
 
 from userge import logging, Config
 from .message import Message
@@ -87,16 +88,16 @@ class Decorators:
                 If ``False``, anyone can access,  defaults to True.
 
             allow_private (``bool``, *optional*):
-                If ``False``, deny private cahts,  defaults to True.
+                If ``False``, deny private chats,  defaults to True.
 
             allow_bots (``bool``, *optional*):
-                If ``False``, deny bot cahts,  defaults to True.
+                If ``False``, deny bot chats,  defaults to True.
 
             allow_groups (``bool``, *optional*):
-                If ``False``, deny group cahts,  defaults to True.
+                If ``False``, deny group chats,  defaults to True.
 
             allow_channels (``bool``, *optional*):
-                If ``False``, deny channel cahts,  defaults to True.
+                If ``False``, deny channel chats,  defaults to True.
 
             kwargs:
                 prefix (``str``, *optional*):
@@ -187,11 +188,14 @@ class Decorators:
         def decorator(func: _PYROFUNC) -> _PYROFUNC:
             async def template(_: '_client.Userge', r_m: RawMessage) -> None:
                 if isinstance(flt, Command) and r_m.chat and (r_m.chat.type not in scope):
-                    _sent = await r_m.reply(
-                        "**ERROR** : `Sorry!, this command not supported "
-                        f"in this chat type [{r_m.chat.type}] !`")
-                    await asyncio.sleep(3)
-                    await _sent.delete()
+                    try:
+                        _sent = await r_m.reply(
+                            "**ERROR** : `Sorry!, this command not supported "
+                            f"in this chat type [{r_m.chat.type}] !`")
+                        await asyncio.sleep(3)
+                        await _sent.delete()
+                    except ChatAdminRequired:
+                        pass
                 else:
                     await func(Message(_, r_m, **kwargs))
             _LOG.debug(_LOG_STR, f"Loading => [ async def {func.__name__}(message) ] "
