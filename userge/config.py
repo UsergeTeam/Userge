@@ -44,6 +44,7 @@ class Config:
     """Configs to setup Userge"""
     API_ID = int(os.environ.get("API_ID", 12345))
     API_HASH = os.environ.get("API_HASH", None)
+    WORKERS = int(os.environ.get("WORKERS", 4))
     ANTISPAM_SENTRY = bool(os.environ.get("ANTISPAM_SENTRY", False))
     HU_STRING_SESSION = os.environ.get("HU_STRING_SESSION", None)
     DB_URI = os.environ.get("DATABASE_URL", None)
