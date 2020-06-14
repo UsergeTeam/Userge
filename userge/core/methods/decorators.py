@@ -88,16 +88,16 @@ class Decorators:
                 If ``False``, anyone can access,  defaults to True.
 
             allow_private (``bool``, *optional*):
-                If ``False``, deny private chats,  defaults to True.
+                If ``False``, prohibit private chats,  defaults to True.
 
             allow_bots (``bool``, *optional*):
-                If ``False``, deny bot chats,  defaults to True.
+                If ``False``, prohibit bot chats,  defaults to True.
 
             allow_groups (``bool``, *optional*):
-                If ``False``, deny group chats,  defaults to True.
+                If ``False``, prohibit group chats,  defaults to True.
 
             allow_channels (``bool``, *optional*):
-                If ``False``, deny channel chats,  defaults to True.
+                If ``False``, prohibit channel chats,  defaults to True.
 
             kwargs:
                 prefix (``str``, *optional*):
