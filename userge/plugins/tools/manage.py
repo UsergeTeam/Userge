@@ -364,7 +364,7 @@ async def load(message: Message) -> None:
                 try:
                     await userge.load_plugin(plugin, reload_plugin=True)
                     await userge.finalize_load()
-                except (ImportError, SyntaxError) as i_e:
+                except (ImportError, SyntaxError, NameError) as i_e:
                     os.remove(t_path)
                     await message.err(i_e)
                 else:

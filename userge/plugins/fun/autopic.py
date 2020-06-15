@@ -91,7 +91,7 @@ async def apic_worker():
     user = '@' + user_dict['uname'] if user_dict['uname'] else user_dict['flname']
     count = 0
     while UPDATE_PIC:
-        if not count or not count % Config.AUTOPIC_TIMEOUT:
+        if not count % Config.AUTOPIC_TIMEOUT:
             img = Image.open(BASE_PIC)
             i_width, i_height = img.size
             s_font = ImageFont.truetype("resources/font.ttf", int((35 / 640)*i_width))
