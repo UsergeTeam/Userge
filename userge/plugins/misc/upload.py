@@ -273,6 +273,7 @@ async def audio_upload(chat_id, path, del_path: bool):
     message: Message = await userge.send_message(
         chat_id, f"`Uploading {path.name} as audio ...`")
     strpath = str(path)
+    file_size = humanbytes(os.stat(strpath).st_size)
     start_t = datetime.now()
     c_time = time.time()
     thumb = await get_thumb()
@@ -283,11 +284,14 @@ async def audio_upload(chat_id, path, del_path: bool):
         artist = metadata.get("artist")
     await userge.send_chat_action(chat_id, "upload_audio")
     try:
+        audio_caption = ""
+        audio_caption += f"{path.name} "
+        audio_caption += f"[ {file_size} ]"
         msg = await userge.send_audio(
             chat_id=chat_id,
             audio=strpath,
             thumb=thumb,
-            caption=path.name,
+            caption=audio_caption,
             title=title,
             performer=artist,
             duration=metadata.get("duration").seconds,
