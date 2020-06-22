@@ -79,6 +79,7 @@ class Config:
     WELCOME_DELETE_TIMEOUT = 120
     AUTOPIC_TIMEOUT = 300
     ALLOWED_CHATS = Filters.chat([])
+    ALLOW_ALL_PMS = True
     SUDO_USERS: Set[int] = set()
     ALLOWED_COMMANDS: Set[str] = set()
     UPSTREAM_REMOTE = 'upstream'

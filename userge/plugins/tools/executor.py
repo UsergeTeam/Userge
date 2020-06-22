@@ -10,7 +10,6 @@
 
 import io
 import sys
-import shlex
 import asyncio
 import traceback
 from getpass import getuser
@@ -194,8 +193,8 @@ class Term:
 
     @classmethod
     async def execute(cls, cmd: str) -> 'Term':
-        process = await asyncio.create_subprocess_exec(
-            *shlex.split(cmd), stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+        process = await asyncio.create_subprocess_shell(
+            cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
         t_obj = cls(process)
         asyncio.get_event_loop().create_task(t_obj.worker())
         return t_obj

@@ -57,7 +57,8 @@ async def active_afk(message: Message) -> None:
 
 
 @userge.on_filters(IS_AFK_FILTER & ~Filters.me & ~Filters.bot & (
-    Filters.mentioned | (Filters.private & ~Filters.service & Config.ALLOWED_CHATS)))
+    Filters.mentioned | (Filters.private & ~Filters.service & (
+        Filters.create(lambda _, __: Config.ALLOW_ALL_PMS) | Config.ALLOWED_CHATS))))
 async def handle_afk_incomming(message: Message) -> None:
     """ handle incomming messages when you afk """
     user_id = message.from_user.id

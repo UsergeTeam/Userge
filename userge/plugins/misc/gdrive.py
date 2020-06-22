@@ -577,7 +577,8 @@ class Worker(_GDrive):
         link = self._message.input_str
         if filter_str:
             link = self._message.filtered_input_str
-        found = re.search(r'https://drive.google.com/[\w\?\./&=]+([-\w]{33}|/0A[-\w]{17})', link)
+        found = re.search(
+            r'https://drive.google.com/[\w\?\./&=]+([-\w]{33}|(?<=/)0A[-\w]{17})', link)
         if found and 'folder' in link:
             out = (found.group(1), "folder")
         elif found:
@@ -618,11 +619,11 @@ class Worker(_GDrive):
             _AUTH_FLOW = None
             await asyncio.gather(
                 _set_creds(cred),
-                self._message.edit("`Saved GDrive Creds!`", del_in=3, log=True))
+                self._message.edit("`Saved GDrive Creds!`", del_in=3, log=__name__))
 
     async def clear(self) -> None:
         """ Clear Creds """
-        await self._message.edit(await _clear_creds(), del_in=3, log=True)
+        await self._message.edit(await _clear_creds(), del_in=3, log=__name__)
 
     async def set_parent(self) -> None:
         """ Set Parent id """
@@ -672,7 +673,7 @@ class Worker(_GDrive):
             await self._message.err(h_e._get_reason())
             return
         await self._message.edit(f"**Folder Created Successfully**\n\n{out}",
-                                 disable_web_page_preview=True, log=True)
+                                 disable_web_page_preview=True, log=__name__)
 
     @creds_dec
     async def list_folder(self) -> None:
@@ -807,7 +808,7 @@ class Worker(_GDrive):
             out = self._output
         else:
             out = "`failed to upload.. check logs?`"
-        await self._message.edit(out, disable_web_page_preview=True, log=True)
+        await self._message.edit(out, disable_web_page_preview=True, log=__name__)
 
     @creds_dec
     async def download(self) -> None:
@@ -837,7 +838,7 @@ class Worker(_GDrive):
             out = self._output
         else:
             out = "`failed to download.. check logs?`"
-        await self._message.edit(out, disable_web_page_preview=True, log=True)
+        await self._message.edit(out, disable_web_page_preview=True, log=__name__)
 
     @creds_dec
     async def copy(self) -> None:
@@ -868,7 +869,7 @@ class Worker(_GDrive):
             out = self._output
         else:
             out = "`failed to copy.. check logs?`"
-        await self._message.edit(out, disable_web_page_preview=True, log=True)
+        await self._message.edit(out, disable_web_page_preview=True, log=__name__)
 
     @creds_dec
     async def move(self) -> None:
@@ -885,7 +886,7 @@ class Worker(_GDrive):
             await self._message.err(h_e._get_reason())
         else:
             await self._message.edit(
-                f"`{file_id}` **Moved Successfully**\n\n{link}", log=True)
+                f"`{file_id}` **Moved Successfully**\n\n{link}", log=__name__)
 
     @creds_dec
     async def delete(self) -> None:
@@ -899,7 +900,7 @@ class Worker(_GDrive):
             await self._message.err(h_e._get_reason())
         else:
             await self._message.edit(
-                f"`{file_id}` **Deleted Successfully**", del_in=5, log=True)
+                f"`{file_id}` **Deleted Successfully**", del_in=5, log=__name__)
 
     @creds_dec
     async def empty(self) -> None:
@@ -912,7 +913,7 @@ class Worker(_GDrive):
             await self._message.err(h_e._get_reason())
         else:
             await self._message.edit(
-                "`Empty the Trash Successfully`", del_in=5, log=True)
+                "`Empty the Trash Successfully`", del_in=5, log=__name__)
 
     @creds_dec
     async def get(self) -> None:
