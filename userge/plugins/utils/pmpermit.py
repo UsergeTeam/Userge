@@ -18,24 +18,27 @@ CHANNEL = userge.getCLogger(__name__)
 SAVED_SETTINGS = get_collection("CONFIGS")
 ALLOWED_COLLECTION = get_collection("PM_PERMIT")
 
-allowAllPms = True
 pmCounter: Dict[int, int] = {}
-allowAllFilter = Filters.create(lambda _, query: bool(allowAllPms))
+allowAllFilter = Filters.create(lambda _, __: Config.ALLOW_ALL_PMS)
 noPmMessage = ("Hello {fname} this is an automated message\n"
                "Please wait untill you get approved to direct message "
                "And please dont spam untill then ")
+blocked_message = "**You were automatically blocked**"
 
 
 async def _init() -> None:
-    global allowAllPms, noPmMessage
+    global noPmMessage, blocked_message
     async for chat in ALLOWED_COLLECTION.find({"status": 'allowed'}):
         Config.ALLOWED_CHATS.add(chat.get("_id"))
     _pm = await SAVED_SETTINGS.find_one({'_id': 'PM GUARD STATUS'})
     if _pm:
-        allowAllPms = bool(_pm.get('data'))
+        Config.ALLOW_ALL_PMS = bool(_pm.get('data'))
     _pmMsg = await SAVED_SETTINGS.find_one({'_id': 'CUSTOM NOPM MESSAGE'})
     if _pmMsg:
         noPmMessage = _pmMsg.get('data')
+    _blockPmMsg = await SAVED_SETTINGS.find_one({'_id': 'CUSTOM BLOCKPM MESSAGE'})
+    if _blockPmMsg:
+        blocked_message = _blockPmMsg.get('data')
 
 
 @userge.on_cmd("allow", about={
@@ -110,16 +113,16 @@ async def get_id(message: Message):
                    "the previously allowed chats will be there !"}, allow_channels=False)
 async def pmguard(message: Message):
     """ enable or disable auto pm handler """
-    global allowAllPms, pmCounter
-    if allowAllPms:
-        allowAllPms = False
+    global pmCounter
+    if Config.ALLOW_ALL_PMS:
+        Config.ALLOW_ALL_PMS = False
         await message.edit("`PM_guard activated`", del_in=3, log=__name__)
     else:
-        allowAllPms = True
+        Config.ALLOW_ALL_PMS = True
         await message.edit("`PM_guard deactivated`", del_in=3, log=__name__)
         pmCounter.clear()
     await SAVED_SETTINGS.update_one(
-        {'_id': 'PM GUARD STATUS'}, {"$set": {'data': allowAllPms}}, upsert=True)
+        {'_id': 'PM GUARD STATUS'}, {"$set": {'data': Config.ALLOW_ALL_PMS}}, upsert=True)
 
 
 @userge.on_cmd("setpmmsg", about={
@@ -146,11 +149,43 @@ async def set_custom_nopm_message(message: Message):
             {'_id': 'CUSTOM NOPM MESSAGE'}, {"$set": {'data': string}}, upsert=True)
 
 
+@userge.on_cmd("setbpmmsg", about={
+    'header': "Sets the block message",
+    'description': "You can change the default blockPm message "
+                   "which userge gives on un-invited PMs",
+    'options': {
+        '{fname}': "add first name",
+        '{lname}': "add last name",
+        '{flname}': "add full name",
+        '{uname}': "username",
+        '{chat}': "chat name",
+        '{mention}': "mention user"}}, allow_channels=False)
+async def set_custom_blockpm_message(message: Message):
+    """ setup custom blockpm message """
+    global blocked_message
+    await message.edit('`Custom BLOCKpm message saved`', del_in=3, log=__name__)
+    if message.reply_to_message:
+        string = message.reply_to_message.text
+    else:
+        string = message.input_str
+    if string:
+        blocked_message = string
+        await SAVED_SETTINGS.update_one(
+            {'_id': 'CUSTOM BLOCKPM MESSAGE'}, {"$set": {'data': string}}, upsert=True)
+
+
 @userge.on_cmd("vpmmsg", about={
     'header': "Displays the reply message for uninvited PMs"}, allow_channels=False)
 async def view_current_noPM_msg(message: Message):
     """ view current pm message """
-    await message.edit('```' + noPmMessage + '```')
+    await message.edit(f"--current PM message--\n\n{noPmMessage}")
+
+
+@userge.on_cmd("vbpmmsg", about={
+    'header': "Displays the reply message for blocked PMs"}, allow_channels=False)
+async def view_current_blockPM_msg(message: Message):
+    """ view current block pm message """
+    await message.edit(f"--current blockPM message--\n\n{blocked_message}")
 
 
 @userge.on_filters(~allowAllFilter & Filters.incoming & Filters.private & ~Filters.bot
@@ -164,7 +199,7 @@ async def uninvitedPmHandler(message: Message):
     if message.from_user.id in pmCounter:
         if pmCounter[message.from_user.id] > 3:
             del pmCounter[message.from_user.id]
-            await message.reply("**You were automatically blocked**")
+            await message.reply(blocked_message)
             await message.from_user.block()
             await asyncio.sleep(1)
             await CHANNEL.log(

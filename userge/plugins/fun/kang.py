@@ -29,7 +29,7 @@ from userge import userge, Message, Config, pool
     allow_channels=False)
 async def kang_(message: Message):
     """ kang a sticker """
-    user = message.from_user
+    user = await userge.get_me()
     if not user.username:
         user.username = user.first_name or user.id
     replied = message.reply_to_message
