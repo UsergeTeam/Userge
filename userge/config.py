@@ -62,6 +62,7 @@ class Config:
     G_DRIVE_CLIENT_SECRET = os.environ.get("G_DRIVE_CLIENT_SECRET", None)
     G_DRIVE_PARENT_ID = os.environ.get("G_DRIVE_PARENT_ID", None)
     G_DRIVE_IS_TD = bool(os.environ.get("G_DRIVE_IS_TD", False))
+    G_DRIVE_INDEX_LINK = os.environ.get("G_DRIVE_INDEX_LINK", None)
     GOOGLE_CHROME_DRIVER = os.environ.get("GOOGLE_CHROME_DRIVER", None)
     GOOGLE_CHROME_BIN = os.environ.get("GOOGLE_CHROME_BIN", None)
     LOG_CHANNEL_ID = int(os.environ.get("LOG_CHANNEL_ID", 0))
