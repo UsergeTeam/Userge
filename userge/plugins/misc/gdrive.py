@@ -19,7 +19,7 @@ from json import dumps
 from functools import wraps
 from datetime import datetime
 from mimetypes import guess_type
-from urllib.parse import unquote_plus
+from urllib.parse import unquote_plus, quote
 
 from httplib2 import Http
 from pySmartDL import SmartDL
@@ -175,6 +175,33 @@ class _GDrive:
                                            supportsTeamDrives=True).execute()
         _LOG.info("Set Permission : %s for Google-Drive File : %s", permissions, file_id)
 
+    def _get_file_path(self, file_id: str, file_name: str) -> str:
+        tmp_path = [file_name]
+        while True:
+            response = self._service.files().get(
+                fileId=file_id, fields='parents', supportsTeamDrives=True).execute()
+            if not response:
+                break
+            file_id = response['parents'][0]
+            response = self._service.files().get(
+                fileId=file_id, fields='name', supportsTeamDrives=True).execute()
+            tmp_path.append(response['name'])
+        return '/'.join(reversed(tmp_path[:-1]))
+
+    def _get_output(self, file_id: str, file_name: str, file_size: int = 0) -> str:
+        if file_size:
+            out = G_DRIVE_FILE_LINK.format(file_id, file_name, file_size)
+        else:
+            out = G_DRIVE_FOLDER_LINK.format(file_id, file_name)
+        if Config.G_DRIVE_INDEX_LINK:
+            link = os.path.join(
+                Config.G_DRIVE_INDEX_LINK.rstrip('/'), quote(
+                    self._get_file_path(file_id, file_name)))
+            if not file_size:
+                link += '/'
+            out += f"\n👥 __[Shareable Link]({link})__"
+        return out
+
     def _upload_file(self, file_path: str, parent_id: str) -> str:
         if self._is_canceled:
             raise ProcessCanceled
@@ -239,7 +266,7 @@ class _GDrive:
         file_size = humanbytes(int(drive_file.get('size', 0)))
         _LOG.info(
             "Created Google-Drive File => Name: %s ID: %s Size: %s", file_name, file_id, file_size)
-        return G_DRIVE_FILE_LINK.format(file_id, file_name, file_size)
+        return self._get_output(file_id, file_name, file_size)
 
     def _create_drive_dir(self, dir_name: str, parent_id: str) -> str:
         if self._is_canceled:
@@ -282,7 +309,7 @@ class _GDrive:
                 folder_name = os.path.basename(os.path.abspath(file_name))
                 dir_id = self._create_drive_dir(folder_name, self._parent_id)
                 self._upload_dir(file_name, dir_id)
-                self._output = G_DRIVE_FOLDER_LINK.format(dir_id, folder_name)
+                self._output = self._get_output(dir_id, folder_name)
         except HttpError as h_e:
             _LOG.exception(h_e)
             self._output = h_e
@@ -454,10 +481,10 @@ class _GDrive:
             file_name = drive_file['name']
             file_id = drive_file['id']
             if mime_type == G_DRIVE_DIR_MIME_TYPE:
-                self._output = G_DRIVE_FOLDER_LINK.format(file_id, file_name)
+                self._output = self._get_output(file_id, file_name)
             else:
                 file_size = humanbytes(int(drive_file.get('size', 0)))
-                self._output = G_DRIVE_FILE_LINK.format(file_id, file_name, file_size)
+                self._output = self._get_output(file_id, file_name, file_size)
         except HttpError as h_e:
             _LOG.exception(h_e)
             self._output = h_e
@@ -495,9 +522,9 @@ class _GDrive:
         file_name = drive_file['name']
         file_id = drive_file['id']
         if mime_type == G_DRIVE_DIR_MIME_TYPE:
-            return G_DRIVE_FOLDER_LINK.format(file_id, file_name)
+            return self._get_output(file_id, file_name)
         file_size = humanbytes(int(drive_file.get('size', 0)))
-        return G_DRIVE_FILE_LINK.format(file_id, file_name, file_size)
+        return self._get_output(file_id, file_name, file_size)
 
     @pool.run_in_thread
     def _delete(self, file_id: str) -> None:
