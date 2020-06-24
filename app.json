@@ -39,6 +39,10 @@
             "description": "Set True if it is TeamDrive",
             "value": "True"
         },
+        "G_DRIVE_INDEX_LINK": {
+            "description": "Index link for gdrive",
+            "required": false
+        },
         "LOAD_UNOFFICIAL_PLUGINS": {
             "description": "Set True if your like to use unofficial plugins",
             "required": false
