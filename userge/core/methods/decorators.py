@@ -28,9 +28,10 @@ _LOG_STR = "<<<!  :::::  %s  :::::  !>>>"
 
 
 class Decorators:
-    """ decoretors for userge """
+    """ decorators for userge """
     def __init__(self, **kwargs) -> None:
         self.manager = Manager()
+        self._collection: Dict[str, Callable[Message]] = {} 
         self._tasks: List[Callable[[Any], Any]] = []
         super().__init__(**kwargs)
 
@@ -142,7 +143,7 @@ class Decorators:
                 and (m.from_user and m.from_user.id in Config.SUDO_USERS)
                 and (m.text.startswith(Config.SUDO_TRIGGER) if trigger else True))
             filters_ = filters_ & (outgoing_flt | incoming_flt)
-        return self._build_decorator(log=f"On {pattern}", filters=filters_,
+        return self._build_decorator(root_command=command,log=f"On {pattern}", filters=filters_,
                                      flt=cmd, scope=scope, **kwargs)
 
     def on_filters(self,
@@ -179,6 +180,7 @@ class Decorators:
                                      flt=flt)
 
     def _build_decorator(self,
+                         root_command: str,
                          log: str,
                          filters: Filters,
                          flt: Union[Command, Filtr],
@@ -202,5 +204,6 @@ class Decorators:
                        f"from {func.__module__} `{log}`")
             flt.update(func, MessageHandler(template, filters))
             self.manager.add_plugin(self, func.__module__).add(flt)
+            self._collection.update({root_command: func})
             return func
         return decorator
