@@ -150,7 +150,7 @@ class Decorators:
                    group: int = 0) -> Callable[[_PYROFUNC], _PYROFUNC]:
         """ Decorator for handling filters """
         flt = Filtr(self, group)
-        filters = filters & Filters.create(lambda _, __: flt.is_enabled)
+        filters = Filters.create(lambda _, __: flt.is_enabled) & filters
         return self._build_decorator(log=f"On Filters {filters}",
                                      filters=filters, flt=flt)
 
@@ -158,25 +158,15 @@ class Decorators:
                       welcome_chats: Filters.chat,
                       group: int = -2) -> Callable[[_PYROFUNC], _PYROFUNC]:
         """ Decorator for handling new members """
-        flt = Filtr(self, group)
-        welcome_chats = welcome_chats & Filters.create(lambda _, __: flt.is_enabled)
-        return self._build_decorator(log=f"On New Member in {welcome_chats}",
-                                     filters=(
-                                         Filters.group & Filters.new_chat_members
-                                         & welcome_chats),
-                                     flt=flt)
+        return self.on_filters(
+            filters=Filters.group & Filters.new_chat_members & welcome_chats, group=group)
 
     def on_left_member(self,
                        leaving_chats: Filters.chat,
                        group: int = -2) -> Callable[[_PYROFUNC], _PYROFUNC]:
         """ Decorator for handling left members """
-        flt = Filtr(self, group)
-        leaving_chats = leaving_chats & Filters.create(lambda _, __: flt.is_enabled)
-        return self._build_decorator(log=f"On Left Member in {leaving_chats}",
-                                     filters=(
-                                         Filters.group & Filters.left_chat_member
-                                         & leaving_chats),
-                                     flt=flt)
+        return self.on_filters(
+            filters=Filters.group & Filters.left_chat_member & leaving_chats, group=group)
 
     def _build_decorator(self,
                          log: str,

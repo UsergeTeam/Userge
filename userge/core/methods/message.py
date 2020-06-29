@@ -14,7 +14,7 @@ import asyncio
 from typing import List, Dict, Union, Optional, Sequence
 
 import aiofiles
-from pyrogram import Client as RawClient, Message as RawMessage, InlineKeyboardMarkup
+from pyrogram import Message as RawMessage, InlineKeyboardMarkup
 from pyrogram.errors.exceptions import MessageAuthorRequired, MessageTooLong
 from pyrogram.errors.exceptions.bad_request_400 import MessageNotModified, MessageIdInvalid
 
@@ -50,7 +50,7 @@ class Message(RawMessage):
     @property
     def input_str(self) -> str:
         """ Returns the input string without command """
-        input_ = self.text
+        input_ = self.text.html
         if ' ' in input_:
             return str(input_.split(maxsplit=1)[1].strip())
         return ''
@@ -60,7 +60,7 @@ class Message(RawMessage):
         """ Returns the input string  or replied msg text without command """
         input_ = self.input_str
         if not input_ and self.reply_to_message:
-            input_ = (self.reply_to_message.text or '').strip()
+            input_ = (self.reply_to_message.text.html if self.reply_to_message.text else '').strip()
         return input_
 
     @property

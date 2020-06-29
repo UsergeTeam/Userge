@@ -161,7 +161,7 @@ class Term:
         return self._finished
 
     @property
-    def read_line(self):
+    def read_line(self) -> str:
         return (self._stdout_line + self._stderr_line).decode('utf-8').strip()
 
     @property

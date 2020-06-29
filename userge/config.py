@@ -47,7 +47,7 @@ class Config:
     WORKERS = int(os.environ.get("WORKERS", 4))
     ANTISPAM_SENTRY = bool(os.environ.get("ANTISPAM_SENTRY", False))
     HU_STRING_SESSION = os.environ.get("HU_STRING_SESSION", None)
-    DB_URI = os.environ.get("DATABASE_URL", None)
+    DB_URI = os.environ.get("DATABASE_URL", '')
     LANG = os.environ.get("PREFERRED_LANGUAGE", "en")
     DOWN_PATH = os.environ.get("DOWN_PATH", "downloads").rstrip('/') + '/'
     SCREENSHOT_API = os.environ.get("SCREENSHOT_API", None)
@@ -66,7 +66,7 @@ class Config:
     GOOGLE_CHROME_DRIVER = os.environ.get("GOOGLE_CHROME_DRIVER", None)
     GOOGLE_CHROME_BIN = os.environ.get("GOOGLE_CHROME_BIN", None)
     LOG_CHANNEL_ID = int(os.environ.get("LOG_CHANNEL_ID", 0))
-    UPSTREAM_REPO = os.environ.get("UPSTREAM_REPO", "https://github.com/UsergeTeam/Userge")
+    UPSTREAM_REPO = os.environ.get("UPSTREAM_REPO", "https://github.com/UsergeTeam/Userge.git")
     HEROKU_API_KEY = os.environ.get("HEROKU_API_KEY", None)
     HEROKU_APP_NAME = os.environ.get("HEROKU_APP_NAME", None)
     LOAD_UNOFFICIAL_PLUGINS = bool(os.environ.get("LOAD_UNOFFICIAL_PLUGINS", False))
@@ -160,5 +160,7 @@ def get_version() -> str:
     ver = f"{versions.__major__}.{versions.__minor__}.{versions.__micro__}"
     diff = list(_REPO.iter_commits(f'{Config.UPSTREAM_REMOTE}/master..HEAD'))
     if diff:
-        return f"{ver}-beta.{len(diff)}"
+        if "/usergeteam/userge" in Config.UPSTREAM_REPO.lower():
+            return f"{ver}-beta.{len(diff)}"
+        return f"{ver}-custom.{len(diff)}"
     return ver

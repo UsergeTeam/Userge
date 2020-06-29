@@ -85,6 +85,8 @@ async def gban_user(message: Message):
             "**#Already_GBanned**\n\nUser Already Exists in My Gban List.\n"
             f"**Reason For GBan:** `{found['reason']}`", del_in=5)
         return
+    async for chat in userge.get_common_chats(user_id):
+        await chat.kick_member(user_id)
     sent = await message.edit(
         r"\\**#GBanned_User**//"
         f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
@@ -139,6 +141,8 @@ async def ungban_user(message: Message):
     if not found:
         await message.err("User Not Found in My Gban List")
         return
+    async for chat in userge.get_common_chats(user_id):
+        await chat.unban_member(user_id)
     await asyncio.gather(
         GBAN_USER_BASE.delete_one({'firstname': firstname, 'user_id': user_id}),
         message.edit(
