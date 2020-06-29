@@ -51,7 +51,7 @@ class Message(RawMessage):
     def input_str(self) -> str:
         """ Returns the input string without command """
         input_ = self.text.html
-        if ' ' in input_:
+        if ' ' in input_ or '\n' in input_:
             return str(input_.split(maxsplit=1)[1].strip())
         return ''
 
