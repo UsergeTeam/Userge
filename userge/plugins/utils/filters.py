@@ -73,7 +73,7 @@ async def delete_filters(message: Message) -> None:
     await message.edit(text=out, del_in=3)
 
 
-@userge.on_cmd(r"addfilter (\w[^\|]*)(?:\s?\|\s?([\s\S]+))?",
+@userge.on_cmd(r"addfilter ([^\s\|][^\|]*)(?:\s?\|\s?([\s\S]+))?",
                about={
                    'header': "Adds a filter by name",
                    'options': {

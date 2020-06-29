@@ -83,7 +83,7 @@ async def mv_to_global_note(message: Message) -> None:
     await message.edit(text=out, del_in=3)
 
 
-@userge.on_cmd(r"(?:#|get\s)(\w[\w_]*)",
+@userge.on_cmd(r"(?:#|get\s)(\S+)",
                about={'header': "Gets a note by name",
                       'usage': "#[notename]\nget notename"},
                group=-1,
@@ -113,7 +113,7 @@ async def get_note(message: Message) -> None:
                                      reply_to_message_id=reply_to_message_id)
 
 
-@userge.on_cmd(r"addnote (\w[\w_]*)(?:\s([\s\S]+))?",
+@userge.on_cmd(r"addnote (\S+)(?:\s([\s\S]+))?",
                about={
                    'header': "Adds a note by name",
                    'options': {
@@ -134,7 +134,7 @@ async def add_note(message: Message) -> None:
     if replied and replied.text:
         content = replied.text.html
     if content:
-        content = "🗒 **--{}--** 🗒\n\n{}".format(notename, content)
+        content = "📝 **--{}--** 📝\n\n{}".format(notename, content)
     if not (content or (replied and replied.media)):
         await message.err(text="No Content Found!")
         return
