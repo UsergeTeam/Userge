@@ -187,7 +187,7 @@ class CLogger:
                 Time in Seconds for delete that message.
 
         Returns:
-            message_id on success or None
+            None
         """
         message_ = await self._client.get_messages(chat_id=Config.LOG_CHANNEL_ID,
                                                    message_ids=message_id)

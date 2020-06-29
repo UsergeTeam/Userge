@@ -223,7 +223,7 @@ async def raw_ls(message: Message, name, collection):
         if 'mid' not in c_l:
             continue
         liststr += f"**{(await userge.get_chat(c_l['_id'])).title}**\n"
-        liststr += f"**Active:** `{c_l['on']}` , **[Preview]({CHANNEL.get_link(c_l['mid'])})**\n\n"
+        liststr += f"**Active:** `{c_l['on']}` , {CHANNEL.get_link(c_l['mid'])}\n\n"
     await message.edit(
         text=liststr or f'`NO {name.upper()}S STARTED`', del_in=0)
 

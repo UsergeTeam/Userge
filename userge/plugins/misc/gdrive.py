@@ -85,7 +85,7 @@ async def _refresh_creds() -> None:
 
 
 def creds_dec(func):
-    """ decorator for check _CREDS """
+    """ decorator for check CREDS """
     @wraps(func)
     async def wrapper(self):
         if _CREDS:
@@ -657,6 +657,20 @@ class Worker(_GDrive):
         await self._message.edit("`Parents Reset successfully`", del_in=5)
 
     @creds_dec
+    async def share(self) -> None:
+        """ get shareable link """
+        await self._message.edit("`Loading GDrive Share...`")
+        file_id, _ = self._get_file_id()
+        try:
+            out = await pool.run_in_thread(self._get_output)(file_id)
+        except HttpError as h_e:
+            _LOG.exception(h_e)
+            await self._message.err(h_e._get_reason())
+            return
+        await self._message.edit(f"**Shareable Links**\n\n{out}",
+                                 disable_web_page_preview=True, log=__name__)
+
+    @creds_dec
     async def search(self) -> None:
         """ Search files in GDrive """
         await self._message.edit("`Loading GDrive Search...`")
@@ -1059,6 +1073,14 @@ async def gls_(message: Message):
 async def gmake_(message: Message):
     """ make folder """
     await Worker(message).make_folder()
+
+
+@userge.on_cmd("gshare", about={
+    'header': "Get Shareable Links for GDrive files",
+    'usage': "{tr}gshare [file_id | file/folder link]"})
+async def gshare_(message: Message):
+    """ share files """
+    await Worker(message).share()
 
 
 @userge.on_cmd("gup", about={
