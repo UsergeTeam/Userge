@@ -1,3 +1,5 @@
+""" manage your group """
+
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -57,10 +59,11 @@ async def is_sudoadmin(message: Message):
                    "[NOTE: Requires proper admin rights in the chat!!!]",
     'examples': [
         "{tr}promote [username | userid] or [reply to user] :custom title (optional)",
-        "{tr}promote @someusername/userid/replytouser Staff (custom title)"]})
+        "{tr}promote @someusername/userid/replytouser Staff (custom title)"]},
+    allow_channels=False, allow_bots=False, allow_private=False)
 async def promote_usr(message: Message):
     """
-    this function can promote members in tg group
+    promote members in tg group
     """
     custom_rank = ""
     chat_id = message.chat.id
@@ -161,10 +164,11 @@ async def promote_usr(message: Message):
     'header': "use this to demote group members",
     'description': "Remove admin rights from admin in the supergroup.\n"
                    "[NOTE: Requires proper admin rights in the chat!!!]",
-    'examples': "{tr}demote [username | userid] or [reply to user]"})
+    'examples': "{tr}demote [username | userid] or [reply to user]"},
+    allow_channels=False, allow_bots=False, allow_private=False)
 async def demote_usr(message: Message):
     """
-    this function can demote members in tg group
+    demote members in tg group
     """
     chat_id = message.chat.id
     get_group = await userge.get_chat(chat_id)
@@ -275,10 +279,11 @@ async def demote_usr(message: Message):
     'header': "use this to ban group members",
     'description': "Ban member from supergroup.\n"
                    "[NOTE: Requires proper admin rights in the chat!!!]",
-    'examples': "{tr}ban [username | userid] or [reply to user] :reason (optional)"})
+    'examples': "{tr}ban [username | userid] or [reply to user] :reason (optional)"},
+    allow_channels=False, allow_bots=False, allow_private=False)
 async def ban_usr(message: Message):
     """
-    this function can ban user from tg group
+    ban user from tg group
     """
     reason = ""
     chat_id = message.chat.id
@@ -356,10 +361,11 @@ async def ban_usr(message: Message):
     'header': "use this to unban group members",
     'description': "Unban member from supergroup.\n"
                    "[NOTE: Requires proper admin rights in the chat!!!]",
-    'examples': "{tr}unban [username | userid] or [reply to user]"})
+    'examples': "{tr}unban [username | userid] or [reply to user]"},
+    allow_channels=False, allow_bots=False, allow_private=False)
 async def unban_usr(message: Message):
     """
-    this function can unban user from tg group
+    unban user from tg group
     """
     chat_id = message.chat.id
     get_group = await userge.get_chat(chat_id)
@@ -446,10 +452,11 @@ async def unban_usr(message: Message):
     'header': "use this to kick group members",
     'description': "Kick member from supergroup. member can rejoin the group again if they want.\n"
                    "[NOTE: Requires proper admin rights in the chat!!!]",
-    'examples': "{tr}kick [username | userid] or [reply to user]"})
+    'examples': "{tr}kick [username | userid] or [reply to user]"},
+    allow_channels=False, allow_bots=False, allow_private=False)
 async def kick_usr(message: Message):
     """
-    this function can kick user from tg group
+    kick user from tg group
     """
     chat_id = message.chat.id
     get_group = await userge.get_chat(chat_id)
@@ -552,10 +559,11 @@ async def kick_usr(message: Message):
         '-d': "days"},
     'examples': [
         "{tr}mute -flag [username | userid] or [reply to user] :reason (optional)",
-        "{tr}mute -d1 @someusername/userid/replytouser SPAM (mute for one day:reason SPAM)"]})
+        "{tr}mute -d1 @someusername/userid/replytouser SPAM (mute for one day:reason SPAM)"]},
+    allow_channels=False, allow_bots=False, allow_private=False)
 async def mute_usr(message: Message):
     """
-    this function can mute user from tg group
+    mute user from tg group
     """
     reason = ""
     chat_id = message.chat.id
@@ -781,10 +789,11 @@ async def mute_usr(message: Message):
     'header': "use this to unmute group members",
     'description': "Unmute member from supergroup.\n"
                    "[NOTE: Requires proper admin rights in the chat!!!]",
-    'examples': "{tr}unmute [username | userid]  or [reply to user]"})
+    'examples': "{tr}unmute [username | userid]  or [reply to user]"},
+    allow_channels=False, allow_bots=False, allow_private=False)
 async def unmute_usr(message: Message):
     """
-    this function can unmute user from tg group
+    unmute user from tg group
     """
     chat_id = message.chat.id
     get_group = await userge.get_chat(chat_id)
@@ -912,10 +921,11 @@ async def unmute_usr(message: Message):
     'flags': {'-c': "clean"},
     'examples': [
         "{tr}zombies [check deleted accounts in group]",
-        "{tr}zombies -c [remove deleted accounts from group]"]})
+        "{tr}zombies -c [remove deleted accounts from group]"]},
+    allow_channels=False, allow_bots=False, allow_private=False)
 async def zombie_clean(message: Message):
     """
-    this function can remove deleted accounts from tg group
+    remove deleted accounts from tg group
     """
     chat_id = message.chat.id
     get_group = await userge.get_chat(chat_id)
@@ -1014,10 +1024,11 @@ async def zombie_clean(message: Message):
     'examples': [
         "{tr}pin [reply to chat message]",
         "{tr}pin -s [reply to chat message]",
-        "{tr}pin -u [send to chat]"]})
+        "{tr}pin -u [send to chat]"]},
+    allow_channels=False, allow_bots=False, allow_private=False)
 async def pin_msgs(message: Message):
     """
-    this function can pin & unpin message in groups
+    pin & unpin message in groups
     """
     chat_id = message.chat.id
     flags = message.flags
@@ -1105,10 +1116,11 @@ async def pin_msgs(message: Message):
         '-d': "delete"},
     'examples': [
         "{tr}gpic -s [reply to chat image/media file]",
-        "{tr}gpic -d [send to chat]"]})
+        "{tr}gpic -d [send to chat]"]},
+    allow_channels=False, allow_bots=False, allow_private=False)
 async def chatpic_func(message: Message):
     """
-    this function can change chat photo
+    change chat photo
     """
     chat_id = message.chat.id
     flags = message.flags
@@ -1214,7 +1226,8 @@ async def chatpic_func(message: Message):
         '-m5 = 5 minutes', '-m15 = 15 minutes', '-h1 = 1 hour'],
     'examples': [
         "{tr}smode -s30 [send to chat] (turn on 30s slow mode) ",
-        "{tr}smode -o [send to chat] (turn off slow mode)"]})
+        "{tr}smode -o [send to chat] (turn off slow mode)"]},
+    allow_channels=False, allow_bots=False, allow_private=False)
 async def smode_switch(message: Message):
     """
     turn on/off chat slow mode

@@ -13,7 +13,7 @@ from userge import userge, Message
 
 @userge.on_cmd("sleep (\\d+)", about={
     'header': "sleep userge :P",
-    'usage': "{tr}sleep [timeout in seconds]"})
+    'usage': "{tr}sleep [timeout in seconds]"}, allow_channels=False)
 async def sleep_(message: Message) -> None:
     seconds = int(message.matches[0].group(1))
     await message.edit(f"`sleeping {seconds} seconds...`")

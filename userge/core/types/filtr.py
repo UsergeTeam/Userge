@@ -9,7 +9,7 @@
 __all__ = ['Filtr', 'clear_db']
 
 import asyncio
-from typing import List, Tuple
+from typing import List, Tuple, Callable, Any, Optional
 
 from pyrogram.client.handlers.handler import Handler
 
@@ -72,7 +72,7 @@ async def _unload(name: str) -> None:
 
 
 async def clear_db() -> bool:
-    """clear filters in DB"""
+    """ clear filters in DB """
     _DISABLED.clear()
     _UNLOADED.clear()
     await _DISABLED_FILTERS.drop()
@@ -84,49 +84,49 @@ asyncio.get_event_loop().run_until_complete(_main())
 
 
 class Filtr:
-    """filter class"""
+    """ filter class """
     def __init__(self, client: '_client.Userge', group: int) -> None:
         self._client = client
         self._group = group
         self._enabled = True
         self._loaded = False
         self.name: str
-        self.about: str
+        self.about: Optional[str]
         self._handler: Handler
 
     def __repr__(self) -> str:
         return f"<filter - {self.name}>"
 
     async def init(self) -> None:
-        """initialize the filter"""
+        """ initialize the filter """
         self._enabled, loaded = _init(self.name)
         if loaded:
             await self.load()
 
     @property
     def is_enabled(self) -> bool:
-        """returns enable status"""
+        """ returns enable status """
         return self._loaded and self._enabled
 
     @property
     def is_disabled(self) -> bool:
-        """returns disable status"""
+        """ returns disable status """
         return self._loaded and not self._enabled
 
     @property
     def is_loaded(self) -> bool:
-        """returns load status"""
+        """ returns load status """
         return self._loaded
 
-    def update_filter(self, name: str, about: str, handler: Handler) -> None:
-        """update name, about and handler in filter"""
-        self.name = name
-        self.about = about
+    def update(self, func: Callable[[Any], Any], handler: Handler) -> None:
+        """ update filter """
+        self.name = f"{func.__module__.split('.')[-1]}.{func.__name__}"
+        self.about = func.__doc__
         self._handler = handler
         _LOG.debug(_LOG_STR, f"created filter -> {self.name}")
 
     async def enable(self) -> str:
-        """enable the filter"""
+        """ enable the filter """
         if self._enabled:
             return ''
         self._enabled = True
@@ -135,7 +135,7 @@ class Filtr:
         return self.name
 
     async def disable(self) -> str:
-        """disable the filter"""
+        """ disable the filter """
         if not self._enabled:
             return ''
         self._enabled = False
@@ -144,7 +144,7 @@ class Filtr:
         return self.name
 
     async def load(self) -> str:
-        """load the filter"""
+        """ load the filter """
         if self._loaded:
             return ''
         self._client.add_handler(self._handler, self._group)
@@ -154,7 +154,7 @@ class Filtr:
         return self.name
 
     async def unload(self) -> str:
-        """unload the filter"""
+        """ unload the filter """
         if not self._loaded:
             return ''
         self._client.remove_handler(self._handler, self._group)

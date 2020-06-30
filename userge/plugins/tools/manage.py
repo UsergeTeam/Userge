@@ -1,3 +1,5 @@
+""" manage your userge :) """
+
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -22,8 +24,9 @@ from userge.plugins import ROOT
     'usage': "{tr}status [flags] [name]",
     'examples': [
         "{tr}status", "{tr}status -p",
-        "{tr}status -p gdrive", "{tr}status -c {tr}gls"]}, del_pre=True)
+        "{tr}status -p gdrive", "{tr}status -c {tr}gls"]}, del_pre=True, allow_channels=False)
 async def status(message: Message) -> None:
+    """ view current status """
     name_ = message.filtered_input_str
     type_ = list(message.flags)
     if not type_:
@@ -158,8 +161,9 @@ async def status(message: Message) -> None:
         '-f': "filter"},
     'usage': "{tr}enable [flags] [name | names]",
     'examples': [
-        "{tr}enable -p gdrive", "{tr}enable -c gls gup"]}, del_pre=True)
+        "{tr}enable -p gdrive", "{tr}enable -c gls gup"]}, del_pre=True, allow_channels=False)
 async def enable(message: Message) -> None:
+    """ enable plugins, commands, filters """
     if not message.flags:
         await message.err("flag required!")
         return
@@ -223,8 +227,9 @@ async def enable(message: Message) -> None:
         '-f': "filter"},
     'usage': "{tr}disable [flags] [name | names]",
     'examples': [
-        "{tr}disable -p gdrive", "{tr}disable -c gls gup"]}, del_pre=True)
+        "{tr}disable -p gdrive", "{tr}disable -c gls gup"]}, del_pre=True, allow_channels=False)
 async def disable(message: Message) -> None:
+    """ disable plugins, commands, filters """
     if not message.flags:
         await message.err("flag required!")
         return
@@ -289,8 +294,9 @@ async def disable(message: Message) -> None:
     'usage': "{tr}load [reply to plugin] to load from file\n"
              "{tr}load [flags] [name | names]",
     'examples': [
-        "{tr}load -p gdrive", "{tr}load -c gls gup"]}, del_pre=True)
+        "{tr}load -p gdrive", "{tr}load -c gls gup"]}, del_pre=True, allow_channels=False)
 async def load(message: Message) -> None:
+    """ load plugins, commands, filters """
     if message.flags:
         if not message.filtered_input_str:
             await message.err("name required!")
@@ -356,9 +362,9 @@ async def load(message: Message) -> None:
                 await replied.download(file_name=t_path)
                 plugin = get_import_path(ROOT, t_path)
                 try:
-                    await userge.load_plugin(plugin)
-                    await userge.complete_init_tasks()
-                except (ImportError, SyntaxError) as i_e:
+                    await userge.load_plugin(plugin, reload_plugin=True)
+                    await userge.finalize_load()
+                except (ImportError, SyntaxError, NameError) as i_e:
                     os.remove(t_path)
                     await message.err(i_e)
                 else:
@@ -377,8 +383,9 @@ async def load(message: Message) -> None:
         '-f': "filter"},
     'usage': "{tr}unload [flags] [name | names]",
     'examples': [
-        "{tr}unload -p gdrive", "{tr}unload -c gls gup"]}, del_pre=True)
+        "{tr}unload -p gdrive", "{tr}unload -c gls gup"]}, del_pre=True, allow_channels=False)
 async def unload(message: Message) -> None:
+    """ unload plugins, commands, filters """
     if not message.flags:
         await message.err("flag required!")
         return
@@ -434,15 +441,17 @@ async def unload(message: Message) -> None:
     await message.edit(out_str, del_in=0, log=__name__)
 
 
-@userge.on_cmd('reload', about={'header': "Reload all plugins"})
+@userge.on_cmd('reload', about={'header': "Reload all plugins"}, allow_channels=False)
 async def reload_(message: Message) -> None:
+    """ Reload all plugins """
     await message.edit("`Reloading All Plugins`")
     await message.edit(
         f"`Reloaded {await userge.reload_plugins()} Plugins`", del_in=3, log=__name__)
 
 
-@userge.on_cmd('clear', about={'header': "clear all save filters in DB"})
+@userge.on_cmd('clear', about={'header': "clear all save filters in DB"}, allow_channels=False)
 async def clear_(message: Message) -> None:
+    """ clear all save filters in DB """
     await message.edit("`Clearing DB...`")
     await message.edit(
         f"**Cleared Filters** : `{await userge.manager.clear()}`", del_in=3, log=__name__)

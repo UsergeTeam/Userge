@@ -13,7 +13,7 @@ from userge import userge, Message
 @userge.on_cmd("whois", about={
     'header': "use this to get any user details",
     'usage': "just reply to any user message or add user_id or username",
-    'examples': "{tr}whois [user_id | username]"})
+    'examples': "{tr}whois [user_id | username]"}, allow_channels=False)
 async def who_is(message: Message):
     await message.edit("`Collecting Whois Info.. Hang on!`")
     user_id = message.input_str
@@ -21,18 +21,19 @@ async def who_is(message: Message):
         try:
             from_user = await userge.get_users(user_id)
             from_chat = await userge.get_chat(user_id)
-        except:
+        except Exception:
             await message.err(
-                text="`no valid user_id or message specified, do .help whois for more info`")
+                "no valid user_id or message specified, do .help whois for more info")
             return
     elif message.reply_to_message:
         from_user = await userge.get_users(message.reply_to_message.from_user.id)
         from_chat = await userge.get_chat(message.reply_to_message.from_user.id)
     else:
-        await message.err(
-            text="`no valid user_id or message specified, do .help whois for more info`")
+        await message.err("no valid user_id or message specified, do .help whois for more info")
         return
     if from_user or from_chat is not None:
+        pp_c = await userge.get_profile_photos_count(from_user.id)
+        cc_no = len(await userge.get_common_chats(from_user.id))
         message_out_str = "<b>USER INFO:</b>\n\n"
         message_out_str += f"<b>🗣 First Name:</b> <code>{from_user.first_name}</code>\n"
         message_out_str += f"<b>🗣 Last Name:</b> <code>{from_user.last_name}</code>\n"
@@ -43,6 +44,8 @@ async def who_is(message: Message):
         message_out_str += "<b>✅ Is Verified by Telegram:</b> "
         message_out_str += f"<code>{from_user.is_verified}</code>\n"
         message_out_str += f"<b>🕵️‍♂️ User ID:</b> <code>{from_user.id}</code>\n"
+        message_out_str += f"<b>🖼 Profile Photos:</b> <code>{pp_c}</code>\n"
+        message_out_str += f"<b>👥 Common Chats:</b> <code>{cc_no}</code>\n"
         message_out_str += f"<b>📝 Bio:</b> <code>{from_chat.description}</code>\n\n"
         message_out_str += f"<b>👁 Last Seen:</b> <code>{from_user.status}</code>\n"
         message_out_str += "<b>🔗 Permanent Link To Profile:</b> "

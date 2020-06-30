@@ -9,12 +9,13 @@
 from pyrogram.errors.exceptions import FileIdInvalid, FileReferenceEmpty
 from pyrogram.errors.exceptions.bad_request_400 import BadRequest
 
-from userge import userge, Message, Config, versions
+from userge import userge, Message, Config, versions, get_version
 
 LOGO_STICKER_ID, LOGO_STICKER_REF = None, None
 
 
-@userge.on_cmd("alive", about={'header': "This command is just for fun"})
+@userge.on_cmd("alive", about={
+    'header': "This command is just for fun"}, allow_channels=False)
 async def alive(message: Message):
     await message.delete()
     try:
@@ -33,7 +34,7 @@ async def alive(message: Message):
 
 • **python version** : `{versions.__python_version__}`
 • **pyrogram version** : `{versions.__pyro_version__}`
-• **userge version** : `{versions.__version__}`
+• **userge version** : `{get_version()}`
 • **license** : {versions.__license__}
 • **copyright** : {versions.__copyright__}
 • **repo** : [Userge]({Config.UPSTREAM_REPO})
