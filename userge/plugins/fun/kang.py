@@ -29,7 +29,7 @@ from userge import userge, Message, Config, pool
     allow_channels=False)
 async def kang_(message: Message):
     """ kang a sticker """
-    user = message.from_user
+    user = await userge.get_me()
     if not user.username:
         user.username = user.first_name or user.id
     replied = message.reply_to_message
@@ -88,7 +88,7 @@ async def kang_(message: Message):
         htmlstr = await get_response()
         if ("  A <strong>Telegram</strong> user has created "
                 "the <strong>Sticker&nbsp;Set</strong>.") not in htmlstr:
-            async with userge.conversation('Stickers') as conv:
+            async with userge.conversation('Stickers', limit=30) as conv:
                 try:
                     await conv.send_message('/addsticker')
                 except YouBlockedUser:

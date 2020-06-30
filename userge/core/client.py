@@ -34,7 +34,8 @@ class Userge(Methods):
         super().__init__(client=self,
                          session_name=Config.HU_STRING_SESSION,
                          api_id=Config.API_ID,
-                         api_hash=Config.API_HASH)
+                         api_hash=Config.API_HASH,
+                         workers=Config.WORKERS)
 
     @staticmethod
     def getLogger(name: str) -> logging.Logger:
