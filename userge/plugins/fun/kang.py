@@ -25,10 +25,11 @@ from userge import userge, Message, Config, pool
     'header': "kangs stickers or creates new ones",
     'usage': "Reply {tr}kang [emoji('s)] [pack number] to a sticker or "
              "an image to kang it to your userbot pack.",
-    'examples': ["{tr}kang", "{tr}kang 🤔", "{tr}kang 2", "{tr}kang 🤔 2"]})
+    'examples': ["{tr}kang", "{tr}kang 🤔", "{tr}kang 2", "{tr}kang 🤔 2"]},
+    allow_channels=False)
 async def kang_(message: Message):
     """ kang a sticker """
-    user = message.from_user
+    user = await userge.get_me()
     if not user.username:
         user.username = user.first_name or user.id
     replied = message.reply_to_message
@@ -87,7 +88,7 @@ async def kang_(message: Message):
         htmlstr = await get_response()
         if ("  A <strong>Telegram</strong> user has created "
                 "the <strong>Sticker&nbsp;Set</strong>.") not in htmlstr:
-            async with userge.conversation('Stickers') as conv:
+            async with userge.conversation('Stickers', limit=30) as conv:
                 try:
                     await conv.send_message('/addsticker')
                 except YouBlockedUser:

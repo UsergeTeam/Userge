@@ -29,9 +29,9 @@ CHANNEL = userge.getCLogger(__name__)
              "{tr}update -[branch_name] : check updates from any branch\n"
              "add -pull if you want to pull updates\n"
              "add -push if you want to push updates to heroku",
-    'examples': "{tr}update -beta -pull -push"}, del_pre=True)
+    'examples': "{tr}update -beta -pull -push"}, del_pre=True, allow_channels=False)
 async def check_update(message: Message):
-    """check or do updates"""
+    """ check or do updates """
     await message.edit("`Checking for updates, please wait....`")
     repo = Repo()
     ups_rem = repo.remote(Config.UPSTREAM_REMOTE)

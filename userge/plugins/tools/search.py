@@ -11,7 +11,7 @@ from userge import userge, Message
 
 @userge.on_cmd("s", about={
     'header': "search commands in USERGE",
-    'examples': "{tr}s wel"})
+    'examples': "{tr}s wel"}, allow_channels=False)
 async def search(message: Message):
     cmd = message.input_str
     if not cmd:

@@ -41,7 +41,7 @@ async def _init() -> None:
     'header': "Set to AFK mode",
     'description': "Sets your status as AFK. Responds to anyone who tags/PM's.\n"
                    "you telling you are AFK. Switches off AFK when you type back anything.",
-    'usage': "{tr}afk or {tr}afk [reason]"})
+    'usage': "{tr}afk or {tr}afk [reason]"}, allow_channels=False)
 async def active_afk(message: Message) -> None:
     """ turn on or off afk mode """
     global REASON, IS_AFK, TIME
@@ -57,7 +57,8 @@ async def active_afk(message: Message) -> None:
 
 
 @userge.on_filters(IS_AFK_FILTER & ~Filters.me & ~Filters.bot & (
-    Filters.mentioned | (Filters.private & ~Filters.service & Config.ALLOWED_CHATS)))
+    Filters.mentioned | (Filters.private & ~Filters.service & (
+        Filters.create(lambda _, __: Config.ALLOW_ALL_PMS) | Config.ALLOWED_CHATS))))
 async def handle_afk_incomming(message: Message) -> None:
     """ handle incomming messages when you afk """
     user_id = message.from_user.id
@@ -95,7 +96,7 @@ async def handle_afk_incomming(message: Message) -> None:
             "#GROUP\n"
             f"{user_dict['mention']} tagged you in [{chat.title}](http://t.me/{chat.username})\n\n"
             f"{message.text}\n\n"
-            "[goto_msg](https://t.me/c/{str(chat.id)[4:]}/{message.message_id})"))
+            f"[goto_msg](https://t.me/c/{str(chat.id)[4:]}/{message.message_id})"))
     coro_list.append(AFK_COLLECTION.update_one({'_id': user_id},
                                                {"$set": {
                                                    'pcount': USERS[user_id][0],

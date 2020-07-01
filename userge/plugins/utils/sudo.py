@@ -29,7 +29,7 @@ async def _init() -> None:
 
 @userge.on_cmd("addsudo", about={
     'header': "add sudo user",
-    'usage': "{tr}addsudo [username | reply to msg]"})
+    'usage': "{tr}addsudo [username | reply to msg]"}, allow_channels=False)
 async def add_sudo(message: Message):
     """ add sudo user """
     user_id = message.input_str
@@ -58,7 +58,7 @@ async def add_sudo(message: Message):
 @userge.on_cmd("delsudo", about={
     'header': "delete sudo user",
     'flags': {'-all': "remove all sudo users"},
-    'usage': "{tr}delsudo [user_id | reply to msg]\n{tr}delsudo -all"})
+    'usage': "{tr}delsudo [user_id | reply to msg]\n{tr}delsudo -all"}, allow_channels=False)
 async def del_sudo(message: Message):
     """ delete sudo user """
     user_id = message.filtered_input_str
@@ -88,7 +88,7 @@ async def del_sudo(message: Message):
             message.edit(f"user : `{user_id}` removed from **SUDO**!", del_in=5))
 
 
-@userge.on_cmd("vsudo", about={'header': "view sudo users"})
+@userge.on_cmd("vsudo", about={'header': "view sudo users"}, allow_channels=False)
 async def view_sudo(message: Message):
     """ view sudo users """
     if not Config.SUDO_USERS:
@@ -102,7 +102,7 @@ async def view_sudo(message: Message):
 
 @userge.on_cmd("addscmd", about={
     'header': "add sudo command",
-    'usage': "{tr}addscmd [command name]"})
+    'usage': "{tr}addscmd [command name]"}, allow_channels=False)
 async def add_sudo_cmd(message: Message):
     """ add sudo cmd """
     cmd = message.input_str
@@ -126,7 +126,7 @@ async def add_sudo_cmd(message: Message):
 @userge.on_cmd("delscmd", about={
     'header': "delete sudo commands",
     'flags': {'-all': "remove all sudo commands"},
-    'usage': "{tr}delscmd [command name]\n{tr}delscmd -all"})
+    'usage': "{tr}delscmd [command name]\n{tr}delscmd -all"}, allow_channels=False)
 async def del_sudo_cmd(message: Message):
     """ delete sudo cmd """
     cmd = message.filtered_input_str
@@ -149,7 +149,7 @@ async def del_sudo_cmd(message: Message):
             message.edit(f"cmd : `{cmd}` removed from **SUDO**!", del_in=5))
 
 
-@userge.on_cmd("vscmd", about={'header': "view sudo cmds"})
+@userge.on_cmd("vscmd", about={'header': "view sudo cmds"}, allow_channels=False)
 async def view_sudo_cmd(message: Message):
     """ view sudo cmds """
     if not Config.ALLOWED_COMMANDS:

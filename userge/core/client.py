@@ -34,7 +34,8 @@ class Userge(Methods):
         super().__init__(client=self,
                          session_name=Config.HU_STRING_SESSION,
                          api_id=Config.API_ID,
-                         api_hash=Config.API_HASH)
+                         api_hash=Config.API_HASH,
+                         workers=Config.WORKERS)
 
     @staticmethod
     def getLogger(name: str) -> logging.Logger:
@@ -52,11 +53,13 @@ class Userge(Methods):
         """ finalize the plugins load """
         await asyncio.gather(self._complete_init_tasks(), self.manager.init())
 
-    async def load_plugin(self, name: str) -> None:
+    async def load_plugin(self, name: str, reload_plugin: bool = False) -> None:
         """ Load plugin to Userge """
         _LOG.debug(_LOG_STR, f"Importing {name}")
         self._imported.append(
             importlib.import_module(f"userge.plugins.{name}"))
+        if reload_plugin:
+            self._imported[-1] = importlib.reload(self._imported[-1])
         plg = self._imported[-1]
         self.manager.update_plugin(name.split('.')[-1], plg.__doc__)
         if hasattr(plg, '_init'):
@@ -110,8 +113,9 @@ class Userge(Methods):
         os.execl(sys.executable, sys.executable, '-m', 'userge')
         sys.exit()
 
-    async def _start(self) -> None:
-        await self.start()
+    async def start(self) -> None:
+        """ Start Client """
+        await super().start()
         await self._load_plugins()
 
     def begin(self) -> None:
@@ -119,7 +123,7 @@ class Userge(Methods):
         loop = asyncio.get_event_loop()
         run = loop.run_until_complete
         _LOG.info(_LOG_STR, "Starting Userge")
-        run(self._start())
+        run(self.start())
         running_tasks: List[asyncio.Task] = []
         for task in self._tasks:
             running_tasks.append(loop.create_task(task()))

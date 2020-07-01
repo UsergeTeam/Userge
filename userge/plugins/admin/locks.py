@@ -15,6 +15,18 @@ from userge import userge, Message
 CHANNEL = userge.getCLogger(__name__)
 
 
+async def is_admin(message: Message):
+    check_user = await userge.get_chat_member(message.chat.id, message.from_user.id)
+    user_type = check_user.status
+    if user_type == "member":
+        return False
+    if user_type == "administrator":
+        return True
+    if user_type == "creator":
+        return True
+    return False
+
+
 @userge.on_cmd("lock", about={
     'header': "use this to lock group permissions",
     'description': "Allows you to lock some common permission types in the chat.\n"
@@ -22,11 +34,16 @@ CHANNEL = userge.getCLogger(__name__)
     'types': [
         'all', 'msg', 'media', 'polls', 'invite', 'pin', 'info',
         'webprev', 'inlinebots', 'animations', 'games', 'stickers'],
-    'examples': "{tr}lock [all | type]"})
+    'examples': "{tr}lock [all | type]"},
+    allow_channels=False, allow_bots=False, allow_private=False)
 async def lock_perm(message: Message):
     """
     lock chat permissions from tg group
     """
+    if not await is_admin(message):
+        await message.edit("Are you even Admin of this chat?")
+        return
+
     msg = ""
     media = ""
     stickers = ""
@@ -161,11 +178,16 @@ async def lock_perm(message: Message):
     'types': [
         'all', 'msg', 'media', 'polls', 'invite', 'pin', 'info',
         'webprev', 'inlinebots', 'animations', 'games', 'stickers'],
-    'examples': "{tr}unlock [all | type]"})
+    'examples': "{tr}unlock [all | type]"},
+    allow_channels=False, allow_bots=False, allow_private=False)
 async def unlock_perm(message: Message):
     """
     unlock chat permissions from tg group
     """
+    if not await is_admin(message):
+        await message.edit("Are you even Admin of this chat?")
+        return
+
     umsg = ""
     umedia = ""
     ustickers = ""
@@ -305,11 +327,15 @@ async def unlock_perm(message: Message):
 
 @userge.on_cmd("vperm", about={
     'header': "use this to view group permissions",
-    'description': "Allows you to view permission types on/off status in the chat."})
+    'description': "Allows you to view permission types on/off status in the chat."},
+    allow_channels=False, allow_bots=False, allow_private=False)
 async def view_perm(message: Message):
     """
     check chat permissions from tg group
     """
+    if not await is_admin(message):
+        await message.edit("Are you even Admin of this chat?")
+        return
 
     v_perm = ""
     vmsg = ""

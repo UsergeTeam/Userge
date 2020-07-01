@@ -15,7 +15,7 @@ from userge import userge, Message
         '-m': "mention all admins",
         '-mc': "only mention creator",
         '-id': "show ids"},
-    'usage': "{tr}admins [any flag] [chatid]"})
+    'usage': "{tr}admins [any flag] [chatid]"}, allow_channels=False)
 async def mentionadmins(message: Message):
     mentions = "🛡 **Admin List** 🛡\n"
     chat_id = message.filtered_input_str
