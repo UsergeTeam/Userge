@@ -1,3 +1,5 @@
+# pylint: disable=missing-module-docstring
+#
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -6,50 +8,51 @@
 #
 # All rights reserved.
 
-__all__ = ['CLogger']
+__all__ = ['ChannelLogger']
 
 import asyncio
 from typing import Optional, Tuple
 
 from pyrogram import Message as RawMessage
+
 from userge import logging, Config
 from userge.utils import SafeDict
-from . import message
-from .. import client as _client
+from ..bound import message as _message  # pylint: disable=unused-import
+from ... import client as _client  # pylint: disable=unused-import
 
 _LOG = logging.getLogger(__name__)
 _LOG_STR = "<<<!  :::::  %s  :::::  !>>>"
 
 
-class CLogger:
+def _gen_string(name: str) -> str:
+    return "**logger** : #" + name.split('.')[-1].upper() + "\n\n{}"
+
+
+def _get_file_id_and_ref(message: '_message.Message') -> Tuple[str, str]:
+    if message.audio:
+        file_ = message.audio
+    elif message.animation:
+        file_ = message.animation
+    elif message.photo:
+        file_ = message.photo
+    elif message.sticker:
+        file_ = message.sticker
+    elif message.voice:
+        file_ = message.voice
+    elif message.video_note:
+        file_ = message.video_note
+    elif message.video:
+        file_ = message.video
+    else:
+        file_ = message.document
+    return file_.file_id, file_.file_ref
+
+
+class ChannelLogger:
     """ Channel logger for Userge """
     def __init__(self, client: '_client.Userge', name: str) -> None:
         self._client = client
-        self._string = self._gen_string(name)
-
-    @staticmethod
-    def _gen_string(name: str) -> str:
-        return "**logger** : #" + name.split('.')[-1].upper() + "\n\n{}"
-
-    @staticmethod
-    def _get_file_id_and_ref(message_: 'message.Message') -> Tuple[str, str]:
-        if message_.audio:
-            file_ = message_.audio
-        elif message_.animation:
-            file_ = message_.animation
-        elif message_.photo:
-            file_ = message_.photo
-        elif message_.sticker:
-            file_ = message_.sticker
-        elif message_.voice:
-            file_ = message_.voice
-        elif message_.video_note:
-            file_ = message_.video_note
-        elif message_.video:
-            file_ = message_.video
-        else:
-            file_ = message_.document
-        return file_.file_id, file_.file_ref
+        self._string = _gen_string(name)
 
     @staticmethod
     def get_link(message_id: int) -> str:
@@ -75,7 +78,7 @@ class CLogger:
         Returns:
             None
         """
-        self._string = self._gen_string(name)
+        self._string = _gen_string(name)
 
     async def log(self, text: str) -> Optional[int]:
         """\nsend text message to log channel.
@@ -94,13 +97,13 @@ class CLogger:
             return msg.message_id
 
     async def fwd_msg(self,
-                      message_: 'message.Message',
+                      message: '_message.Message',
                       as_copy: bool = True,
                       remove_caption: bool = False) -> None:
         """\nforward message to log channel.
 
         Parameters:
-            message_ (`pyrogram.Message`):
+            message (`pyrogram.Message`):
                 pass pyrogram.Message object which want to forward.
 
             as_copy (`bool`, *optional*):
@@ -119,25 +122,25 @@ class CLogger:
             None
         """
         _LOG.debug(
-            _LOG_STR, f"forwarding msg : {message_} to channel : {Config.LOG_CHANNEL_ID}")
-        if Config.LOG_CHANNEL_ID and isinstance(message_, RawMessage):
-            if message_.media:
+            _LOG_STR, f"forwarding msg : {message} to channel : {Config.LOG_CHANNEL_ID}")
+        if Config.LOG_CHANNEL_ID and isinstance(message, RawMessage):
+            if message.media:
                 asyncio.get_event_loop().create_task(self.log("**Forwarding Message...**"))
                 await self._client.forward_messages(chat_id=Config.LOG_CHANNEL_ID,
-                                                    from_chat_id=message_.chat.id,
-                                                    message_ids=message_.message_id,
+                                                    from_chat_id=message.chat.id,
+                                                    message_ids=message.message_id,
                                                     as_copy=as_copy,
                                                     remove_caption=remove_caption)
             else:
-                await self.log(message_.text.html)
+                await self.log(message.text.html)
 
     async def store(self,
-                    message_: Optional['message.Message'],
+                    message: Optional['_message.Message'],
                     caption: Optional[str] = '') -> Optional[int]:
         """\nstore message to log channel.
 
         Parameters:
-            message_ (`pyrogram.Message` | `None`):
+            message (`pyrogram.Message` | `None`):
                 pass pyrogram.Message object which want to forward.
 
             caption (`str`, *optional*):
@@ -147,12 +150,12 @@ class CLogger:
             message_id on success or None
         """
         caption = caption or ''
-        if message_ and message_.caption:
-            caption = caption + message_.caption.html
-        if message_ and message_.media:
+        if message and message.caption:
+            caption = caption + message.caption.html
+        if message and message.media:
             if caption:
                 caption = self._string.format(caption.strip())
-            file_id, file_ref = self._get_file_id_and_ref(message_)
+            file_id, file_ref = _get_file_id_and_ref(message)
             msg = await self._client.send_cached_media(chat_id=Config.LOG_CHANNEL_ID,
                                                        file_id=file_id,
                                                        file_ref=file_ref,
@@ -189,21 +192,21 @@ class CLogger:
         Returns:
             None
         """
-        message_ = await self._client.get_messages(chat_id=Config.LOG_CHANNEL_ID,
-                                                   message_ids=message_id)
+        message = await self._client.get_messages(chat_id=Config.LOG_CHANNEL_ID,
+                                                  message_ids=message_id)
         caption = ''
-        if message_.caption:
-            caption = message_.caption.html.split('\n\n', maxsplit=1)[-1]
-        elif message_.text:
-            caption = message_.text.html.split('\n\n', maxsplit=1)[-1]
+        if message.caption:
+            caption = message.caption.html.split('\n\n', maxsplit=1)[-1]
+        elif message.text:
+            caption = message.text.html.split('\n\n', maxsplit=1)[-1]
         if caption:
             u_dict = await self._client.get_user_dict(user_id)
             chat = await self._client.get_chat(chat_id)
             u_dict.update(
                 {'chat': chat.title if chat.title else "this group", 'count': chat.members_count})
             caption = caption.format_map(SafeDict(**u_dict))
-        if message_.media:
-            file_id, file_ref = self._get_file_id_and_ref(message_)
+        if message.media:
+            file_id, file_ref = _get_file_id_and_ref(message)
             msg = await self._client.send_cached_media(chat_id=chat_id,
                                                        file_id=file_id,
                                                        file_ref=file_ref,

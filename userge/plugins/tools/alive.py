@@ -15,7 +15,7 @@ LOGO_STICKER_ID, LOGO_STICKER_REF = None, None
 
 
 @userge.on_cmd("alive", about={
-    'header': "This command is just for fun"}, allow_channels=False)
+    'header': "This command is just for fun"}, allow_channels=False, allow_via_bot=False)
 async def alive(message: Message):
     await message.delete()
     try:
@@ -32,6 +32,7 @@ async def alive(message: Message):
 
        __Durable as a Serge__
 
+• **uptime** : `{userge.uptime}`
 • **python version** : `{versions.__python_version__}`
 • **pyrogram version** : `{versions.__pyro_version__}`
 • **userge version** : `{get_version()}`

@@ -1,3 +1,5 @@
+# pylint: disable=missing-module-docstring
+#
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -6,8 +8,8 @@
 #
 # All rights reserved.
 
-from .progress import progress
-from .tools import (take_screen_shot,
+from .progress import progress  # noqa
+from .tools import (take_screen_shot,  # noqa
                     SafeDict,
                     runcmd,
                     humanbytes,

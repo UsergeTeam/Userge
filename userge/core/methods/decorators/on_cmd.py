@@ -1,3 +1,5 @@
+# pylint: disable=missing-module-docstring
+#
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -6,39 +8,19 @@
 #
 # All rights reserved.
 
-__all__ = ['Decorators']
+__all__ = ['OnCmd']
 
 import re
-import asyncio
-from typing import Dict, List, Union, Any, Callable, Optional
+from typing import Dict, List, Union
 
-from pyrogram import Message as RawMessage, Filters, MessageHandler
-from pyrogram.errors.exceptions.bad_request_400 import ChatAdminRequired
+from pyrogram import Filters
 
-from userge import logging, Config
-from .message import Message
-from .. import client as _client
-from ..ext.manager import Manager
-from ..types import Command, Filtr
-
-_PYROFUNC = Callable[[Message], Any]
-
-_LOG = logging.getLogger(__name__)
-_LOG_STR = "<<<!  :::::  %s  :::::  !>>>"
+from userge import Config
+from ... import types
+from . import RawDecorator
 
 
-class Decorators:
-    """ decoretors for userge """
-    def __init__(self, **kwargs) -> None:
-        self.manager = Manager()
-        self._tasks: List[Callable[[Any], Any]] = []
-        super().__init__(**kwargs)
-
-    def add_task(self, func: Callable[[Any], Any]) -> Callable[[Any], Any]:
-        """ add tasks """
-        self._tasks.append(func)
-        return func
-
+class OnCmd(RawDecorator):  # pylint: disable=missing-class-docstring
     def on_cmd(self,
                command: str,
                about: Union[str, Dict[str, Union[str, List[str], Dict[str, str]]]],
@@ -50,8 +32,9 @@ class Decorators:
                allow_bots: bool = True,
                allow_groups: bool = True,
                allow_channels: bool = True,
+               allow_via_bot: bool = True,
                **kwargs: Union[str, bool]
-               ) -> Callable[[_PYROFUNC], _PYROFUNC]:
+               ) -> RawDecorator._PYRORETTYPE:
         """\nDecorator for handling messages.
 
         Example:
@@ -99,6 +82,9 @@ class Decorators:
             allow_channels (``bool``, *optional*):
                 If ``False``, prohibit channel chats,  defaults to True.
 
+            allow_via_bot (``bool``, *optional*):
+                If ``True``, allow this via your bot,  defaults to True.
+
             kwargs:
                 prefix (``str``, *optional*):
                     set prefix for flags, defaults to '-'.
@@ -118,7 +104,7 @@ class Decorators:
             cname = trigger + command
             cname = name or cname
             pattern += r"(?:\s([\S\s]+))?$"
-        cmd = Command(self, cname, about, group)
+        cmd = types.raw.Command(self, cname, about, group, allow_via_bot)
         scope: List[str] = []
         if allow_private:
             scope.append('private')
@@ -128,69 +114,23 @@ class Decorators:
             scope += ['group', 'supergroup']
         if allow_channels:
             scope.append('channel')
-        filters_ = Filters.regex(pattern=pattern) & Filters.create(lambda _, __: cmd.is_enabled)
+        filters_ = Filters.create(lambda _, __: cmd.is_enabled) & Filters.regex(pattern=pattern)
         if filter_me:
             outgoing_flt = Filters.create(
                 lambda _, m:
-                (m.outgoing or (m.from_user and m.from_user.is_self))
+                not (m.from_user and m.from_user.is_bot)
+                and (m.outgoing or (m.from_user and m.from_user.is_self))
                 and not (m.chat and m.chat.type == "channel" and m.edit_date)
                 and (m.text.startswith(trigger) if trigger else True))
             incoming_flt = Filters.create(
                 lambda _, m:
-                (cname.lstrip(trigger) in Config.ALLOWED_COMMANDS)
-                and not m.outgoing
-                and (m.from_user and m.from_user.id in Config.SUDO_USERS)
+                not m.outgoing
+                and (
+                    (Config.OWNER_ID
+                     and (m.from_user and m.from_user.id == Config.OWNER_ID))
+                    or ((cname.lstrip(trigger) in Config.ALLOWED_COMMANDS)
+                        and (m.from_user and m.from_user.id in Config.SUDO_USERS)))
                 and (m.text.startswith(Config.SUDO_TRIGGER) if trigger else True))
             filters_ = filters_ & (outgoing_flt | incoming_flt)
         return self._build_decorator(log=f"On {pattern}", filters=filters_,
                                      flt=cmd, scope=scope, **kwargs)
-
-    def on_filters(self,
-                   filters: Filters,
-                   group: int = 0) -> Callable[[_PYROFUNC], _PYROFUNC]:
-        """ Decorator for handling filters """
-        flt = Filtr(self, group)
-        filters = Filters.create(lambda _, __: flt.is_enabled) & filters
-        return self._build_decorator(log=f"On Filters {filters}",
-                                     filters=filters, flt=flt)
-
-    def on_new_member(self,
-                      welcome_chats: Filters.chat,
-                      group: int = -2) -> Callable[[_PYROFUNC], _PYROFUNC]:
-        """ Decorator for handling new members """
-        return self.on_filters(
-            filters=Filters.group & Filters.new_chat_members & welcome_chats, group=group)
-
-    def on_left_member(self,
-                       leaving_chats: Filters.chat,
-                       group: int = -2) -> Callable[[_PYROFUNC], _PYROFUNC]:
-        """ Decorator for handling left members """
-        return self.on_filters(
-            filters=Filters.group & Filters.left_chat_member & leaving_chats, group=group)
-
-    def _build_decorator(self,
-                         log: str,
-                         filters: Filters,
-                         flt: Union[Command, Filtr],
-                         scope: Optional[List[str]] = None,
-                         **kwargs: Union[str, bool]
-                         ) -> Callable[[_PYROFUNC], _PYROFUNC]:
-        def decorator(func: _PYROFUNC) -> _PYROFUNC:
-            async def template(_: '_client.Userge', r_m: RawMessage) -> None:
-                if isinstance(flt, Command) and r_m.chat and (r_m.chat.type not in scope):
-                    try:
-                        _sent = await r_m.reply(
-                            "**ERROR** : `Sorry!, this command not supported "
-                            f"in this chat type [{r_m.chat.type}] !`")
-                        await asyncio.sleep(3)
-                        await _sent.delete()
-                    except ChatAdminRequired:
-                        pass
-                else:
-                    await func(Message(_, r_m, **kwargs))
-            _LOG.debug(_LOG_STR, f"Loading => [ async def {func.__name__}(message) ] "
-                       f"from {func.__module__} `{log}`")
-            flt.update(func, MessageHandler(template, filters))
-            self.manager.add_plugin(self, func.__module__).add(flt)
-            return func
-        return decorator

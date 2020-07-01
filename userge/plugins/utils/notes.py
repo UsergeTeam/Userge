@@ -14,8 +14,9 @@ NOTES_COLLECTION = get_collection("notes")
 CHANNEL = userge.getCLogger(__name__)
 
 
-@userge.on_cmd("notes", about={
-    'header': "List all saved notes in current chat"}, allow_channels=False)
+@userge.on_cmd(
+    "notes", about={'header': "List all saved notes in current chat"},
+    allow_channels=False, allow_bots=False, allow_via_bot=False)
 async def view_notes(message: Message) -> None:
     """ list notes in current chat """
     out = ''
@@ -31,9 +32,11 @@ async def view_notes(message: Message) -> None:
         await message.err("There are no saved notes in this chat")
 
 
-@userge.on_cmd("delnote", about={
-    'header': "Deletes a note by name",
-    'usage': "{tr}delnote [note name]"}, allow_channels=False)
+@userge.on_cmd(
+    "delnote", about={
+        'header': "Deletes a note by name",
+        'usage': "{tr}delnote [note name]"},
+    allow_channels=False, allow_bots=False, allow_via_bot=False)
 async def remove_note(message: Message) -> None:
     """ delete note in current chat """
     notename = message.input_str
@@ -47,10 +50,12 @@ async def remove_note(message: Message) -> None:
     await message.edit(text=out, del_in=3)
 
 
-@userge.on_cmd("gtlnote", about={
-    'header': "global note to local note",
-    'description': "only sudos and owner can access local notes",
-    'usage': "{tr}gtlnote [note name]"}, allow_channels=False)
+@userge.on_cmd(
+    "gtlnote", about={
+        'header': "global note to local note",
+        'description': "only sudos and owner can access local notes",
+        'usage': "{tr}gtlnote [note name]"},
+    allow_channels=False, allow_bots=False, allow_via_bot=False)
 async def mv_to_local_note(message: Message) -> None:
     """ global to local note """
     notename = message.input_str
@@ -65,10 +70,12 @@ async def mv_to_local_note(message: Message) -> None:
     await message.edit(text=out, del_in=3)
 
 
-@userge.on_cmd("ltgnote", about={
-    'header': "local note to global note",
-    'description': "anyone can access global notes",
-    'usage': "{tr}ltgnote [note name]"}, allow_channels=False)
+@userge.on_cmd(
+    "ltgnote", about={
+        'header': "local note to global note",
+        'description': "anyone can access global notes",
+        'usage': "{tr}ltgnote [note name]"},
+    allow_channels=False, allow_bots=False, allow_via_bot=False)
 async def mv_to_global_note(message: Message) -> None:
     """ local to global note """
     notename = message.input_str
@@ -90,7 +97,9 @@ async def mv_to_global_note(message: Message) -> None:
                name="get_note",
                trigger='',
                filter_me=False,
-               allow_channels=False)
+               allow_channels=False,
+               allow_bots=False,
+               allow_via_bot=False)
 async def get_note(message: Message) -> None:
     """ get any saved note """
     if not message.from_user:
@@ -125,7 +134,9 @@ async def get_note(message: Message) -> None:
                        '{count}': "chat members count",
                        '{mention}': "mention user"},
                    'usage': "{tr}addnote [note name] [content | reply to msg]"},
-               allow_channels=False)
+               allow_channels=False,
+               allow_bots=False,
+               allow_via_bot=False)
 async def add_note(message: Message) -> None:
     """ add note to curent chat """
     notename = message.matches[0].group(1)

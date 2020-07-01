@@ -1,3 +1,5 @@
+# pylint: disable=missing-module-docstring
+#
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -6,10 +8,14 @@
 #
 # All rights reserved.
 
-from .mods import Mods
+__all__ = ['Methods']
+
+from .chats import Chats
 from .decorators import Decorators
-from .message import Message
+from .messages import Messages
+from .users import Users
+from .utils import Utils
 
 
-class Methods(Decorators, Mods):
-    """userge methods"""
+class Methods(Chats, Decorators, Messages, Users, Utils):
+    """ userge.methods """

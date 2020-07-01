@@ -1,3 +1,5 @@
+# pylint: disable=missing-module-docstring
+#
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -13,25 +15,26 @@ from typing import Union, Dict, List, Optional, Callable, Any
 from pyrogram.client.handlers.handler import Handler
 
 from userge import Config, logging
-from .filtr import Filtr
-from .. import client as _client
+from .filter import Filter
+from ... import client as _client  # pylint: disable=unused-import
 
 _LOG = logging.getLogger(__name__)
 _LOG_STR = "<<<!  [[[[[  %s  ]]]]]  !>>>"
 
 
-class Command(Filtr):
+class Command(Filter):
     """ command class """
-    def __init__(self,
+    def __init__(self,  # pylint: disable=super-init-not-called
                  client: '_client.Userge',
                  name: str,
                  about: Union[str, Dict[str, Union[str, List[str], Dict[str, str]]]],
-                 group: int
-                 ) -> None:
+                 group: int,
+                 allow_via_bot: bool) -> None:
         self._client = client
         self.name = name
         self.about = _format_about(about)
         self._group = group
+        self._allow_via_bot = allow_via_bot
         self._enabled = True
         self._loaded = False
         self._handler: Handler

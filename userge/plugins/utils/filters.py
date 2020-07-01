@@ -40,8 +40,10 @@ async def _init() -> None:
         _filter_updater(flt['chat_id'], flt['name'], flt['mid'])
 
 
-@userge.on_cmd("filters", about={
-    'header': "List all saved filters in current chat"}, allow_channels=False)
+@userge.on_cmd(
+    "filters", about={
+        'header': "List all saved filters in current chat"},
+    allow_channels=False, allow_bots=False, allow_via_bot=False)
 async def filters_active(message: Message) -> None:
     """ list filters in current chat """
     out = ''
@@ -56,9 +58,11 @@ async def filters_active(message: Message) -> None:
         await message.err("There are no saved filters in this chat")
 
 
-@userge.on_cmd("delfilter", about={
-    'header': "Deletes a filter by name",
-    'usage': "{tr}delfilter [filter name]"}, allow_channels=False)
+@userge.on_cmd(
+    "delfilter", about={
+        'header': "Deletes a filter by name",
+        'usage': "{tr}delfilter [filter name]"},
+    allow_channels=False, allow_bots=False, allow_via_bot=False)
 async def delete_filters(message: Message) -> None:
     """ delete filter in current chat """
     filter_ = message.input_str
@@ -85,7 +89,7 @@ async def delete_filters(message: Message) -> None:
                        '{count}': "chat members count",
                        '{mention}': "mention user"},
                    'usage': "{tr}addfilter [filter name] | [content | reply to msg]"},
-               allow_channels=False)
+               allow_channels=False, allow_bots=False, allow_via_bot=False)
 async def add_filter(message: Message) -> None:
     """ add filter to current chat """
     filter_ = message.matches[0].group(1).strip()
@@ -109,7 +113,7 @@ async def add_filter(message: Message) -> None:
     await message.edit(text=out, del_in=3, log=True)
 
 
-@userge.on_filters(~Filters.me & Filters.text & FILTERS_CHATS, group=1)
+@userge.on_filters(~Filters.me & Filters.text & FILTERS_CHATS, group=1, allow_via_bot=False)
 async def chat_filter(message: Message) -> None:
     """ filter handler """
     if not message.from_user:

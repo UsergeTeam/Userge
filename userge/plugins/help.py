@@ -1,3 +1,5 @@
+# pylint: disable=missing-module-docstring
+#
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -21,7 +23,7 @@ _CATEGORY = {
 
 
 @userge.on_cmd("help", about={'header': "Guide to use USERGE commands"}, allow_channels=False)
-async def helpme(message: Message) -> None:
+async def helpme(message: Message) -> None:  # pylint: disable=missing-function-docstring
     plugins = userge.manager.enabled_plugins
     if not message.input_str:
         out_str = f"""⚒ <b><u>(<code>{len(plugins)}</code>) Plugins Available</u></b>\n\n"""

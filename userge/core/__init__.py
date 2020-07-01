@@ -1,3 +1,5 @@
+# pylint: disable=missing-module-docstring
+#
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -6,9 +8,9 @@
 #
 # All rights reserved.
 
-from pyrogram import Filters
+from pyrogram import Filters  # noqa
 
-from .database import get_collection
-from .ext import pool
-from .client import Userge
-from .methods import Message
+from .database import get_collection  # noqa
+from .types.bound import Message  # noqa
+from .ext import pool  # noqa
+from .client import Userge  # noqa

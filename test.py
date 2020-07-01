@@ -1,3 +1,5 @@
+# pylint: disable=missing-module-docstring
+#
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -11,27 +13,15 @@ import asyncio
 from userge import userge
 
 
-async def worker() -> None:
+async def worker() -> None:  # pylint: disable=missing-function-docstring
     chat_id = int(os.environ.get("CHAT_ID") or 0)
     await userge.send_message(chat_id, 'testing_userge')
-    print('sleeping 3 sec...!')
-    await asyncio.sleep(3)
 
 
-async def main() -> None:
-    print('starting client...!')
-    await userge.start()
-    tasks = []
-    print('adding tasks...!')
-    for task in userge._tasks:
-        tasks.append(loop.create_task(task()))
-    print('stating worker...!')
-    await worker()
-    print('closing tasks...!')
-    for task in tasks:
-        task.cancel()
-    print('stopping client...!')
-    await userge.stop()
+async def main() -> None:  # pylint: disable=missing-function-docstring
+    print('starting userge...!')
+    await userge.begin(worker())
+    print('stopping userge...!')
 
 loop = asyncio.get_event_loop()
 print('creating loop...!')

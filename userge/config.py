@@ -1,3 +1,5 @@
+# pylint: disable=missing-module-docstring
+#
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -47,6 +49,8 @@ class Config:
     WORKERS = int(os.environ.get("WORKERS", 4))
     ANTISPAM_SENTRY = bool(os.environ.get("ANTISPAM_SENTRY", False))
     HU_STRING_SESSION = os.environ.get("HU_STRING_SESSION", None)
+    BOT_TOKEN = os.environ.get("BOT_TOKEN", None)
+    OWNER_ID = int(os.environ.get("OWNER_ID", 0))
     DB_URI = os.environ.get("DATABASE_URL", '')
     LANG = os.environ.get("PREFERRED_LANGUAGE", "en")
     DOWN_PATH = os.environ.get("DOWN_PATH", "downloads").rstrip('/') + '/'
@@ -66,7 +70,7 @@ class Config:
     GOOGLE_CHROME_DRIVER = os.environ.get("GOOGLE_CHROME_DRIVER", None)
     GOOGLE_CHROME_BIN = os.environ.get("GOOGLE_CHROME_BIN", None)
     LOG_CHANNEL_ID = int(os.environ.get("LOG_CHANNEL_ID", 0))
-    UPSTREAM_REPO = os.environ.get("UPSTREAM_REPO", "https://github.com/UsergeTeam/Userge.git")
+    UPSTREAM_REPO = os.environ.get("UPSTREAM_REPO", "https://github.com/UsergeTeam/Userge")
     HEROKU_API_KEY = os.environ.get("HEROKU_API_KEY", None)
     HEROKU_APP_NAME = os.environ.get("HEROKU_APP_NAME", None)
     LOAD_UNOFFICIAL_PLUGINS = bool(os.environ.get("LOAD_UNOFFICIAL_PLUGINS", False))
