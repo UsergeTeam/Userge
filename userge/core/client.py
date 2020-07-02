@@ -170,12 +170,11 @@ class Userge(Methods, RawClient):
         loop = asyncio.get_event_loop()
         run = loop.run_until_complete
         run(self.start())
-        # print(self.manager.loaded_plugins)
         loop = asyncio.get_event_loop()
         running_tasks: List[asyncio.Task] = []
         for task in self._tasks:
             running_tasks.append(loop.create_task(task()))
-        if coro and asyncio.iscoroutinefunction(coro):
+        if coro:
             _LOG.info(_LOG_STR, "Running Coroutine")
             run(coro)
         else:

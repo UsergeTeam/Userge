@@ -9,7 +9,7 @@
 # All rights reserved.
 
 import os
-import asyncio
+
 from userge import userge
 
 
@@ -17,16 +17,6 @@ async def worker() -> None:  # pylint: disable=missing-function-docstring
     chat_id = int(os.environ.get("CHAT_ID") or 0)
     await userge.send_message(chat_id, 'testing_userge')
 
-
-async def main() -> None:  # pylint: disable=missing-function-docstring
-    print('starting userge...!')
-    await userge.begin(worker())
-    print('stopping userge...!')
-
-loop = asyncio.get_event_loop()
-print('creating loop...!')
-loop.run_until_complete(main())
-print('closing loop...!')
-loop.close()
-
-print('userge test has been finished!')
+if __name__ == "__main__":
+    userge.begin(worker())
+    print('userge test has been finished!')
