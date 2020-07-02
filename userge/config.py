@@ -1,3 +1,5 @@
+# pylint: disable=missing-module-docstring
+#
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -48,7 +50,9 @@ class Config:
     WORKERS = int(os.environ.get("WORKERS", 4))
     ANTISPAM_SENTRY = bool(os.environ.get("ANTISPAM_SENTRY", False))
     HU_STRING_SESSION = os.environ.get("HU_STRING_SESSION", None)
-    DB_URI = os.environ.get("DATABASE_URL", None)
+    BOT_TOKEN = os.environ.get("BOT_TOKEN", None)
+    OWNER_ID = int(os.environ.get("OWNER_ID", 0))
+    DB_URI = os.environ.get("DATABASE_URL", '')
     LANG = os.environ.get("PREFERRED_LANGUAGE", "en")
     DOWN_PATH = os.environ.get("DOWN_PATH", "downloads").rstrip('/') + '/'
     SCREENSHOT_API = os.environ.get("SCREENSHOT_API", None)
@@ -166,5 +170,7 @@ def get_version() -> str:
     ver = f"{versions.__major__}.{versions.__minor__}.{versions.__micro__}"
     diff = list(_REPO.iter_commits(f'{Config.UPSTREAM_REMOTE}/master..HEAD'))
     if diff:
-        return f"{ver}-beta.{len(diff)}"
+        if "/usergeteam/userge" in Config.UPSTREAM_REPO.lower():
+            return f"{ver}-beta.{len(diff)}"
+        return f"{ver}-custom.{len(diff)}"
     return ver

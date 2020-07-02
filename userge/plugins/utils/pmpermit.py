@@ -46,7 +46,7 @@ async def _init() -> None:
     'description': "Ones someone is allowed, "
                    "Userge will not interfere or handle such private chats",
     'usage': "{tr}allow [username | userID]\nreply {tr}allow to a message, "
-             "do {tr}allow in the private chat"}, allow_channels=False)
+             "do {tr}allow in the private chat"}, allow_channels=False, allow_via_bot=False)
 async def allow(message: Message):
     """ allows to pm """
     userid = await get_id(message)
@@ -72,7 +72,7 @@ async def allow(message: Message):
     'description': "Ones someone is allowed, "
                    "Userge will not interfere or handle such private chats",
     'usage': "{tr}nopm [username | userID]\nreply {tr}nopm to a message, "
-             "do {tr}nopm in the private chat"}, allow_channels=False)
+             "do {tr}nopm in the private chat"}, allow_channels=False, allow_via_bot=False)
 async def denyToPm(message: Message):
     """ disallows to pm """
     userid = await get_id(message)
@@ -105,12 +105,14 @@ async def get_id(message: Message):
     return userid
 
 
-@userge.on_cmd("pmguard", about={
-    'header': "Switchs the pm permiting module on",
-    'description': "This is switched off in default. "
-                   "You can switch pmguard On or Off with this command. "
-                   "When you turn on this next time, "
-                   "the previously allowed chats will be there !"}, allow_channels=False)
+@userge.on_cmd(
+    "pmguard", about={
+        'header': "Switchs the pm permiting module on",
+        'description': "This is switched off in default. "
+                       "You can switch pmguard On or Off with this command. "
+                       "When you turn on this next time, "
+                       "the previously allowed chats will be there !"},
+    allow_channels=False, allow_via_bot=False)
 async def pmguard(message: Message):
     """ enable or disable auto pm handler """
     global pmCounter
@@ -134,7 +136,7 @@ async def pmguard(message: Message):
         '{flname}': "add full name",
         '{uname}': "username",
         '{chat}': "chat name",
-        '{mention}': "mention user"}}, allow_channels=False)
+        '{mention}': "mention user"}}, allow_channels=False, allow_via_bot=False)
 async def set_custom_nopm_message(message: Message):
     """ setup custom pm message """
     global noPmMessage
@@ -159,7 +161,7 @@ async def set_custom_nopm_message(message: Message):
         '{flname}': "add full name",
         '{uname}': "username",
         '{chat}': "chat name",
-        '{mention}': "mention user"}}, allow_channels=False)
+        '{mention}': "mention user"}}, allow_channels=False, allow_via_bot=False)
 async def set_custom_blockpm_message(message: Message):
     """ setup custom blockpm message """
     global blocked_message
@@ -174,22 +176,26 @@ async def set_custom_blockpm_message(message: Message):
             {'_id': 'CUSTOM BLOCKPM MESSAGE'}, {"$set": {'data': string}}, upsert=True)
 
 
-@userge.on_cmd("vpmmsg", about={
-    'header': "Displays the reply message for uninvited PMs"}, allow_channels=False)
+@userge.on_cmd(
+    "vpmmsg", about={
+        'header': "Displays the reply message for uninvited PMs"},
+    allow_channels=False, allow_via_bot=False)
 async def view_current_noPM_msg(message: Message):
     """ view current pm message """
     await message.edit(f"--current PM message--\n\n{noPmMessage}")
 
 
-@userge.on_cmd("vbpmmsg", about={
-    'header': "Displays the reply message for blocked PMs"}, allow_channels=False)
+@userge.on_cmd(
+    "vbpmmsg", about={
+        'header': "Displays the reply message for blocked PMs"},
+    allow_channels=False, allow_via_bot=False)
 async def view_current_blockPM_msg(message: Message):
     """ view current block pm message """
     await message.edit(f"--current blockPM message--\n\n{blocked_message}")
 
 
 @userge.on_filters(~allowAllFilter & Filters.incoming & Filters.private & ~Filters.bot
-                   & ~Filters.me & ~Filters.service & ~Config.ALLOWED_CHATS)
+                   & ~Filters.me & ~Filters.service & ~Config.ALLOWED_CHATS, allow_via_bot=False)
 async def uninvitedPmHandler(message: Message):
     """ pm message handler """
     user_dict = await userge.get_user_dict(message.from_user.id)
@@ -217,7 +223,8 @@ async def uninvitedPmHandler(message: Message):
         await CHANNEL.log(f"#NEW_MESSAGE\n{user_dict['mention']} has messaged you")
 
 
-@userge.on_filters(~allowAllFilter & Filters.outgoing & Filters.private & ~Config.ALLOWED_CHATS)
+@userge.on_filters(~allowAllFilter & Filters.outgoing
+                   & Filters.private & ~Config.ALLOWED_CHATS, allow_via_bot=False)
 async def outgoing_auto_approve(message: Message):
     """ outgoing handler """
     userID = message.chat.id

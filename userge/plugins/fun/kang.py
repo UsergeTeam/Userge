@@ -21,12 +21,13 @@ from pyrogram.errors.exceptions.bad_request_400 import YouBlockedUser
 from userge import userge, Message, Config, pool
 
 
-@userge.on_cmd("kang", about={
-    'header': "kangs stickers or creates new ones",
-    'usage': "Reply {tr}kang [emoji('s)] [pack number] to a sticker or "
-             "an image to kang it to your userbot pack.",
-    'examples': ["{tr}kang", "{tr}kang 🤔", "{tr}kang 2", "{tr}kang 🤔 2"]},
-    allow_channels=False)
+@userge.on_cmd(
+    "kang", about={
+        'header': "kangs stickers or creates new ones",
+        'usage': "Reply {tr}kang [emoji('s)] [pack number] to a sticker or "
+                 "an image to kang it to your userbot pack.",
+        'examples': ["{tr}kang", "{tr}kang 🤔", "{tr}kang 2", "{tr}kang 🤔 2"]},
+    allow_channels=False, allow_via_bot=False)
 async def kang_(message: Message):
     """ kang a sticker """
     user = await userge.get_me()

@@ -1,3 +1,5 @@
+# pylint: disable=missing-module-docstring
+#
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -12,8 +14,8 @@ import asyncio
 from typing import Union, List, Optional
 
 from userge import logging
-from . import command, filtr
-from .. import client as _client
+from . import command, filter as _filter  # pylint: disable=unused-import
+from ... import client as _client  # pylint: disable=unused-import
 
 _LOG = logging.getLogger(__name__)
 _LOG_STR = "<<<!  [[[[[  %s  ]]]]]  !>>>"
@@ -27,7 +29,7 @@ class Plugin:
         self.parent = parent
         self.about: Optional[str]
         self.commands: List['command.Command'] = []
-        self.filters: List['filtr.Filtr'] = []
+        self.filters: List['_filter.Filter'] = []
         _LOG.debug(_LOG_STR, f"created plugin -> {self.name}")
 
     def __repr__(self) -> str:
@@ -69,26 +71,26 @@ class Plugin:
         return [cmd for cmd in self.commands if not cmd.is_loaded]
 
     @property
-    def enabled_filters(self) -> List['filtr.Filtr']:
+    def enabled_filters(self) -> List['_filter.Filter']:
         """ returns all enabled filters """
         return [flt for flt in self.filters if flt.is_enabled]
 
     @property
-    def disabled_filters(self) -> List['filtr.Filtr']:
+    def disabled_filters(self) -> List['_filter.Filter']:
         """ returns all disabled filters """
         return [flt for flt in self.filters if flt.is_disabled]
 
     @property
-    def loaded_filters(self) -> List['filtr.Filtr']:
+    def loaded_filters(self) -> List['_filter.Filter']:
         """ returns all loaded filters """
         return [flt for flt in self.filters if flt.is_loaded]
 
     @property
-    def unloaded_filters(self) -> List['filtr.Filtr']:
+    def unloaded_filters(self) -> List['_filter.Filter']:
         """ returns all unloaded filters """
         return [flt for flt in self.filters if not flt.is_loaded]
 
-    def add(self, obj: Union['command.Command', 'filtr.Filtr']) -> None:
+    def add(self, obj: Union['command.Command', '_filter.Filter']) -> None:
         """ add command or filter to plugin """
         if isinstance(obj, command.Command):
             type_ = self.commands

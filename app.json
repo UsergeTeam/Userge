@@ -22,6 +22,14 @@
             "description": "Get it by running `bash genStr` command or ignore this",
             "required": false
         },
+        "BOT_TOKEN": {
+            "description": "Get this from https://t.me/botfather if you like to use userge as a bot",
+            "required": false
+        },
+        "OWNER_ID": {
+            "description": "Your user_id if you are gonna use userge as a bot",
+            "required": false
+        },
         "WORKERS": {
             "description": "Userbot Workers Count : Default = 4",
             "required": false

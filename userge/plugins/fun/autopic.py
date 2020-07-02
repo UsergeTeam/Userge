@@ -35,10 +35,11 @@ async def _init() -> None:
                 media_file_.write(base64.b64decode(data['media']))
 
 
-@userge.on_cmd("autopic", about={
-    'header': "set profile picture",
-    'usage': "{tr}autopic\n{tr}autopic [image path]\nset timeout using {tr}sapicto"},
-    allow_channels=False)
+@userge.on_cmd(
+    "autopic", about={
+        'header': "set profile picture",
+        'usage': "{tr}autopic\n{tr}autopic [image path]\nset timeout using {tr}sapicto"},
+    allow_channels=False, allow_via_bot=False)
 async def autopic(message: Message):
     global UPDATE_PIC
     await message.edit('`processing...`')

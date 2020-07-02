@@ -1,3 +1,5 @@
+# pylint: disable=missing-module-docstring
+#
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -11,15 +13,16 @@ __all__ = ['Manager']
 import asyncio
 from typing import Union, List, Dict, Optional
 
-from ..types import Plugin, Filtr, Command, clear_db
-from .. import client as _client
+from ..raw import Filter, Command, Plugin, clear_db
+from ... import client as _client  # pylint: disable=unused-import
 
-_FLT = Union[Filtr, Command]
+_FLT = Union[Filter, Command]
 
 
 class Manager:
     """ manager for userge """
-    def __init__(self) -> None:
+    def __init__(self, client: '_client.Userge') -> None:
+        self._client = client
         self.plugins: Dict[str, Plugin] = {}
 
     @property
@@ -28,7 +31,7 @@ class Manager:
         return {cmd.name: cmd for _, i in self.plugins.items() for cmd in i.commands}
 
     @property
-    def filters(self) -> Dict[str, Filtr]:
+    def filters(self) -> Dict[str, Filter]:
         """ returns all filters """
         return {flt.name: flt for _, i in self.plugins.items() for flt in i.filters}
 
@@ -53,22 +56,22 @@ class Manager:
         return [cmd for _, cmd in self.commands.items() if not cmd.is_loaded]
 
     @property
-    def enabled_filters(self) -> List[Filtr]:
+    def enabled_filters(self) -> List[Filter]:
         """ returns all enabled filters """
         return [flt for _, flt in self.filters.items() if flt.is_enabled]
 
     @property
-    def disabled_filters(self) -> List[Filtr]:
+    def disabled_filters(self) -> List[Filter]:
         """ returns all disabled filters """
         return [flt for _, flt in self.filters.items() if flt.is_disabled]
 
     @property
-    def loaded_filters(self) -> List[Filtr]:
+    def loaded_filters(self) -> List[Filter]:
         """returns all loaded filters"""
         return [flt for _, flt in self.filters.items() if flt.is_loaded]
 
     @property
-    def unloaded_filters(self) -> List[Filtr]:
+    def unloaded_filters(self) -> List[Filter]:
         """ returns all unloaded filters """
         return [flt for _, flt in self.filters.items() if not flt.is_loaded]
 
@@ -96,18 +99,21 @@ class Manager:
         """ initialize all plugins """
         await asyncio.gather(*[plg.init() for _, plg in self.plugins.items()])
 
-    def add_plugin(self, client: '_client.Userge', module_name: str) -> Plugin:
+    def add_plugin(self, module_name: str) -> Plugin:
         """ add plugin to manager """
         name = module_name.split('.')[-1]
         if name in self.plugins:
             return self.plugins[name]
         parent = module_name.split('.')[-2]
-        plg = Plugin(client, name, parent)
+        plg = Plugin(self._client, name, parent)
         self.plugins[name] = plg
         return plg
 
-    def update_plugin(self, name: str, about: Optional[str]) -> None:
+    def update_plugin(self, module_name: str, about: Optional[str]) -> None:
         """ get plugin from name """
+        name = module_name.split('.')[-1]
+        if name not in self.plugins:
+            self.add_plugin(module_name)
         self.plugins[name].about = about.strip() if about else None
 
     def get_plugins(self) -> Dict[str, List[str]]:

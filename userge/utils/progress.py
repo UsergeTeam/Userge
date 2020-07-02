@@ -1,3 +1,5 @@
+# pylint: disable=missing-module-docstring
+#
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -23,6 +25,7 @@ async def progress(current: int,
                    message: 'userge.Message',
                    start: int,
                    file_name: str = '') -> None:
+    """ progress function """
     if message.process_is_canceled:
         await client.stop_transmission()
     now = time.time()
