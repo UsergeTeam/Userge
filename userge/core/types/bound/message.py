@@ -11,6 +11,7 @@
 __all__ = ['Message']
 
 import re
+import asyncio
 from typing import List, Dict, Union, Optional, Sequence
 
 from pyrogram import InlineKeyboardMarkup, Message as RawMessage
@@ -32,7 +33,7 @@ def _msg_to_dict(message: RawMessage) -> Dict[str, object]:
     kwargs_ = vars(message)
     del message
     for key_ in ['_client', '_channel', '_filtered', '_process_canceled',
-                 '_filtered_input_str', '_flags', '_kwargs']:
+                 'client', '_filtered_input_str', '_flags', '_kwargs']:
         if key_ in kwargs_:
             del kwargs_[key_]
     return kwargs_
@@ -41,7 +42,7 @@ def _msg_to_dict(message: RawMessage) -> Dict[str, object]:
 class Message(RawMessage):
     """ Modded Message Class For Userge """
     def __init__(self,
-                 client: '_client.Userge',
+                 client: Union['_client.Userge', '_client.UsergeBot'],
                  message: RawMessage,
                  **kwargs: Union[str, bool]) -> None:
         super().__init__(client=client, **_msg_to_dict(message))
@@ -55,6 +56,11 @@ class Message(RawMessage):
         self._filtered_input_str: str = ''
         self._flags: Dict[str, str] = {}
         self._kwargs = kwargs
+
+    @property
+    def client(self) -> Union['_client.Userge', '_client.UsergeBot']:
+        """ returns client """
+        return self._client
 
     @property
     def input_str(self) -> str:
@@ -148,12 +154,17 @@ class Message(RawMessage):
         Returns:
             On success, the sent Message is returned.
         """
-        return self._client.send_as_file(chat_id=self.chat.id,
-                                         text=text,
-                                         filename=filename,
-                                         caption=caption,
-                                         log=log,
-                                         delete_message=delete_message)
+        reply_to_id = self.reply_to_message.message_id if self.reply_to_message \
+            else self.message_id
+        if delete_message:
+            asyncio.get_event_loop().create_task(self.delete())
+        return await self._client.send_as_file(chat_id=self.chat.id,
+                                               text=text,
+                                               filename=filename,
+                                               caption=caption,
+                                               log=log,
+                                               delete_message=delete_message,
+                                               reply_to_message_id=reply_to_id)
 
     async def reply(self,
                     text: str,

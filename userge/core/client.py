@@ -35,35 +35,14 @@ _INIT_TASKS: List[asyncio.Task] = []
 _START_TIME = time.time()
 
 
-class _UsergeBot(Methods, RawClient):
-    """ UsergeBot, the bot """
-    def __init__(self, **kwargs) -> None:
-        _LOG.info(_LOG_STR, "Setting UsergeBot Configs")
-        super().__init__(session_name=":memory:", **kwargs)
+async def _complete_init_tasks() -> None:
+    if not _INIT_TASKS:
+        return
+    await asyncio.gather(*_INIT_TASKS)
+    _INIT_TASKS.clear()
 
 
-class Userge(Methods, RawClient):
-    """ Userge, the userbot """
-    def __init__(self, **kwargs) -> None:
-        _LOG.info(_LOG_STR, "Setting Userge Configs")
-        if not (Config.HU_STRING_SESSION or Config.BOT_TOKEN):
-            print("Need HU_STRING_SESSION or BOT_TOKEN, Exiting...")
-            sys.exit()
-        kwargs = {
-            'api_id': Config.API_ID,
-            'api_hash': Config.API_HASH,
-            'workers': Config.WORKERS
-        }
-        if Config.BOT_TOKEN:
-            if not Config.OWNER_ID:
-                print("Need OWNER_ID, Exiting...")
-                sys.exit()
-            kwargs['bot_token'] = Config.BOT_TOKEN
-        if Config.HU_STRING_SESSION and Config.BOT_TOKEN:
-            kwargs['bot'] = _UsergeBot(**kwargs)
-        kwargs['session_name'] = Config.HU_STRING_SESSION or ":memory:"
-        super().__init__(**kwargs)
-
+class _AbstractUserge(Methods, RawClient):
     @property
     def uptime(self) -> str:
         """ returns userge uptime """
@@ -76,15 +55,9 @@ class Userge(Methods, RawClient):
             raise UsergeBotNotFound("Need BOT_TOKEN ENV!")
         return self._bot
 
-    async def _complete_init_tasks(self) -> None:
-        if not _INIT_TASKS:
-            return
-        await asyncio.gather(*_INIT_TASKS)
-        _INIT_TASKS.clear()
-
     async def finalize_load(self) -> None:
         """ finalize the plugins load """
-        await asyncio.gather(self._complete_init_tasks(), self.manager.init())
+        await asyncio.gather(_complete_init_tasks(), self.manager.init())
 
     async def load_plugin(self, name: str, reload_plugin: bool = False) -> None:
         """ Load plugin to Userge """
@@ -147,6 +120,36 @@ class Userge(Methods, RawClient):
             os.system("pip3 install -r requirements.txt")
         os.execl(sys.executable, sys.executable, '-m', 'userge')
         sys.exit()
+
+
+class _UsergeBot(_AbstractUserge):
+    """ UsergeBot, the bot """
+    def __init__(self, **kwargs) -> None:
+        _LOG.info(_LOG_STR, "Setting UsergeBot Configs")
+        super().__init__(session_name=":memory:", **kwargs)
+
+
+class Userge(_AbstractUserge):
+    """ Userge, the userbot """
+    def __init__(self, **kwargs) -> None:
+        _LOG.info(_LOG_STR, "Setting Userge Configs")
+        if not (Config.HU_STRING_SESSION or Config.BOT_TOKEN):
+            print("Need HU_STRING_SESSION or BOT_TOKEN, Exiting...")
+            sys.exit()
+        kwargs = {
+            'api_id': Config.API_ID,
+            'api_hash': Config.API_HASH,
+            'workers': Config.WORKERS
+        }
+        if Config.BOT_TOKEN:
+            if not Config.OWNER_ID:
+                print("Need OWNER_ID, Exiting...")
+                sys.exit()
+            kwargs['bot_token'] = Config.BOT_TOKEN
+        if Config.HU_STRING_SESSION and Config.BOT_TOKEN:
+            kwargs['bot'] = _UsergeBot(**kwargs)
+        kwargs['session_name'] = Config.HU_STRING_SESSION or ":memory:"
+        super().__init__(**kwargs)
 
     async def start(self) -> None:
         """ start client and bot """

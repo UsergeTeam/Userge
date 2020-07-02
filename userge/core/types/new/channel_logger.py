@@ -14,6 +14,7 @@ import asyncio
 from typing import Optional, Tuple
 
 from pyrogram import Message as RawMessage
+from pyrogram.errors.exceptions.bad_request_400 import ChannelInvalid
 
 from userge import logging, Config
 from userge.utils import SafeDict
@@ -92,9 +93,12 @@ class ChannelLogger:
         """
         _LOG.debug(_LOG_STR, f"logging text : {text} to channel : {Config.LOG_CHANNEL_ID}")
         if Config.LOG_CHANNEL_ID:
-            msg = await self._client.send_message(chat_id=Config.LOG_CHANNEL_ID,
-                                                  text=self._string.format(text.strip()))
-            return msg.message_id
+            try:
+                msg = await self._client.send_message(chat_id=Config.LOG_CHANNEL_ID,
+                                                      text=self._string.format(text.strip()))
+                return msg.message_id
+            except ChannelInvalid:
+                pass
 
     async def fwd_msg(self,
                       message: '_message.Message',
@@ -124,15 +128,19 @@ class ChannelLogger:
         _LOG.debug(
             _LOG_STR, f"forwarding msg : {message} to channel : {Config.LOG_CHANNEL_ID}")
         if Config.LOG_CHANNEL_ID and isinstance(message, RawMessage):
-            if message.media:
-                asyncio.get_event_loop().create_task(self.log("**Forwarding Message...**"))
-                await self._client.forward_messages(chat_id=Config.LOG_CHANNEL_ID,
-                                                    from_chat_id=message.chat.id,
-                                                    message_ids=message.message_id,
-                                                    as_copy=as_copy,
-                                                    remove_caption=remove_caption)
-            else:
-                await self.log(message.text.html)
+            try:
+                if message.media:
+                    asyncio.get_event_loop().create_task(self.log("**Forwarding Message...**"))
+                    await self._client.forward_messages(chat_id=Config.LOG_CHANNEL_ID,
+                                                        from_chat_id=message.chat.id,
+                                                        message_ids=message.message_id,
+                                                        as_copy=as_copy,
+                                                        remove_caption=remove_caption)
+                else:
+                    await self.log(
+                        message.text.html if hasattr(message.text, 'html') else message.text)
+            except ChannelInvalid:
+                pass
 
     async def store(self,
                     message: Optional['_message.Message'],
@@ -149,21 +157,25 @@ class ChannelLogger:
         Returns:
             message_id on success or None
         """
-        caption = caption or ''
-        if message and message.caption:
-            caption = caption + message.caption.html
-        if message and message.media:
-            if caption:
-                caption = self._string.format(caption.strip())
-            file_id, file_ref = _get_file_id_and_ref(message)
-            msg = await self._client.send_cached_media(chat_id=Config.LOG_CHANNEL_ID,
-                                                       file_id=file_id,
-                                                       file_ref=file_ref,
-                                                       caption=caption)
-            message_id = msg.message_id
-        else:
-            message_id = await self.log(caption)
-        return message_id
+        if Config.LOG_CHANNEL_ID:
+            caption = caption or ''
+            if message and message.caption:
+                caption = caption + message.caption.html
+            if message and message.media:
+                if caption:
+                    caption = self._string.format(caption.strip())
+                file_id, file_ref = _get_file_id_and_ref(message)
+                try:
+                    msg = await self._client.send_cached_media(chat_id=Config.LOG_CHANNEL_ID,
+                                                               file_id=file_id,
+                                                               file_ref=file_ref,
+                                                               caption=caption)
+                    message_id = msg.message_id
+                except ChannelInvalid:
+                    message_id = None
+            else:
+                message_id = await self.log(caption)
+            return message_id
 
     async def forward_stored(self,
                              message_id: int,
@@ -192,30 +204,37 @@ class ChannelLogger:
         Returns:
             None
         """
-        message = await self._client.get_messages(chat_id=Config.LOG_CHANNEL_ID,
-                                                  message_ids=message_id)
-        caption = ''
-        if message.caption:
-            caption = message.caption.html.split('\n\n', maxsplit=1)[-1]
-        elif message.text:
-            caption = message.text.html.split('\n\n', maxsplit=1)[-1]
-        if caption:
-            u_dict = await self._client.get_user_dict(user_id)
-            chat = await self._client.get_chat(chat_id)
-            u_dict.update(
-                {'chat': chat.title if chat.title else "this group", 'count': chat.members_count})
-            caption = caption.format_map(SafeDict(**u_dict))
-        if message.media:
-            file_id, file_ref = _get_file_id_and_ref(message)
-            msg = await self._client.send_cached_media(chat_id=chat_id,
-                                                       file_id=file_id,
-                                                       file_ref=file_ref,
-                                                       caption=caption,
-                                                       reply_to_message_id=reply_to_message_id)
-        else:
-            msg = await self._client.send_message(chat_id=chat_id,
-                                                  text=caption,
-                                                  reply_to_message_id=reply_to_message_id)
-        if del_in and msg:
-            await asyncio.sleep(del_in)
-            await msg.delete()
+        if Config.LOG_CHANNEL_ID:
+            try:
+                message = await self._client.get_messages(chat_id=Config.LOG_CHANNEL_ID,
+                                                          message_ids=message_id)
+                caption = ''
+                if message.caption:
+                    caption = message.caption.html.split('\n\n', maxsplit=1)[-1]
+                elif message.text:
+                    caption = message.text.html.split('\n\n', maxsplit=1)[-1]
+                if caption:
+                    u_dict = await self._client.get_user_dict(user_id)
+                    chat = await self._client.get_chat(chat_id)
+                    u_dict.update(
+                        {'chat': chat.title if chat.title else "this group",
+                         'count': chat.members_count})
+                    caption = caption.format_map(SafeDict(**u_dict))
+                if message.media:
+                    file_id, file_ref = _get_file_id_and_ref(message)
+                    msg = await self._client.send_cached_media(
+                        chat_id=chat_id,
+                        file_id=file_id,
+                        file_ref=file_ref,
+                        caption=caption,
+                        reply_to_message_id=reply_to_message_id)
+                else:
+                    msg = await self._client.send_message(
+                        chat_id=chat_id,
+                        text=caption,
+                        reply_to_message_id=reply_to_message_id)
+                if del_in and msg:
+                    await asyncio.sleep(del_in)
+                    await msg.delete()
+            except ChannelInvalid:
+                pass
