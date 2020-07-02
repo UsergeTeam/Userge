@@ -15,7 +15,7 @@ from userge import userge, Message
 
 @userge.on_cmd("quote", about={
     'header': "Quote a message",
-    'usage': "{tr}quote [text or reply to msg]"})
+    'usage': "{tr}quote [text or reply to msg]"}, allow_via_bot=False)
 async def quotecmd(message: Message):
     """quotecmd"""
     asyncio.get_event_loop().create_task(message.delete())

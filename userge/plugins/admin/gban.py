@@ -256,7 +256,8 @@ async def list_white(message: Message):
         f"**--Whitelisted Users List--**\n\n{msg}" if msg else "`whitelist empty!`")
 
 
-@userge.on_filters(Filters.group & Filters.new_chat_members & ~Filters.me, group=1)
+@userge.on_filters(Filters.group & Filters.new_chat_members & ~Filters.me,
+                   group=1, allow_via_bot=False)
 async def gban_at_entry(message: Message):
     """ handle gbans """
     chat_id = message.chat.id
@@ -266,10 +267,8 @@ async def gban_at_entry(message: Message):
             ADMEME_CHATS.append(chat_id)
         else:
             PATHETIC_CHATS.append(chat_id)
-
     if chat_id in PATHETIC_CHATS:
         return
-
     for user in message.new_chat_members:
         user_id = user.id
         first_name = user.first_name

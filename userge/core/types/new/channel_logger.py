@@ -11,7 +11,7 @@
 __all__ = ['ChannelLogger']
 
 import asyncio
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 from pyrogram import Message as RawMessage
 from pyrogram.errors.exceptions.bad_request_400 import ChannelInvalid
@@ -51,7 +51,7 @@ def _get_file_id_and_ref(message: '_message.Message') -> Tuple[str, str]:
 
 class ChannelLogger:
     """ Channel logger for Userge """
-    def __init__(self, client: '_client.Userge', name: str) -> None:
+    def __init__(self, client: Union['_client.Userge', '_client._UsergeBot'], name: str) -> None:
         self._client = client
         self._string = _gen_string(name)
 
