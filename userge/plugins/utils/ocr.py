@@ -74,7 +74,7 @@ async def ocr_gen(message: Message):
             lang_code = "eng"
 
         await message.edit(r"`Trying to Read.. 📖")
-        downloaded_file_name = await userge.download_media(message.reply_to_message)
+        downloaded_file_name = await message.client.download_media(message.reply_to_message)
         test_file = await ocr_space_file(downloaded_file_name, lang_code)
         try:
             ParsedText = test_file["ParsedResults"][0]["ParsedText"]

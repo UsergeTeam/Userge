@@ -63,10 +63,10 @@ async def webss(message: Message):
         await out_file.write(im_png)
     await asyncio.gather(
         message.delete(),
-        userge.send_document(chat_id=message.chat.id,
-                             document=file_path,
-                             caption=link,
-                             reply_to_message_id=message_id)
+        message.client.send_document(chat_id=message.chat.id,
+                                     document=file_path,
+                                     caption=link,
+                                     reply_to_message_id=message_id)
     )
     os.remove(file_path)
     driver.quit()

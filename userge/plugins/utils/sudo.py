@@ -41,7 +41,7 @@ async def add_sudo(message: Message):
     if isinstance(user_id, str) and user_id.isdigit():
         user_id = int(user_id)
     try:
-        user = await userge.get_user_dict(user_id)
+        user = await message.client.get_user_dict(user_id)
     except PeerIdInvalid as p_e:
         await message.err(p_e)
         return

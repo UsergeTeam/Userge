@@ -125,6 +125,15 @@ class Manager:
             ret_dict[plg.parent].append(plg.name)
         return ret_dict
 
+    def get_all_plugins(self) -> Dict[str, List[str]]:
+        """ returns all categorized plugins """
+        ret_dict: Dict[str, List[str]] = {}
+        for _, plg in self.plugins.items():
+            if plg.parent not in ret_dict:
+                ret_dict[plg.parent] = []
+            ret_dict[plg.parent].append(plg.name)
+        return ret_dict
+
     def clear_plugins(self) -> None:
         """ clear all plugins """
         self.plugins.clear()

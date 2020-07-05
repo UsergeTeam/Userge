@@ -786,7 +786,7 @@ class Message(RawMessage):
                 **kwargs)
 
     # pylint: disable=arguments-differ
-    async def delete(self, revoke: bool = True, sudo: bool = True,) -> bool:
+    async def delete(self, revoke: bool = True, sudo: bool = True) -> bool:
         """\nThis will first try to delete and ignore
         it if it raises MessageDeleteForbidden
 
@@ -808,4 +808,4 @@ class Message(RawMessage):
         except MessageDeleteForbidden as m_e:
             if not sudo:
                 raise m_e
-            return True
+            return False

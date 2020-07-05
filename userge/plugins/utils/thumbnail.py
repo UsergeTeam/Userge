@@ -32,11 +32,11 @@ async def save_thumb_nail(message: Message):
         c_time = time.time()
         if os.path.exists(THUMB_PATH):
             os.remove(THUMB_PATH)
-        await userge.download_media(message=replied,
-                                    file_name=THUMB_PATH,
-                                    progress=progress,
-                                    progress_args=(
-                                        "trying to download", userge, message, c_time))
+        await message.client.download_media(message=replied,
+                                            file_name=THUMB_PATH,
+                                            progress=progress,
+                                            progress_args=(
+                                                "trying to download", userge, message, c_time))
         end_t = datetime.now()
         m_s = (end_t - start_t).seconds
         await message.edit(f"thumbnail saved in {m_s} seconds.", del_in=3)
@@ -63,10 +63,10 @@ async def get_thumb_nail(message: Message):
     """ view current thumbnail """
     await message.edit("processing ...")
     if os.path.exists(THUMB_PATH):
-        msg = await userge.send_document(chat_id=message.chat.id,
-                                         document=THUMB_PATH,
-                                         disable_notification=True,
-                                         reply_to_message_id=message.message_id)
+        msg = await message.client.send_document(chat_id=message.chat.id,
+                                                 document=THUMB_PATH,
+                                                 disable_notification=True,
+                                                 reply_to_message_id=message.message_id)
         await CHANNEL.fwd_msg(msg)
         await message.delete()
     else:

@@ -324,7 +324,7 @@ async def slap_(message: Message):
     if not u_id:
         await message.err("no input found!")
         return
-    info_dict = await userge.get_user_dict(u_id)
+    info_dict = await message.client.get_user_dict(u_id)
     temp = choice(SLAP_TEMPLATES)
     item = choice(ITEMS)
     hit = choice(HIT)
@@ -357,10 +357,10 @@ async def decide_(message: Message):
     if message.reply_to_message:
         message_id = message.reply_to_message.message_id
     await message.delete()
-    await userge.send_photo(chat_id=chat_id,
-                            photo=path,
-                            caption=str(r["answer"]).upper(),
-                            reply_to_message_id=message_id)
+    await message.client.send_photo(chat_id=chat_id,
+                                    photo=path,
+                                    caption=str(r["answer"]).upper(),
+                                    reply_to_message_id=message_id)
     os.remove(path)
 
 
@@ -543,7 +543,7 @@ async def scam_(message: Message):
             await message.delete()
             count = 0
             while count <= scam_time:
-                await userge.send_chat_action(chat_id, scam_action)
+                await message.client.send_chat_action(chat_id, scam_action)
                 await asyncio.sleep(5)
                 count += 5
     except Exception:
@@ -556,7 +556,7 @@ async def scam_(message: Message):
 async def dice_gen(message: Message):
     """send dice"""
     random_emo = choice(DICE_EMO)
-    await userge.send_dice(message.chat.id, random_emo)
+    await message.client.send_dice(message.chat.id, random_emo)
     await message.delete()
 
 

@@ -24,7 +24,7 @@ async def purge_(message: Message):
     await message.edit("`purging ...`")
     from_user_id = 0
     if message.filtered_input_str:
-        from_user_id = (await userge.get_users(message.filtered_input_str)).id
+        from_user_id = (await message.client.get_users(message.filtered_input_str)).id
     start_message = 0
     if 'l' in message.flags:
         limit = int(message.flags['l'])
@@ -40,15 +40,15 @@ async def purge_(message: Message):
         return
     start_t = datetime.now()
     message_ids = range(start_message, message.message_id)
-    list_of_messages = await userge.get_messages(chat_id=message.chat.id,
-                                                 message_ids=message_ids,
-                                                 replies=0)
+    list_of_messages = await message.client.get_messages(chat_id=message.chat.id,
+                                                         message_ids=message_ids,
+                                                         replies=0)
     list_of_messages_to_delete = []
     purged_messages_count = 0
     for a_message in list_of_messages:
         if len(list_of_messages_to_delete) == 100:
-            await userge.delete_messages(chat_id=message.chat.id,
-                                         message_ids=list_of_messages_to_delete)
+            await message.client.delete_messages(chat_id=message.chat.id,
+                                                 message_ids=list_of_messages_to_delete)
             purged_messages_count += len(list_of_messages_to_delete)
             list_of_messages_to_delete.clear()
         if from_user_id:
@@ -57,8 +57,8 @@ async def purge_(message: Message):
         else:
             list_of_messages_to_delete.append(a_message.message_id)
     if list_of_messages_to_delete:
-        await userge.delete_messages(chat_id=message.chat.id,
-                                     message_ids=list_of_messages_to_delete)
+        await message.client.delete_messages(chat_id=message.chat.id,
+                                             message_ids=list_of_messages_to_delete)
         purged_messages_count += len(list_of_messages_to_delete)
     end_t = datetime.now()
     time_taken_s = (end_t - start_t).seconds

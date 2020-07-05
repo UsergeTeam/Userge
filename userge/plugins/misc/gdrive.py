@@ -739,7 +739,7 @@ class Worker(_GDrive):
             file_name = Config.DOWN_PATH
             if self._message.input_str:
                 file_name = os.path.join(Config.DOWN_PATH, self._message.input_str)
-            dl_loc = await userge.download_media(
+            dl_loc = await self._message.client.download_media(
                 message=replied,
                 file_name=file_name,
                 progress=progress,

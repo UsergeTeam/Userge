@@ -24,8 +24,8 @@ ADMEME_CHATS = []
 PATHETIC_CHATS = []
 
 
-async def me_can_restrict_members(chat_id: int):
-    check_user = await userge.get_chat_member(chat_id, (await userge.get_me()).id)
+async def me_can_restrict_members(message: Message, chat_id: int):
+    check_user = await message.client.get_chat_member(chat_id, (await message.client.get_me()).id)
     if check_user.status == "creator":
         return True
     if check_user.status == "administrator" and check_user.can_restrict_members:
@@ -56,7 +56,7 @@ async def gban_user(message: Message):
                 "`don't do .help gban for more info. "
                 "Coz no one's gonna help ya`(｡ŏ_ŏ) ⚠", del_in=0)
             return
-    get_mem = await userge.get_user_dict(user_id)
+    get_mem = await message.client.get_user_dict(user_id)
     firstname = get_mem['fname']
     if not reason:
         await message.edit(
@@ -64,7 +64,7 @@ async def gban_user(message: Message):
             "Aborted coz No reason of gban provided by banner", del_in=5)
         return
     user_id = get_mem['id']
-    if user_id == (await userge.get_me()).id:
+    if user_id == (await message.client.get_me()).id:
         await message.edit(r"LoL. Why would I GBan myself ¯\(°_o)/¯")
         return
     if user_id in Config.SUDO_USERS:
@@ -86,7 +86,7 @@ async def gban_user(message: Message):
             f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
             f"**User ID:** `{user_id}`\n**Reason:** `{reason}`"))
     # TODO: can we add something like "GBanned by {any_sudo_user_fname}"
-    for chat in await userge.get_common_chats(user_id):
+    for chat in await message.client.get_common_chats(user_id):
         try:
             await chat.kick_member(user_id)
             await CHANNEL.log(
@@ -123,7 +123,7 @@ async def ungban_user(message: Message):
     if not user_id:
         await message.err("user-id not found")
         return
-    get_mem = await userge.get_user_dict(user_id)
+    get_mem = await message.client.get_user_dict(user_id)
     firstname = get_mem['fname']
     user_id = get_mem['id']
     found = await GBAN_USER_BASE.find_one({'user_id': user_id})
@@ -136,7 +136,7 @@ async def ungban_user(message: Message):
             r"\\**#UnGbanned_User**//"
             f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
             f"**User ID:** `{user_id}`"))
-    for chat in await userge.get_common_chats(user_id):
+    for chat in await message.client.get_common_chats(user_id):
         try:
             await chat.unban_member(user_id)
             await CHANNEL.log(
@@ -180,7 +180,7 @@ async def whitelist(message: Message):
     if not user_id:
         await message.err("user-id not found")
         return
-    get_mem = await userge.get_user_dict(user_id)
+    get_mem = await message.client.get_user_dict(user_id)
     firstname = get_mem['fname']
     user_id = get_mem['id']
     found = await WHITELIST.find_one({'user_id': user_id})
@@ -218,7 +218,7 @@ async def rmwhitelist(message: Message):
     if not user_id:
         await message.err("user-id not found")
         return
-    get_mem = await userge.get_user_dict(user_id)
+    get_mem = await message.client.get_user_dict(user_id)
     firstname = get_mem['fname']
     user_id = get_mem['id']
     found = await WHITELIST.find_one({'user_id': user_id})
@@ -263,7 +263,7 @@ async def gban_at_entry(message: Message):
     chat_id = message.chat.id
     # Trying To Avoid Flood Waits
     if chat_id not in ADMEME_CHATS + PATHETIC_CHATS:
-        if await me_can_restrict_members(chat_id):
+        if await me_can_restrict_members(message, chat_id):
             ADMEME_CHATS.append(chat_id)
         else:
             PATHETIC_CHATS.append(chat_id)
@@ -277,7 +277,7 @@ async def gban_at_entry(message: Message):
         gbanned = await GBAN_USER_BASE.find_one({'user_id': user_id})
         if gbanned:
             await asyncio.gather(
-                userge.kick_chat_member(chat_id, user_id),
+                message.client.kick_chat_member(chat_id, user_id),
                 message.reply(
                     r"\\**#Userge_Antispam**//"
                     "\n\nGlobally Banned User Detected in this Chat.\n\n"
@@ -296,7 +296,7 @@ async def gban_at_entry(message: Message):
             if res['ok']:
                 reason = res['description'] if 'description' in res else None
                 await asyncio.gather(
-                    userge.kick_chat_member(chat_id, user_id),
+                    message.client.kick_chat_member(chat_id, user_id),
                     message.reply(
                         r"\\**#Userge_Antispam**//"
                         "\n\nGlobally Banned User Detected in this Chat.\n\n"
@@ -316,7 +316,7 @@ async def gban_at_entry(message: Message):
                 intruder = spamwatch.Client(Config.SPAM_WATCH_API).get_ban(user_id)
                 if intruder:
                     await asyncio.gather(
-                        userge.kick_chat_member(chat_id, user_id),
+                        message.client.kick_chat_member(chat_id, user_id),
                         message.reply(
                             r"\\**#Userge_Antispam**//"
                             "\n\nGlobally Banned User Detected in this Chat.\n\n"

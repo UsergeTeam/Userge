@@ -99,6 +99,7 @@ class Filter:
         self.name: str
         self.about: Optional[str]
         self._handler: Handler
+        self.plugin_name: str
 
     def __repr__(self) -> str:
         return f"<filter - {self.name}>"
@@ -132,7 +133,7 @@ class Filter:
     def update(self, func: Callable[[Any], Any], handler: Handler) -> None:
         """ update filter """
         self.name = f"{func.__module__.split('.')[-1]}.{func.__name__}"
-        self.about = func.__doc__
+        self.about = func.__doc__.strip() if func.__doc__ else None
         self._handler = handler
         _LOG.debug(_LOG_STR, f"created filter -> {self.name}")
 

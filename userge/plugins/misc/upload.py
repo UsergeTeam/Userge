@@ -47,7 +47,7 @@ async def rename_(message: Message):
         os.mkdir(Config.DOWN_PATH)
     if message.reply_to_message and message.reply_to_message.media:
         c_time = time.time()
-        dl_loc = await userge.download_media(
+        dl_loc = await message.client.download_media(
             message=message.reply_to_message,
             file_name=Config.DOWN_PATH,
             progress=progress,
@@ -77,7 +77,7 @@ async def convert_(message: Message):
         os.mkdir(Config.DOWN_PATH)
     if message.reply_to_message and message.reply_to_message.media:
         c_time = time.time()
-        dl_loc = await userge.download_media(
+        dl_loc = await message.client.download_media(
             message=message.reply_to_message,
             file_name=Config.DOWN_PATH,
             progress=progress,
@@ -90,7 +90,7 @@ async def convert_(message: Message):
         else:
             await message.delete()
             dl_loc = os.path.join(Config.DOWN_PATH, os.path.basename(dl_loc))
-            message.flags = {} if message.reply_to_message.document else {'d': ''}
+            message.text = " " if message.reply_to_message.document else " -d"
             await upload(message, Path(dl_loc), True)
     else:
         await message.edit("Please read `.help convert`", del_in=5)

@@ -186,7 +186,7 @@ async def sticker_pack_info_(message: Message):
         await message.edit("`Reply to a sticker to get the pack details`")
         return
     await message.edit("`Fetching details of the sticker pack, please wait..`")
-    get_stickerset = await userge.send(
+    get_stickerset = await message.client.send(
         GetStickerSet(
             stickerset=InputStickerSetShortName(
                 short_name=replied.sticker.set_name)))
