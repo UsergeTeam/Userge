@@ -48,7 +48,7 @@ class Config:
     API_ID = int(os.environ.get("API_ID", 12345))
     API_HASH = os.environ.get("API_HASH", None)
     WORKERS = int(os.environ.get("WORKERS", 4))
-    ANTISPAM_SENTRY = os.environ.get("ANTISPAM_SENTRY", "").lower() == "true"
+    ANTISPAM_SENTRY = bool(os.environ.get("ANTISPAM_SENTRY", False))
     HU_STRING_SESSION = os.environ.get("HU_STRING_SESSION", None)
     BOT_TOKEN = os.environ.get("BOT_TOKEN", None)
     OWNER_ID = int(os.environ.get("OWNER_ID", 0))
@@ -66,7 +66,7 @@ class Config:
     G_DRIVE_CLIENT_ID = os.environ.get("G_DRIVE_CLIENT_ID", None)
     G_DRIVE_CLIENT_SECRET = os.environ.get("G_DRIVE_CLIENT_SECRET", None)
     G_DRIVE_PARENT_ID = os.environ.get("G_DRIVE_PARENT_ID", None)
-    G_DRIVE_IS_TD = os.environ.get("G_DRIVE_IS_TD", "").lower() == "true"
+    G_DRIVE_IS_TD = bool(os.environ.get("G_DRIVE_IS_TD", False))
     G_DRIVE_INDEX_LINK = os.environ.get("G_DRIVE_INDEX_LINK", None)
     GOOGLE_CHROME_DRIVER = os.environ.get("GOOGLE_CHROME_DRIVER", None)
     GOOGLE_CHROME_BIN = os.environ.get("GOOGLE_CHROME_BIN", None)

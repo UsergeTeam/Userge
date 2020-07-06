@@ -369,7 +369,7 @@ async def ls_dir(message: Message) -> None:
     if path_.is_dir():
         folders = ''
         files = ''
-        for p_s in path_.iterdir():
+        for p_s in sorted(path_.iterdir()):
             if p_s.is_file():
                 if str(p_s).endswith((".mp3", ".flac", ".wav", ".m4a")):
                     files += '🎵'
@@ -521,7 +521,7 @@ async def split_(message: Message) -> None:
         m_s = (end_t - start_t).seconds
         await message.edit(
             f"**split** `{file_path}` into `{s_obj.final_file_path}` "
-            f"in `{m_s}` seconds.", log=True)
+            f"in `{m_s}` seconds.", log=__name__)
 
 
 @userge.on_cmd('combine', about={
@@ -580,7 +580,7 @@ async def combine_(message: Message) -> None:
         m_s = (end_t - start_t).seconds
         await message.edit(
             f"**combined** `{file_path}` into `{c_obj.final_file_path}` "
-            f"in `{m_s}` seconds.", log=True)
+            f"in `{m_s}` seconds.", log=__name__)
 
 
 @userge.on_cmd('zip', about={
@@ -638,7 +638,7 @@ async def _pack_helper(message: Message, tar: bool = False) -> None:
         m_s = (end_t - start_t).seconds
         await message.edit(
             f"**packed** `{file_path}` into `{p_obj.final_file_path}` "
-            f"in `{m_s}` seconds.", log=True)
+            f"in `{m_s}` seconds.", log=__name__)
 
 
 @userge.on_cmd('unpack', about={
@@ -688,7 +688,7 @@ async def unpack_(message: Message) -> None:
         m_s = (end_t - start_t).seconds
         await message.edit(
             f"**unpacked** `{file_path}` into `{p_obj.final_file_path}` "
-            f"in `{m_s}` seconds.", log=True)
+            f"in `{m_s}` seconds.", log=__name__)
 
 
 @userge.on_cmd('packinfo', about={

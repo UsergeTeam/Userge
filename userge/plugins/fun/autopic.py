@@ -35,10 +35,11 @@ async def _init() -> None:
                 media_file_.write(base64.b64decode(data['media']))
 
 
-@userge.on_cmd("autopic", about={
-    'header': "set profile picture",
-    'usage': "{tr}autopic\n{tr}autopic [image path]\nset timeout using {tr}sapicto"},
-    allow_channels=False)
+@userge.on_cmd(
+    "autopic", about={
+        'header': "set profile picture",
+        'usage': "{tr}autopic\n{tr}autopic [image path]\nset timeout using {tr}sapicto"},
+    allow_channels=False, allow_via_bot=False)
 async def autopic(message: Message):
     global UPDATE_PIC
     await message.edit('`processing...`')
@@ -91,7 +92,7 @@ async def apic_worker():
     user = '@' + user_dict['uname'] if user_dict['uname'] else user_dict['flname']
     count = 0
     while UPDATE_PIC:
-        if not count or not count % Config.AUTOPIC_TIMEOUT:
+        if not count % Config.AUTOPIC_TIMEOUT:
             img = Image.open(BASE_PIC)
             i_width, i_height = img.size
             s_font = ImageFont.truetype("resources/font.ttf", int((35 / 640)*i_width))

@@ -1,3 +1,5 @@
+# pylint: disable=invalid-name, missing-module-docstring
+#
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -16,7 +18,7 @@ if os.path.isfile("config.env"):
     load_dotenv("config.env")
 
 
-async def genStrSession() -> None:
+async def genStrSession() -> None:  # pylint: disable=missing-function-docstring
     async with Client(
             "Userge",
             api_id=int(os.environ.get("API_ID") or input("Enter Telegram APP ID: ")),

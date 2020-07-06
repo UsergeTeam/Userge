@@ -1,3 +1,5 @@
+# pylint: disable=missing-module-docstring
+#
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -8,6 +10,7 @@
 
 __all__ = ['get_collection']
 
+import re
 import asyncio
 from typing import List
 
@@ -20,6 +23,9 @@ _LOG = logging.getLogger(__name__)
 _LOG_STR = "$$$>>> %s <<<$$$"
 
 _LOG.info(_LOG_STR, "Connecting to Database...")
+
+_UN_AND_PWD = Config.DB_URI.split('//')[1].split('@')[0]
+Config.DB_URI.replace(_UN_AND_PWD, re.escape(_UN_AND_PWD))
 
 _MGCLIENT: AgnosticClient = AsyncIOMotorClient(Config.DB_URI)
 _RUN = asyncio.get_event_loop().run_until_complete
