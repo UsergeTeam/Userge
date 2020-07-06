@@ -9,14 +9,17 @@
 # All rights reserved.
 
 import os
+import io
 import re
 import math
 import time
 import asyncio
+import stagger
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import unquote_plus
 
+from PIL import Image
 from pySmartDL import SmartDL
 from hachoir.metadata import extractMetadata
 from hachoir.parser import createParser
@@ -278,6 +281,16 @@ async def audio_upload(message: Message, path, del_path: bool):
     start_t = datetime.now()
     c_time = time.time()
     thumb = await get_thumb()
+    try:
+        album_art = stagger.read_tag(strpath)
+        if (album_art.picture and not os.path.lexists(THUMB_PATH)):
+            bytes_pic_data = album_art[stagger.id3.APIC][0].data
+            bytes_io = io.BytesIO(bytes_pic_data)
+            image_file = Image.open(bytes_io)
+            image_file.save("album_cover.jpg", "JPEG")
+            thumb = "album_cover.jpg"
+    except stagger.errors.NoTagError:
+        pass
     metadata = extractMetadata(createParser(strpath))
     if metadata.has("title"):
         title = metadata.get("title")
@@ -310,6 +323,8 @@ async def audio_upload(message: Message, path, del_path: bool):
         await sent.delete()
         await finalize(message, msg, start_t)
     finally:
+        if os.path.lexists("album_cover.jpg"):
+            os.remove("album_cover.jpg")
         if os.path.exists(str(path)) and del_path:
             os.remove(str(path))
 
@@ -341,4 +356,4 @@ async def finalize(message: Message, msg: Message, start_t):
     else:
         end_t = datetime.now()
         m_s = (end_t - start_t).seconds
-        await message.edit(f"Uploaded in {m_s} seconds")
+        await message.edit(f"Uploaded in {m_s} seconds", del_in=10)
