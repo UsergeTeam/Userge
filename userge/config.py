@@ -61,6 +61,7 @@ class Config:
     OPEN_WEATHER_MAP = os.environ.get("OPEN_WEATHER_MAP", None)
     REMOVE_BG_API_KEY = os.environ.get("REMOVE_BG_API_KEY", None)
     WEATHER_DEFCITY = os.environ.get("WEATHER_DEFCITY", None)
+    COUNTRY_CITY = os.environ.get("COUNTRY_CITY", None)
     TZ_NUMBER = os.environ.get("TZ_NUMBER", 1)
     G_DRIVE_CLIENT_ID = os.environ.get("G_DRIVE_CLIENT_ID", None)
     G_DRIVE_CLIENT_SECRET = os.environ.get("G_DRIVE_CLIENT_SECRET", None)
