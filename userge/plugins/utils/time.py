@@ -40,9 +40,8 @@ async def grabTime(message: Message):
         await message.edit(defaultMessage, disable_web_page_preview=True,
                            parse_mode="html", del_in=30)
         return
-    else:
-        tz = Config.COUNTRY_CITY
 
+    tz = Config.COUNTRY_CITY
     tzDateTime = dt.now(timezone(tz))
     date = tzDateTime.strftime('%d-%m-%Y')
     militaryTime = tzDateTime.strftime('%H:%M')
