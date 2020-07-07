@@ -15,7 +15,7 @@ heroku3
 motor
 nest_asyncio
 oauth2client
-Pillow
+Pillow==6.2.2
 psutil
 pybase64
 pySmartDL
@@ -29,6 +29,7 @@ selenium==3.141.0
 setuptools>=40.3.0
 spamwatch
 speedtest-cli
+stagger
 telegraph
 tgcrypto
 urbandict==0.5

@@ -11,6 +11,7 @@
 __all__ = ['RawDecorator']
 
 import asyncio
+from traceback import format_exc
 from typing import List, Union, Any, Callable, Optional
 
 from pyrogram import MessageHandler, Message as RawMessage, Filters
@@ -53,12 +54,28 @@ class RawDecorator(RawClient):
                         _sent = await r_m.reply(
                             "**ERROR** : `Sorry!, this command not supported "
                             f"in this chat type [{r_m.chat.type}] !`")
-                        await asyncio.sleep(3)
+                        await asyncio.sleep(5)
                         await _sent.delete()
                     except ChatAdminRequired:
                         pass
                 else:
-                    await func(types.bound.Message(_, r_m, **kwargs))
+                    try:
+                        await func(types.bound.Message(_, r_m, **kwargs))
+                    except Exception as f_e:  # pylint: disable=broad-except
+                        _LOG.exception(_LOG_STR, f_e)
+                        await self._channel.log("#ERROR #TRACEBACK\n\n"
+                                                f"**Module** : `{func.__module__}`\n"
+                                                f"**Function** : `{func.__name__}`\n"
+                                                f"**Traceback** : ```{format_exc().strip()}```")
+                        try:
+                            _sent = await _.send_message(
+                                r_m.chat.id,
+                                f"**ERROR** : `{f_e}`\n__see logs for more info !__",
+                                reply_to_message_id=r_m.message_id)
+                            await asyncio.sleep(5)
+                            await _sent.delete()
+                        except ChatAdminRequired:
+                            pass
             _LOG.debug(_LOG_STR, f"Loading => [ async def {func.__name__}(message) ] "
                        f"from {func.__module__} `{log}`")
             flt.update(func, MessageHandler(template, filters))

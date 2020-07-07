@@ -16,7 +16,7 @@ from pyrogram import (
     InlineQueryResultArticle, InputTextMessageContent,
     InlineKeyboardMarkup, InlineKeyboardButton,
     Filters, CallbackQuery, InlineQuery)
-from pyrogram.errors.exceptions.bad_request_400 import MessageNotModified
+from pyrogram.errors.exceptions.bad_request_400 import MessageNotModified, MessageIdInvalid
 
 from userge import userge, Message, Config
 
@@ -79,7 +79,13 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
     def check_owner(func):
         async def wrapper(_, c_q: CallbackQuery):
             if c_q.from_user and c_q.from_user.id == Config.OWNER_ID:
-                await func(c_q)
+                try:
+                    await func(c_q)
+                except MessageNotModified:
+                    await c_q.answer("Nothing Found to Refresh 🤷‍♂️", show_alert=True)
+                except MessageIdInvalid:
+                    await c_q.answer("Sorry, I Don't Have Permissions to edit this 😔",
+                                     show_alert=True)
             else:
                 user_dict = await ubot.get_user_dict(Config.OWNER_ID)
                 await c_q.answer(
@@ -157,11 +163,8 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
             plg = userge.manager.plugins[pos_list[-1]]
             await getattr(plg, task)()
             text, buttons = plugin_data(cur_pos)
-        try:
-            await callback_query.edit_message_text(
-                text, reply_markup=InlineKeyboardMarkup(buttons))
-        except MessageNotModified:
-            await callback_query.answer("Nothing Found to Refresh 🤷‍♂️", show_alert=True)
+        await callback_query.edit_message_text(
+            text, reply_markup=InlineKeyboardMarkup(buttons))
 
     @ubot.on_callback_query(filters=Filters.regex(pattern=r"^mm$"))
     @check_owner
@@ -178,11 +181,8 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
             text, buttons = filter_data(cur_pos)
         else:
             text, buttons = plugin_data(cur_pos)
-        try:
-            await callback_query.edit_message_text(
-                text, reply_markup=InlineKeyboardMarkup(buttons))
-        except MessageNotModified:
-            await callback_query.answer("Nothing Found to Refresh 🤷‍♂️", show_alert=True)
+        await callback_query.edit_message_text(
+            text, reply_markup=InlineKeyboardMarkup(buttons))
 
     def is_filter(name: str) -> bool:
         split_ = name.split('.')
@@ -224,7 +224,6 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
             if len(cur_pos.split('|')) > 2:
                 tmp_btns.append(InlineKeyboardButton(
                     "🖥 Main Menu", callback_data="mm".encode()))
-            if len(cur_pos.split('|')) >= 3:
                 tmp_btns.append(InlineKeyboardButton(
                     "🔄 Refresh", callback_data=f"refresh({cur_pos})".encode()))
         return [tmp_btns]
