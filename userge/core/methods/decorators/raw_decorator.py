@@ -17,7 +17,8 @@ from typing import List, Union, Any, Callable, Optional
 from pyrogram import (
     MessageHandler, Message as RawMessage, Filters,
     StopPropagation, ContinuePropagation)
-from pyrogram.errors.exceptions.bad_request_400 import ChatAdminRequired, UserNotParticipant
+from pyrogram.errors.exceptions.bad_request_400 import (
+    ChatAdminRequired, UserNotParticipant, PeerIdInvalid)
 
 from userge import logging, Config
 from ...ext import RawClient
@@ -55,21 +56,24 @@ class RawDecorator(RawClient):
                                r_m: RawMessage) -> None:
                 if RawClient.DUAL_MODE:
                     if check_client or (r_m.from_user and r_m.from_user.id in Config.SUDO_USERS):
-                        bot_available = False
-                        if isinstance(r_c, _client.Userge):
-                            try:
-                                await r_m.chat.get_member((await r_c.bot.get_me()).id)
-                                bot_available = True
-                            except UserNotParticipant:
-                                pass
-                        else:
-                            bot_available = True
                         try:
                             # pylint: disable=protected-access
-                            if not Config.USE_USER_FOR_CLIENT_CHECKS and bot_available:
-                                assert isinstance(r_c, _client._UsergeBot)
-                            else:
+                            if Config.USE_USER_FOR_CLIENT_CHECKS:
                                 assert isinstance(r_c, _client.Userge)
+                            else:
+                                bot_available = False
+                                if isinstance(r_c, _client.Userge):
+                                    try:
+                                        await r_m.chat.get_member((await r_c.bot.get_me()).id)
+                                        bot_available = True
+                                    except (UserNotParticipant, PeerIdInvalid):
+                                        pass
+                                else:
+                                    bot_available = True
+                                if bot_available:
+                                    assert isinstance(r_c, _client._UsergeBot)
+                                else:
+                                    assert isinstance(r_c, _client.Userge)
                         except AssertionError:
                             return
                 if isinstance(flt, types.raw.Command) and r_m.chat and (r_m.chat.type not in scope):
