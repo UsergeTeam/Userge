@@ -36,7 +36,7 @@ _CATEGORY = {
 async def helpme(message: Message) -> None:  # pylint: disable=missing-function-docstring
     plugins = userge.manager.enabled_plugins
     if not message.input_str:
-        out_str = f"""⚒ <b><u>(<code>{len(plugins)}</code>) Plugins Available</u></b>\n\n"""
+        out_str = f"""⚒ <b><u>(<code>{len(plugins)}</code>) Plugin(s) Available</u></b>\n\n"""
         cat_plugins = userge.manager.get_all_plugins()
         for cat in sorted(cat_plugins):
             out_str += (f"    {_CATEGORY.get(cat, '📁')} <b>{cat}</b> "
@@ -50,7 +50,7 @@ async def helpme(message: Message) -> None:  # pylint: disable=missing-function-
                 and (len(plugins[key].enabled_commands) > 1
                      or plugins[key].enabled_commands[0].name.lstrip(Config.CMD_TRIGGER) != key)):
             commands = plugins[key].enabled_commands
-            out_str = f"""⚔ <b><u>(<code>{len(commands)}</code>) Commands Available</u></b>
+            out_str = f"""⚔ <b><u>(<code>{len(commands)}</code>) Command(s) Available</u></b>
 
 🔧 <b>Plugin:</b>  <code>{key}</code>
 📘 <b>About:</b>  <code>{plugins[key].about}</code>\n\n"""
@@ -246,6 +246,8 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
 🎭 **Category** : `{pos_list[1]}`
 🔖 **Name** : `{plg.name}`
 📝 **About** : `{plg.about}`
+⚔ **Commands** : `{len(plg.commands)}`
+⚖ **Filters** : `{len(plg.filters)}`
 ✅ **Loaded** : `{plg.is_loaded}`
 ➕ **Enabled** : `{plg.is_enabled}`
 """

@@ -14,7 +14,9 @@ import asyncio
 from traceback import format_exc
 from typing import List, Union, Any, Callable, Optional
 
-from pyrogram import MessageHandler, Message as RawMessage, Filters
+from pyrogram import (
+    MessageHandler, Message as RawMessage, Filters,
+    StopPropagation, ContinuePropagation)
 from pyrogram.errors.exceptions.bad_request_400 import ChatAdminRequired
 
 from userge import logging
@@ -61,6 +63,8 @@ class RawDecorator(RawClient):
                 else:
                     try:
                         await func(types.bound.Message(_, r_m, **kwargs))
+                    except (StopPropagation, ContinuePropagation):
+                        raise
                     except Exception as f_e:  # pylint: disable=broad-except
                         _LOG.exception(_LOG_STR, f_e)
                         await self._channel.log("#ERROR #TRACEBACK\n\n"
