@@ -138,7 +138,7 @@ async def carbon_(message: Message):
         driver = webdriver.Chrome(chrome_options=chrome_options)
         driver.get(url)
         await message.edit("`Processing... 40%`")
-        driver.command_executor._commands["send_command"] = (
+        driver.command_executor._commands["send_command"] = (  # pylint: disable=protected-access
             "POST", '/session/$sessionId/chromium/send_command')
         params = {
             'cmd': 'Page.setDownloadBehavior',

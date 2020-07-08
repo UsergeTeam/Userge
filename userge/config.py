@@ -150,6 +150,7 @@ for binary, path in _BINS.items():
 
 if Config.LOAD_UNOFFICIAL_PLUGINS:
     _LOG.info("Loading UnOfficial Plugins...")
+    # pylint: disable=BAN-B607
     os.system("git clone --depth=1 https://github.com/UsergeTeam/Userge-Plugins.git")
     os.system("pip3 install -U pip")
     os.system("pip3 install -r Userge-Plugins/requirements.txt")
