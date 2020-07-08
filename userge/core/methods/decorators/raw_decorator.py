@@ -17,7 +17,7 @@ from typing import List, Union, Any, Callable, Optional
 from pyrogram import (
     MessageHandler, Message as RawMessage, Filters,
     StopPropagation, ContinuePropagation)
-from pyrogram.errors.exceptions.bad_request_400 import ChatAdminRequired
+from pyrogram.errors.exceptions.bad_request_400 import ChatAdminRequired, UserNotParticipant
 
 from userge import logging, Config
 from ...ext import RawClient
@@ -38,8 +38,8 @@ class RawDecorator(RawClient):
         self._tasks: List[Callable[[Any], Any]] = []
         super().__init__(**kwargs)
 
-    def on_filters(self, filters: Filters, group: int = 0,
-                   allow_via_bot: bool = True) -> 'RawDecorator._PYRORETTYPE':
+    def on_filters(self, filters: Filters, group: int = 0, allow_via_bot: bool = True,
+                   check_client: bool = False) -> 'RawDecorator._PYRORETTYPE':
         """ abstract on filter method """
 
     def _build_decorator(self,
@@ -51,15 +51,25 @@ class RawDecorator(RawClient):
                          **kwargs: Union[str, bool]
                          ) -> 'RawDecorator._PYRORETTYPE':
         def decorator(func: _PYROFUNC) -> _PYROFUNC:
-            async def template(r_c: '_client.Userge', r_m: RawMessage) -> None:
+            async def template(r_c: Union['_client.Userge', '_client._UsergeBot'],
+                               r_m: RawMessage) -> None:
                 if RawClient.DUAL_MODE:
                     if check_client or (r_m.from_user and r_m.from_user.id in Config.SUDO_USERS):
+                        bot_available = False
+                        if isinstance(r_c, _client.Userge):
+                            try:
+                                await r_m.chat.get_member((await r_c.bot.get_me()).id)
+                                bot_available = True
+                            except UserNotParticipant:
+                                pass
+                        else:
+                            bot_available = True
                         try:
                             # pylint: disable=protected-access
-                            if Config.USE_USER_FOR_CLIENT_CHECKS:
-                                assert isinstance(r_c, _client.Userge)
-                            else:
+                            if not Config.USE_USER_FOR_CLIENT_CHECKS and bot_available:
                                 assert isinstance(r_c, _client._UsergeBot)
+                            else:
+                                assert isinstance(r_c, _client.Userge)
                         except AssertionError:
                             return
                 if isinstance(flt, types.raw.Command) and r_m.chat and (r_m.chat.type not in scope):

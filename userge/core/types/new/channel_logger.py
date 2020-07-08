@@ -29,7 +29,7 @@ def _gen_string(name: str) -> str:
     return "**logger** : #" + name.split('.')[-1].upper() + "\n\n{}"
 
 
-def _get_file_id_and_ref(message: '_message.Message') -> Tuple[str, str]:
+def _get_file_id_and_ref(message: '_message.Message') -> Tuple[Optional[str], Optional[str]]:
     if message.audio:
         file_ = message.audio
     elif message.animation:
@@ -46,7 +46,9 @@ def _get_file_id_and_ref(message: '_message.Message') -> Tuple[str, str]:
         file_ = message.video
     else:
         file_ = message.document
-    return file_.file_id, file_.file_ref
+    if file_:
+        return file_.file_id, file_.file_ref
+    return None, None
 
 
 class ChannelLogger:
@@ -171,12 +173,14 @@ class ChannelLogger:
         """
         if Config.LOG_CHANNEL_ID:
             caption = caption or ''
+            file_id = file_ref = None
             if message and message.caption:
                 caption = caption + message.caption.html
-            if message and message.media:
+            if message:
+                file_id, file_ref = _get_file_id_and_ref(message)
+            if message and message.media and file_id and file_ref:
                 if caption:
                     caption = self._string.format(caption.strip())
-                file_id, file_ref = _get_file_id_and_ref(message)
                 try:
                     msg = await self._client.send_cached_media(chat_id=Config.LOG_CHANNEL_ID,
                                                                file_id=file_id,
@@ -225,6 +229,7 @@ class ChannelLogger:
                 message = await self._client.get_messages(chat_id=Config.LOG_CHANNEL_ID,
                                                           message_ids=message_id)
                 caption = ''
+                file_id = file_ref = None
                 if message.caption:
                     caption = message.caption.html.split('\n\n', maxsplit=1)[-1]
                 elif message.text:
@@ -236,8 +241,8 @@ class ChannelLogger:
                         {'chat': chat.title if chat.title else "this group",
                          'count': chat.members_count})
                     caption = caption.format_map(SafeDict(**u_dict))
-                if message.media:
-                    file_id, file_ref = _get_file_id_and_ref(message)
+                file_id, file_ref = _get_file_id_and_ref(message)
+                if message.media and file_id and file_ref:
                     msg = await client.send_cached_media(
                         chat_id=chat_id,
                         file_id=file_id,
