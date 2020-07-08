@@ -19,7 +19,7 @@ from pyrogram import (
     StopPropagation, ContinuePropagation)
 from pyrogram.errors.exceptions.bad_request_400 import ChatAdminRequired
 
-from userge import logging
+from userge import logging, Config
 from ...ext import RawClient
 from ... import types, client as _client  # pylint: disable=unused-import
 
@@ -46,11 +46,22 @@ class RawDecorator(RawClient):
                          log: str,
                          filters: Filters,
                          flt: Union['types.raw.Command', 'types.raw.Filter'],
+                         check_client: bool,
                          scope: Optional[List[str]] = None,
                          **kwargs: Union[str, bool]
                          ) -> 'RawDecorator._PYRORETTYPE':
         def decorator(func: _PYROFUNC) -> _PYROFUNC:
-            async def template(_: '_client.Userge', r_m: RawMessage) -> None:
+            async def template(r_c: '_client.Userge', r_m: RawMessage) -> None:
+                if RawClient.DUAL_MODE:
+                    if check_client or (r_m.from_user and r_m.from_user.id in Config.SUDO_USERS):
+                        try:
+                            # pylint: disable=protected-access
+                            if Config.USE_USER_FOR_CLIENT_CHECKS:
+                                assert isinstance(r_c, _client.Userge)
+                            else:
+                                assert isinstance(r_c, _client._UsergeBot)
+                        except AssertionError:
+                            return
                 if isinstance(flt, types.raw.Command) and r_m.chat and (r_m.chat.type not in scope):
                     try:
                         _sent = await r_m.reply(
@@ -62,7 +73,7 @@ class RawDecorator(RawClient):
                         pass
                 else:
                     try:
-                        await func(types.bound.Message(_, r_m, **kwargs))
+                        await func(types.bound.Message(r_c, r_m, **kwargs))
                     except (StopPropagation, ContinuePropagation):
                         raise
                     except Exception as f_e:  # pylint: disable=broad-except
@@ -72,7 +83,7 @@ class RawDecorator(RawClient):
                                                 f"**Function** : `{func.__name__}`\n"
                                                 f"**Traceback** : ```{format_exc().strip()}```")
                         try:
-                            _sent = await _.send_message(
+                            _sent = await r_c.send_message(
                                 r_m.chat.id,
                                 f"**ERROR** : `{f_e}`\n__see logs for more info !__",
                                 reply_to_message_id=r_m.message_id)

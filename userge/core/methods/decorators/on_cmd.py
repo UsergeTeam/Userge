@@ -33,6 +33,7 @@ class OnCmd(RawDecorator):  # pylint: disable=missing-class-docstring
                allow_groups: bool = True,
                allow_channels: bool = True,
                allow_via_bot: bool = True,
+               check_client: bool = False,
                **kwargs: Union[str, bool]
                ) -> RawDecorator._PYRORETTYPE:
         """\nDecorator for handling messages.
@@ -85,6 +86,9 @@ class OnCmd(RawDecorator):  # pylint: disable=missing-class-docstring
             allow_via_bot (``bool``, *optional*):
                 If ``True``, allow this via your bot,  defaults to True.
 
+            check_client (``bool``, *optional*):
+                If ``True``, check client is bot or not before execute,  defaults to True.
+
             kwargs:
                 prefix (``str``, *optional*):
                     set prefix for flags, defaults to '-'.
@@ -132,5 +136,5 @@ class OnCmd(RawDecorator):  # pylint: disable=missing-class-docstring
                         and (m.from_user and m.from_user.id in Config.SUDO_USERS)))
                 and (m.text.startswith(Config.SUDO_TRIGGER) if trigger else True))
             filters_ = filters_ & (outgoing_flt | incoming_flt)
-        return self._build_decorator(log=f"On {pattern}", filters=filters_,
-                                     flt=cmd, scope=scope, **kwargs)
+        return self._build_decorator(log=f"On {pattern}", filters=filters_, flt=cmd,
+                                     check_client=check_client, scope=scope, **kwargs)

@@ -257,7 +257,7 @@ async def list_white(message: Message):
 
 
 @userge.on_filters(Filters.group & Filters.new_chat_members & ~Filters.me,
-                   group=1, allow_via_bot=False)
+                   group=1, check_client=True)
 async def gban_at_entry(message: Message):
     """ handle gbans """
     chat_id = message.chat.id

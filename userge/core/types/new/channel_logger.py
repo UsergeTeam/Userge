@@ -69,6 +69,18 @@ class ChannelLogger:
         return "<b><a href='https://t.me/c/{}/{}'>Preview</a></b>".format(
             str(Config.LOG_CHANNEL_ID)[4:], message_id)
 
+    def bind(self, client: Union['_client.Userge', '_client._UsergeBot']) -> None:
+        """\nbind with new client
+
+        Parameters:
+            client (`Userge` | `usergeBot`):
+                Pass Userge or UsergeBot.
+
+        Returns:
+            None
+        """
+        self._client = client
+
     def update(self, name: str) -> None:
         """\nupdate current logger name.
 
@@ -178,6 +190,7 @@ class ChannelLogger:
             return message_id
 
     async def forward_stored(self,
+                             client: Union['_client.Userge', '_client._UsergeBot'],
                              message_id: int,
                              chat_id: int,
                              user_id: int,
@@ -186,6 +199,9 @@ class ChannelLogger:
         """\nforward stored message from log channel.
 
         Parameters:
+            client (`Userge` | `usergeBot`):
+                Pass Userge or UsergeBot.
+
             message_id (`int`):
                 Message id of stored message.
 
@@ -222,14 +238,14 @@ class ChannelLogger:
                     caption = caption.format_map(SafeDict(**u_dict))
                 if message.media:
                     file_id, file_ref = _get_file_id_and_ref(message)
-                    msg = await self._client.send_cached_media(
+                    msg = await client.send_cached_media(
                         chat_id=chat_id,
                         file_id=file_id,
                         file_ref=file_ref,
                         caption=caption,
                         reply_to_message_id=reply_to_message_id)
                 else:
-                    msg = await self._client.send_message(
+                    msg = await client.send_message(
                         chat_id=chat_id,
                         text=caption,
                         reply_to_message_id=reply_to_message_id)

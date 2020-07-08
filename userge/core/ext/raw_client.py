@@ -20,6 +20,9 @@ from .. import types, client
 
 class RawClient(Client):
     """ userge raw client """
+    DUAL_MODE = False
+
+    # pylint: disable=unused-import
     def __init__(self, bot: Optional['client._UsergeBot'] = None, **kwargs) -> None:
         self._bot = bot
         super().__init__(**kwargs)

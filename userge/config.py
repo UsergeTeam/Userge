@@ -85,6 +85,7 @@ class Config:
     AUTOPIC_TIMEOUT = 300
     ALLOWED_CHATS = Filters.chat([])
     ALLOW_ALL_PMS = True
+    USE_USER_FOR_CLIENT_CHECKS = False
     SUDO_USERS: Set[int] = set()
     ALLOWED_COMMANDS: Set[str] = set()
     UPSTREAM_REMOTE = 'upstream'

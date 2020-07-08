@@ -147,6 +147,7 @@ class Userge(_AbstractUserge):
                 sys.exit()
             kwargs['bot_token'] = Config.BOT_TOKEN
         if Config.HU_STRING_SESSION and Config.BOT_TOKEN:
+            RawClient.DUAL_MODE = True
             kwargs['bot'] = _UsergeBot(**kwargs)
         kwargs['session_name'] = Config.HU_STRING_SESSION or ":memory:"
         super().__init__(**kwargs)

@@ -18,7 +18,7 @@ from pyrogram import (
     Filters, CallbackQuery, InlineQuery)
 from pyrogram.errors.exceptions.bad_request_400 import MessageNotModified, MessageIdInvalid
 
-from userge import userge, Message, Config
+from userge import userge, Message, Config, get_collection
 
 _CATEGORY = {
     'admin': '👨‍✈️',
@@ -30,6 +30,13 @@ _CATEGORY = {
     'temp': '♻️',
     'plugins': '💎'
 }
+SAVED_SETTINGS = get_collection("CONFIGS")
+
+
+async def _init() -> None:
+    data = await SAVED_SETTINGS.find_one({'_id': 'CURRENT_CLIENT'})
+    if data:
+        Config.USE_USER_FOR_CLIENT_CHECKS = bool(data['is_user'])
 
 
 @userge.on_cmd("help", about={'header': "Guide to use USERGE commands"}, allow_channels=False)
@@ -172,6 +179,19 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
         await callback_query.edit_message_text(
             "🖥 **Userge Main Menu** 🖥", reply_markup=InlineKeyboardMarkup(main_menu_buttons()))
 
+    @ubot.on_callback_query(filters=Filters.regex(pattern=r"^chgclnt$"))
+    @check_owner
+    async def callback_chgclnt(callback_query: CallbackQuery):
+        if Config.USE_USER_FOR_CLIENT_CHECKS:
+            Config.USE_USER_FOR_CLIENT_CHECKS = False
+        else:
+            Config.USE_USER_FOR_CLIENT_CHECKS = True
+        await SAVED_SETTINGS.update_one({'_id': 'CURRENT_CLIENT'},
+                                        {"$set": {'is_user': Config.USE_USER_FOR_CLIENT_CHECKS}},
+                                        upsert=True)
+        await callback_query.edit_message_reply_markup(
+            reply_markup=InlineKeyboardMarkup(main_menu_buttons()))
+
     @ubot.on_callback_query(filters=Filters.regex(pattern=r"refresh\((.+)\)"))
     @check_owner
     async def callback_exit(callback_query: CallbackQuery):
@@ -226,6 +246,10 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
                     "🖥 Main Menu", callback_data="mm".encode()))
                 tmp_btns.append(InlineKeyboardButton(
                     "🔄 Refresh", callback_data=f"refresh({cur_pos})".encode()))
+        else:
+            cur_clnt = "👲 USER" if Config.USE_USER_FOR_CLIENT_CHECKS else "🤖 BOT"
+            tmp_btns.append(InlineKeyboardButton(
+                f"🔩 Client for Checks and Sudos : {cur_clnt}", callback_data="chgclnt".encode()))
         return [tmp_btns]
 
     def category_data(cur_pos: str):

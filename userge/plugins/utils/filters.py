@@ -43,7 +43,7 @@ async def _init() -> None:
 @userge.on_cmd(
     "filters", about={
         'header': "List all saved filters in current chat"},
-    allow_channels=False, allow_bots=False, allow_via_bot=False)
+    allow_channels=False, allow_bots=False)
 async def filters_active(message: Message) -> None:
     """ list filters in current chat """
     out = ''
@@ -62,7 +62,7 @@ async def filters_active(message: Message) -> None:
     "delfilter", about={
         'header': "Deletes a filter by name",
         'usage': "{tr}delfilter [filter name]"},
-    allow_channels=False, allow_bots=False, allow_via_bot=False)
+    allow_channels=False, allow_bots=False)
 async def delete_filters(message: Message) -> None:
     """ delete filter in current chat """
     filter_ = message.input_str
@@ -89,7 +89,7 @@ async def delete_filters(message: Message) -> None:
                        '{count}': "chat members count",
                        '{mention}': "mention user"},
                    'usage': "{tr}addfilter [filter name] | [content | reply to msg]"},
-               allow_channels=False, allow_bots=False, allow_via_bot=False)
+               allow_channels=False, allow_bots=False)
 async def add_filter(message: Message) -> None:
     """ add filter to current chat """
     filter_ = message.matches[0].group(1).strip()
@@ -110,10 +110,10 @@ async def add_filter(message: Message) -> None:
         out = out.format('Added', filter_)
     else:
         out = out.format('Updated', filter_)
-    await message.edit(text=out, del_in=3, log=True)
+    await message.edit(text=out, del_in=3, log=__name__)
 
 
-@userge.on_filters(~Filters.me & Filters.text & FILTERS_CHATS, group=1, allow_via_bot=False)
+@userge.on_filters(~Filters.me & Filters.text & FILTERS_CHATS, group=1, check_client=True)
 async def chat_filter(message: Message) -> None:
     """ filter handler """
     if not message.from_user:
@@ -124,7 +124,8 @@ async def chat_filter(message: Message) -> None:
                 or input_text.startswith(f"{name} ")
                 or input_text.endswith(f" {name}")
                 or f" {name} " in input_text):
-            await CHANNEL.forward_stored(message_id=FILTERS_DATA[message.chat.id][name],
+            await CHANNEL.forward_stored(client=message.client,
+                                         message_id=FILTERS_DATA[message.chat.id][name],
                                          chat_id=message.chat.id,
                                          user_id=message.from_user.id,
                                          reply_to_message_id=message.message_id)

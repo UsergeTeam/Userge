@@ -16,7 +16,7 @@ CHANNEL = userge.getCLogger(__name__)
 
 @userge.on_cmd(
     "notes", about={'header': "List all saved notes in current chat"},
-    allow_channels=False, allow_bots=False, allow_via_bot=False)
+    allow_channels=False, allow_bots=False)
 async def view_notes(message: Message) -> None:
     """ list notes in current chat """
     out = ''
@@ -36,7 +36,7 @@ async def view_notes(message: Message) -> None:
     "delnote", about={
         'header': "Deletes a note by name",
         'usage': "{tr}delnote [note name]"},
-    allow_channels=False, allow_bots=False, allow_via_bot=False)
+    allow_channels=False, allow_bots=False)
 async def remove_note(message: Message) -> None:
     """ delete note in current chat """
     notename = message.input_str
@@ -55,7 +55,7 @@ async def remove_note(message: Message) -> None:
         'header': "global note to local note",
         'description': "only sudos and owner can access local notes",
         'usage': "{tr}gtlnote [note name]"},
-    allow_channels=False, allow_bots=False, allow_via_bot=False)
+    allow_channels=False, allow_bots=False)
 async def mv_to_local_note(message: Message) -> None:
     """ global to local note """
     notename = message.input_str
@@ -75,7 +75,7 @@ async def mv_to_local_note(message: Message) -> None:
         'header': "local note to global note",
         'description': "anyone can access global notes",
         'usage': "{tr}ltgnote [note name]"},
-    allow_channels=False, allow_bots=False, allow_via_bot=False)
+    allow_channels=False, allow_bots=False)
 async def mv_to_global_note(message: Message) -> None:
     """ local to global note """
     notename = message.input_str
@@ -99,7 +99,7 @@ async def mv_to_global_note(message: Message) -> None:
                filter_me=False,
                allow_channels=False,
                allow_bots=False,
-               allow_via_bot=False)
+               check_client=True)
 async def get_note(message: Message) -> None:
     """ get any saved note """
     if not message.from_user:
@@ -116,7 +116,8 @@ async def get_note(message: Message) -> None:
             reply_to_message_id = replied.message_id
         else:
             reply_to_message_id = message.message_id
-        await CHANNEL.forward_stored(message_id=found['mid'],
+        await CHANNEL.forward_stored(client=message.client,
+                                     message_id=found['mid'],
                                      chat_id=message.chat.id,
                                      user_id=message.from_user.id,
                                      reply_to_message_id=reply_to_message_id)
@@ -135,8 +136,7 @@ async def get_note(message: Message) -> None:
                        '{mention}': "mention user"},
                    'usage': "{tr}addnote [note name] [content | reply to msg]"},
                allow_channels=False,
-               allow_bots=False,
-               allow_via_bot=False)
+               allow_bots=False)
 async def add_note(message: Message) -> None:
     """ add note to curent chat """
     notename = message.matches[0].group(1)
@@ -158,4 +158,4 @@ async def add_note(message: Message) -> None:
         out = out.format('Added', notename)
     else:
         out = out.format('Updated', notename)
-    await message.edit(text=out, del_in=3, log=True)
+    await message.edit(text=out, del_in=3, log=__name__)
