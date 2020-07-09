@@ -273,14 +273,16 @@ class ChannelLogger:
                 caption=caption,
                 reply_to_message_id=reply_to_message_id,
                 disable_web_page_preview=True,
-                reply_markup=InlineKeyboardMarkup(buttons) if hasattr(client, 'ubot') else None)
+                reply_markup=InlineKeyboardMarkup(buttons)
+                if hasattr(client, 'ubot') and buttons else None)
         else:
             msg = await client.send_message(
                 chat_id=chat_id,
                 text=caption,
                 reply_to_message_id=reply_to_message_id,
                 disable_web_page_preview=True,
-                reply_markup=InlineKeyboardMarkup(buttons) if hasattr(client, 'ubot') else None)
+                reply_markup=InlineKeyboardMarkup(buttons)
+                if hasattr(client, 'ubot') and buttons else None)
         if del_in and msg:
             await asyncio.sleep(del_in)
             await msg.delete()

@@ -208,7 +208,7 @@ def mega_dl(url: str) -> str:
         return reply
 
     command = f'bin/megadown -q -m {link}'
-    result = popen(command).read()
+    result = popen(command).read()  # nosec
 
     try:
         data = json.loads(result)
@@ -238,7 +238,7 @@ def cm_ru(url: str) -> str:
         return reply
 
     command = f'bin/cmrudl -s {link}'
-    result = popen(command).read()
+    result = popen(command).read()  # nosec
     result = result.splitlines()[-1]
 
     try:

@@ -88,11 +88,11 @@ def creds_dec(func):
     """ decorator for check CREDS """
     @wraps(func)
     async def wrapper(self):
+        # pylint: disable=protected-access
         if _CREDS:
             await _refresh_creds()
             await func(self)
         else:
-            # pylint: disable=protected-access
             await self._message.edit("Please run `.gsetup` first", del_in=5)
     return wrapper
 
