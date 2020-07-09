@@ -3,17 +3,17 @@
 # by @krishna_singhal
 
 import os
-from userge.utils import take_screen_shot, runcmd
 
 from pyrogram.errors.exceptions.bad_request_400 import YouBlockedUser
 
 from userge import userge, Message, Config
+from userge.utils import take_screen_shot, runcmd
 
 
 @userge.on_cmd("fry", about={
     'header': " Deepfrying media",
-    'usage': "{tr}fry [lvl from 1 to 8] [reply to sticker and photo]",
-    'examples': "{tr}fry 3 [reply to sticker and photo]"})
+    'usage': "{tr}fry [lvl count (recommendation 3)] [reply to any media]",
+    'examples': "{tr}fry 3 [reply to any media]"})
 async def fry_(message: Message):
     """ Deepfry any stickers and images """
     frying_file = None
