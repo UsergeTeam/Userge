@@ -7,7 +7,7 @@ from userge.utils import take_screen_shot, runcmd
 
 from pyrogram.errors.exceptions.bad_request_400 import YouBlockedUser
 
-from userge import userge, Config, Message
+from userge import userge, Message, Config
 
 
 @userge.on_cmd("fry", about={
@@ -37,14 +37,23 @@ async def fry_(message: Message):
         webp_file = os.path.join(Config.DOWN_PATH, "fry.png")
         cmd = f"lottie_convert.py --frame 0 -if lottie -of png {dls_loc} {webp_file}"
         stdout, stderr = (await runcmd(cmd))[:2]
+        if not os.path.lexists(webp_file):
+            await message.err("```Media not found ...```", del_in=5)
+            raise Exception(stdout + stderr)
         frying_file = webp_file
     elif replied.animation:
         jpg_file = os.path.join(Config.DOWN_PATH, "fry.jpg")
         await take_screen_shot(dls_loc, 0, jpg_file)
+        if not os.path.lexists(jpg_file):
+            await message.err("```Media not found ...```", del_in=5)
+            return
         frying_file = jpg_file
     elif replied.sticker and replied.sticker.file_name.endswith(".webp"):
         png_file = os.path.join(Config.DOWN_PATH, "fry.jpg")
         os.rename(dls_loc, png_file)
+        if not os.path.lexists(png_file):
+            await message.err("```Media not found ...```", del_in=5)
+            return
         frying_file = png_file
     if frying_file is None:
         frying_file = dls_loc
