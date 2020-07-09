@@ -24,10 +24,15 @@ async def fry_(message: Message):
     if not (replied.photo or replied.sticker or replied.video or replied.animation):
         await message.err("```Reply to Media only !...```", del_in=5)
         return
-    try:
-        args = int(message.input_str)
-    except ValueError:
-        args = 1
+    args = message.input_str
+    if not args.isdigit():
+        await message.err(
+            "```No need this wastage, need only numbers from 1 to 8 !...```, del_in=5)
+        return
+    args = int(args)
+    if not (0 < input_ < 9):
+        await message.err("```invalid range !...```", del_in=5)
+        return
     if not os.path.isdir(Config.DOWN_PATH):
         os.makedirs(Config.DOWN_PATH)
     await message.edit("```Frying, Wait plox ...```")
@@ -79,6 +84,7 @@ async def fry_(message: Message):
             await message.err("Bot is Down, try to restart Bot !...", del_in=5)
             return
         message_id = replied.message_id
+        deep_fry = None
         if response.photo:
             directory = Config.DOWN_PATH
             files_name = "fry.webp"
@@ -86,10 +92,12 @@ async def fry_(message: Message):
             await userge.download_media(
                 message=response,
                 file_name=deep_fry)
-            deepfry = Config.DOWN_PATH + "fry.webp"
             await userge.send_sticker(
                 message.chat.id,
-                sticker=deepfry,
+                sticker=deep_fry,
                 reply_to_message_id=message_id,
             )
     await message.delete()
+    for garb in (dls_loc, frying_file, deep_fry):
+        if garb and os.path.exists(garb):
+            os.remove(garb)
