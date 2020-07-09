@@ -12,7 +12,7 @@ from userge.utils import take_screen_shot, runcmd
 
 @userge.on_cmd("fry", about={
     'header': " Deepfrying media",
-    'usage': "{tr}fry [lvl count (recommendation 3)] [reply to any media]",
+    'usage': "{tr}fry [fry count (recommendation 3)] [reply to any media]",
     'examples': "{tr}fry 3 [reply to any media]"})
 async def fry_(message: Message):
     """ Deepfry any stickers and images """
@@ -26,12 +26,11 @@ async def fry_(message: Message):
         return
     args = message.input_str
     if not args.isdigit():
-        await message.err(
-            "```No need this wastage, need only numbers from 1 to 8 !...```, del_in=5)
+        await message.err("```Need fry count from 1 - 8 only !...```, del_in=5)
         return
     args = int(args)
-    if not (0 < input_ < 9):
-        await message.err("```invalid range !...```", del_in=5)
+    if not (0 < args < 9):
+        await message.err("```Invalid range !...```", del_in=5)
         return
     if not os.path.isdir(Config.DOWN_PATH):
         os.makedirs(Config.DOWN_PATH)
@@ -39,6 +38,7 @@ async def fry_(message: Message):
     dls = await message.client.download_media(message=replied, file_name=Config.DOWN_PATH)
     dls_loc = os.path.join(Config.DOWN_PATH, os.path.basename(dls))
     if replied.sticker and replied.sticker.file_name.endswith(".tgs"):
+        await message.edit("```Ohh nice sticker, Lemme deepfry this Animated sticker, wait plox ...```")
         webp_file = os.path.join(Config.DOWN_PATH, "fry.png")
         cmd = f"lottie_convert.py --frame 0 -if lottie -of png {dls_loc} {webp_file}"
         stdout, stderr = (await runcmd(cmd))[:2]
@@ -46,7 +46,11 @@ async def fry_(message: Message):
             await message.err("```Media not found ...```", del_in=5)
             raise Exception(stdout + stderr)
         frying_file = webp_file
-    elif replied.animation:
+    elif replied.animation or replied.video:
+        if replied.video:
+            await message.edit("```Wait bruh, lemme deepfry this video ...```")
+        else:
+            await message.edit("```What a Gif, Lemme deepfry this ...```")
         jpg_file = os.path.join(Config.DOWN_PATH, "fry.jpg")
         await take_screen_shot(dls_loc, 0, jpg_file)
         if not os.path.lexists(jpg_file):
@@ -54,6 +58,7 @@ async def fry_(message: Message):
             return
         frying_file = jpg_file
     elif replied.sticker and replied.sticker.file_name.endswith(".webp"):
+        await message.edit("```Lemme deepfry this Sticker, wait plox ...```")
         png_file = os.path.join(Config.DOWN_PATH, "fry.jpg")
         os.rename(dls_loc, png_file)
         if not os.path.lexists(png_file):
