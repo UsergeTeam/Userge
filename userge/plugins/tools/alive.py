@@ -24,12 +24,11 @@ async def alive(message: Message):
 
        __Uday Sri Harsha's Userbot__
 
-• **🐍uptime** : `{userge.uptime}`
-• **🤖python version** : `{versions.__python_version__}`
+• **🕰uptime** : `{userge.uptime}`
+• **🐍python version** : `{versions.__python_version__}`
 • **😁pyrogram version** : `{versions.__pyro_version__}`
 • **📟userge version** : `{get_version()}`
 • **🆔license** : {versions.__license__}
-• **©copyright** : {versions.__copyright__}
 • **🤩repo** : [Userge]({Config.UPSTREAM_REPO})
 """
     await message.client.send_message(message.chat.id, output, disable_web_page_preview=True)
