@@ -26,7 +26,7 @@ async def fry_(message: Message):
         return
     args = message.input_str
     if not args.isdigit():
-        await message.err("```Need fry count from 1 - 8 only !...```, del_in=5)
+        await message.err("```Need fry count from 1 - 8 only !...```", del_in=5)
         return
     args = int(args)
     if not (0 < args < 9):
@@ -38,7 +38,7 @@ async def fry_(message: Message):
     dls = await message.client.download_media(message=replied, file_name=Config.DOWN_PATH)
     dls_loc = os.path.join(Config.DOWN_PATH, os.path.basename(dls))
     if replied.sticker and replied.sticker.file_name.endswith(".tgs"):
-        await message.edit("```Ohh nice sticker, Lemme deepfry this Animated sticker, wait plox ...```")
+        await message.edit("```Ohh nice sticker, Lemme deepfry this Animated sticker ...```")
         webp_file = os.path.join(Config.DOWN_PATH, "fry.png")
         cmd = f"lottie_convert.py --frame 0 -if lottie -of png {dls_loc} {webp_file}"
         stdout, stderr = (await runcmd(cmd))[:2]
