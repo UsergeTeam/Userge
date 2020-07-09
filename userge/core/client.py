@@ -109,10 +109,8 @@ class _AbstractUserge(Methods, RawClient):
             _LOG.error(_LOG_STR, c_e)
         if update_req:
             _LOG.info(_LOG_STR, "Installing Requirements...")
-            # pylint: disable=BAN-B607
-            os.system("pip3 install -U pip")
-            os.system("pip3 install -r requirements.txt")
-        os.execl(sys.executable, sys.executable, '-m', 'userge')  # pylint: disable=BAN-B606
+            os.system("pip3 install -U pip && pip3 install -r requirements.txt")  # nosec
+        os.execl(sys.executable, sys.executable, '-m', 'userge')  # nosec
         sys.exit()
 
 

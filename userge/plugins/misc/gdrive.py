@@ -13,7 +13,7 @@ import io
 import re
 import time
 import math
-import pickle  # pylint: disable=BAN-B403
+import pickle  # nosec
 import asyncio
 from json import dumps
 from functools import wraps
@@ -52,7 +52,7 @@ async def _init() -> None:
     global _CREDS  # pylint: disable=global-statement
     _LOG.debug("Setting GDrive DBase...")
     result = await _SAVED_SETTINGS.find_one({'_id': 'GDRIVE'}, {'creds': 1})
-    _CREDS = pickle.loads(result['creds']) if result else None  # pylint: disable=BAN-B301
+    _CREDS = pickle.loads(result['creds']) if result else None  # nosec
 
 
 async def _set_creds(creds: object) -> str:

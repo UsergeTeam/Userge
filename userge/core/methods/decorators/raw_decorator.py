@@ -102,7 +102,7 @@ class RawDecorator(RawClient):
                 else:
                     try:
                         await func(types.bound.Message(r_c, r_m, **kwargs))
-                    except (StopPropagation, ContinuePropagation):  # pylint: disable=PYL-W0706
+                    except (StopPropagation, ContinuePropagation):  # pylint: disable=W0706
                         raise
                     except Exception as f_e:  # pylint: disable=broad-except
                         _LOG.exception(_LOG_STR, f_e)

@@ -93,6 +93,10 @@ class Config:
     HEROKU_GIT_URL = None
 
 
+if not Config.LOG_CHANNEL_ID:
+    _LOG.error("Need LOG_CHANNEL_ID !, Exiting ...")
+    sys.exit()
+
 if Config.SUDO_TRIGGER == Config.CMD_TRIGGER:
     _LOG.info("Invalid SUDO_TRIGGER!, You can't use `%s` as SUDO_TRIGGER", Config.CMD_TRIGGER)
     sys.exit()
@@ -150,15 +154,15 @@ for binary, path in _BINS.items():
 
 if Config.LOAD_UNOFFICIAL_PLUGINS:
     _LOG.info("Loading UnOfficial Plugins...")
-    # pylint: disable=BAN-B607
-    os.system("git clone --depth=1 https://github.com/UsergeTeam/Userge-Plugins.git")
-    os.system("pip3 install -U pip")
-    os.system("pip3 install -r Userge-Plugins/requirements.txt")
-    os.system("rm -rf userge/plugins/unofficial/")
-    os.system("mv Userge-Plugins/plugins/ userge/plugins/unofficial/")
-    os.system("cp -r Userge-Plugins/resources/* resources/")
-    os.system("rm -rf Userge-Plugins/")
-    _LOG.info("UnOfficial Plugins Loaded Successfully!")
+    _CMDS = ["git clone --depth=1 https://github.com/UsergeTeam/Userge-Plugins.git",
+             "pip3 install -U pip",
+             "pip3 install -r Userge-Plugins/requirements.txt",
+             "rm -rf userge/plugins/unofficial/",
+             "mv Userge-Plugins/plugins/ userge/plugins/unofficial/",
+             "cp -r Userge-Plugins/resources/* resources/",
+             "rm -rf Userge-Plugins/"]
+    os.system(" && ".join(_CMDS))  # nosec
+    _LOG.info("UnOfficial Plugins Loaded Successfully!")  # nosec
 
 
 def get_version() -> str:
