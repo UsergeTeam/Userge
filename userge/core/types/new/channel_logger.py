@@ -249,40 +249,42 @@ class ChannelLogger:
         Returns:
             None
         """
-        message = await self._client.get_messages(chat_id=Config.LOG_CHANNEL_ID,
-                                                  message_ids=message_id)
-        caption = ''
-        file_id = file_ref = None
-        if message.caption:
-            caption = message.caption.html.split('\n\n', maxsplit=1)[-1]
-        elif message.text:
-            caption = message.text.html.split('\n\n', maxsplit=1)[-1]
-        if caption:
-            u_dict = await self._client.get_user_dict(user_id)
-            chat = await self._client.get_chat(chat_id)
-            u_dict.update({
-                'chat': chat.title if chat.title else "this group", 'count': chat.members_count})
-            caption = caption.format_map(SafeDict(**u_dict))
-        file_id, file_ref = _get_file_id_and_ref(message)
-        caption, buttons = _parse_buttons(caption)
-        if message.media and file_id and file_ref:
-            msg = await client.send_cached_media(
-                chat_id=chat_id,
-                file_id=file_id,
-                file_ref=file_ref,
-                caption=caption,
-                reply_to_message_id=reply_to_message_id,
-                disable_web_page_preview=True,
-                reply_markup=InlineKeyboardMarkup(buttons)
-                if hasattr(client, 'ubot') and buttons else None)
-        else:
-            msg = await client.send_message(
-                chat_id=chat_id,
-                text=caption,
-                reply_to_message_id=reply_to_message_id,
-                disable_web_page_preview=True,
-                reply_markup=InlineKeyboardMarkup(buttons)
-                if hasattr(client, 'ubot') and buttons else None)
-        if del_in and msg:
-            await asyncio.sleep(del_in)
-            await msg.delete()
+        if message_id and isinstance(message_id, int):
+            message = await self._client.get_messages(chat_id=Config.LOG_CHANNEL_ID,
+                                                      message_ids=message_id)
+            caption = ''
+            file_id = file_ref = None
+            if message.caption:
+                caption = message.caption.html.split('\n\n', maxsplit=1)[-1]
+            elif message.text:
+                caption = message.text.html.split('\n\n', maxsplit=1)[-1]
+            if caption:
+                u_dict = await self._client.get_user_dict(user_id)
+                chat = await self._client.get_chat(chat_id)
+                u_dict.update({
+                    'chat': chat.title if chat.title else "this group",
+                    'count': chat.members_count})
+                caption = caption.format_map(SafeDict(**u_dict))
+            file_id, file_ref = _get_file_id_and_ref(message)
+            caption, buttons = _parse_buttons(caption)
+            if message.media and file_id and file_ref:
+                msg = await client.send_cached_media(
+                    chat_id=chat_id,
+                    file_id=file_id,
+                    file_ref=file_ref,
+                    caption=caption,
+                    reply_to_message_id=reply_to_message_id,
+                    disable_web_page_preview=True,
+                    reply_markup=InlineKeyboardMarkup(buttons)
+                    if hasattr(client, 'ubot') and buttons else None)
+            else:
+                msg = await client.send_message(
+                    chat_id=chat_id,
+                    text=caption,
+                    reply_to_message_id=reply_to_message_id,
+                    disable_web_page_preview=True,
+                    reply_markup=InlineKeyboardMarkup(buttons)
+                    if hasattr(client, 'ubot') and buttons else None)
+            if del_in and msg:
+                await asyncio.sleep(del_in)
+                await msg.delete()

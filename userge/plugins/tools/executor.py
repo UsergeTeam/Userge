@@ -37,7 +37,7 @@ async def eval_(message: Message):
     stdout, stderr, exc = None, None, None
 
     async def aexec(code):
-        exec("async def __aexec(userge, message):\n "  # nosec
+        exec("async def __aexec(userge, message):\n "  # nosec pylint: disable=W0122
              + '\n '.join(line for line in code.split('\n')))
         return await locals()['__aexec'](userge, message)
     try:

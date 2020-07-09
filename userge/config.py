@@ -162,7 +162,7 @@ if Config.LOAD_UNOFFICIAL_PLUGINS:
              "cp -r Userge-Plugins/resources/* resources/",
              "rm -rf Userge-Plugins/"]
     os.system(" && ".join(_CMDS))  # nosec
-    _LOG.info("UnOfficial Plugins Loaded Successfully!")  # nosec
+    _LOG.info("UnOfficial Plugins Loaded Successfully!")
 
 
 def get_version() -> str:
