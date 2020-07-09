@@ -19,7 +19,7 @@ async def hii_(message: Message):
         return
     paytext, filler = message.input_str.split(',', maxsplit=1)
     if not filler:
-        awat message.edit("```Second emoji not found ...```", del_in=5)
+        await message.edit("```Second emoji not found ...```", del_in=5)
         return
     paytext = paytext.strip()
     filler = filler.strip()
@@ -50,7 +50,7 @@ async def lol_(message: Message):
         return
     paytext, filler = message.input_str.split(',', maxsplit=1)
     if not filler:
-        awat message.edit("```Second emoji not found ...```", del_in=5)
+        await message.edit("```Second emoji not found ...```", del_in=5)
         return
     paytext = paytext.strip()
     filler = filler.strip()
