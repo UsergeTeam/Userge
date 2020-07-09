@@ -6,7 +6,8 @@ from userge import userge, Message
 
 
 @userge.on_cmd("hii", about={
-    'header': "Use HI to greet someone",
+    'header': "Use HI to greet someone\n"
+    "# by krishna",
     'usage': "{tr}hii [foreground emoji] , [background emoji]"})
 async def hii_(message: Message):
     """hii"""
