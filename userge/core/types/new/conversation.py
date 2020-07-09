@@ -1,3 +1,5 @@
+# pylint: disable=missing-module-docstring
+#
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -6,7 +8,7 @@
 #
 # All rights reserved.
 
-__all__ = ['Conv']
+__all__ = ['Conversation']
 
 import asyncio
 from typing import Union, Dict, Optional
@@ -15,7 +17,7 @@ from pyrogram import Message as RawMessage, Filters, MessageHandler
 
 from userge import logging
 from userge.utils.exceptions import StopConversation
-from .. import client as _client
+from ... import client as _client  # pylint: disable=unused-import
 
 _LOG = logging.getLogger(__name__)
 _LOG_STR = "<<<!  :::::  %s  :::::  !>>>"
@@ -27,8 +29,8 @@ class _MsgLimitReached(Exception):
     pass
 
 
-class Conv:
-    """Conversation class for userge"""
+class Conversation:
+    """ Conversation class for userge """
     def __init__(self,
                  client: '_client.Userge',
                  user: Union[str, int],
@@ -43,7 +45,7 @@ class Conv:
 
     @property
     def chat_id(self) -> int:
-        """Returns chat_id"""
+        """ Returns chat_id """
         return self._chat_id
 
     async def get_response(self, *, timeout: Union[int, float] = 0,
@@ -132,7 +134,7 @@ class Conv:
 
     @staticmethod
     def init(client: '_client.Userge') -> None:
-        """initialize the conversation method"""
+        """ initialize the conversation method """
         async def _on_conversation(_, msg: RawMessage) -> None:
             _CONV_DICT[msg.from_user.id].put_nowait(msg)
             msg.continue_propagation()
@@ -143,7 +145,7 @@ class Conv:
                     lambda _, query: _CONV_DICT and query.from_user
                     and query.from_user.id in _CONV_DICT)), 0)
 
-    async def __aenter__(self) -> 'Conv':
+    async def __aenter__(self) -> 'Conversation':
         self._chat_id = int(self._user) if isinstance(self._user, int) else \
             (await self._client.get_users(self._user)).id
         _CONV_DICT[self._chat_id] = asyncio.Queue(self._limit)

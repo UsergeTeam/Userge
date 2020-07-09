@@ -1,3 +1,5 @@
+# pylint: disable=missing-module-docstring
+#
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -9,17 +11,17 @@
 __all__ = ['Message']
 
 import re
-import os
 import asyncio
 from typing import List, Dict, Union, Optional, Sequence
 
-import aiofiles
-from pyrogram import Client as RawClient, Message as RawMessage, InlineKeyboardMarkup
+from pyrogram import InlineKeyboardMarkup, Message as RawMessage
 from pyrogram.errors.exceptions import MessageAuthorRequired, MessageTooLong
 from pyrogram.errors.exceptions.bad_request_400 import MessageNotModified, MessageIdInvalid
+from pyrogram.errors.exceptions.forbidden_403 import MessageDeleteForbidden
 
-from userge import logging, Config
-from . import logger
+from userge import logging
+from ... import client as _client  # pylint: disable=unused-import
+from ..new import ChannelLogger
 
 _CANCEL_LIST: List[int] = []
 _ERROR_MSG_DELETE_TIMEOUT = 5
@@ -29,18 +31,28 @@ _LOG = logging.getLogger(__name__)
 _LOG_STR = "<<<!  :::::  %s  :::::  !>>>"
 
 
+def _msg_to_dict(message: RawMessage) -> Dict[str, object]:
+    kwargs_ = vars(message)
+    del message
+    for key_ in ['_client', '_channel', '_filtered', '_process_canceled',
+                 'client', '_filtered_input_str', '_flags', '_kwargs']:
+        if key_ in kwargs_:
+            del kwargs_[key_]
+    return kwargs_
+
+
 class Message(RawMessage):
-    """Modded Message Class For Userge"""
+    """ Modded Message Class For Userge """
     def __init__(self,
-                 client: RawClient,
+                 client: Union['_client.Userge', '_client._UsergeBot'],
                  message: RawMessage,
                  **kwargs: Union[str, bool]) -> None:
-        super().__init__(client=client, **self._msg_to_dict(message))
+        super().__init__(client=client, **_msg_to_dict(message))
         self.message_id: int
         self.reply_to_message: Optional[RawMessage]
         if self.reply_to_message:
             self.reply_to_message = self.__class__(self._client, self.reply_to_message)
-        self._channel = logger.CLogger(client, __name__)
+        self._channel = ChannelLogger(client, "CORE")
         self._filtered = False
         self._process_canceled = False
         self._filtered_input_str: str = ''
@@ -48,54 +60,49 @@ class Message(RawMessage):
         self._kwargs = kwargs
 
     @property
+    def client(self) -> Union['_client.Userge', '_client._UsergeBot']:
+        """ returns client """
+        return self._client
+
+    @property
     def input_str(self) -> str:
-        """Returns the input string without command"""
-        input_ = self.text
-        if ' ' in input_:
+        """ Returns the input string without command """
+        input_ = self.text.html
+        if ' ' in input_ or '\n' in input_:
             return str(input_.split(maxsplit=1)[1].strip())
         return ''
 
     @property
     def input_or_reply_str(self) -> str:
-        """Returns the input string  or replied msg text without command"""
+        """ Returns the input string  or replied msg text without command """
         input_ = self.input_str
         if not input_ and self.reply_to_message:
-            input_ = (self.reply_to_message.text or '').strip()
+            input_ = (self.reply_to_message.text.html if self.reply_to_message.text else '').strip()
         return input_
 
     @property
     def filtered_input_str(self) -> str:
-        """Returns the filtered input string without command and flags"""
+        """ Returns the filtered input string without command and flags """
         self._filter()
         return self._filtered_input_str
 
     @property
     def flags(self) -> Dict[str, str]:
-        """Returns all flags in input string as `Dict`"""
+        """ Returns all flags in input string as `Dict` """
         self._filter()
         return self._flags
 
     @property
     def process_is_canceled(self) -> bool:
-        """Returns True if process canceled"""
+        """ Returns True if process canceled """
         if self.message_id in _CANCEL_LIST:
             _CANCEL_LIST.remove(self.message_id)
             self._process_canceled = True
         return self._process_canceled
 
     def cancel_the_process(self) -> None:
-        """Set True to the self.process_is_canceled"""
+        """ Set True to the self.process_is_canceled """
         _CANCEL_LIST.append(self.message_id)
-
-    @staticmethod
-    def _msg_to_dict(message: RawMessage) -> Dict[str, object]:
-        kwargs_ = vars(message)
-        del message
-        for key_ in ['_client', '_channel', '_filtered', '_process_canceled',
-                     '_filtered_input_str', '_flags', '_kwargs']:
-            if key_ in kwargs_:
-                del kwargs_[key_]
-        return kwargs_
 
     def _filter(self) -> None:
         if not self._filtered:
@@ -149,24 +156,16 @@ class Message(RawMessage):
         Returns:
             On success, the sent Message is returned.
         """
-        async with aiofiles.open(filename, "w+", encoding="utf8") as out_file:
-            await out_file.write(text)
         reply_to_id = self.reply_to_message.message_id if self.reply_to_message \
             else self.message_id
-        _LOG.debug(_LOG_STR, f"Uploading {filename} To Telegram")
-        msg = await self._client.send_document(chat_id=self.chat.id,
-                                               document=filename,
-                                               caption=caption,
-                                               disable_notification=True,
-                                               reply_to_message_id=reply_to_id)
-        os.remove(filename)
-        if log:
-            if isinstance(log, str):
-                self._channel.update(log)
-            await self._channel.fwd_msg(msg)
         if delete_message:
             asyncio.get_event_loop().create_task(self.delete())
-        return Message(self._client, msg)
+        return await self._client.send_as_file(chat_id=self.chat.id,
+                                               text=text,
+                                               filename=filename,
+                                               caption=caption,
+                                               log=log,
+                                               reply_to_message_id=reply_to_id)
 
     async def reply(self,
                     text: str,
@@ -238,22 +237,15 @@ class Message(RawMessage):
             quote = self.chat.type != "private"
         if reply_to_message_id is None and quote:
             reply_to_message_id = self.message_id
-        msg = await self._client.send_message(chat_id=self.chat.id,
-                                              text=text,
-                                              parse_mode=parse_mode,
-                                              disable_web_page_preview=disable_web_page_preview,
-                                              disable_notification=disable_notification,
-                                              reply_to_message_id=reply_to_message_id,
-                                              reply_markup=reply_markup)
-        if log:
-            if isinstance(log, str):
-                self._channel.update(log)
-            await self._channel.fwd_msg(msg)
-        del_in = del_in or Config.MSG_DELETE_TIMEOUT
-        if del_in > 0:
-            await asyncio.sleep(del_in)
-            return bool(await msg.delete())
-        return Message(self._client, msg)
+        return await self._client.send_message(chat_id=self.chat.id,
+                                               text=text,
+                                               del_in=del_in,
+                                               log=log,
+                                               parse_mode=parse_mode,
+                                               disable_web_page_preview=disable_web_page_preview,
+                                               disable_notification=disable_notification,
+                                               reply_to_message_id=reply_to_message_id,
+                                               reply_markup=reply_markup)
 
     reply_text = reply
 
@@ -306,10 +298,12 @@ class Message(RawMessage):
             RPCError: In case of a Telegram RPC error.
         """
         try:
-            msg_ = await self._client.edit_message_text(
+            return await self._client.edit_message_text(
                 chat_id=self.chat.id,
                 message_id=self.message_id,
                 text=text,
+                del_in=del_in,
+                log=log,
                 parse_mode=parse_mode,
                 disable_web_page_preview=disable_web_page_preview,
                 reply_markup=reply_markup)
@@ -325,16 +319,6 @@ class Message(RawMessage):
                     self.message_id = msg.message_id
                 return msg
             raise m_er
-        else:
-            if log:
-                if isinstance(log, str):
-                    self._channel.update(log)
-                await self._channel.fwd_msg(msg_)
-            del_in = del_in or Config.MSG_DELETE_TIMEOUT
-            if del_in > 0:
-                await asyncio.sleep(del_in)
-                return bool(await msg_.delete())
-            return Message(self._client, msg_)
 
     edit_text = edit
 
@@ -800,3 +784,28 @@ class Message(RawMessage):
                 disable_web_page_preview=disable_web_page_preview,
                 reply_markup=reply_markup,
                 **kwargs)
+
+    # pylint: disable=arguments-differ
+    async def delete(self, revoke: bool = True, sudo: bool = True) -> bool:
+        """\nThis will first try to delete and ignore
+        it if it raises MessageDeleteForbidden
+
+        Parameters:
+            revoke (``bool``, *optional*):
+                Deletes messages on both parts.
+                This is only for private cloud chats and normal groups, messages on
+                channels and supergroups are always revoked (i.e.: deleted for everyone).
+                Defaults to True.
+
+            sudo (``bool``, *optional*):
+                If ``True``, sudo users supported.
+
+        Returns:
+            True on success, False otherwise.
+        """
+        try:
+            return bool(await super().delete(revoke=revoke))
+        except MessageDeleteForbidden as m_e:
+            if not sudo:
+                raise m_e
+            return False

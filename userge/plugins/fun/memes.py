@@ -1,3 +1,5 @@
+""" enjoy memes """
+
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -21,7 +23,8 @@ from userge import userge, Message
 
 
 @userge.on_cmd(r"(?:Kek|:/)$",
-               about={'header': "Check yourself, hint: `:/`"}, name='Kek', trigger='')
+               about={'header': "Check yourself, hint: `:/`"}, name='Kek',
+               trigger='', allow_via_bot=False)
 async def kek_(message: Message):
     """kek"""
     kek = ["/", "\\"]
@@ -31,7 +34,8 @@ async def kek_(message: Message):
 
 
 @userge.on_cmd(r"(?:Lol|-_-)$",
-               about={'header': "Check yourself, hint: `-_-`"}, name='Lol', trigger='')
+               about={'header': "Check yourself, hint: `-_-`"}, name='Lol',
+               trigger='', allow_via_bot=False)
 async def lol_(message: Message):
     """lol"""
     lol = "-_ "
@@ -43,7 +47,8 @@ async def lol_(message: Message):
 
 
 @userge.on_cmd(r"(?:Fun|;_;)$",
-               about={'header': "Check yourself, hint: `;_;`"}, name="Fun", trigger='')
+               about={'header': "Check yourself, hint: `;_;`"}, name="Fun",
+               trigger='', allow_via_bot=False)
 async def fun_(message: Message):
     """fun"""
     fun = ";_ "
@@ -54,7 +59,8 @@ async def fun_(message: Message):
         await message.edit(fun, parse_mode="html")
 
 
-@userge.on_cmd("Oof$", about={'header': "Ooooof"}, trigger='')
+@userge.on_cmd("Oof$", about={'header': "Ooooof"},
+               trigger='', allow_via_bot=False)
 async def Oof_(message: Message):
     """Oof"""
     Oof = "Oo "
@@ -63,7 +69,8 @@ async def Oof_(message: Message):
         await message.edit(Oof)
 
 
-@userge.on_cmd("Hmm$", about={'header': "Hmmmmm"}, trigger='')
+@userge.on_cmd("Hmm$", about={'header': "Hmmmmm"},
+               trigger='', allow_via_bot=False)
 async def Hmm_(message: Message):
     """Hmm"""
     Hmm = "Hm "
@@ -308,7 +315,7 @@ async def coin_(message: Message):
 
 @userge.on_cmd("slap", about={
     'header': "reply to slap them with random objects !!",
-    'usage': "{tr}slap [input | reply to msg]"})
+    'usage': "{tr}slap [input | reply to msg]"}, allow_channels=False)
 async def slap_(message: Message):
     """slap"""
     u_id = message.input_str
@@ -317,7 +324,7 @@ async def slap_(message: Message):
     if not u_id:
         await message.err("no input found!")
         return
-    info_dict = await userge.get_user_dict(u_id)
+    info_dict = await message.client.get_user_dict(u_id)
     temp = choice(SLAP_TEMPLATES)
     item = choice(ITEMS)
     hit = choice(HIT)
@@ -350,10 +357,10 @@ async def decide_(message: Message):
     if message.reply_to_message:
         message_id = message.reply_to_message.message_id
     await message.delete()
-    await userge.send_photo(chat_id=chat_id,
-                            photo=path,
-                            caption=str(r["answer"]).upper(),
-                            reply_to_message_id=message_id)
+    await message.client.send_photo(chat_id=chat_id,
+                                    photo=path,
+                                    caption=str(r["answer"]).upper(),
+                                    reply_to_message_id=message_id)
     os.remove(path)
 
 
@@ -536,7 +543,7 @@ async def scam_(message: Message):
             await message.delete()
             count = 0
             while count <= scam_time:
-                await userge.send_chat_action(chat_id, scam_action)
+                await message.client.send_chat_action(chat_id, scam_action)
                 await asyncio.sleep(5)
                 count += 5
     except Exception:
@@ -549,7 +556,7 @@ async def scam_(message: Message):
 async def dice_gen(message: Message):
     """send dice"""
     random_emo = choice(DICE_EMO)
-    await userge.send_dice(message.chat.id, random_emo)
+    await message.client.send_dice(message.chat.id, random_emo)
     await message.delete()
 
 

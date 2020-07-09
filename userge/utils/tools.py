@@ -1,3 +1,5 @@
+# pylint: disable=missing-module-docstring
+#
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -19,7 +21,7 @@ _LOG = logging.getLogger(__name__)
 
 
 def humanbytes(size: float) -> str:
-    """humanize size"""
+    """ humanize size """
     if not size:
         return ""
     power = 1024
@@ -32,7 +34,7 @@ def humanbytes(size: float) -> str:
 
 
 def time_formatter(seconds: float) -> str:
-    """humanize time"""
+    """ humanize time """
     minutes, seconds = divmod(int(seconds), 60)
     hours, minutes = divmod(minutes, 60)
     days, hours = divmod(hours, 24)
@@ -44,7 +46,7 @@ def time_formatter(seconds: float) -> str:
 
 
 async def runcmd(cmd: str) -> Tuple[str, str, int, int]:
-    """run command in terminal"""
+    """ run command in terminal """
     args = shlex.split(cmd)
     process = await asyncio.create_subprocess_exec(*args,
                                                    stdout=asyncio.subprocess.PIPE,
@@ -57,7 +59,7 @@ async def runcmd(cmd: str) -> Tuple[str, str, int, int]:
 
 
 async def take_screen_shot(video_file: str, duration: int, path: str = '') -> Optional[str]:
-    """take a screenshot"""
+    """ take a screenshot """
     _LOG.info('[[[Extracting a frame from %s ||| Video duration => %s]]]', video_file, duration)
     ttl = duration // 2
     thumb_image_path = path or os.path.join(Config.DOWN_PATH, f"{basename(video_file)}.jpg")
@@ -69,13 +71,13 @@ async def take_screen_shot(video_file: str, duration: int, path: str = '') -> Op
 
 
 class SafeDict(Dict[str, str]):
-    """modded dict"""
+    """ modded dict """
     def __missing__(self, key: str) -> str:
         return '{' + key + '}'
 
 
 def get_import_path(root: str, path: str) -> Union[str, List[str]]:
-    """return import path"""
+    """ return import path """
     seperator = '\\' if '\\' in root else '/'
     if isfile(path):
         return '.'.join(relpath(path, root).split(seperator))[:-3]

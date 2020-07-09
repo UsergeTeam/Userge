@@ -33,11 +33,11 @@ async def remove_background(message: Message):
         c_time = time.time()
         if os.path.exists(IMG_PATH):
             os.remove(IMG_PATH)
-        await userge.download_media(message=replied,
-                                    file_name=IMG_PATH,
-                                    progress=progress,
-                                    progress_args=(
-                                        "Downloading Image", userge, message, c_time))
+        await message.client.download_media(message=replied,
+                                            file_name=IMG_PATH,
+                                            progress=progress,
+                                            progress_args=(
+                                                "Downloading Image", userge, message, c_time))
         end_t = datetime.now()
         m_s = (end_t - start_t).seconds
         await message.edit(f"Image saved in {m_s} seconds.\nRemoving Background Now...")
@@ -48,7 +48,7 @@ async def remove_background(message: Message):
             RBG_IMG_PATH = IMG_PATH + "_no_bg.png"
             start_t = datetime.now()
             c_time = time.time()
-            await userge.send_document(
+            await message.client.send_document(
                 chat_id=message.chat.id,
                 document=RBG_IMG_PATH,
                 disable_notification=True,

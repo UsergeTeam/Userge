@@ -1,3 +1,5 @@
+# pylint: disable=missing-module-docstring
+#
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -9,24 +11,25 @@
 __all__ = ['Plugin']
 
 import asyncio
-from typing import Union, List
+from typing import Union, List, Optional
 
 from userge import logging
-from . import command, filtr
-from .. import client as _client
+from . import command, filter as _filter  # pylint: disable=unused-import
+from ... import client as _client  # pylint: disable=unused-import
 
 _LOG = logging.getLogger(__name__)
 _LOG_STR = "<<<!  [[[[[  %s  ]]]]]  !>>>"
 
 
 class Plugin:
-    """plugin class"""
-    def __init__(self, client: '_client.Userge', name: str, about: str = '') -> None:
+    """ plugin class """
+    def __init__(self, client: '_client.Userge', name: str, parent: str) -> None:
         self._client = client
         self.name = name
-        self.about = about
+        self.parent = parent
+        self.about: Optional[str]
         self.commands: List['command.Command'] = []
-        self.filters: List['filtr.Filtr'] = []
+        self.filters: List['_filter.Filter'] = []
         _LOG.debug(_LOG_STR, f"created plugin -> {self.name}")
 
     def __repr__(self) -> str:
@@ -34,77 +37,83 @@ class Plugin:
 
     @property
     def is_enabled(self) -> bool:
-        """returns enable status"""
+        """ returns enable status """
         return any((flt.is_enabled for flt in self.commands + self.filters))
 
     @property
     def is_disabled(self) -> bool:
-        """returns disable status"""
+        """ returns disable status """
         return all((flt.is_disabled for flt in self.commands + self.filters))
 
     @property
     def is_loaded(self) -> bool:
-        """returns load status"""
+        """ returns load status """
         return any((flt.is_loaded for flt in self.commands + self.filters))
 
     @property
     def enabled_commands(self) -> List['command.Command']:
-        """returns all enabled commands"""
+        """ returns all enabled commands """
         return [cmd for cmd in self.commands if cmd.is_enabled]
 
     @property
     def disabled_commands(self) -> List['command.Command']:
-        """returns all disabled commands"""
+        """ returns all disabled commands """
         return [cmd for cmd in self.commands if cmd.is_disabled]
 
     @property
     def loaded_commands(self) -> List['command.Command']:
-        """returns all loaded commands"""
+        """ returns all loaded commands """
         return [cmd for cmd in self.commands if cmd.is_loaded]
 
     @property
     def unloaded_commands(self) -> List['command.Command']:
-        """returns all unloaded commands"""
+        """ returns all unloaded commands """
         return [cmd for cmd in self.commands if not cmd.is_loaded]
 
     @property
-    def enabled_filters(self) -> List['filtr.Filtr']:
-        """returns all enabled filters"""
+    def enabled_filters(self) -> List['_filter.Filter']:
+        """ returns all enabled filters """
         return [flt for flt in self.filters if flt.is_enabled]
 
     @property
-    def disabled_filters(self) -> List['filtr.Filtr']:
-        """returns all disabled filters"""
+    def disabled_filters(self) -> List['_filter.Filter']:
+        """ returns all disabled filters """
         return [flt for flt in self.filters if flt.is_disabled]
 
     @property
-    def loaded_filters(self) -> List['filtr.Filtr']:
-        """returns all loaded filters"""
+    def loaded_filters(self) -> List['_filter.Filter']:
+        """ returns all loaded filters """
         return [flt for flt in self.filters if flt.is_loaded]
 
     @property
-    def unloaded_filters(self) -> List['filtr.Filtr']:
-        """returns all unloaded filters"""
+    def unloaded_filters(self) -> List['_filter.Filter']:
+        """ returns all unloaded filters """
         return [flt for flt in self.filters if not flt.is_loaded]
 
-    def add(self, obj: Union['command.Command', 'filtr.Filtr']) -> None:
-        """add command or filter to plugin"""
+    def add(self, obj: Union['command.Command', '_filter.Filter']) -> None:
+        """ add command or filter to plugin """
+        obj.plugin_name = self.name
         if isinstance(obj, command.Command):
-            self.commands.append(obj)
+            type_ = self.commands
         else:
-            self.filters.append(obj)
+            type_ = self.filters
+        for flt in type_:
+            if flt.name == obj.name:
+                type_.remove(flt)
+                break
+        type_.append(obj)
         _LOG.debug(_LOG_STR, f"add filter to plugin -> {self.name}")
 
     def get_commands(self) -> List[str]:
-        """returns all sorted command names in the plugin"""
+        """ returns all sorted command names in the plugin """
         return sorted((cmd.name for cmd in self.enabled_commands))
 
     async def init(self) -> None:
-        """initialize the plugin"""
+        """ initialize the plugin """
         await asyncio.gather(*[flt.init() for flt in self.commands + self.filters])
 
     async def enable(self) -> List[str]:
-        """enable all commands in the plugin"""
+        """ enable all commands in the plugin """
         if self.is_enabled:
             return []
         enabled: List[str] = []
@@ -117,7 +126,7 @@ class Plugin:
         return enabled
 
     async def disable(self) -> List[str]:
-        """disable all commands in the plugin"""
+        """ disable all commands in the plugin """
         if not self.is_enabled:
             return []
         disabled: List[str] = []
@@ -130,7 +139,7 @@ class Plugin:
         return disabled
 
     async def load(self) -> List[str]:
-        """load all commands in the plugin"""
+        """ load all commands in the plugin """
         if self.is_loaded:
             return []
         loaded: List[str] = []
@@ -143,7 +152,7 @@ class Plugin:
         return loaded
 
     async def unload(self) -> List[str]:
-        """unload all commands in the plugin"""
+        """ unload all commands in the plugin """
         if not self.is_loaded:
             return []
         unloaded: List[str] = []
