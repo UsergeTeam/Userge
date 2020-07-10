@@ -30,7 +30,8 @@ def _gen_string(name: str) -> str:
     return "**logger** : #" + name.split('.')[-1].upper() + "\n\n{}"
 
 
-def _get_file_id_and_ref(message: '_message.Message') -> Tuple[Optional[str], Optional[str]]:
+def _get_file_id_and_ref(
+        message: '_message.Message') -> Tuple[Optional[str], Optional[str]]:
     if message.audio:
         file_ = message.audio
     elif message.animation:
@@ -52,7 +53,8 @@ def _get_file_id_and_ref(message: '_message.Message') -> Tuple[Optional[str], Op
     return None, None
 
 
-def _parse_buttons(markdown_note: str):
+def _parse_buttons(
+        markdown_note: str) -> Tuple[str, List[Optional[List[InlineKeyboardButton]]]]:
     prev = 0
     note_data = ""
     buttons: List[Tuple[str, str, str]] = []
@@ -77,7 +79,8 @@ def _parse_buttons(markdown_note: str):
     return note_data.strip(), _build_keyboard(buttons)
 
 
-def _build_keyboard(buttons: List[Tuple[str, str, str]]):
+def _build_keyboard(
+        buttons: List[Tuple[str, str, str]]) -> List[Optional[List[InlineKeyboardButton]]]:
     keyb: List[List[InlineKeyboardButton]] = []
     for btn in buttons:
         if btn[2] and keyb:
@@ -209,10 +212,10 @@ class ChannelLogger:
         if message and message.media and file_id and file_ref:
             if caption:
                 caption = self._string.format(caption.strip())
-            msg = await self._client.send_cached_media(chat_id=Config.LOG_CHANNEL_ID,
-                                                       file_id=file_id,
-                                                       file_ref=file_ref,
-                                                       caption=caption)
+            msg = await message.client.send_cached_media(chat_id=Config.LOG_CHANNEL_ID,
+                                                         file_id=file_id,
+                                                         file_ref=file_ref,
+                                                         caption=caption)
             message_id = msg.message_id
         else:
             message_id = await self.log(caption)

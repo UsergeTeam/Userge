@@ -8,6 +8,7 @@
 #
 # All rights reserved.
 
+import asyncio
 from typing import Dict
 
 from userge import userge, Message, Filters, get_collection
@@ -61,10 +62,17 @@ async def filters_active(message: Message) -> None:
 @userge.on_cmd(
     "delfilter", about={
         'header': "Deletes a filter by name",
-        'usage': "{tr}delfilter [filter name]"},
+        'flags': {'-all': "remove all filters"},
+        'usage': "{tr}delfilter [filter name]\n{tr}delfilter -all"},
     allow_channels=False, allow_bots=False)
 async def delete_filters(message: Message) -> None:
     """ delete filter in current chat """
+    if '-all' in message.flags:
+        FILTERS_DATA.clear()
+        await asyncio.gather(
+            FILTERS_COLLECTION.drop(),
+            message.edit("`All Filters cleared!`", del_in=5))
+        return
     filter_ = message.input_str
     if not filter_:
         out = "`Wrong syntax`\nNo arguements"
@@ -77,19 +85,22 @@ async def delete_filters(message: Message) -> None:
     await message.edit(text=out, del_in=3)
 
 
-@userge.on_cmd(r"addfilter ([^\s\|][^\|]*)(?:\s?\|\s?([\s\S]+))?",
-               about={
-                   'header': "Adds a filter by name",
-                   'options': {
-                       '{fname}': "add first name",
-                       '{lname}': "add last name",
-                       '{flname}': "add full name",
-                       '{uname}': "username",
-                       '{chat}': "chat name",
-                       '{count}': "chat members count",
-                       '{mention}': "mention user"},
-                   'usage': "{tr}addfilter [filter name] | [content | reply to msg]"},
-               allow_channels=False, allow_bots=False)
+@userge.on_cmd(
+    r"addfilter ([^\s\|][^\|]*)(?:\s?\|\s?([\s\S]+))?", about={
+        'header': "Adds a filter by name",
+        'options': {
+            '{fname}': "add first name",
+            '{lname}': "add last name",
+            '{flname}': "add full name",
+            '{uname}': "username",
+            '{chat}': "chat name",
+            '{count}': "chat members count",
+            '{mention}': "mention user"},
+        'usage': "{tr}addfilter [filter name] | [content | reply to msg]",
+        'buttons': "<code>[name][buttonurl:link]</code> - <b>add a url button</b>\n"
+                   "<code>[name][buttonurl:link:same]</code> - "
+                   "<b>add a url button to same row</b>"},
+    allow_channels=False, allow_bots=False)
 async def add_filter(message: Message) -> None:
     """ add filter to current chat """
     filter_ = message.matches[0].group(1).strip()

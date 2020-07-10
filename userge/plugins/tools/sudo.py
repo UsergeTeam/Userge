@@ -14,8 +14,6 @@ from pyrogram.errors.exceptions.bad_request_400 import PeerIdInvalid
 
 from userge import userge, Message, Config, get_collection
 
-CHANNEL = userge.getCLogger(__name__)
-
 SUDO_USERS_COLLECTION = get_collection("sudo_users")
 SUDO_CMDS_COLLECTION = get_collection("sudo_cmds")
 
@@ -51,8 +49,7 @@ async def add_sudo(message: Message):
         Config.SUDO_USERS.add(user['id'])
         await asyncio.gather(
             SUDO_USERS_COLLECTION.insert_one({'_id': user['id'], 'men': user['mention']}),
-            CHANNEL.log(f"user : `{user['id']}` added to **SUDO**!"),
-            message.edit(f"user : `{user['id']}` added to **SUDO**!", del_in=5))
+            message.edit(f"user : `{user['id']}` added to **SUDO**!", del_in=5, log=__name__))
 
 
 @userge.on_cmd("delsudo", about={
@@ -61,15 +58,15 @@ async def add_sudo(message: Message):
     'usage': "{tr}delsudo [user_id | reply to msg]\n{tr}delsudo -all"}, allow_channels=False)
 async def del_sudo(message: Message):
     """ delete sudo user """
-    user_id = message.filtered_input_str
-    if message.reply_to_message:
-        user_id = message.reply_to_message.from_user.id
     if '-all' in message.flags:
         Config.SUDO_USERS.clear()
         await asyncio.gather(
             SUDO_USERS_COLLECTION.drop(),
             message.edit("**SUDO** users cleared!", del_in=5))
         return
+    user_id = message.filtered_input_str
+    if message.reply_to_message:
+        user_id = message.reply_to_message.from_user.id
     if not user_id:
         await message.err(f'user: `{user_id}` not found!')
         return
@@ -84,8 +81,7 @@ async def del_sudo(message: Message):
         Config.SUDO_USERS.remove(user_id)
         await asyncio.gather(
             SUDO_USERS_COLLECTION.delete_one({'_id': user_id}),
-            CHANNEL.log(f"user : `{user_id}` removed from **SUDO**!"),
-            message.edit(f"user : `{user_id}` removed from **SUDO**!", del_in=5))
+            message.edit(f"user : `{user_id}` removed from **SUDO**!", del_in=5, log=__name__))
 
 
 @userge.on_cmd("vsudo", about={'header': "view sudo users"}, allow_channels=False)
@@ -102,9 +98,22 @@ async def view_sudo(message: Message):
 
 @userge.on_cmd("addscmd", about={
     'header': "add sudo command",
-    'usage': "{tr}addscmd [command name]"}, allow_channels=False)
+    'flags': {'-all': "add all commands to sudo"},
+    'usage': "{tr}addscmd [command name]\n{tr}addscmd -all"}, allow_channels=False)
 async def add_sudo_cmd(message: Message):
     """ add sudo cmd """
+    if '-all' in message.flags:
+        Config.ALLOWED_COMMANDS.clear()
+        tmp_ = []
+        for c_d in list(userge.manager.enabled_commands):
+            t_c = c_d.lstrip(Config.CMD_TRIGGER)
+            tmp_.append({'_id': t_c})
+            Config.ALLOWED_COMMANDS.add(t_c)
+        await asyncio.gather(
+            SUDO_CMDS_COLLECTION.insert_many(tmp_),
+            message.edit(f"Added all(`{len(tmp_)}`) commands to **SUDO** cmds!",
+                         del_in=5, log=__name__))
+        return
     cmd = message.input_str
     if not cmd:
         await message.err('input not found!')
@@ -119,8 +128,7 @@ async def add_sudo_cmd(message: Message):
         Config.ALLOWED_COMMANDS.add(cmd)
         await asyncio.gather(
             SUDO_CMDS_COLLECTION.insert_one({'_id': cmd}),
-            CHANNEL.log(f"cmd : `{cmd}` added to **SUDO**!"),
-            message.edit(f"cmd : `{cmd}` added to **SUDO**!", del_in=5))
+            message.edit(f"cmd : `{cmd}` added to **SUDO**!", del_in=5, log=__name__))
 
 
 @userge.on_cmd("delscmd", about={
@@ -129,13 +137,13 @@ async def add_sudo_cmd(message: Message):
     'usage': "{tr}delscmd [command name]\n{tr}delscmd -all"}, allow_channels=False)
 async def del_sudo_cmd(message: Message):
     """ delete sudo cmd """
-    cmd = message.filtered_input_str
     if '-all' in message.flags:
         Config.ALLOWED_COMMANDS.clear()
         await asyncio.gather(
             SUDO_CMDS_COLLECTION.drop(),
             message.edit("**SUDO** cmds cleared!", del_in=5))
         return
+    cmd = message.filtered_input_str
     if not cmd:
         await message.err('input not found!')
         return
@@ -145,8 +153,7 @@ async def del_sudo_cmd(message: Message):
         Config.ALLOWED_COMMANDS.remove(cmd)
         await asyncio.gather(
             SUDO_CMDS_COLLECTION.delete_one({'_id': cmd}),
-            CHANNEL.log(f"cmd : `{cmd}` removed from **SUDO**!"),
-            message.edit(f"cmd : `{cmd}` removed from **SUDO**!", del_in=5))
+            message.edit(f"cmd : `{cmd}` removed from **SUDO**!", del_in=5, log=__name__))
 
 
 @userge.on_cmd("vscmd", about={'header': "view sudo cmds"}, allow_channels=False)
@@ -155,7 +162,7 @@ async def view_sudo_cmd(message: Message):
     if not Config.ALLOWED_COMMANDS:
         await message.edit("**SUDO** cmds not found!", del_in=5)
         return
-    out_str = '⛔ **SUDO CMDS** ⛔\n\n'
-    async for cmd in SUDO_CMDS_COLLECTION.find():
-        out_str += f" 🔹 `{cmd['_id']}`\n"
-    await message.edit(out_str + f"\n**trigger** : `{Config.SUDO_TRIGGER}`", del_in=0)
+    out_str = f"⛔ **SUDO CMDS** ⛔\n\n**trigger** : `{Config.SUDO_TRIGGER}`\n\n"
+    async for cmd in SUDO_CMDS_COLLECTION.find().sort('_id'):
+        out_str += f"`{cmd['_id']}`  "
+    await message.edit_or_send_as_file(out_str, del_in=0)

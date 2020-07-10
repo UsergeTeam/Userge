@@ -8,6 +8,8 @@
 #
 # All rights reserved.
 
+import asyncio
+
 from userge import userge, Message, get_collection, Config
 
 NOTES_COLLECTION = get_collection("notes")
@@ -35,10 +37,16 @@ async def view_notes(message: Message) -> None:
 @userge.on_cmd(
     "delnote", about={
         'header': "Deletes a note by name",
-        'usage': "{tr}delnote [note name]"},
+        'flags': {'-all': "remove all notes"},
+        'usage': "{tr}delnote [note name]\n{tr}delnote -all"},
     allow_channels=False, allow_bots=False)
 async def remove_note(message: Message) -> None:
     """ delete note in current chat """
+    if '-all' in message.flags:
+        await asyncio.gather(
+            NOTES_COLLECTION.drop(),
+            message.edit("`All Notes cleared!`", del_in=5))
+        return
     notename = message.input_str
     if not notename:
         out = "`Wrong syntax`\nNo arguements"
@@ -105,6 +113,8 @@ async def get_note(message: Message) -> None:
     if not message.from_user:
         return
     can_access = message.from_user.is_self or message.from_user.id in Config.SUDO_USERS
+    if Config.OWNER_ID:
+        can_access = can_access or message.from_user.id == Config.OWNER_ID
     notename = message.matches[0].group(1)
     found = await NOTES_COLLECTION.find_one(
         {'chat_id': message.chat.id, 'name': notename}, {'mid': 1, 'global': 1})
@@ -123,20 +133,22 @@ async def get_note(message: Message) -> None:
                                      reply_to_message_id=reply_to_message_id)
 
 
-@userge.on_cmd(r"addnote (\S+)(?:\s([\s\S]+))?",
-               about={
-                   'header': "Adds a note by name",
-                   'options': {
-                       '{fname}': "add first name",
-                       '{lname}': "add last name",
-                       '{flname}': "add full name",
-                       '{uname}': "username",
-                       '{chat}': "chat name",
-                       '{count}': "chat members count",
-                       '{mention}': "mention user"},
-                   'usage': "{tr}addnote [note name] [content | reply to msg]"},
-               allow_channels=False,
-               allow_bots=False)
+@userge.on_cmd(
+    r"addnote (\S+)(?:\s([\s\S]+))?", about={
+        'header': "Adds a note by name",
+        'options': {
+            '{fname}': "add first name",
+            '{lname}': "add last name",
+            '{flname}': "add full name",
+            '{uname}': "username",
+            '{chat}': "chat name",
+            '{count}': "chat members count",
+            '{mention}': "mention user"},
+        'usage': "{tr}addnote [note name] [content | reply to msg]",
+        'buttons': "<code>[name][buttonurl:link]</code> - <b>add a url button</b>\n"
+                   "<code>[name][buttonurl:link:same]</code> - "
+                   "<b>add a url button to same row</b>"},
+    allow_channels=False, allow_bots=False)
 async def add_note(message: Message) -> None:
     """ add note to curent chat """
     notename = message.matches[0].group(1)
@@ -144,8 +156,7 @@ async def add_note(message: Message) -> None:
     replied = message.reply_to_message
     if replied and replied.text:
         content = replied.text.html
-    if content:
-        content = "📝 **--{}--** 📝\n\n{}".format(notename, content)
+    content = "📝 **Note** : `{}`\n\n{}".format(notename, content or '')
     if not (content or (replied and replied.media)):
         await message.err(text="No Content Found!")
         return

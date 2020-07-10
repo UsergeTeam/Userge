@@ -40,7 +40,9 @@ async def _init() -> None:
     'examples': [
         "{tr}setwelcome Hi {mention}, <b>Welcome</b> to {chat} chat\n"
         "or reply to supported media",
-        "reply {tr}setwelcome to text message or supported media with text"]},
+        "reply {tr}setwelcome to text message or supported media with text"],
+    'buttons': "<code>[name][buttonurl:link]</code> - <b>add a url button</b>\n"
+               "<code>[name][buttonurl:link:same]</code> - <b>add a url button to same row</b>"},
     allow_channels=False, allow_bots=False, allow_private=False)
 async def setwel(msg: Message):
     """ set welcome message """
@@ -63,7 +65,9 @@ async def setwel(msg: Message):
     'examples': [
         "{tr}setleft {flname}, Why you left :(\n"
         "or reply to supported media",
-        "reply {tr}setleft to text message or supported media with text"]},
+        "reply {tr}setleft to text message or supported media with text"],
+    'buttons': "<code>[name][buttonurl:link]</code> - <b>add a url button</b>\n"
+               "<code>[name][buttonurl:link:same]</code> - <b>add a url button to same row</b>"},
     allow_channels=False, allow_bots=False, allow_private=False)
 async def setleft(msg: Message):
     """ set left message """
