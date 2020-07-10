@@ -111,7 +111,7 @@ async def add_sudo_cmd(message: Message):
             Config.ALLOWED_COMMANDS.add(t_c)
         await asyncio.gather(
             SUDO_CMDS_COLLECTION.insert_many(tmp_),
-            message.edit(f"Added all(`{len(tmp_)}`) commands to **SUDO** cmds!",
+            message.edit(f"**Added** all (`{len(tmp_)}`) commands to **SUDO** cmds!",
                          del_in=5, log=__name__))
         return
     cmd = message.input_str
