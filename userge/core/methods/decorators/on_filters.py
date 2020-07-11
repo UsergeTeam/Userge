@@ -20,7 +20,8 @@ class OnFilters(RawDecorator):  # pylint: disable=missing-class-docstring
     def on_filters(self,
                    filters: Filters,
                    group: int = 0,
-                   allow_via_bot: bool = True) -> RawDecorator._PYRORETTYPE:
+                   allow_via_bot: bool = True,
+                   check_client: bool = False) -> RawDecorator._PYRORETTYPE:
         """\nDecorator for handling filters
 
         Parameters:
@@ -33,8 +34,11 @@ class OnFilters(RawDecorator):  # pylint: disable=missing-class-docstring
 
             allow_via_bot (``bool``, *optional*):
                 If ``True``, allow this via your bot,  defaults to True.
+
+            check_client (``bool``, *optional*):
+                If ``True``, check client is bot or not before execute,  defaults to True.
         """
         flt = types.raw.Filter(self, group, allow_via_bot)
         filters = Filters.create(lambda _, __: flt.is_enabled) & filters
-        return self._build_decorator(log=f"On Filters {filters}",
-                                     filters=filters, flt=flt)
+        return self._build_decorator(log=f"On Filters {filters}", filters=filters,
+                                     flt=flt, check_client=check_client)

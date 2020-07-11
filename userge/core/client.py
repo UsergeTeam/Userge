@@ -48,13 +48,6 @@ class _AbstractUserge(Methods, RawClient):
         """ returns userge uptime """
         return time_formatter(time.time() - _START_TIME)
 
-    @property
-    def bot(self) -> '_UsergeBot':
-        """ returns usergebot """
-        if self._bot is None:
-            raise UsergeBotNotFound("Need BOT_TOKEN ENV!")
-        return self._bot
-
     async def finalize_load(self) -> None:
         """ finalize the plugins load """
         await asyncio.gather(_complete_init_tasks(), self.manager.init())
@@ -116,9 +109,8 @@ class _AbstractUserge(Methods, RawClient):
             _LOG.error(_LOG_STR, c_e)
         if update_req:
             _LOG.info(_LOG_STR, "Installing Requirements...")
-            os.system("pip3 install -U pip")
-            os.system("pip3 install -r requirements.txt")
-        os.execl(sys.executable, sys.executable, '-m', 'userge')
+            os.system("pip3 install -U pip && pip3 install -r requirements.txt")  # nosec
+        os.execl(sys.executable, sys.executable, '-m', 'userge')  # nosec
         sys.exit()
 
 
@@ -127,6 +119,11 @@ class _UsergeBot(_AbstractUserge):
     def __init__(self, **kwargs) -> None:
         _LOG.info(_LOG_STR, "Setting UsergeBot Configs")
         super().__init__(session_name=":memory:", **kwargs)
+
+    @property
+    def ubot(self) -> 'Userge':
+        """ returns userbot """
+        return self._bot
 
 
 class Userge(_AbstractUserge):
@@ -147,9 +144,17 @@ class Userge(_AbstractUserge):
                 sys.exit()
             kwargs['bot_token'] = Config.BOT_TOKEN
         if Config.HU_STRING_SESSION and Config.BOT_TOKEN:
-            kwargs['bot'] = _UsergeBot(**kwargs)
+            RawClient.DUAL_MODE = True
+            kwargs['bot'] = _UsergeBot(bot=self, **kwargs)
         kwargs['session_name'] = Config.HU_STRING_SESSION or ":memory:"
         super().__init__(**kwargs)
+
+    @property
+    def bot(self) -> '_UsergeBot':
+        """ returns usergebot """
+        if self._bot is None:
+            raise UsergeBotNotFound("Need BOT_TOKEN ENV!")
+        return self._bot
 
     async def start(self) -> None:
         """ start client and bot """

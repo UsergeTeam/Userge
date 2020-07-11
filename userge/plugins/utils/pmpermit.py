@@ -27,7 +27,7 @@ blocked_message = "**You were automatically blocked**"
 
 
 async def _init() -> None:
-    global noPmMessage, blocked_message
+    global noPmMessage, blocked_message  # pylint: disable=global-statement
     async for chat in ALLOWED_COLLECTION.find({"status": 'allowed'}):
         Config.ALLOWED_CHATS.add(chat.get("_id"))
     _pm = await SAVED_SETTINGS.find_one({'_id': 'PM GUARD STATUS'})
@@ -112,10 +112,10 @@ async def get_id(message: Message):
                        "You can switch pmguard On or Off with this command. "
                        "When you turn on this next time, "
                        "the previously allowed chats will be there !"},
-    allow_channels=False, allow_via_bot=False)
+    allow_channels=False)
 async def pmguard(message: Message):
     """ enable or disable auto pm handler """
-    global pmCounter
+    global pmCounter  # pylint: disable=global-statement
     if Config.ALLOW_ALL_PMS:
         Config.ALLOW_ALL_PMS = False
         await message.edit("`PM_guard activated`", del_in=3, log=__name__)
@@ -136,10 +136,10 @@ async def pmguard(message: Message):
         '{flname}': "add full name",
         '{uname}': "username",
         '{chat}': "chat name",
-        '{mention}': "mention user"}}, allow_channels=False, allow_via_bot=False)
+        '{mention}': "mention user"}}, allow_channels=False)
 async def set_custom_nopm_message(message: Message):
     """ setup custom pm message """
-    global noPmMessage
+    global noPmMessage  # pylint: disable=global-statement
     await message.edit('`Custom NOpm message saved`', del_in=3, log=__name__)
     if message.reply_to_message:
         string = message.reply_to_message.text
@@ -161,10 +161,10 @@ async def set_custom_nopm_message(message: Message):
         '{flname}': "add full name",
         '{uname}': "username",
         '{chat}': "chat name",
-        '{mention}': "mention user"}}, allow_channels=False, allow_via_bot=False)
+        '{mention}': "mention user"}}, allow_channels=False)
 async def set_custom_blockpm_message(message: Message):
     """ setup custom blockpm message """
-    global blocked_message
+    global blocked_message  # pylint: disable=global-statement
     await message.edit('`Custom BLOCKpm message saved`', del_in=3, log=__name__)
     if message.reply_to_message:
         string = message.reply_to_message.text
@@ -179,7 +179,7 @@ async def set_custom_blockpm_message(message: Message):
 @userge.on_cmd(
     "vpmmsg", about={
         'header': "Displays the reply message for uninvited PMs"},
-    allow_channels=False, allow_via_bot=False)
+    allow_channels=False)
 async def view_current_noPM_msg(message: Message):
     """ view current pm message """
     await message.edit(f"--current PM message--\n\n{noPmMessage}")
@@ -188,7 +188,7 @@ async def view_current_noPM_msg(message: Message):
 @userge.on_cmd(
     "vbpmmsg", about={
         'header': "Displays the reply message for blocked PMs"},
-    allow_channels=False, allow_via_bot=False)
+    allow_channels=False)
 async def view_current_blockPM_msg(message: Message):
     """ view current block pm message """
     await message.edit(f"--current blockPM message--\n\n{blocked_message}")

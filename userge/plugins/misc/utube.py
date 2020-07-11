@@ -38,10 +38,10 @@ async def ytinfo(message: Message):
     out = """
 **Title** >>
 __{title}__
-    
+
 **Uploader** >>
 __{uploader}__
-    
+
 {table}
     """.format_map(_exracted)
     if _exracted['thumb']:

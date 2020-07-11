@@ -93,7 +93,7 @@ async def check_update(message: Message):
     await message.edit(
         f'`Now pushing updates from [{branch}] to heroku...\n'
         'this will take upto 3 min`\n\n'
-        '* **Restart** me after about 3 min using `.restart -h`\n\n'
+        f'* **Restart** me after about 3 min using `{Config.CMD_TRIGGER}restart -h`\n\n'
         '* After restarted successfully, check updates again :)')
     if "heroku" in repo.remotes:
         remote = repo.remote("heroku")

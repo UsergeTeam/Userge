@@ -85,12 +85,17 @@ class Config:
     AUTOPIC_TIMEOUT = 300
     ALLOWED_CHATS = Filters.chat([])
     ALLOW_ALL_PMS = True
+    USE_USER_FOR_CLIENT_CHECKS = False
     SUDO_USERS: Set[int] = set()
     ALLOWED_COMMANDS: Set[str] = set()
     UPSTREAM_REMOTE = 'upstream'
     HEROKU_APP = None
     HEROKU_GIT_URL = None
 
+
+if not Config.LOG_CHANNEL_ID:
+    _LOG.error("Need LOG_CHANNEL_ID !, Exiting ...")
+    sys.exit()
 
 if Config.SUDO_TRIGGER == Config.CMD_TRIGGER:
     _LOG.info("Invalid SUDO_TRIGGER!, You can't use `%s` as SUDO_TRIGGER", Config.CMD_TRIGGER)
@@ -149,13 +154,14 @@ for binary, path in _BINS.items():
 
 if Config.LOAD_UNOFFICIAL_PLUGINS:
     _LOG.info("Loading UnOfficial Plugins...")
-    os.system("git clone --depth=1 https://github.com/UsergeTeam/Userge-Plugins.git")
-    os.system("pip3 install -U pip")
-    os.system("pip3 install -r Userge-Plugins/requirements.txt")
-    os.system("rm -rf userge/plugins/unofficial/")
-    os.system("mv Userge-Plugins/plugins/ userge/plugins/unofficial/")
-    os.system("cp -r Userge-Plugins/resources/* resources/")
-    os.system("rm -rf Userge-Plugins/")
+    _CMDS = ["git clone --depth=1 https://github.com/UsergeTeam/Userge-Plugins.git",
+             "pip3 install -U pip",
+             "pip3 install -r Userge-Plugins/requirements.txt",
+             "rm -rf userge/plugins/unofficial/",
+             "mv Userge-Plugins/plugins/ userge/plugins/unofficial/",
+             "cp -r Userge-Plugins/resources/* resources/",
+             "rm -rf Userge-Plugins/"]
+    os.system(" && ".join(_CMDS))  # nosec
     _LOG.info("UnOfficial Plugins Loaded Successfully!")
 
 

@@ -1,0 +1,12 @@
+version: "1"
+rules:
+  - base: alpha
+    upstream: UsergeTeam:alpha
+    mergeMethod: rebase
+    mergeUnstable: false
+  - base: beta
+    upstream: UsergeTeam:beta
+    mergeMethod: rebase
+  - base: master
+    upstream: UsergeTeam:master
+    mergeMethod: rebase
