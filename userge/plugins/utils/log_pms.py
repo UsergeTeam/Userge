@@ -17,7 +17,7 @@ async def outgoing_auto_approve(message: Message):
     chat_id = message.chat.id
     my_id = await userge.get_me()
     my_id = my_id.id
-    if not check_bot and PM_LOGGER:
+    if not check_bot and not my_id and PM_LOGGER:
         try:
             await userge.forward_messages(
                 PM_LOGGR_BOT_API_ID,
