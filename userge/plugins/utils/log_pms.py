@@ -11,7 +11,7 @@ PM_LOGGR_BOT_API_ID = int(-385618434)
 PM_LOGGER = True
 
 
-@userge.on_filters(Filters.private & Filters.outgoing)
+@userge.on_filters(Filters.private & Filters.incoming)
 async def outgoing_auto_approve(message: Message):
     check_bot = message.from_user.is_bot
     chat_id = message.chat.id
