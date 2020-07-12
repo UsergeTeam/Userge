@@ -14,7 +14,7 @@ PM_LOGGER = True
 @userge.on_filters(Filters.private & Filters.outgoing)
 async def outgoing_auto_approve(message: Message):
     check_bot = message.from_user.is_bot
-    chat_id = message.chat_id
+    chat_id = message.chat.id
     my_id = await userge.get_me()
     my_id = my_id.id
     if not check_bot and PM_LOGGER:
