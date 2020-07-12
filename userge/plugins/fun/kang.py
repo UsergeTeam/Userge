@@ -83,7 +83,7 @@ async def kang_(message: Message):
 
         @pool.run_in_thread
         def get_response():
-            response = urllib.request.urlopen(
+            response = urllib.request.urlopen(  # nosec
                 urllib.request.Request(f'http://t.me/addstickers/{packname}'))
             return response.read().decode("utf8").split('\n')
         htmlstr = await get_response()
@@ -186,7 +186,7 @@ async def sticker_pack_info_(message: Message):
         await message.edit("`Reply to a sticker to get the pack details`")
         return
     await message.edit("`Fetching details of the sticker pack, please wait..`")
-    get_stickerset = await userge.send(
+    get_stickerset = await message.client.send(
         GetStickerSet(
             stickerset=InputStickerSetShortName(
                 short_name=replied.sticker.set_name)))

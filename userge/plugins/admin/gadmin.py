@@ -27,7 +27,7 @@ CHANNEL = userge.getCLogger(__name__)
 
 
 async def is_admin(message: Message):
-    check_user = await userge.get_chat_member(message.chat.id, message.from_user.id)
+    check_user = await message.client.get_chat_member(message.chat.id, message.from_user.id)
     user_type = check_user.status
     if user_type == "member":
         return False
@@ -40,7 +40,7 @@ async def is_admin(message: Message):
 
 
 async def is_sudoadmin(message: Message):
-    check_user = await userge.get_chat_member(message.chat.id, message.from_user.id)
+    check_user = await message.client.get_chat_member(message.chat.id, message.from_user.id)
     user_type = check_user.status
     if user_type == "member":
         return False
@@ -67,7 +67,7 @@ async def promote_usr(message: Message):
     """
     custom_rank = ""
     chat_id = message.chat.id
-    get_group = await userge.get_chat(chat_id)
+    get_group = await message.client.get_chat(chat_id)
     can_promo = await is_sudoadmin(message)
 
     if can_promo:
@@ -103,17 +103,17 @@ async def promote_usr(message: Message):
         if user_id:
 
             try:
-                get_mem = await userge.get_chat_member(chat_id, user_id)
-                await userge.promote_chat_member(chat_id, user_id,
-                                                 can_change_info=True,
-                                                 can_delete_messages=True,
-                                                 can_restrict_members=True,
-                                                 can_invite_users=True,
-                                                 can_pin_messages=True)
+                get_mem = await message.client.get_chat_member(chat_id, user_id)
+                await message.client.promote_chat_member(chat_id, user_id,
+                                                         can_change_info=True,
+                                                         can_delete_messages=True,
+                                                         can_restrict_members=True,
+                                                         can_invite_users=True,
+                                                         can_pin_messages=True)
 
                 await asyncio.sleep(2)
 
-                await userge.set_administrator_title(chat_id, user_id, custom_rank)
+                await message.client.set_administrator_title(chat_id, user_id, custom_rank)
 
                 await message.edit("`👑 Promoted Successfully..`", del_in=0)
 
@@ -171,7 +171,7 @@ async def demote_usr(message: Message):
     demote members in tg group
     """
     chat_id = message.chat.id
-    get_group = await userge.get_chat(chat_id)
+    get_group = await message.client.get_chat(chat_id)
     can_demote = await is_sudoadmin(message)
 
     if can_demote:
@@ -183,13 +183,13 @@ async def demote_usr(message: Message):
         if user_id:
 
             try:
-                get_mem = await userge.get_chat_member(chat_id, user_id)
-                await userge.promote_chat_member(chat_id, user_id,
-                                                 can_change_info=False,
-                                                 can_delete_messages=False,
-                                                 can_restrict_members=False,
-                                                 can_invite_users=False,
-                                                 can_pin_messages=False)
+                get_mem = await message.client.get_chat_member(chat_id, user_id)
+                await message.client.promote_chat_member(chat_id, user_id,
+                                                         can_change_info=False,
+                                                         can_delete_messages=False,
+                                                         can_restrict_members=False,
+                                                         can_invite_users=False,
+                                                         can_pin_messages=False)
 
                 await message.edit("`🛡 Demoted Successfully..`", del_in=0)
                 await CHANNEL.log(
@@ -232,16 +232,16 @@ async def demote_usr(message: Message):
         elif message.reply_to_message:
 
             try:
-                get_mem = await userge.get_chat_member(
+                get_mem = await message.client.get_chat_member(
                     chat_id,
                     message.reply_to_message.from_user.id
                     )
-                await userge.promote_chat_member(chat_id, get_mem.user.id,
-                                                 can_change_info=False,
-                                                 can_delete_messages=False,
-                                                 can_restrict_members=False,
-                                                 can_invite_users=False,
-                                                 can_pin_messages=False)
+                await message.client.promote_chat_member(chat_id, get_mem.user.id,
+                                                         can_change_info=False,
+                                                         can_delete_messages=False,
+                                                         can_restrict_members=False,
+                                                         can_invite_users=False,
+                                                         can_pin_messages=False)
 
                 await message.edit("`🛡 Demoted Successfully..`", del_in=0)
                 await CHANNEL.log(
@@ -287,7 +287,7 @@ async def ban_usr(message: Message):
     """
     reason = ""
     chat_id = message.chat.id
-    get_group = await userge.get_chat(chat_id)
+    get_group = await message.client.get_chat(chat_id)
     can_ban = await is_admin(message)
 
     if can_ban:
@@ -312,8 +312,8 @@ async def ban_usr(message: Message):
         if user_id:
 
             try:
-                get_mem = await userge.get_chat_member(chat_id, user_id)
-                await userge.kick_chat_member(chat_id, user_id)
+                get_mem = await message.client.get_chat_member(chat_id, user_id)
+                await message.client.kick_chat_member(chat_id, user_id)
                 await message.edit(
                     f"#BAN\n\n"
                     f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
@@ -368,7 +368,7 @@ async def unban_usr(message: Message):
     unban user from tg group
     """
     chat_id = message.chat.id
-    get_group = await userge.get_chat(chat_id)
+    get_group = await message.client.get_chat(chat_id)
     can_unban = await is_admin(message)
 
     if can_unban:
@@ -380,8 +380,8 @@ async def unban_usr(message: Message):
         if user_id:
 
             try:
-                get_mem = await userge.get_chat_member(chat_id, user_id)
-                await userge.unban_chat_member(chat_id, user_id)
+                get_mem = await message.client.get_chat_member(chat_id, user_id)
+                await message.client.unban_chat_member(chat_id, user_id)
                 await message.edit("`🛡 Successfully Unbanned..`", del_in=0)
                 await CHANNEL.log(
                     f"#UNBAN\n\n"
@@ -417,11 +417,11 @@ async def unban_usr(message: Message):
         elif message.reply_to_message:
 
             try:
-                get_mem = await userge.get_chat_member(
+                get_mem = await message.client.get_chat_member(
                     chat_id,
                     message.reply_to_message.from_user.id
                     )
-                await userge.unban_chat_member(chat_id, get_mem.user.id)
+                await message.client.unban_chat_member(chat_id, get_mem.user.id)
                 await message.edit("`🛡 Successfully Unbanned..`", del_in=0)
                 await CHANNEL.log(
                     f"#UNBAN\n\n"
@@ -459,7 +459,7 @@ async def kick_usr(message: Message):
     kick user from tg group
     """
     chat_id = message.chat.id
-    get_group = await userge.get_chat(chat_id)
+    get_group = await message.client.get_chat(chat_id)
     can_kick = await is_admin(message)
 
     if can_kick:
@@ -471,8 +471,8 @@ async def kick_usr(message: Message):
         if user_id:
 
             try:
-                get_mem = await userge.get_chat_member(chat_id, user_id)
-                await userge.kick_chat_member(chat_id, user_id, int(time.time() + 60))
+                get_mem = await message.client.get_chat_member(chat_id, user_id)
+                await message.client.kick_chat_member(chat_id, user_id, int(time.time() + 60))
                 await message.edit(
                     f"#KICK\n\n"
                     f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
@@ -513,11 +513,12 @@ async def kick_usr(message: Message):
         elif message.reply_to_message:
 
             try:
-                get_mem = await userge.get_chat_member(
+                get_mem = await message.client.get_chat_member(
                     chat_id,
                     message.reply_to_message.from_user.id
                     )
-                await userge.kick_chat_member(chat_id, get_mem.user.id, int(time.time() + 45))
+                await message.client.kick_chat_member(
+                    chat_id, get_mem.user.id, int(time.time() + 45))
                 await message.edit(
                     f"#KICK\n\n"
                     f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
@@ -568,7 +569,7 @@ async def mute_usr(message: Message):
     reason = ""
     chat_id = message.chat.id
     flags = message.flags
-    get_group = await userge.get_chat(chat_id)
+    get_group = await message.client.get_chat(chat_id)
     can_mute = await is_admin(message)
 
     minutes = flags.get('-m', 0)
@@ -597,11 +598,12 @@ async def mute_usr(message: Message):
         if minutes:
 
             try:
-                get_mem = await userge.get_chat_member(chat_id, user_id)
+                get_mem = await message.client.get_chat_member(chat_id, user_id)
                 mute_period = int(minutes) * 60
-                await userge.restrict_chat_member(chat_id, user_id,
-                                                  ChatPermissions(),
-                                                  int(time.time() + mute_period))
+                await message.client.restrict_chat_member(
+                    chat_id, user_id,
+                    ChatPermissions(),
+                    int(time.time() + mute_period))
                 await message.edit(
                     f"#MUTE\n\n"
                     f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
@@ -644,11 +646,12 @@ async def mute_usr(message: Message):
         elif hours:
 
             try:
-                get_mem = await userge.get_chat_member(chat_id, user_id)
+                get_mem = await message.client.get_chat_member(chat_id, user_id)
                 mute_period = int(hours) * 3600
-                await userge.restrict_chat_member(chat_id, user_id,
-                                                  ChatPermissions(),
-                                                  int(time.time() + mute_period))
+                await message.client.restrict_chat_member(
+                    chat_id, user_id,
+                    ChatPermissions(),
+                    int(time.time() + mute_period))
                 await message.edit(
                     f"#MUTE\n\n"
                     f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
@@ -691,11 +694,12 @@ async def mute_usr(message: Message):
         elif days:
 
             try:
-                get_mem = await userge.get_chat_member(chat_id, user_id)
+                get_mem = await message.client.get_chat_member(chat_id, user_id)
                 mute_period = int(days) * 86400
-                await userge.restrict_chat_member(chat_id, user_id,
-                                                  ChatPermissions(),
-                                                  int(time.time() + mute_period))
+                await message.client.restrict_chat_member(
+                    chat_id, user_id,
+                    ChatPermissions(),
+                    int(time.time() + mute_period))
                 await message.edit(
                     f"#MUTE\n\n"
                     f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
@@ -738,8 +742,8 @@ async def mute_usr(message: Message):
         else:
 
             try:
-                get_mem = await userge.get_chat_member(chat_id, user_id)
-                await userge.restrict_chat_member(chat_id, user_id, ChatPermissions())
+                get_mem = await message.client.get_chat_member(chat_id, user_id)
+                await message.client.restrict_chat_member(chat_id, user_id, ChatPermissions())
                 await message.edit(
                     f"#MUTE\n\n"
                     f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
@@ -796,7 +800,7 @@ async def unmute_usr(message: Message):
     unmute user from tg group
     """
     chat_id = message.chat.id
-    get_group = await userge.get_chat(chat_id)
+    get_group = await message.client.get_chat(chat_id)
     can_unmute = await is_admin(message)
 
     amsg = get_group.permissions.can_send_messages
@@ -820,20 +824,21 @@ async def unmute_usr(message: Message):
         if user_id:
 
             try:
-                get_mem = await userge.get_chat_member(chat_id, user_id)
-                await userge.restrict_chat_member(chat_id, user_id,
-                                                  ChatPermissions(
-                                                      can_send_messages=amsg,
-                                                      can_send_media_messages=amedia,
-                                                      can_send_stickers=astickers,
-                                                      can_send_animations=aanimations,
-                                                      can_send_games=agames,
-                                                      can_use_inline_bots=ainlinebots,
-                                                      can_add_web_page_previews=awebprev,
-                                                      can_send_polls=apolls,
-                                                      can_change_info=ainfo,
-                                                      can_invite_users=ainvite,
-                                                      can_pin_messages=apin))
+                get_mem = await message.client.get_chat_member(chat_id, user_id)
+                await message.client.restrict_chat_member(
+                    chat_id, user_id,
+                    ChatPermissions(
+                        can_send_messages=amsg,
+                        can_send_media_messages=amedia,
+                        can_send_stickers=astickers,
+                        can_send_animations=aanimations,
+                        can_send_games=agames,
+                        can_use_inline_bots=ainlinebots,
+                        can_add_web_page_previews=awebprev,
+                        can_send_polls=apolls,
+                        can_change_info=ainfo,
+                        can_invite_users=ainvite,
+                        can_pin_messages=apin))
 
                 await message.edit("`🛡 Successfully Unmuted..`", del_in=0)
                 await CHANNEL.log(
@@ -870,23 +875,24 @@ async def unmute_usr(message: Message):
         elif message.reply_to_message:
 
             try:
-                get_mem = await userge.get_chat_member(
+                get_mem = await message.client.get_chat_member(
                     chat_id,
                     message.reply_to_message.from_user.id
                     )
-                await userge.restrict_chat_member(chat_id, get_mem.user.id,
-                                                  ChatPermissions(
-                                                      can_send_messages=amsg,
-                                                      can_send_media_messages=amedia,
-                                                      can_send_stickers=astickers,
-                                                      can_send_animations=aanimations,
-                                                      can_send_games=agames,
-                                                      can_use_inline_bots=ainlinebots,
-                                                      can_add_web_page_previews=awebprev,
-                                                      can_send_polls=apolls,
-                                                      can_change_info=ainfo,
-                                                      can_invite_users=ainvite,
-                                                      can_pin_messages=apin))
+                await message.client.restrict_chat_member(
+                    chat_id, get_mem.user.id,
+                    ChatPermissions(
+                        can_send_messages=amsg,
+                        can_send_media_messages=amedia,
+                        can_send_stickers=astickers,
+                        can_send_animations=aanimations,
+                        can_send_games=agames,
+                        can_use_inline_bots=ainlinebots,
+                        can_add_web_page_previews=awebprev,
+                        can_send_polls=apolls,
+                        can_change_info=ainfo,
+                        can_invite_users=ainvite,
+                        can_pin_messages=apin))
 
                 await message.edit("`🛡 Successfully Unmuted..`", del_in=0)
                 await CHANNEL.log(
@@ -928,7 +934,7 @@ async def zombie_clean(message: Message):
     remove deleted accounts from tg group
     """
     chat_id = message.chat.id
-    get_group = await userge.get_chat(chat_id)
+    get_group = await message.client.get_chat(chat_id)
     flags = message.flags
 
     rm_delaccs = '-c' in flags
@@ -945,12 +951,12 @@ async def zombie_clean(message: Message):
         if can_clean:
 
             await message.edit("`Hang on!! cleaning zombie accounts from this chat..`")
-            async for member in userge.iter_chat_members(chat_id):
+            async for member in message.client.iter_chat_members(chat_id):
 
                 if member.user.is_deleted:
 
                     try:
-                        await userge.kick_chat_member(
+                        await message.client.kick_chat_member(
                             chat_id,
                             member.user.id, int(time.time() + 45))
 
@@ -989,7 +995,7 @@ async def zombie_clean(message: Message):
         del_users = 0
         del_stats = r"`Zero zombie accounts found in this chat... WOOHOO group is clean.. \^o^/`"
         await message.edit("`🔎 Searching for zombie accounts in this chat..`")
-        async for member in userge.iter_chat_members(chat_id):
+        async for member in message.client.iter_chat_members(chat_id):
 
             if member.user.is_deleted:
                 del_users += 1
@@ -1032,8 +1038,8 @@ async def pin_msgs(message: Message):
     """
     chat_id = message.chat.id
     flags = message.flags
-    get_group = await userge.get_chat(chat_id)
-    check_user = await userge.get_chat_member(message.chat.id, message.from_user.id)
+    get_group = await message.client.get_chat(chat_id)
+    check_user = await message.client.get_chat_member(message.chat.id, message.from_user.id)
     user_type = check_user.status
     can_pin = None
 
@@ -1054,7 +1060,7 @@ async def pin_msgs(message: Message):
         if unpin_pinned:
 
             try:
-                await userge.unpin_chat_message(chat_id)
+                await message.client.unpin_chat_message(chat_id)
                 await message.delete()
                 await CHANNEL.log(
                     f"#UNPIN\n\n"
@@ -1072,7 +1078,8 @@ async def pin_msgs(message: Message):
 
             try:
                 message_id = message.reply_to_message.message_id
-                await userge.pin_chat_message(chat_id, message_id, disable_notification=True)
+                await message.client.pin_chat_message(
+                    chat_id, message_id, disable_notification=True)
                 await message.delete()
                 await CHANNEL.log(
                     f"#PIN-SILENT\n\n"
@@ -1090,7 +1097,7 @@ async def pin_msgs(message: Message):
 
             try:
                 message_id = message.reply_to_message.message_id
-                await userge.pin_chat_message(chat_id, message_id)
+                await message.client.pin_chat_message(chat_id, message_id)
                 await message.delete()
                 await CHANNEL.log(
                     f"#PIN\n\n"
@@ -1124,8 +1131,8 @@ async def chatpic_func(message: Message):
     """
     chat_id = message.chat.id
     flags = message.flags
-    get_group = await userge.get_chat(chat_id)
-    check_user = await userge.get_chat_member(message.chat.id, message.from_user.id)
+    get_group = await message.client.get_chat(chat_id)
+    check_user = await message.client.get_chat_member(message.chat.id, message.from_user.id)
     user_type = check_user.status
     change_chatpic = None
 
@@ -1150,7 +1157,7 @@ async def chatpic_func(message: Message):
                 try:
                     img_id = message.reply_to_message.photo.file_id
                     img_ref = message.reply_to_message.photo.file_ref
-                    await userge.set_chat_photo(chat_id, img_id, img_ref)
+                    await message.client.set_chat_photo(chat_id, img_id, img_ref)
                     await message.delete()
                     await CHANNEL.log(
                         f"#GPIC-SET\n\n"
@@ -1166,8 +1173,8 @@ async def chatpic_func(message: Message):
             elif message.reply_to_message.document.mime_type == "image/png":
 
                 try:
-                    gpic_path = await userge.download_media(message.reply_to_message)
-                    await userge.set_chat_photo(message.chat.id, gpic_path)
+                    gpic_path = await message.client.download_media(message.reply_to_message)
+                    await message.client.set_chat_photo(message.chat.id, gpic_path)
                     await message.delete()
                     os.remove(gpic_path)
                     await CHANNEL.log(
@@ -1190,7 +1197,7 @@ async def chatpic_func(message: Message):
         elif gpic_del:
 
             try:
-                await userge.delete_chat_photo(chat_id)
+                await message.client.delete_chat_photo(chat_id)
                 await message.delete()
                 await CHANNEL.log(
                     f"#GPIC-DELETE\n\n"
@@ -1234,7 +1241,7 @@ async def smode_switch(message: Message):
     """
     chat_id = message.chat.id
     can_do_smode = await is_sudoadmin(message)
-    get_group = await userge.get_chat(chat_id)
+    get_group = await message.client.get_chat(chat_id)
     flags = message.flags
 
     seconds = flags.get('-s', 0)
@@ -1247,7 +1254,7 @@ async def smode_switch(message: Message):
         if seconds:
             try:
                 seconds = int(seconds)
-                await userge.set_slow_mode(chat_id, seconds)
+                await message.client.set_slow_mode(chat_id, seconds)
                 await message.edit(
                     f"`⏳ turned on {seconds} seconds slow mode for chat!`", del_in=0)
                 await CHANNEL.log(
@@ -1263,7 +1270,7 @@ async def smode_switch(message: Message):
         elif minutes:
             try:
                 smode_time = int(minutes) * 60
-                await userge.set_slow_mode(chat_id, smode_time)
+                await message.client.set_slow_mode(chat_id, smode_time)
                 await message.edit(
                     f"`⏳ turned on {minutes} minutes slow mode for chat!`", del_in=0)
                 await CHANNEL.log(
@@ -1279,7 +1286,7 @@ async def smode_switch(message: Message):
         elif hours:
             try:
                 smode_time = int(hours) * 3600
-                await userge.set_slow_mode(chat_id, smode_time)
+                await message.client.set_slow_mode(chat_id, smode_time)
                 await message.edit("`⏳ turned on 1 hour slow mode for chat!`", del_in=0)
                 await CHANNEL.log(
                     f"#SLOW_MODE\n\n"
@@ -1293,7 +1300,7 @@ async def smode_switch(message: Message):
 
         elif smode_off:
             try:
-                await userge.set_slow_mode(chat_id, 0)
+                await message.client.set_slow_mode(chat_id, 0)
                 await message.edit("`⏳ turned off slow mode for chat!`", del_in=0)
                 await CHANNEL.log(
                     f"#SLOW_MODE\n\n"

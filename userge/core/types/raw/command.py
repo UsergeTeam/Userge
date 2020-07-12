@@ -47,7 +47,7 @@ class Command(Filter):
     def update(self, func: Callable[[Any], Any], handler: Handler) -> None:
         """ update command """
         self._handler = handler
-        self.doc = func.__doc__
+        self.doc = func.__doc__.strip() if func.__doc__ else None
         _LOG.debug(_LOG_STR, f"created command -> {self.name}")
 
 
