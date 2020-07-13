@@ -17,10 +17,10 @@ async def meme_(message: Message):
     meme_file = None
     replied = message.reply_to_message
     if not (replied and message.input_str):
-        await message.err(f"```Nibba, Reply to Media and Give some input...```", del_in=5)
+        await message.err("```Nibba, Reply to Media and Give some input...```", del_in=5)
         return
     if not (replied.photo or replied.sticker or replied.video or replied.animation):
-        await message.err(f"```Reply to only media...```", del_in=5)
+        await message.err("```Reply to only media...```", del_in=5)
         return
     if not os.path.isdir(Config.DOWN_PATH):
         os.makedirs(Config.DOWN_PATH)
@@ -67,7 +67,7 @@ async def meme_(message: Message):
             await conv.get_response(mark_read=True)
         except YouBlockedUser:
             await message.err(
-                f"**This cmd not for you, If you want to use, Unblock **@MemeAutobot**",
+                "```This cmd not for you, If you want to use, Unblock``` **@MemeAutobot**",
                 del_in=5)
             return
         await conv.send_message(args)
