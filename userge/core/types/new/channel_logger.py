@@ -10,11 +10,11 @@
 
 __all__ = ['ChannelLogger']
 
-import re
 import asyncio
-from typing import Optional, List, Tuple, Union
+from typing import Optional, Tuple, Union
 
-from pyrogram import Message as RawMessage, InlineKeyboardButton, InlineKeyboardMarkup
+from pyrogram import Message as RawMessage
+from pyrogram.errors.exceptions.bad_request_400 import ChannelInvalid
 
 from userge import logging, Config
 from userge.utils import SafeDict
@@ -23,15 +23,13 @@ from ... import client as _client  # pylint: disable=unused-import
 
 _LOG = logging.getLogger(__name__)
 _LOG_STR = "<<<!  :::::  %s  :::::  !>>>"
-_BTN_URL_REGEX = re.compile(r"(\[([^\[]+?)\]\[buttonurl:(?:/{0,2})(.+?)(:same)?\])")
 
 
 def _gen_string(name: str) -> str:
     return "**logger** : #" + name.split('.')[-1].upper() + "\n\n{}"
 
 
-def _get_file_id_and_ref(
-        message: '_message.Message') -> Tuple[Optional[str], Optional[str]]:
+def _get_file_id_and_ref(message: '_message.Message') -> Tuple[str, str]:
     if message.audio:
         file_ = message.audio
     elif message.animation:
@@ -48,46 +46,7 @@ def _get_file_id_and_ref(
         file_ = message.video
     else:
         file_ = message.document
-    if file_:
-        return file_.file_id, file_.file_ref
-    return None, None
-
-
-def _parse_buttons(
-        markdown_note: str) -> Tuple[str, List[Optional[List[InlineKeyboardButton]]]]:
-    prev = 0
-    note_data = ""
-    buttons: List[Tuple[str, str, str]] = []
-    for match in _BTN_URL_REGEX.finditer(markdown_note):
-        # Check if btnurl is escaped
-        n_escapes = 0
-        to_check = match.start(1) - 1
-        while to_check > 0 and markdown_note[to_check] == "\\":
-            n_escapes += 1
-            to_check -= 1
-        # if even, not escaped -> create button
-        if n_escapes % 2 == 0:
-            # create a tuple with button label, url, and newline status
-            buttons.append((match.group(2), match.group(3), bool(match.group(4))))
-            note_data += markdown_note[prev:match.start(1)]
-            prev = match.end(1)
-        # if odd, escaped -> move along
-        else:
-            note_data += markdown_note[prev:to_check]
-            prev = match.start(1) - 1
-    note_data += markdown_note[prev:]
-    return note_data.strip(), _build_keyboard(buttons)
-
-
-def _build_keyboard(
-        buttons: List[Tuple[str, str, str]]) -> List[Optional[List[InlineKeyboardButton]]]:
-    keyb: List[List[InlineKeyboardButton]] = []
-    for btn in buttons:
-        if btn[2] and keyb:
-            keyb[-1].append(InlineKeyboardButton(btn[0], url=btn[1]))
-        else:
-            keyb.append([InlineKeyboardButton(btn[0], url=btn[1])])
-    return keyb
+    return file_.file_id, file_.file_ref
 
 
 class ChannelLogger:
@@ -110,18 +69,6 @@ class ChannelLogger:
         return "<b><a href='https://t.me/c/{}/{}'>Preview</a></b>".format(
             str(Config.LOG_CHANNEL_ID)[4:], message_id)
 
-    def bind(self, client: Union['_client.Userge', '_client._UsergeBot']) -> None:
-        """\nbind with new client
-
-        Parameters:
-            client (`Userge` | `usergeBot`):
-                Pass Userge or UsergeBot.
-
-        Returns:
-            None
-        """
-        self._client = client
-
     def update(self, name: str) -> None:
         """\nupdate current logger name.
 
@@ -134,7 +81,7 @@ class ChannelLogger:
         """
         self._string = _gen_string(name)
 
-    async def log(self, text: str) -> int:
+    async def log(self, text: str) -> Optional[int]:
         """\nsend text message to log channel.
 
         Parameters:
@@ -145,9 +92,13 @@ class ChannelLogger:
             message_id on success or None
         """
         _LOG.debug(_LOG_STR, f"logging text : {text} to channel : {Config.LOG_CHANNEL_ID}")
-        msg = await self._client.send_message(chat_id=Config.LOG_CHANNEL_ID,
-                                              text=self._string.format(text.strip()))
-        return msg.message_id
+        if Config.LOG_CHANNEL_ID:
+            try:
+                msg = await self._client.send_message(chat_id=Config.LOG_CHANNEL_ID,
+                                                      text=self._string.format(text.strip()))
+                return msg.message_id
+            except ChannelInvalid:
+                pass
 
     async def fwd_msg(self,
                       message: '_message.Message',
@@ -176,21 +127,24 @@ class ChannelLogger:
         """
         _LOG.debug(
             _LOG_STR, f"forwarding msg : {message} to channel : {Config.LOG_CHANNEL_ID}")
-        if isinstance(message, RawMessage):
-            if message.media:
-                asyncio.get_event_loop().create_task(self.log("**Forwarding Message...**"))
-                await self._client.forward_messages(chat_id=Config.LOG_CHANNEL_ID,
-                                                    from_chat_id=message.chat.id,
-                                                    message_ids=message.message_id,
-                                                    as_copy=as_copy,
-                                                    remove_caption=remove_caption)
-            else:
-                await self.log(
-                    message.text.html if hasattr(message.text, 'html') else message.text)
+        if Config.LOG_CHANNEL_ID and isinstance(message, RawMessage):
+            try:
+                if message.media:
+                    asyncio.get_event_loop().create_task(self.log("**Forwarding Message...**"))
+                    await self._client.forward_messages(chat_id=Config.LOG_CHANNEL_ID,
+                                                        from_chat_id=message.chat.id,
+                                                        message_ids=message.message_id,
+                                                        as_copy=as_copy,
+                                                        remove_caption=remove_caption)
+                else:
+                    await self.log(
+                        message.text.html if hasattr(message.text, 'html') else message.text)
+            except ChannelInvalid:
+                pass
 
     async def store(self,
                     message: Optional['_message.Message'],
-                    caption: Optional[str] = '') -> int:
+                    caption: Optional[str] = '') -> Optional[int]:
         """\nstore message to log channel.
 
         Parameters:
@@ -203,26 +157,27 @@ class ChannelLogger:
         Returns:
             message_id on success or None
         """
-        caption = caption or ''
-        file_id = file_ref = None
-        if message and message.caption:
-            caption = caption + message.caption.html
-        if message:
-            file_id, file_ref = _get_file_id_and_ref(message)
-        if message and message.media and file_id and file_ref:
-            if caption:
-                caption = self._string.format(caption.strip())
-            msg = await message.client.send_cached_media(chat_id=Config.LOG_CHANNEL_ID,
-                                                         file_id=file_id,
-                                                         file_ref=file_ref,
-                                                         caption=caption)
-            message_id = msg.message_id
-        else:
-            message_id = await self.log(caption)
-        return message_id
+        if Config.LOG_CHANNEL_ID:
+            caption = caption or ''
+            if message and message.caption:
+                caption = caption + message.caption.html
+            if message and message.media:
+                if caption:
+                    caption = self._string.format(caption.strip())
+                file_id, file_ref = _get_file_id_and_ref(message)
+                try:
+                    msg = await self._client.send_cached_media(chat_id=Config.LOG_CHANNEL_ID,
+                                                               file_id=file_id,
+                                                               file_ref=file_ref,
+                                                               caption=caption)
+                    message_id = msg.message_id
+                except ChannelInvalid:
+                    message_id = None
+            else:
+                message_id = await self.log(caption)
+            return message_id
 
     async def forward_stored(self,
-                             client: Union['_client.Userge', '_client._UsergeBot'],
                              message_id: int,
                              chat_id: int,
                              user_id: int,
@@ -231,9 +186,6 @@ class ChannelLogger:
         """\nforward stored message from log channel.
 
         Parameters:
-            client (`Userge` | `usergeBot`):
-                Pass Userge or UsergeBot.
-
             message_id (`int`):
                 Message id of stored message.
 
@@ -252,41 +204,37 @@ class ChannelLogger:
         Returns:
             None
         """
-        if message_id and isinstance(message_id, int):
-            message = await client.get_messages(chat_id=Config.LOG_CHANNEL_ID,
-                                                message_ids=message_id)
-            caption = ''
-            file_id = file_ref = None
-            if message.caption:
-                caption = message.caption.html.split('\n\n', maxsplit=1)[-1]
-            elif message.text:
-                caption = message.text.html.split('\n\n', maxsplit=1)[-1]
-            if caption:
-                u_dict = await client.get_user_dict(user_id)
-                chat = await client.get_chat(chat_id)
-                u_dict.update({
-                    'chat': chat.title if chat.title else "this group",
-                    'count': chat.members_count})
-                caption = caption.format_map(SafeDict(**u_dict))
-            file_id, file_ref = _get_file_id_and_ref(message)
-            caption, buttons = _parse_buttons(caption)
-            if message.media and file_id and file_ref:
-                msg = await client.send_cached_media(
-                    chat_id=chat_id,
-                    file_id=file_id,
-                    file_ref=file_ref,
-                    caption=caption,
-                    reply_to_message_id=reply_to_message_id,
-                    reply_markup=InlineKeyboardMarkup(buttons)
-                    if hasattr(client, 'ubot') and buttons else None)
-            else:
-                msg = await client.send_message(
-                    chat_id=chat_id,
-                    text=caption,
-                    reply_to_message_id=reply_to_message_id,
-                    disable_web_page_preview=True,
-                    reply_markup=InlineKeyboardMarkup(buttons)
-                    if hasattr(client, 'ubot') and buttons else None)
-            if del_in and msg:
-                await asyncio.sleep(del_in)
-                await msg.delete()
+        if Config.LOG_CHANNEL_ID:
+            try:
+                message = await self._client.get_messages(chat_id=Config.LOG_CHANNEL_ID,
+                                                          message_ids=message_id)
+                caption = ''
+                if message.caption:
+                    caption = message.caption.html.split('\n\n', maxsplit=1)[-1]
+                elif message.text:
+                    caption = message.text.html.split('\n\n', maxsplit=1)[-1]
+                if caption:
+                    u_dict = await self._client.get_user_dict(user_id)
+                    chat = await self._client.get_chat(chat_id)
+                    u_dict.update(
+                        {'chat': chat.title if chat.title else "this group",
+                         'count': chat.members_count})
+                    caption = caption.format_map(SafeDict(**u_dict))
+                if message.media:
+                    file_id, file_ref = _get_file_id_and_ref(message)
+                    msg = await self._client.send_cached_media(
+                        chat_id=chat_id,
+                        file_id=file_id,
+                        file_ref=file_ref,
+                        caption=caption,
+                        reply_to_message_id=reply_to_message_id)
+                else:
+                    msg = await self._client.send_message(
+                        chat_id=chat_id,
+                        text=caption,
+                        reply_to_message_id=reply_to_message_id)
+                if del_in and msg:
+                    await asyncio.sleep(del_in)
+                    await msg.delete()
+            except ChannelInvalid:
+                pass

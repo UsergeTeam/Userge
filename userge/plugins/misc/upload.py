@@ -45,7 +45,7 @@ async def rename_(message: Message):
     if not message.filtered_input_str:
         await message.err("new name not found!")
         return
-    await message.edit("`Trying to Rename ...`")
+    await message.edit("Trying to Rename...")
     if not os.path.isdir(Config.DOWN_PATH):
         os.mkdir(Config.DOWN_PATH)
     if message.reply_to_message and message.reply_to_message.media:
@@ -72,10 +72,10 @@ async def rename_(message: Message):
 
 @userge.on_cmd("convert", about={
     'header': "Convert telegram files",
-    'usage': "reply {tr}convert to any media"}, del_pre=True)
+    'usage': "reply {tr}convert to any media"})
 async def convert_(message: Message):
     """ convert telegram files """
-    await message.edit("`Trying to Convert ...`")
+    await message.edit("Trying to Convert...")
     if not os.path.isdir(Config.DOWN_PATH):
         os.mkdir(Config.DOWN_PATH)
     if message.reply_to_message and message.reply_to_message.media:
@@ -93,7 +93,7 @@ async def convert_(message: Message):
         else:
             await message.delete()
             dl_loc = os.path.join(Config.DOWN_PATH, os.path.basename(dl_loc))
-            message.text = '' if message.reply_to_message.document else ". -d"
+            message.text = " " if message.reply_to_message.document else " -d"
             await upload(message, Path(dl_loc), True)
     else:
         await message.edit("Please read `.help convert`", del_in=5)
@@ -207,7 +207,7 @@ async def upload(message: Message, path: Path, del_path: bool = False):
 
 async def doc_upload(message: Message, path, del_path: bool):
     sent: Message = await message.client.send_message(
-        message.chat.id, f"`Uploading {path.name} as a doc ...`")
+        message.chat.id, f"`Uploading {path.name} ...`")
     start_t = datetime.now()
     c_time = time.time()
     thumb = await get_thumb()
@@ -239,10 +239,7 @@ async def doc_upload(message: Message, path, del_path: bool):
 async def vid_upload(message: Message, path, del_path: bool):
     strpath = str(path)
     thumb = await get_thumb(strpath)
-    duration = 0
     metadata = extractMetadata(createParser(strpath))
-    if metadata and metadata.has("duration"):
-        duration = metadata.get("duration").seconds
     sent: Message = await message.client.send_message(
         message.chat.id, f"`Uploading {path.name} as a video ..`")
     start_t = datetime.now()
@@ -252,7 +249,7 @@ async def vid_upload(message: Message, path, del_path: bool):
         msg = await message.client.send_video(
             chat_id=message.chat.id,
             video=strpath,
-            duration=duration,
+            duration=metadata.get("duration").seconds,
             thumb=thumb,
             caption=path.name,
             parse_mode="html",
@@ -277,10 +274,13 @@ async def vid_upload(message: Message, path, del_path: bool):
 async def audio_upload(message: Message, path, del_path: bool):
     title = None
     artist = None
-    thumb = None
-    duration = 0
+    sent: Message = await message.client.send_message(
+        message.chat.id, f"`Uploading {path.name} as audio ...`")
     strpath = str(path)
     file_size = humanbytes(os.stat(strpath).st_size)
+    start_t = datetime.now()
+    c_time = time.time()
+    thumb = await get_thumb()
     try:
         album_art = stagger.read_tag(strpath)
         if (album_art.picture and not os.path.lexists(THUMB_PATH)):
@@ -292,26 +292,23 @@ async def audio_upload(message: Message, path, del_path: bool):
     except stagger.errors.NoTagError:
         pass
     metadata = extractMetadata(createParser(strpath))
-    if metadata and metadata.has("title"):
+    if metadata.has("title"):
         title = metadata.get("title")
-    if metadata and metadata.has("artist"):
+    if metadata.has("artist"):
         artist = metadata.get("artist")
-    if metadata and metadata.has("duration"):
-        duration = metadata.get("duration").seconds
-    sent: Message = await message.client.send_message(
-        message.chat.id, f"`Uploading {path.name} as audio ...`")
-    start_t = datetime.now()
-    c_time = time.time()
     await message.client.send_chat_action(message.chat.id, "upload_audio")
     try:
+        audio_caption = ""
+        audio_caption += f"{path.name} "
+        audio_caption += f"[ {file_size} ]"
         msg = await message.client.send_audio(
             chat_id=message.chat.id,
             audio=strpath,
             thumb=thumb,
-            caption=f"{path.name} [ {file_size} ]",
+            caption=audio_caption,
             title=title,
             performer=artist,
-            duration=duration,
+            duration=metadata.get("duration").seconds,
             parse_mode="html",
             disable_notification=True,
             progress=progress,

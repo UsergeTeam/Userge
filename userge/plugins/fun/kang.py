@@ -83,7 +83,7 @@ async def kang_(message: Message):
 
         @pool.run_in_thread
         def get_response():
-            response = urllib.request.urlopen(  # nosec
+            response = urllib.request.urlopen(
                 urllib.request.Request(f'http://t.me/addstickers/{packname}'))
             return response.read().decode("utf8").split('\n')
         htmlstr = await get_response()

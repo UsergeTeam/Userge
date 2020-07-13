@@ -13,7 +13,7 @@ import io
 import re
 import time
 import math
-import pickle  # nosec
+import pickle
 import asyncio
 from json import dumps
 from functools import wraps
@@ -49,14 +49,14 @@ _SAVED_SETTINGS = get_collection("CONFIGS")
 
 
 async def _init() -> None:
-    global _CREDS  # pylint: disable=global-statement
+    global _CREDS
     _LOG.debug("Setting GDrive DBase...")
     result = await _SAVED_SETTINGS.find_one({'_id': 'GDRIVE'}, {'creds': 1})
-    _CREDS = pickle.loads(result['creds']) if result else None  # nosec
+    _CREDS = pickle.loads(result['creds']) if result else None
 
 
 async def _set_creds(creds: object) -> str:
-    global _CREDS  # pylint: disable=global-statement
+    global _CREDS
     _LOG.info("Setting Creds...")
     _CREDS = creds
     result = await _SAVED_SETTINGS.update_one(
@@ -67,7 +67,7 @@ async def _set_creds(creds: object) -> str:
 
 
 async def _clear_creds() -> str:
-    global _CREDS  # pylint: disable=global-statement
+    global _CREDS
     _CREDS = None
     _LOG.info("Clearing Creds...")
     if await _SAVED_SETTINGS.find_one_and_delete({'_id': 'GDRIVE'}):
@@ -88,7 +88,6 @@ def creds_dec(func):
     """ decorator for check CREDS """
     @wraps(func)
     async def wrapper(self):
-        # pylint: disable=protected-access
         if _CREDS:
             await _refresh_creds()
             await func(self)
@@ -604,7 +603,7 @@ class Worker(_GDrive):
 
     async def setup(self) -> None:
         """ Setup GDrive """
-        global _AUTH_FLOW  # pylint: disable=global-statement
+        global _AUTH_FLOW
         if _CREDS:
             await self._message.edit("`Already Setup!`", del_in=5)
         else:
@@ -620,7 +619,7 @@ class Worker(_GDrive):
 
     async def confirm_setup(self) -> None:
         """ Finalize GDrive setup """
-        global _AUTH_FLOW  # pylint: disable=global-statement
+        global _AUTH_FLOW
         if _AUTH_FLOW is None:
             await self._message.edit("Please run `.gsetup` first", del_in=5)
             return
@@ -642,7 +641,7 @@ class Worker(_GDrive):
 
     async def set_parent(self) -> None:
         """ Set Parent id """
-        global _PARENT_ID  # pylint: disable=global-statement
+        global _PARENT_ID
         file_id, file_type = self._get_file_id()
         if file_type != "folder":
             await self._message.err("Please send me a folder link")
@@ -653,7 +652,7 @@ class Worker(_GDrive):
 
     async def reset_parent(self) -> None:
         """ Reset parent id """
-        global _PARENT_ID  # pylint: disable=global-statement
+        global _PARENT_ID
         _PARENT_ID = ""
         await self._message.edit("`Parents Reset successfully`", del_in=5)
 
@@ -666,7 +665,7 @@ class Worker(_GDrive):
             out = await pool.run_in_thread(self._get_output)(file_id)
         except HttpError as h_e:
             _LOG.exception(h_e)
-            await self._message.err(h_e._get_reason())  # pylint: disable=protected-access
+            await self._message.err(h_e._get_reason())
             return
         await self._message.edit(f"**Shareable Links**\n\n{out}",
                                  disable_web_page_preview=True, log=__name__)
@@ -680,7 +679,7 @@ class Worker(_GDrive):
                 self._message.filtered_input_str, self._message.flags)
         except HttpError as h_e:
             _LOG.exception(h_e)
-            await self._message.err(h_e._get_reason())  # pylint: disable=protected-access
+            await self._message.err(h_e._get_reason())
             return
         await self._message.edit_or_send_as_file(
             out, disable_web_page_preview=True,
@@ -699,7 +698,7 @@ class Worker(_GDrive):
             out = await self._create_drive_folder(self._message.input_str, self._parent_id)
         except HttpError as h_e:
             _LOG.exception(h_e)
-            await self._message.err(h_e._get_reason())  # pylint: disable=protected-access
+            await self._message.err(h_e._get_reason())
             return
         await self._message.edit(f"**Folder Created Successfully**\n\n{out}",
                                  disable_web_page_preview=True, log=__name__)
@@ -720,7 +719,7 @@ class Worker(_GDrive):
             out = await self._search('*', self._message.flags, file_id, root)
         except HttpError as h_e:
             _LOG.exception(h_e)
-            await self._message.err(h_e._get_reason())  # pylint: disable=protected-access
+            await self._message.err(h_e._get_reason())
             return
         await self._message.edit_or_send_as_file(
             out, disable_web_page_preview=True, caption=f"list results for `{file_id}`")
@@ -830,7 +829,7 @@ class Worker(_GDrive):
         end_t = datetime.now()
         m_s = (end_t - start_t).seconds
         if isinstance(self._output, HttpError):
-            out = f"**ERROR** : `{self._output._get_reason()}`"  # pylint: disable=protected-access
+            out = f"**ERROR** : `{self._output._get_reason()}`"
         elif self._output is not None and not self._is_canceled:
             out = f"**Uploaded Successfully** __in {m_s} seconds__\n\n{self._output}"
         elif self._output is not None and self._is_canceled:
@@ -860,7 +859,7 @@ class Worker(_GDrive):
         end_t = datetime.now()
         m_s = (end_t - start_t).seconds
         if isinstance(self._output, HttpError):
-            out = f"**ERROR** : `{self._output._get_reason()}`"  # pylint: disable=protected-access
+            out = f"**ERROR** : `{self._output._get_reason()}`"
         elif self._output is not None and not self._is_canceled:
             out = f"**Downloaded Successfully** __in {m_s} seconds__\n\n`{self._output}`"
         elif self._output is not None and self._is_canceled:
@@ -891,7 +890,7 @@ class Worker(_GDrive):
         end_t = datetime.now()
         m_s = (end_t - start_t).seconds
         if isinstance(self._output, HttpError):
-            out = f"**ERROR** : `{self._output._get_reason()}`"  # pylint: disable=protected-access
+            out = f"**ERROR** : `{self._output._get_reason()}`"
         elif self._output is not None and not self._is_canceled:
             out = f"**Copied Successfully** __in {m_s} seconds__\n\n{self._output}"
         elif self._output is not None and self._is_canceled:
@@ -912,7 +911,7 @@ class Worker(_GDrive):
             link = await self._move(file_id)
         except HttpError as h_e:
             _LOG.exception(h_e)
-            await self._message.err(h_e._get_reason())  # pylint: disable=protected-access
+            await self._message.err(h_e._get_reason())
         else:
             await self._message.edit(
                 f"`{file_id}` **Moved Successfully**\n\n{link}", log=__name__)
@@ -926,7 +925,7 @@ class Worker(_GDrive):
             await self._delete(file_id)
         except HttpError as h_e:
             _LOG.exception(h_e)
-            await self._message.err(h_e._get_reason())  # pylint: disable=protected-access
+            await self._message.err(h_e._get_reason())
         else:
             await self._message.edit(
                 f"`{file_id}` **Deleted Successfully**", del_in=5, log=__name__)
@@ -939,7 +938,7 @@ class Worker(_GDrive):
             await self._empty_trash()
         except HttpError as h_e:
             _LOG.exception(h_e)
-            await self._message.err(h_e._get_reason())  # pylint: disable=protected-access
+            await self._message.err(h_e._get_reason())
         else:
             await self._message.edit(
                 "`Empty the Trash Successfully`", del_in=5, log=__name__)
@@ -953,7 +952,7 @@ class Worker(_GDrive):
             meta_data = await self._get(file_id)
         except HttpError as h_e:
             _LOG.exception(h_e)
-            await self._message.err(h_e._get_reason())  # pylint: disable=protected-access
+            await self._message.err(h_e._get_reason())
             return
         out = f"**I Found these Details for** `{file_id}`\n\n{meta_data}"
         await self._message.edit_or_send_as_file(
@@ -969,7 +968,7 @@ class Worker(_GDrive):
             out = await self._get_perms(file_id)
         except HttpError as h_e:
             _LOG.exception(h_e)
-            await self._message.err(h_e._get_reason())  # pylint: disable=protected-access
+            await self._message.err(h_e._get_reason())
             return
         out = f"**I Found these Permissions for** `{file_id}`\n\n{out}"
         await self._message.edit_or_send_as_file(
@@ -985,7 +984,7 @@ class Worker(_GDrive):
             link = await self._set_perms(file_id)
         except HttpError as h_e:
             _LOG.exception(h_e)
-            await self._message.err(h_e._get_reason())  # pylint: disable=protected-access
+            await self._message.err(h_e._get_reason())
         else:
             out = f"**Set Permissions successfully for** `{file_id}`\n\n{link}"
             await self._message.edit(out, disable_web_page_preview=True)
@@ -999,7 +998,7 @@ class Worker(_GDrive):
             out = await self._del_perms(file_id)
         except HttpError as h_e:
             _LOG.exception(h_e)
-            await self._message.err(h_e._get_reason())  # pylint: disable=protected-access
+            await self._message.err(h_e._get_reason())
             return
         out = f"**Removed These Permissions successfully from** `{file_id}`\n\n{out}"
         await self._message.edit_or_send_as_file(

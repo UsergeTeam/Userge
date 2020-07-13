@@ -37,7 +37,7 @@ async def eval_(message: Message):
     stdout, stderr, exc = None, None, None
 
     async def aexec(code):
-        exec("async def __aexec(userge, message):\n "  # nosec pylint: disable=W0122
+        exec("async def __aexec(userge, message):\n "
              + '\n '.join(line for line in code.split('\n')))
         return await locals()['__aexec'](userge, message)
     try:
@@ -121,9 +121,9 @@ async def term_(message: Message):
         await asyncio.sleep(0.5)
         if count >= 10:
             count = 0
-            out_data = f"<pre>{output}{t_obj.read_line}</pre>"
+            out_data = f"<code>{output}{t_obj.read_line}</code>"
             await message.try_to_edit(out_data, parse_mode='html')
-    out_data = f"<pre>{output}{t_obj.get_output}</pre>"
+    out_data = f"<code>{output}{t_obj.get_output}</code>"
     try:
         await message.edit_or_send_as_file(
             out_data, parse_mode='html', filename="term.txt", caption=cmd)
