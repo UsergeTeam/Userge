@@ -19,7 +19,8 @@ class OnNewMember(RawDecorator):  # pylint: disable=missing-class-docstring
     def on_new_member(self,
                       welcome_chats: Filters.chat,
                       group: int = -2,
-                      allow_via_bot: bool = True) -> RawDecorator._PYRORETTYPE:
+                      allow_via_bot: bool = True,
+                      check_client: bool = False) -> RawDecorator._PYRORETTYPE:
         """\nDecorator for handling new members
 
         Parameters:
@@ -32,7 +33,10 @@ class OnNewMember(RawDecorator):  # pylint: disable=missing-class-docstring
 
             allow_via_bot (``bool``, *optional*):
                 If ``True``, allow this via your bot,  defaults to True.
+
+            check_client (``bool``, *optional*):
+                If ``True``, check client is bot or not before execute,  defaults to True.
         """
         return self.on_filters(
             filters=Filters.group & Filters.new_chat_members & welcome_chats,
-            group=group, allow_via_bot=allow_via_bot)
+            group=group, allow_via_bot=allow_via_bot, check_client=check_client)

@@ -47,6 +47,9 @@
             "description": "Set True if it is TeamDrive",
             "value": "True"
         },
+        "LOG_CHANNEL_ID": {
+            "description": "Telegram Log Channel ID"
+        },
         "G_DRIVE_INDEX_LINK": {
             "description": "Index link for gdrive",
             "required": false
@@ -93,10 +96,6 @@
         },
         "G_DRIVE_PARENT_ID": {
             "description": "GDrive Folder ID",
-            "required": false
-        },
-        "LOG_CHANNEL_ID": {
-            "description": "Telegram Log Channel ID",
             "required": false
         },
         "HEROKU_APP_NAME": {

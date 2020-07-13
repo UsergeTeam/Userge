@@ -27,7 +27,7 @@ class Plugin:
         self._client = client
         self.name = name
         self.parent = parent
-        self.about: Optional[str]
+        self.about: Optional[str] = None
         self.commands: List['command.Command'] = []
         self.filters: List['_filter.Filter'] = []
         _LOG.debug(_LOG_STR, f"created plugin -> {self.name}")

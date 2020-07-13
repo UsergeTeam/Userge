@@ -158,10 +158,10 @@ def zippy_share(url: str) -> str:
                                 script.text).group('url')
             math = re.search(r'= (?P<url>\".+\" \+ (?P<math>\(.+\)) .+);',
                              script.text).group('math')
-            dl_url = url_raw.replace(math, '"' + str(eval(math)) + '"')
+            dl_url = url_raw.replace(math, '"' + str(eval(math)) + '"')  # pylint: disable=W0123
             break
 
-    dl_url = base_url + eval(dl_url)
+    dl_url = base_url + eval(dl_url)  # pylint: disable=W0123
     name = urllib.parse.unquote(dl_url.split('/')[-1])
     reply += f'[{name}]({dl_url})\n'
 
@@ -208,7 +208,7 @@ def mega_dl(url: str) -> str:
         return reply
 
     command = f'bin/megadown -q -m {link}'
-    result = popen(command).read()
+    result = popen(command).read()  # nosec
 
     try:
         data = json.loads(result)
@@ -238,7 +238,7 @@ def cm_ru(url: str) -> str:
         return reply
 
     command = f'bin/cmrudl -s {link}'
-    result = popen(command).read()
+    result = popen(command).read()  # nosec
     result = result.splitlines()[-1]
 
     try:

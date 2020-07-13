@@ -15,11 +15,13 @@ from typing import Optional
 import nest_asyncio
 from pyrogram import Client
 
-from .. import types, client
+from .. import types, client  # pylint: disable=unused-import
 
 
 class RawClient(Client):
     """ userge raw client """
+    DUAL_MODE = False
+
     def __init__(self, bot: Optional['client._UsergeBot'] = None, **kwargs) -> None:
         self._bot = bot
         super().__init__(**kwargs)
