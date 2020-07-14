@@ -180,14 +180,17 @@ async def get_note(message: Message) -> None:
     mid, is_global = NOTES_DATA[message.chat.id][notename]
     if can_access or is_global:
         replied = message.reply_to_message
+        user_id = message.from_user.id
         if replied:
             reply_to_message_id = replied.message_id
+            if replied.from_user:
+                user_id = replied.from_user.id
         else:
             reply_to_message_id = message.message_id
         await CHANNEL.forward_stored(client=message.client,
                                      message_id=mid,
                                      chat_id=message.chat.id,
-                                     user_id=message.from_user.id,
+                                     user_id=user_id,
                                      reply_to_message_id=reply_to_message_id)
 
 
