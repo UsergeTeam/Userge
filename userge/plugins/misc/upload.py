@@ -1,3 +1,5 @@
+""" upload , rename and convert telegram files """
+
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -7,14 +9,17 @@
 # All rights reserved.
 
 import os
+import io
 import re
 import math
 import time
 import asyncio
+import stagger
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import unquote_plus
 
+from PIL import Image
 from pySmartDL import SmartDL
 from hachoir.metadata import extractMetadata
 from hachoir.parser import createParser
@@ -36,15 +41,16 @@ THUMB_PATH = Config.DOWN_PATH + "thumb_image.jpg"
     'usage': "{tr}rename [flags] [new_name_with_extention] : reply to telegram media",
     'examples': "{tr}rename -d test.mp4"}, del_pre=True)
 async def rename_(message: Message):
+    """ rename telegram files """
     if not message.filtered_input_str:
         await message.err("new name not found!")
         return
-    await message.edit("Trying to Rename...")
+    await message.edit("`Trying to Rename ...`")
     if not os.path.isdir(Config.DOWN_PATH):
         os.mkdir(Config.DOWN_PATH)
     if message.reply_to_message and message.reply_to_message.media:
         c_time = time.time()
-        dl_loc = await userge.download_media(
+        dl_loc = await message.client.download_media(
             message=message.reply_to_message,
             file_name=Config.DOWN_PATH,
             progress=progress,
@@ -59,21 +65,22 @@ async def rename_(message: Message):
             dl_loc = os.path.join(Config.DOWN_PATH, os.path.basename(dl_loc))
             new_loc = os.path.join(Config.DOWN_PATH, message.filtered_input_str)
             os.rename(dl_loc, new_loc)
-            await upload(Path(new_loc), message.chat.id, message.flags, True)
+            await upload(message, Path(new_loc), True)
     else:
         await message.edit("Please read `.help rename`", del_in=5)
 
 
 @userge.on_cmd("convert", about={
     'header': "Convert telegram files",
-    'usage': "reply {tr}convert to any media"})
+    'usage': "reply {tr}convert to any media"}, del_pre=True)
 async def convert_(message: Message):
-    await message.edit("Trying to Convert...")
+    """ convert telegram files """
+    await message.edit("`Trying to Convert ...`")
     if not os.path.isdir(Config.DOWN_PATH):
         os.mkdir(Config.DOWN_PATH)
     if message.reply_to_message and message.reply_to_message.media:
         c_time = time.time()
-        dl_loc = await userge.download_media(
+        dl_loc = await message.client.download_media(
             message=message.reply_to_message,
             file_name=Config.DOWN_PATH,
             progress=progress,
@@ -86,8 +93,8 @@ async def convert_(message: Message):
         else:
             await message.delete()
             dl_loc = os.path.join(Config.DOWN_PATH, os.path.basename(dl_loc))
-            flags = {} if message.reply_to_message.document else {'d': ''}
-            await upload(Path(dl_loc), message.chat.id, flags, True)
+            message.text = '' if message.reply_to_message.document else ". -d"
+            await upload(message, Path(dl_loc), True)
     else:
         await message.edit("Please read `.help convert`", del_in=5)
 
@@ -100,7 +107,7 @@ async def convert_(message: Message):
         "{tr}upload -d https://speed.hetzner.de/100MB.bin | test.bin",
         "{tr}upload downloads/test.mp4"]}, del_pre=True)
 async def uploadtotg(message: Message):
-    flags = message.flags
+    """ upload to telegram """
     path_ = message.filtered_input_str
     if not path_:
         await message.edit("invalid input!, check `.help .upload`", del_in=5)
@@ -174,40 +181,40 @@ async def uploadtotg(message: Message):
         await message.edit("wrong syntax\n`.upload [path]`")
     else:
         await message.delete()
-        await explorer(string, message.chat.id, flags, del_path)
+        await explorer(message, string, del_path)
 
 
-async def explorer(path: Path, chatid, flags, del_path):
+async def explorer(message: Message, path: Path, del_path):
     if path.is_file():
         try:
             if path.stat().st_size:
-                await upload(path, chatid, flags, del_path)
+                await upload(message, path, del_path)
         except FloodWait as x:
             time.sleep(x.x)  # asyncio sleep ?
     elif path.is_dir():
-        for i in path.iterdir():
-            await explorer(i, chatid, flags, del_path)
+        for i in sorted(path.iterdir()):
+            await explorer(message, i, del_path)
 
 
-async def upload(path: Path, chat_id: int, flags: dict, del_path: bool = False):
-    if path.name.endswith((".mkv", ".mp4", ".webm")) and ('d' not in flags):
-        await vid_upload(chat_id, path, del_path)
-    elif path.name.endswith((".mp3", ".flac", ".wav", ".m4a")) and ('d' not in flags):
-        await audio_upload(chat_id, path, del_path)
+async def upload(message: Message, path: Path, del_path: bool = False):
+    if path.name.endswith((".mkv", ".mp4", ".webm")) and ('d' not in message.flags):
+        await vid_upload(message, path, del_path)
+    elif path.name.endswith((".mp3", ".flac", ".wav", ".m4a")) and ('d' not in message.flags):
+        await audio_upload(message, path, del_path)
     else:
-        await doc_upload(chat_id, path, del_path)
+        await doc_upload(message, path, del_path)
 
 
-async def doc_upload(chat_id, path, del_path: bool):
-    message: Message = await userge.send_message(
-        chat_id, f"`Uploading {path.name} ...`")
+async def doc_upload(message: Message, path, del_path: bool):
+    sent: Message = await message.client.send_message(
+        message.chat.id, f"`Uploading {path.name} as a doc ...`")
     start_t = datetime.now()
     c_time = time.time()
     thumb = await get_thumb()
-    await userge.send_chat_action(chat_id, "upload_document")
+    await message.client.send_chat_action(message.chat.id, "upload_document")
     try:
-        msg = await userge.send_document(
-            chat_id=chat_id,
+        msg = await message.client.send_document(
+            chat_id=message.chat.id,
             document=str(path),
             thumb=thumb,
             caption=path.name,
@@ -219,29 +226,33 @@ async def doc_upload(chat_id, path, del_path: bool):
             )
         )
     except Exception as u_e:
-        await message.edit(u_e)
+        await sent.edit(u_e)
         raise u_e
     else:
-        await finalize(chat_id, message, msg, start_t)
+        await sent.delete()
+        await finalize(message, msg, start_t)
     finally:
         if os.path.exists(str(path)) and del_path:
             os.remove(str(path))
 
 
-async def vid_upload(chat_id, path, del_path: bool):
+async def vid_upload(message: Message, path, del_path: bool):
     strpath = str(path)
     thumb = await get_thumb(strpath)
+    duration = 0
     metadata = extractMetadata(createParser(strpath))
-    message: Message = await userge.send_message(
-        chat_id, f"`Uploading {path.name} as a video ..`")
+    if metadata and metadata.has("duration"):
+        duration = metadata.get("duration").seconds
+    sent: Message = await message.client.send_message(
+        message.chat.id, f"`Uploading {path.name} as a video ..`")
     start_t = datetime.now()
     c_time = time.time()
-    await userge.send_chat_action(chat_id, "upload_video")
+    await message.client.send_chat_action(message.chat.id, "upload_video")
     try:
-        msg = await userge.send_video(
-            chat_id=chat_id,
+        msg = await message.client.send_video(
+            chat_id=message.chat.id,
             video=strpath,
-            duration=metadata.get("duration").seconds,
+            duration=duration,
             thumb=thumb,
             caption=path.name,
             parse_mode="html",
@@ -252,40 +263,55 @@ async def vid_upload(chat_id, path, del_path: bool):
             )
         )
     except Exception as u_e:
-        await message.edit(u_e)
+        await sent.edit(u_e)
         raise u_e
     else:
+        await sent.delete()
         await remove_thumb(thumb)
-        await finalize(chat_id, message, msg, start_t)
+        await finalize(message, msg, start_t)
     finally:
         if os.path.exists(str(path)) and del_path:
             os.remove(str(path))
 
 
-async def audio_upload(chat_id, path, del_path: bool):
+async def audio_upload(message: Message, path, del_path: bool):
     title = None
     artist = None
-    message: Message = await userge.send_message(
-        chat_id, f"`Uploading {path.name} as audio ...`")
+    thumb = None
+    duration = 0
     strpath = str(path)
+    file_size = humanbytes(os.stat(strpath).st_size)
+    try:
+        album_art = stagger.read_tag(strpath)
+        if (album_art.picture and not os.path.lexists(THUMB_PATH)):
+            bytes_pic_data = album_art[stagger.id3.APIC][0].data
+            bytes_io = io.BytesIO(bytes_pic_data)
+            image_file = Image.open(bytes_io)
+            image_file.save("album_cover.jpg", "JPEG")
+            thumb = "album_cover.jpg"
+    except stagger.errors.NoTagError:
+        pass
+    metadata = extractMetadata(createParser(strpath))
+    if metadata and metadata.has("title"):
+        title = metadata.get("title")
+    if metadata and metadata.has("artist"):
+        artist = metadata.get("artist")
+    if metadata and metadata.has("duration"):
+        duration = metadata.get("duration").seconds
+    sent: Message = await message.client.send_message(
+        message.chat.id, f"`Uploading {path.name} as audio ...`")
     start_t = datetime.now()
     c_time = time.time()
-    thumb = await get_thumb()
-    metadata = extractMetadata(createParser(strpath))
-    if metadata.has("title"):
-        title = metadata.get("title")
-    if metadata.has("artist"):
-        artist = metadata.get("artist")
-    await userge.send_chat_action(chat_id, "upload_audio")
+    await message.client.send_chat_action(message.chat.id, "upload_audio")
     try:
-        msg = await userge.send_audio(
-            chat_id=chat_id,
+        msg = await message.client.send_audio(
+            chat_id=message.chat.id,
             audio=strpath,
             thumb=thumb,
-            caption=path.name,
+            caption=f"{path.name} [ {file_size} ]",
             title=title,
             performer=artist,
-            duration=metadata.get("duration").seconds,
+            duration=duration,
             parse_mode="html",
             disable_notification=True,
             progress=progress,
@@ -294,11 +320,14 @@ async def audio_upload(chat_id, path, del_path: bool):
             )
         )
     except Exception as u_e:
-        await message.edit(u_e)
+        await sent.edit(u_e)
         raise u_e
     else:
-        await finalize(chat_id, message, msg, start_t)
+        await sent.delete()
+        await finalize(message, msg, start_t)
     finally:
+        if os.path.lexists("album_cover.jpg"):
+            os.remove("album_cover.jpg")
         if os.path.exists(str(path)) and del_path:
             os.remove(str(path))
 
@@ -322,12 +351,12 @@ async def remove_thumb(thumb: str) -> None:
         os.remove(thumb)
 
 
-async def finalize(chat_id: int, message: Message, msg: Message, start_t):
+async def finalize(message: Message, msg: Message, start_t):
     await CHANNEL.fwd_msg(msg)
-    await userge.send_chat_action(chat_id, "cancel")
+    await message.client.send_chat_action(message.chat.id, "cancel")
     if message.process_is_canceled:
         await message.edit("`Process Canceled!`", del_in=5)
     else:
         end_t = datetime.now()
         m_s = (end_t - start_t).seconds
-        await message.edit(f"Uploaded in {m_s} seconds")
+        await message.edit(f"Uploaded in {m_s} seconds", del_in=10)

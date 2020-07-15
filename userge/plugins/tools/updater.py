@@ -9,14 +9,12 @@
 import asyncio
 
 from git import Repo
-from git.exc import InvalidGitRepositoryError, GitCommandError
+from git.exc import GitCommandError
 
 from userge import userge, Message, Config
 
 LOG = userge.getLogger(__name__)
 CHANNEL = userge.getCLogger(__name__)
-
-UPSTREAM_REMOTE = 'upstream'
 
 
 @userge.on_cmd("update", about={
@@ -31,18 +29,12 @@ UPSTREAM_REMOTE = 'upstream'
              "{tr}update -[branch_name] : check updates from any branch\n"
              "add -pull if you want to pull updates\n"
              "add -push if you want to push updates to heroku",
-    'examples': "{tr}update -beta -pull -push"}, del_pre=True)
+    'examples': "{tr}update -beta -pull -push"}, del_pre=True, allow_channels=False)
 async def check_update(message: Message):
-    """check or do updates"""
+    """ check or do updates """
     await message.edit("`Checking for updates, please wait....`")
-    try:
-        repo = Repo()
-    except InvalidGitRepositoryError:
-        repo = Repo.init()
-    if UPSTREAM_REMOTE in repo.remotes:
-        ups_rem = repo.remote(UPSTREAM_REMOTE)
-    else:
-        ups_rem = repo.create_remote(UPSTREAM_REMOTE, Config.UPSTREAM_REPO)
+    repo = Repo()
+    ups_rem = repo.remote(Config.UPSTREAM_REMOTE)
     try:
         ups_rem.fetch()
     except GitCommandError as error:
@@ -69,7 +61,7 @@ async def check_update(message: Message):
         return
     out = ''
     try:
-        for i in repo.iter_commits(f'HEAD..{UPSTREAM_REMOTE}/{branch}'):
+        for i in repo.iter_commits(f'HEAD..{Config.UPSTREAM_REMOTE}/{branch}'):
             out += (f"🔨 **#{i.count()}** : "
                     f"[{i.summary}]({Config.UPSTREAM_REPO.rstrip('/')}/commit/{i}) "
                     f"👷 __{i.committer}__\n\n")
@@ -101,7 +93,7 @@ async def check_update(message: Message):
     await message.edit(
         f'`Now pushing updates from [{branch}] to heroku...\n'
         'this will take upto 3 min`\n\n'
-        '* **Restart** me after about 3 min using `.restart -h`\n\n'
+        f'* **Restart** me after about 3 min using `{Config.CMD_TRIGGER}restart -h`\n\n'
         '* After restarted successfully, check updates again :)')
     if "heroku" in repo.remotes:
         remote = repo.remote("heroku")

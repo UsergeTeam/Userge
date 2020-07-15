@@ -1,3 +1,5 @@
+""" setup AFK mode """
+
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -25,7 +27,7 @@ USERS = {}
 
 
 async def _init() -> None:
-    global IS_AFK, REASON, TIME
+    global IS_AFK, REASON, TIME  # pylint: disable=global-statement
     data = await SAVED_SETTINGS.find_one({'_id': 'AFK'})
     if data:
         IS_AFK = data['on']
@@ -39,9 +41,10 @@ async def _init() -> None:
     'header': "Set to AFK mode",
     'description': "Sets your status as AFK. Responds to anyone who tags/PM's.\n"
                    "you telling you are AFK. Switches off AFK when you type back anything.",
-    'usage': "{tr}afk or {tr}afk [reason]"})
+    'usage': "{tr}afk or {tr}afk [reason]"}, allow_channels=False)
 async def active_afk(message: Message) -> None:
-    global REASON, IS_AFK, TIME
+    """ turn on or off afk mode """
+    global REASON, IS_AFK, TIME  # pylint: disable=global-statement
     IS_AFK = True
     TIME = time.time()
     REASON = message.input_str
@@ -54,11 +57,14 @@ async def active_afk(message: Message) -> None:
 
 
 @userge.on_filters(IS_AFK_FILTER & ~Filters.me & ~Filters.bot & (
-    Filters.mentioned | (Filters.private & ~Filters.service & Config.ALLOWED_CHATS)))
+    Filters.mentioned | (Filters.private & ~Filters.service & (
+        Filters.create(lambda _, __: Config.ALLOW_ALL_PMS) | Config.ALLOWED_CHATS))),
+    allow_via_bot=False)
 async def handle_afk_incomming(message: Message) -> None:
+    """ handle incomming messages when you afk """
     user_id = message.from_user.id
     chat = message.chat
-    user_dict = await userge.get_user_dict(user_id)
+    user_dict = await message.client.get_user_dict(user_id)
     afk_time = time_formatter(round(time.time() - TIME))
     coro_list = []
     if user_id in USERS:
@@ -91,7 +97,7 @@ async def handle_afk_incomming(message: Message) -> None:
             "#GROUP\n"
             f"{user_dict['mention']} tagged you in [{chat.title}](http://t.me/{chat.username})\n\n"
             f"{message.text}\n\n"
-            "[goto_msg](https://t.me/c/{str(chat.id)[4:]}/{message.message_id})"))
+            f"[goto_msg](https://t.me/c/{str(chat.id)[4:]}/{message.message_id})"))
     coro_list.append(AFK_COLLECTION.update_one({'_id': user_id},
                                                {"$set": {
                                                    'pcount': USERS[user_id][0],
@@ -101,9 +107,10 @@ async def handle_afk_incomming(message: Message) -> None:
     await asyncio.gather(*coro_list)
 
 
-@userge.on_filters(IS_AFK_FILTER & Filters.outgoing, group=-1)
+@userge.on_filters(IS_AFK_FILTER & Filters.outgoing, group=-1, allow_via_bot=False)
 async def handle_afk_outgoing(message: Message) -> None:
-    global IS_AFK
+    """ handle outgoing messages when you afk """
+    global IS_AFK  # pylint: disable=global-statement
     IS_AFK = False
     afk_time = time_formatter(round(time.time() - TIME))
     replied: Message = await message.reply("`I'm no longer AFK!`", log=__name__)

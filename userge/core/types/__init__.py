@@ -1,3 +1,5 @@
+# pylint: disable=missing-module-docstring
+#
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -6,6 +8,4 @@
 #
 # All rights reserved.
 
-from .filtr import Filtr, clear_db
-from .command import Command
-from .plugin import Plugin
+from . import raw, bound, new  # noqa
