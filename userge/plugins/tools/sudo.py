@@ -103,6 +103,7 @@ async def view_sudo(message: Message):
 async def add_sudo_cmd(message: Message):
     """ add sudo cmd """
     if '-all' in message.flags:
+        await SUDO_CMDS_COLLECTION.drop()
         Config.ALLOWED_COMMANDS.clear()
         tmp_ = []
         for c_d in list(userge.manager.enabled_commands):
