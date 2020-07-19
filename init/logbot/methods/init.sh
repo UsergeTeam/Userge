@@ -8,4 +8,4 @@
 #
 # All rights reserved.
 
-python3 genStrSession.py
+. init/logbot/methods/methods.sh

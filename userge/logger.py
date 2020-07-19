@@ -10,12 +10,8 @@
 
 __all__ = ['logging']
 
-import os
 import logging
 from logging.handlers import RotatingFileHandler
-
-if not os.path.isdir("logs"):
-    os.mkdir("logs")
 
 logging.basicConfig(level=logging.INFO,
                     format='[%(asctime)s - %(levelname)s] - %(name)s - %(message)s',
