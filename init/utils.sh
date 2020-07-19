@@ -11,8 +11,8 @@
 declare -r pVer=$(sed -E 's/\w+ ([2-3])\.([0-9]+)\.([0-9]+)/\1.\2.\3/g' < <(python3 -V))
 
 log() {
-    local text=$*
-    test ${text::1} = '~' || echo -e "[LOGS] >>> ${text#\~}"
+    local text="$*"
+    test ${#text} -gt 0 && test ${text::1} != '~' && echo -e "[LOGS] >>> ${text#\~}"
 }
 
 quit() {

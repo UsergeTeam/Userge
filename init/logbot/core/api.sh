@@ -51,7 +51,8 @@ getLastMessage() {
     if test ${#_allMessages[@]} -gt 0; then
         ${_allMessages[-1]}.$1 "$2"
     elif [[ -n $BOT_TOKEN && -n $LOG_CHANNEL_ID ]]; then
-        log "first sendMessage ! caused by (core.Api.$FUNCNAME)"
+        log "first sendMessage ! caused by (core.Api.$FUNCNAME)\n"$2""
+    else
         log "$2"
     fi
 }

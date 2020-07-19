@@ -16,43 +16,23 @@ message_id=2
 text=3
 
 _Message.property() {
-    if [ "$2" == "=" ]; then
-        _Message_properties[$1]="$3"
-    else
-        echo "${_Message_properties[$1]}"
-    fi
+    test "$2" = "=" && _Message_properties[$1]="$3" || echo "${_Message_properties[$1]}"
 }
 
 _Message.id() {
-    if [ "$1" == "=" ]; then
-        _Message.property id = $2
-    else
-        _Message.property id
-    fi
+    test "$1" = "=" && _Message.property id = $2 || _Message.property id
 }
 
 _Message.chat_id() {
-    if [ "$1" == "=" ]; then
-        _Message.property chat_id = $2
-    else
-        _Message.property chat_id
-    fi
+    test "$1" == "=" && _Message.property chat_id = $2 || _Message.property chat_id
 }
 
 _Message.message_id() {
-    if [ "$1" == "=" ]; then
-        _Message.property message_id = $2
-    else
-        _Message.property message_id
-    fi
+    test "$1" = "=" && _Message.property message_id = $2 || _Message.property message_id
 }
 
 _Message.text() {
-    if [ "$1" == "=" ]; then
-        _Message.property text = "$2"
-    else
-        _Message.property text
-    fi
+    test "$1" = "=" && _Message.property text = "$2" || _Message.property text
 }
 
 _Message.parse() {

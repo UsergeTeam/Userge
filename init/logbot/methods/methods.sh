@@ -71,7 +71,7 @@ _polling() {
 declare -i _to=1
 
 _pollsleep() {
-	let _to+=1
-	log "sleeping ($_to) caused by (LogBot.polling)"
-	sleep $_to
+    let _to+=1
+    log "sleeping ($_to) caused by (LogBot.polling)"
+    sleep $_to
 }

@@ -80,9 +80,9 @@ _checkDatabase() {
 import pymongo
 
 try:
-	pymongo.MongoClient("'$DATABASE_URL'").list_database_names()
+    pymongo.MongoClient("'$DATABASE_URL'").list_database_names()
 except Exception as e:
-	print(e)
+    print(e)
 ')
     [[ $err ]] && quit "pymongo response > $err" || log "\tpymongo response > {status : 200}"
 }
