@@ -12,11 +12,12 @@ declare -r pVer=$(sed -E 's/\w+ ([2-3])\.([0-9]+)\.([0-9]+)/\1.\2.\3/g' < <(pyth
 
 log() {
     local text="$*"
-    test ${#text} -gt 0 && test ${text::1} != '~' && echo -e "[LOGS] >>> ${text#\~}"
+    test ${#text} -gt 0 && test ${text::1} != '~' \
+        && echo -e "[$(date +'%d-%b-%y %H:%M:%S') - INIT] - ${text#\~}"
 }
 
 quit() {
-    local err="\t:: ERROR :: $1 -> Exiting ..."
+    local err="\t:: ERROR :: $1\nExiting With SIGTERM ..."
     if (( getMessageCount )); then
         replyLastMessage "$err"
     else

@@ -29,7 +29,11 @@ _getResponse() {
                 let _mid+=1
             fi
         else
-            quit "invalid request ! caused by (core.Api.$FUNCNAME)\n$rawUpdate"
+            local errcode=$(echo $rawUpdate | jq .error_code)
+            local desc=$(echo $rawUpdate | jq .description)
+            quit "invalid request ! (caused by core.api.$FUNCNAME)
+\terror_code : [$errcode]
+\tdescription : $desc"
         fi
     fi
 }
@@ -51,7 +55,7 @@ getLastMessage() {
     if test ${#_allMessages[@]} -gt 0; then
         ${_allMessages[-1]}.$1 "$2"
     elif [[ -n $BOT_TOKEN && -n $LOG_CHANNEL_ID ]]; then
-        log "first sendMessage ! caused by (core.Api.$FUNCNAME)\n"$2""
+        log "first sendMessage ! (caused by \"core.api.$FUNCNAME\")\n"$2""
     else
         log "$2"
     fi

@@ -64,7 +64,7 @@ _polling() {
                 test -z $cmd && break;;
         esac
     done
-    log "Ended LogBot Polling !"
+    log "LogBot Polling Ended with SIGTERM !"
     exit 0
 }
 
@@ -72,6 +72,6 @@ declare -i _to=1
 
 _pollsleep() {
     let _to+=1
-    log "sleeping ($_to) caused by (LogBot.polling)"
+    log "sleeping (${_to}s) (caused by \"LogBot.polling\")"
     sleep $_to
 }

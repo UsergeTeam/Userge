@@ -38,14 +38,16 @@
             "description": "Mongodb url from https://cloud.mongodb.com/"
         },
         "G_DRIVE_CLIENT_ID": {
-            "description": "Googel Drive API Keys from https://console.developers.google.com/"
+            "description": "Googel Drive API Keys from https://console.developers.google.com/",
+            "required": false
         },
         "G_DRIVE_CLIENT_SECRET": {
-            "description": "Googel Drive API Keys from https://console.developers.google.com/"
+            "description": "Googel Drive API Keys from https://console.developers.google.com/",
+            "required": false
         },
         "G_DRIVE_IS_TD": {
-            "description": "Set True if it is TeamDrive",
-            "value": "True"
+            "description": "Set true if it is TeamDrive",
+            "required": false
         },
         "LOG_CHANNEL_ID": {
             "description": "Telegram Log Channel ID"
@@ -127,24 +129,15 @@
             "required": false
         }
     },
-    "addons": [
-    ],
+    "addons": [],
     "buildpacks": [
-        {
-            "url": "https://github.com/jonathanong/heroku-buildpack-ffmpeg-latest.git"
-        }, {
-            "url": "https://github.com/HasibulKabir/heroku-buildpack-rarlab.git"
-        }, {
-            "url": "https://github.com/opendoor-labs/heroku-buildpack-p7zip"
-        }, {
-            "url": "https://github.com/rking32/heroku-buildpack-google-chrome"
-        }, {
-            "url": "https://github.com/rking32/heroku-buildpack-chromedriver"
-        }, {
-            "url": "https://github.com/heroku/heroku-buildpack-apt.git"
-        }, {
-            "url": "heroku/python"
-        }
+        {"url": "https://github.com/jonathanong/heroku-buildpack-ffmpeg-latest.git"},
+        {"url": "https://github.com/HasibulKabir/heroku-buildpack-rarlab.git"},
+        {"url": "https://github.com/opendoor-labs/heroku-buildpack-p7zip"},
+        {"url": "https://github.com/rking32/heroku-buildpack-google-chrome"},
+        {"url": "https://github.com/rking32/heroku-buildpack-chromedriver"},
+        {"url": "https://github.com/heroku/heroku-buildpack-apt.git"},
+        {"url": "heroku/python"}
     ],
     "formation": {
         "worker": {

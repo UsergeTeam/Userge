@@ -45,6 +45,15 @@ async def _complete_init_tasks() -> None:
 
 class _AbstractUserge(Methods, RawClient):
     @property
+    def is_bot(self) -> bool:
+        """ returns client is bot or not """
+        if self._bot is not None:
+            return hasattr(self, 'ubot')
+        if Config.BOT_TOKEN:
+            return True
+        return False
+
+    @property
     def uptime(self) -> str:
         """ returns userge uptime """
         return time_formatter(time.time() - _START_TIME)

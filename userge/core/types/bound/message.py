@@ -21,7 +21,6 @@ from pyrogram.errors.exceptions.forbidden_403 import MessageDeleteForbidden
 
 from userge import logging
 from ... import client as _client  # pylint: disable=unused-import
-from ..new import ChannelLogger
 
 _CANCEL_LIST: List[int] = []
 _ERROR_MSG_DELETE_TIMEOUT = 5
@@ -52,7 +51,6 @@ class Message(RawMessage):
         self.reply_to_message: Optional[RawMessage]
         if self.reply_to_message:
             self.reply_to_message = self.__class__(self._client, self.reply_to_message)
-        self._channel = ChannelLogger(client, "CORE")
         self._filtered = False
         self._process_canceled = False
         self._filtered_input_str: str = ''

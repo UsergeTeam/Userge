@@ -86,7 +86,7 @@ async def gban_user(message: Message):
             f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
             f"**User ID:** `{user_id}`\n**Reason:** `{reason}`"))
     # TODO: can we add something like "GBanned by {any_sudo_user_fname}"
-    if hasattr(message.client, 'bot'):
+    if not message.client.is_bot:
         for chat in await message.client.get_common_chats(user_id):
             try:
                 await chat.kick_member(user_id)
@@ -137,7 +137,7 @@ async def ungban_user(message: Message):
             r"\\**#UnGbanned_User**//"
             f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
             f"**User ID:** `{user_id}`"))
-    if hasattr(message.client, 'bot'):
+    if not message.client.is_bot:
         for chat in await message.client.get_common_chats(user_id):
             try:
                 await chat.unban_member(user_id)
