@@ -201,6 +201,8 @@ async def upload(message: Message, path: Path, del_path: bool = False):
         await vid_upload(message, path, del_path)
     elif path.name.endswith((".mp3", ".flac", ".wav", ".m4a")) and ('d' not in message.flags):
         await audio_upload(message, path, del_path)
+    elif path.name.endswith((".jpg", ".jpeg", ".png", ".bmp")) and ('d' not in message.flags):
+        await photo_upload(message, path, del_path)
     else:
         await doc_upload(message, path, del_path)
 
@@ -328,6 +330,36 @@ async def audio_upload(message: Message, path, del_path: bool):
     finally:
         if os.path.lexists("album_cover.jpg"):
             os.remove("album_cover.jpg")
+        if os.path.exists(str(path)) and del_path:
+            os.remove(str(path))
+
+
+async def photo_upload(message: Message, path, del_path: bool):
+    strpath = str(path)
+    sent: Message = await message.client.send_message(
+        message.chat.id, f"`Uploading {path.name} as photo ...`")
+    start_t = datetime.now()
+    c_time = time.time()
+    await message.client.send_chat_action(message.chat.id, "upload_photo")
+    try:
+        msg = await message.client.send_photo(
+            chat_id=message.chat.id,
+            photo=strpath,
+            caption=path.name,
+            parse_mode="html",
+            disable_notification=True,
+            progress=progress,
+            progress_args=(
+                "uploading", userge, message, c_time, str(path.name)
+            )
+        )
+    except Exception as u_e:
+        await sent.edit(u_e)
+        raise u_e
+    else:
+        await sent.delete()
+        await finalize(message, msg, start_t)
+    finally:
         if os.path.exists(str(path)) and del_path:
             os.remove(str(path))
 
