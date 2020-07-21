@@ -13,6 +13,7 @@ __all__ = ['RawDecorator']
 import time
 import asyncio
 from traceback import format_exc
+from functools import partial
 from typing import List, Union, Any, Callable, Optional
 
 from pyrogram import (
@@ -28,9 +29,29 @@ _LOG = logging.getLogger(__name__)
 _LOG_STR = "<<<!  :::::  %s  :::::  !>>>"
 
 _PYROFUNC = Callable[['types.bound.Message'], Any]
-_B_CMN_CHT: List[int] = []
 _START_TO = time.time()
+
 _B_ID = 0
+_B_CMN_CHT: List[int] = []
+_B_AD_CHT: List[int] = []
+_B_NM_CHT: List[int] = []
+
+_U_ID = 0
+_U_AD_CHT: List[int] = []
+_U_NM_CHT: List[int] = []
+
+
+async def _raise_func(r_c: Union['_client.Userge', '_client._UsergeBot'],
+                      chat_id: int, message_id: int, text: str) -> None:
+    try:
+        _sent = await r_c.send_message(
+            chat_id=chat_id,
+            text=f"< **ERROR** : {text} ! >",
+            reply_to_message_id=message_id)
+        await asyncio.sleep(5)
+        await _sent.delete()
+    except ChatAdminRequired:
+        pass
 
 
 async def _get_bot_chats(r_c: Union['_client.Userge', '_client._UsergeBot'],
@@ -52,6 +73,32 @@ async def _get_bot_chats(r_c: Union['_client.Userge', '_client._UsergeBot'],
         if r_m.chat.id not in _B_CMN_CHT:
             _B_CMN_CHT.append(r_m.chat.id)
     return _B_CMN_CHT
+
+
+async def _is_admin(r_c: Union['_client.Userge', '_client._UsergeBot'],
+                    r_m: RawMessage) -> bool:
+    global _U_ID, _B_ID  # pylint: disable=global-statement
+    if r_m.chat.type in ("private", "bot"):
+        return False
+    if isinstance(r_c, _client.Userge):
+        if not _U_ID:
+            _U_ID = (await r_c.get_me()).id
+        if r_m.chat.id not in _U_AD_CHT + _U_NM_CHT:
+            user = await r_m.chat.get_member(_U_ID)
+            if user.status in ("creator", "administrator"):
+                _U_AD_CHT.append(r_m.chat.id)
+            else:
+                _U_NM_CHT.append(r_m.chat.id)
+        return r_m.chat.id in _U_AD_CHT
+    if not _B_ID:
+        _B_ID = (await r_c.get_me()).id
+    if r_m.chat.id not in _B_AD_CHT + _B_NM_CHT:
+        bot = await r_m.chat.get_member(_B_ID)
+        if bot.status in ("creator", "administrator"):
+            _B_AD_CHT.append(r_m.chat.id)
+        else:
+            _B_NM_CHT.append(r_m.chat.id)
+    return r_m.chat.id in _B_AD_CHT
 
 
 class RawDecorator(RawClient):
@@ -88,17 +135,12 @@ class RawDecorator(RawClient):
                             if r_m.chat.id in await _get_bot_chats(r_c, r_m):
                                 if isinstance(r_c, _client.Userge):
                                     return
-                if isinstance(flt, types.raw.Command) and r_m.chat and (r_m.chat.type not in scope):
-                    try:
-                        _sent = await r_c.send_message(
-                            r_m.chat.id,
-                            "**ERROR** : `Sorry!, this command not supported "
-                            f"in this chat type [{r_m.chat.type}] !`",
-                            reply_to_message_id=r_m.message_id)
-                        await asyncio.sleep(5)
-                        await _sent.delete()
-                    except ChatAdminRequired:
-                        pass
+                _raise = partial(_raise_func, r_c, r_m.chat.id, r_m.message_id)
+                if isinstance(flt, types.raw.Command) and r_m.chat and r_m.chat.type not in scope:
+                    await _raise(f"`invalid chat type [{r_m.chat.type}]`")
+                elif (isinstance(flt, types.raw.Command) and r_m.chat and r_m.from_user
+                      and 'admin' in scope and not await _is_admin(r_c, r_m)):
+                    await _raise("`chat admin required`")
                 else:
                     try:
                         await func(types.bound.Message(r_c, r_m, **kwargs))
@@ -106,19 +148,11 @@ class RawDecorator(RawClient):
                         raise
                     except Exception as f_e:  # pylint: disable=broad-except
                         _LOG.exception(_LOG_STR, f_e)
-                        await self._channel.log("#ERROR #TRACEBACK\n\n"
-                                                f"**Module** : `{func.__module__}`\n"
-                                                f"**Function** : `{func.__name__}`\n"
-                                                f"**Traceback** : ```{format_exc().strip()}```")
-                        try:
-                            _sent = await r_c.send_message(
-                                r_m.chat.id,
-                                f"**ERROR** : `{f_e}`\n__see logs for more info !__",
-                                reply_to_message_id=r_m.message_id)
-                            await asyncio.sleep(5)
-                            await _sent.delete()
-                        except ChatAdminRequired:
-                            pass
+                        await self._channel.log(f"**PLUGIN** : `{func.__module__}`\n"
+                                                f"**FUNCTION** : `{func.__name__}`\n"
+                                                f"\n```{format_exc().strip()}```",
+                                                "TRACEBACK")
+                        await _raise(f"`{f_e}`\n__see logs for more info__")
             _LOG.debug(_LOG_STR, f"Loading => [ async def {func.__name__}(message) ] "
                        f"from {func.__module__} `{log}`")
             flt.update(func, MessageHandler(template, filters))

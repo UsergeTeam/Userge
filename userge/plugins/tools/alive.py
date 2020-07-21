@@ -28,6 +28,7 @@ async def alive(message: Message):
 • **python version** : `{versions.__python_version__}`
 • **pyrogram version** : `{versions.__pyro_version__}`
 • **userge version** : `{get_version()}`
+• **unofficial enabled** : `{Config.LOAD_UNOFFICIAL_PLUGINS}`
 • **license** : {versions.__license__}
 • **copyright** : {versions.__copyright__}
 • **repo** : [Userge]({Config.UPSTREAM_REPO})

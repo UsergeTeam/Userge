@@ -453,7 +453,7 @@ async def dremove_(message: Message) -> None:
     await message.edit(f"path : `{path}` **removed** successfully!", del_in=5)
 
 
-@userge.on_cmd('drename ([^|]+)\|([^|]+)', about={
+@userge.on_cmd('drename ([^|]+)\|([^|]+)', about={  # noqa
     'header': "rename a directory or file",
     'usage': "{tr}drename [path / name] | [new name]"}, allow_channels=False)
 async def drename_(message: Message) -> None:

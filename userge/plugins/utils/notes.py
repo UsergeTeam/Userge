@@ -174,10 +174,14 @@ async def get_note(message: Message) -> None:
     can_access = message.from_user.is_self or message.from_user.id in Config.SUDO_USERS
     if Config.OWNER_ID:
         can_access = can_access or message.from_user.id == Config.OWNER_ID
-    notename = message.matches[0].group(1)
-    if notename not in NOTES_DATA[message.chat.id]:
+    notename = message.matches[0].group(1).lower()
+    mid, is_global = (0, False)
+    for note in NOTES_DATA[message.chat.id]:
+        if note.lower() == notename:
+            mid, is_global = NOTES_DATA[message.chat.id][note]
+            break
+    if not mid:
         return
-    mid, is_global = NOTES_DATA[message.chat.id][notename]
     if can_access or is_global:
         replied = message.reply_to_message
         user_id = message.from_user.id

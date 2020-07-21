@@ -15,7 +15,7 @@ from userge import userge
 
 async def worker() -> None:  # pylint: disable=missing-function-docstring
     chat_id = int(os.environ.get("CHAT_ID") or 0)
-    await userge.send_message(chat_id, 'testing_userge')
+    await userge.send_message(chat_id, '`build completed !`')
 
 if __name__ == "__main__":
     userge.begin(worker())

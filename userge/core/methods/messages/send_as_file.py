@@ -78,7 +78,8 @@ class SendAsFile(RawClient):  # pylint: disable=missing-class-docstring
                                        reply_to_message_id=reply_to_message_id)
         os.remove(filename)
         if log:
+            args = [msg]
             if isinstance(log, str):
-                self._channel.update(log)
-            await self._channel.fwd_msg(msg)
+                args.append(log)
+            await self._channel.fwd_msg(*args)
         return types.bound.Message(self, msg)

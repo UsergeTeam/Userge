@@ -8,4 +8,5 @@
 #
 # All rights reserved.
 
-python3 genStrSession.py
+. init/logbot/core/api.sh
+. init/logbot/core/message.sh

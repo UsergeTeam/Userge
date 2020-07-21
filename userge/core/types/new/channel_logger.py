@@ -134,23 +134,30 @@ class ChannelLogger:
         """
         self._string = _gen_string(name)
 
-    async def log(self, text: str) -> int:
+    async def log(self, text: str, name: str = '') -> int:
         """\nsend text message to log channel.
 
         Parameters:
             text (``str``):
                 Text of the message to be sent.
 
+            name (``str``, *optional*):
+                New Name for logger.
+
         Returns:
             message_id on success or None
         """
+        string = self._string
+        if name:
+            string = _gen_string(name)
         _LOG.debug(_LOG_STR, f"logging text : {text} to channel : {Config.LOG_CHANNEL_ID}")
         msg = await self._client.send_message(chat_id=Config.LOG_CHANNEL_ID,
-                                              text=self._string.format(text.strip()))
+                                              text=string.format(text.strip()))
         return msg.message_id
 
     async def fwd_msg(self,
                       message: '_message.Message',
+                      name: str = '',
                       as_copy: bool = True,
                       remove_caption: bool = False) -> None:
         """\nforward message to log channel.
@@ -158,6 +165,9 @@ class ChannelLogger:
         Parameters:
             message (`pyrogram.Message`):
                 pass pyrogram.Message object which want to forward.
+
+            name (``str``, *optional*):
+                New Name for logger.
 
             as_copy (`bool`, *optional*):
                 Pass True to forward messages without the forward header
@@ -178,7 +188,7 @@ class ChannelLogger:
             _LOG_STR, f"forwarding msg : {message} to channel : {Config.LOG_CHANNEL_ID}")
         if isinstance(message, RawMessage):
             if message.media:
-                asyncio.get_event_loop().create_task(self.log("**Forwarding Message...**"))
+                asyncio.get_event_loop().create_task(self.log("**Forwarding Message...**", name))
                 await self._client.forward_messages(chat_id=Config.LOG_CHANNEL_ID,
                                                     from_chat_id=message.chat.id,
                                                     message_ids=message.message_id,
@@ -186,7 +196,7 @@ class ChannelLogger:
                                                     remove_caption=remove_caption)
             else:
                 await self.log(
-                    message.text.html if hasattr(message.text, 'html') else message.text)
+                    message.text.html if hasattr(message.text, 'html') else message.text, name)
 
     async def store(self,
                     message: Optional['_message.Message'],

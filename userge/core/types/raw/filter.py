@@ -157,7 +157,7 @@ class Filter:
 
     async def load(self) -> str:
         """ load the filter """
-        if self._loaded:
+        if self._loaded or (self._client.is_bot and not self._allow_via_bot):
             return ''
         self._client.add_handler(self._handler, self._group)
         # pylint: disable=protected-access

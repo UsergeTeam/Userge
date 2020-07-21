@@ -28,6 +28,7 @@ class OnCmd(RawDecorator):  # pylint: disable=missing-class-docstring
                name: str = '',
                trigger: str = Config.CMD_TRIGGER,
                filter_me: bool = True,
+               only_admins: bool = False,
                allow_private: bool = True,
                allow_bots: bool = True,
                allow_groups: bool = True,
@@ -71,6 +72,9 @@ class OnCmd(RawDecorator):  # pylint: disable=missing-class-docstring
             filter_me (``bool``, *optional*):
                 If ``False``, anyone can access,  defaults to True.
 
+            only_admins (``bool``, *optional*):
+                If ``True``, client should be an admin,  defaults to False.
+
             allow_private (``bool``, *optional*):
                 If ``False``, prohibit private chats,  defaults to True.
 
@@ -110,6 +114,8 @@ class OnCmd(RawDecorator):  # pylint: disable=missing-class-docstring
             pattern += r"(?:\s([\S\s]+))?$"
         cmd = types.raw.Command(self, cname, about, group, allow_via_bot)
         scope: List[str] = []
+        if only_admins:
+            scope.append('admin')
         if allow_private:
             scope.append('private')
         if allow_bots:

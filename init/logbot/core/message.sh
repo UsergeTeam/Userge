@@ -8,4 +8,6 @@
 #
 # All rights reserved.
 
-python3 genStrSession.py
+Message() {
+    . <(sed "s/_Message/$1/g" init/logbot/core/messageClass.sh)
+}
