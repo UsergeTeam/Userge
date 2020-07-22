@@ -258,8 +258,7 @@ async def list_white(message: Message):
         f"**--Whitelisted Users List--**\n\n{msg}" if msg else "`whitelist empty!`")
 
 
-@userge.on_filters(Filters.group & Filters.new_chat_members & ~Filters.me,
-                   group=1, check_client=True)
+@userge.on_filters(Filters.group & Filters.new_chat_members & ~Filters.me, group=1)
 async def gban_at_entry(message: Message):
     """ handle gbans """
     chat_id = message.chat.id

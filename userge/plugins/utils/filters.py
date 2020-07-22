@@ -154,7 +154,7 @@ async def add_filter(message: Message) -> None:
     await message.edit(text=out, del_in=3, log=__name__)
 
 
-@userge.on_filters(~Filters.me & Filters.text & FILTERS_CHATS, group=1, check_client=True)
+@userge.on_filters(~Filters.me & Filters.text & FILTERS_CHATS, group=1)
 async def chat_filter(message: Message) -> None:
     """ filter handler """
     if not message.from_user:

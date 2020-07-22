@@ -150,13 +150,13 @@ async def viewleft(msg: Message):
     await raw_view(msg, 'Left', LEFT_COLLECTION)
 
 
-@userge.on_new_member(WELCOME_CHATS, check_client=True)
+@userge.on_new_member(WELCOME_CHATS)
 async def saywel(msg: Message):
     """ welcome message handler """
     await raw_say(msg, 'Welcome', WELCOME_COLLECTION)
 
 
-@userge.on_left_member(LEFT_CHATS, check_client=True)
+@userge.on_left_member(LEFT_CHATS)
 async def sayleft(msg: Message):
     """ left message handler """
     await raw_say(msg, 'Left', LEFT_COLLECTION)

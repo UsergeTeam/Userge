@@ -91,7 +91,7 @@ class OnCmd(RawDecorator):  # pylint: disable=missing-class-docstring
                 If ``True``, allow this via your bot,  defaults to True.
 
             check_client (``bool``, *optional*):
-                If ``True``, check client is bot or not before execute,  defaults to True.
+                If ``True``, check client is bot or not before execute,  defaults to False.
 
             kwargs:
                 prefix (``str``, *optional*):
@@ -143,4 +143,5 @@ class OnCmd(RawDecorator):  # pylint: disable=missing-class-docstring
                 and (m.text.startswith(Config.SUDO_TRIGGER) if trigger else True))
             filters_ = filters_ & (outgoing_flt | incoming_flt)
         return self._build_decorator(log=f"On {pattern}", filters=filters_, flt=cmd,
-                                     check_client=check_client, scope=scope, **kwargs)
+                                     check_client=check_client and allow_via_bot,
+                                     scope=scope, **kwargs)

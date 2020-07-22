@@ -185,7 +185,8 @@ def _supported(url):
 
 @pool.run_in_thread
 def _tubeDl(url: list, prog, starttime, uid=None):
-    _opts = {'outtmpl': os.path.join(Config.DOWN_PATH, str(starttime), '%(title)s-%(format)s.%(ext)s'),
+    _opts = {'outtmpl': os.path.join(Config.DOWN_PATH, str(starttime),
+                                     '%(title)s-%(format)s.%(ext)s'),
              'logger': LOGGER,
              'postprocessors': [
                  {'key': 'FFmpegMetadata'}

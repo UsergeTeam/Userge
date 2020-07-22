@@ -20,7 +20,7 @@ class OnLeftMember(RawDecorator):  # pylint: disable=missing-class-docstring
                        leaving_chats: Filters.chat,
                        group: int = -2,
                        allow_via_bot: bool = True,
-                       check_client: bool = False) -> RawDecorator._PYRORETTYPE:
+                       check_client: bool = True) -> RawDecorator._PYRORETTYPE:
         """\nDecorator for handling left members
 
         Parameters:

@@ -162,8 +162,6 @@ async def mv_to_global_note(message: Message) -> None:
                name="get_note",
                trigger='',
                filter_me=False,
-               allow_channels=False,
-               allow_bots=False,
                check_client=True)
 async def get_note(message: Message) -> None:
     """ get any saved note """
