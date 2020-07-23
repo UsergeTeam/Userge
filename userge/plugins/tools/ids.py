@@ -13,7 +13,9 @@ from userge import userge, Message
     'header': "display ids",
     'usage': "reply {tr}ids any message, file or just send this command"})
 async def getids(message: Message):
-    out_str = f"👥 **Chat ID** : `{message.chat.id}`\n💬 **Message ID** : `{message.message_id}`"
+    replied = message.reply_to_message
+    message_id = replied.message_id if replied else message.message_id
+    out_str = f"👥 **Chat ID** : `{message.chat.id}`\n💬 **Message ID** : `{message_id}`"
     if message.reply_to_message:
         if message.reply_to_message.from_user:
             out_str += f"\n🙋‍♂️ **From User ID** : `{message.reply_to_message.from_user.id}`"
