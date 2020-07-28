@@ -19,7 +19,7 @@
             "description": "Get this value from https://my.telegram.org"
         },
         "HU_STRING_SESSION": {
-            "description": "Get it by running `bash genStr` command or ignore this",
+            "description": "Get it by 'https://GenUserGeString.usergeuserbot.repl.run' or use `bash genStr`",
             "required": false
         },
         "BOT_TOKEN": {
