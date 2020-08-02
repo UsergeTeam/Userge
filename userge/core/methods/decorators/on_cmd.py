@@ -35,6 +35,7 @@ class OnCmd(RawDecorator):  # pylint: disable=missing-class-docstring
                allow_channels: bool = True,
                allow_via_bot: bool = True,
                check_client: bool = False,
+               check_downpath: bool = False,
                **kwargs: Union[str, bool]
                ) -> RawDecorator._PYRORETTYPE:
         """\nDecorator for handling messages.
@@ -93,6 +94,9 @@ class OnCmd(RawDecorator):  # pylint: disable=missing-class-docstring
             check_client (``bool``, *optional*):
                 If ``True``, check client is bot or not before execute,  defaults to False.
 
+            check_downpath (``bool``, *optional*):
+                If ``True``, check downpath and make if not exist,  defaults to False.
+
             kwargs:
                 prefix (``str``, *optional*):
                     set prefix for flags, defaults to '-'.
@@ -143,5 +147,5 @@ class OnCmd(RawDecorator):  # pylint: disable=missing-class-docstring
                 and (m.text.startswith(Config.SUDO_TRIGGER) if trigger else True))
             filters_ = filters_ & (outgoing_flt | incoming_flt)
         return self._build_decorator(log=f"On {pattern}", filters=filters_, flt=cmd,
-                                     check_client=check_client and allow_via_bot,
-                                     scope=scope, **kwargs)
+                                     check_client=allow_via_bot and check_client,
+                                     check_downpath=check_downpath, scope=scope, **kwargs)

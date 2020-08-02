@@ -10,6 +10,7 @@
 
 __all__ = ['RawDecorator']
 
+import os
 import time
 import asyncio
 from traceback import format_exc
@@ -111,7 +112,8 @@ class RawDecorator(RawClient):
         super().__init__(**kwargs)
 
     def on_filters(self, filters: Filters, group: int = 0, allow_via_bot: bool = True,
-                   check_client: bool = False) -> 'RawDecorator._PYRORETTYPE':
+                   check_client: bool = False, check_downpath: bool = False
+                   ) -> 'RawDecorator._PYRORETTYPE':
         """ abstract on filter method """
 
     def _build_decorator(self,
@@ -119,6 +121,7 @@ class RawDecorator(RawClient):
                          filters: Filters,
                          flt: Union['types.raw.Command', 'types.raw.Filter'],
                          check_client: bool,
+                         check_downpath: bool,
                          scope: Optional[List[str]] = None,
                          **kwargs: Union[str, bool]
                          ) -> 'RawDecorator._PYRORETTYPE':
@@ -142,6 +145,9 @@ class RawDecorator(RawClient):
                       and 'admin' in scope and not await _is_admin(r_c, r_m)):
                     await _raise("`chat admin required`")
                 else:
+                    if check_downpath:
+                        if not os.path.isdir(Config.DOWN_PATH):
+                            os.makedirs(Config.DOWN_PATH)
                     try:
                         await func(types.bound.Message(r_c, r_m, **kwargs))
                     except (StopPropagation, ContinuePropagation):  # pylint: disable=W0706

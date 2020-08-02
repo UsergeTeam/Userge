@@ -20,7 +20,8 @@ class OnLeftMember(RawDecorator):  # pylint: disable=missing-class-docstring
                        leaving_chats: Filters.chat,
                        group: int = -2,
                        allow_via_bot: bool = True,
-                       check_client: bool = True) -> RawDecorator._PYRORETTYPE:
+                       check_client: bool = True,
+                       check_downpath: bool = False) -> RawDecorator._PYRORETTYPE:
         """\nDecorator for handling left members
 
         Parameters:
@@ -36,7 +37,11 @@ class OnLeftMember(RawDecorator):  # pylint: disable=missing-class-docstring
 
             check_client (``bool``, *optional*):
                 If ``True``, check client is bot or not before execute,  defaults to True.
+
+            check_downpath (``bool``, *optional*):
+                If ``True``, check downpath and make if not exist,  defaults to False.
         """
         return self.on_filters(
             filters=Filters.group & Filters.left_chat_member & leaving_chats,
-            group=group, allow_via_bot=allow_via_bot, check_client=check_client)
+            group=group, allow_via_bot=allow_via_bot,
+            check_client=check_client, check_downpath=check_downpath)

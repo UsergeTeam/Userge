@@ -152,7 +152,7 @@ async def status(message: Message) -> None:
     else:
         await message.err("invalid input flag!")
         return
-    await message.edit(out_str, del_in=0)
+    await message.edit(out_str.replace("        ``\n", ''), del_in=0)
 
 
 @userge.on_cmd("enable", about={

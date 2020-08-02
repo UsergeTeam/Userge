@@ -207,13 +207,9 @@ async def sticker_pack_info_(message: Message):
 def resize_photo(photo: str) -> str:
     """ Resize the given photo to 512x512 """
     image = Image.open(photo)
-    maxsize = (512, 512)
-    if max(image.width, image.height) < 512:
-        scale = 512 / max(image.width, image.height)
-        new_size = (int(image.width * scale), int(image.height * scale))
-        image = image.resize(new_size, Image.ANTIALIAS)
-    else:
-        image.thumbnail(maxsize)
+    scale = 512 / max(image.width, image.height)
+    new_size = (int(image.width*scale), int(image.height*scale))
+    image = image.resize(new_size, Image.ANTIALIAS)
     os.remove(photo)
     photo = os.path.join(Config.DOWN_PATH, "sticker.png")
     if os.path.exists(photo):

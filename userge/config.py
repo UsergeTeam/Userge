@@ -82,7 +82,7 @@ if Config.HEROKU_API_KEY:
     for heroku_app in heroku3.from_key(Config.HEROKU_API_KEY).apps():
         if (heroku_app and Config.HEROKU_APP_NAME
                 and heroku_app.name == Config.HEROKU_APP_NAME):
-            LogBot.edit_last_msg("Heroku App : %s Found..." % heroku_app.name, _LOG.info)
+            _LOG.info("Heroku App : %s Found...", heroku_app.name)
             Config.HEROKU_APP = heroku_app
             break
     LogBot.del_last_msg()

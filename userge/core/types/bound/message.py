@@ -63,19 +63,35 @@ class Message(RawMessage):
         return self._client
 
     @property
-    def input_str(self) -> str:
-        """ Returns the input string without command """
+    def input_raw(self) -> str:
+        """ Returns the input string without command as raw """
         input_ = self.text.html if hasattr(self.text, 'html') else self.text
         if ' ' in input_ or '\n' in input_:
             return str(input_.split(maxsplit=1)[1].strip())
         return ''
 
     @property
+    def input_str(self) -> str:
+        """ Returns the input string without command """
+        input_ = self.text
+        if ' ' in input_ or '\n' in input_:
+            return str(input_.split(maxsplit=1)[1].strip())
+        return ''
+
+    @property
+    def input_or_reply_raw(self) -> str:
+        """ Returns the input string  or replied msg text without command as raw """
+        input_ = self.input_raw
+        if not input_ and self.reply_to_message:
+            input_ = (self.reply_to_message.text.html if self.reply_to_message.text else '').strip()
+        return input_
+
+    @property
     def input_or_reply_str(self) -> str:
         """ Returns the input string  or replied msg text without command """
         input_ = self.input_str
         if not input_ and self.reply_to_message:
-            input_ = (self.reply_to_message.text.html if self.reply_to_message.text else '').strip()
+            input_ = (self.reply_to_message.text or '').strip()
         return input_
 
     @property

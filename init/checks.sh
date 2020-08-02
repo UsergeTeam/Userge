@@ -15,8 +15,8 @@ _checkBashReq() {
 
 _checkPythonVersion() {
     log "Checking Python Version ..."
-    test $(sed 's/\.//g' <<< $pVer) -lt 370 \
-        && quit "You MUST have a python version of at least 3.7.0 !"
+    test $(sed 's/\.//g' <<< $pVer) -lt 380 \
+        && quit "You MUST have a python version of at least 3.8.0 !"
     log "\tFound PYTHON - v$pVer ..."
 }
 
@@ -78,12 +78,10 @@ _checkDatabase() {
     editLastMessage "Checking DATABASE_URL ..."
     local err=$(runPythonCode '
 import pymongo
-
 try:
     pymongo.MongoClient("'$DATABASE_URL'").list_database_names()
 except Exception as e:
-    print(e)
-')
+    print(e)')
     [[ $err ]] && quit "pymongo response > $err" || log "\tpymongo response > {status : 200}"
 }
 

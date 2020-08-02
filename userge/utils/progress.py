@@ -10,28 +10,43 @@
 
 import time
 from math import floor
+from typing import Dict, Tuple
 
 from pyrogram.errors.exceptions import FloodWait
 
 import userge
 from .tools import humanbytes, time_formatter
 
+_TASKS: Dict[str, Tuple[int, int]] = {}
+
 
 async def progress(current: int,
                    total: int,
-                   ud_type: str,
-                   client: 'userge.Userge',
                    message: 'userge.Message',
-                   start: int,
-                   file_name: str = '') -> None:
+                   ud_type: str,
+                   file_name: str = '',
+                   delay: int = 5) -> None:
     """ progress function """
     if message.process_is_canceled:
-        await client.stop_transmission()
+        await message.client.stop_transmission()
+    task_id = f"{message.chat.id}.{message.message_id}"
+    if current == total:
+        if task_id in _TASKS:
+            del _TASKS[task_id]
+        try:
+            await message.try_to_edit("`finalizing process ...`")
+        except FloodWait as f_e:
+            time.sleep(f_e.x)
+        return
     now = time.time()
-    diff = now - start
-    if diff % 10 < 0.3:
+    if task_id not in _TASKS:
+        _TASKS[task_id] = (now, now)
+    start, last = _TASKS[task_id]
+    elapsed_time = now - start
+    if (now - last) >= delay:
+        _TASKS[task_id] = (start, now)
         percentage = current * 100 / total
-        speed = current / diff
+        speed = current / elapsed_time
         time_to_completion = time_formatter(int((total - current) / speed))
         progress_str = \
             "__{}__ : `{}`\n" + \
@@ -55,10 +70,5 @@ async def progress(current: int,
             time_to_completion if time_to_completion else "0 s")
         try:
             await message.try_to_edit(progress_str)
-        except FloodWait as f_e:
-            time.sleep(f_e.x)
-    elif current == total:
-        try:
-            await message.try_to_edit("`finalizing process ...`")
         except FloodWait as f_e:
             time.sleep(f_e.x)

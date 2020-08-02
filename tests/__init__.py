@@ -1,4 +1,4 @@
-#!/bin/bash
+# pylint: disable=missing-module-docstring
 #
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
@@ -7,5 +7,3 @@
 # Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
-
-python3 tools/genStrSession.py

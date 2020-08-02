@@ -39,7 +39,7 @@ printMessages() {
 }
 
 startLogBotPolling() {
-    _polling &
+    test -z $BOT_TOKEN || _polling &
 }
 
 _polling() {
@@ -63,6 +63,7 @@ _polling() {
                 log "unknown : < $cmd >"
                 test -z $cmd && break;;
         esac
+        sleep 1
     done
     log "LogBot Polling Ended with SIGTERM !"
     exit 0

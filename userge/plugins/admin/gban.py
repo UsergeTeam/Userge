@@ -20,8 +20,11 @@ GBAN_USER_BASE = get_collection("GBAN_USER")
 WHITELIST = get_collection("WHITELIST_USER")
 CHANNEL = userge.getCLogger(__name__)
 LOG = userge.getLogger(__name__)
-ADMEME_CHATS = []
-PATHETIC_CHATS = []
+
+U_ADMEME_CHATS = []
+U_PATHETIC_CHATS = []
+B_ADMEME_CHATS = []
+B_PATHETIC_CHATS = []
 
 
 async def me_can_restrict_members(message: Message, chat_id: int):
@@ -261,14 +264,20 @@ async def list_white(message: Message):
 @userge.on_filters(Filters.group & Filters.new_chat_members & ~Filters.me, group=1)
 async def gban_at_entry(message: Message):
     """ handle gbans """
+    if message.client.is_bot:
+        admin_chats = B_ADMEME_CHATS
+        pathetic_chats = B_PATHETIC_CHATS
+    else:
+        admin_chats = U_ADMEME_CHATS
+        pathetic_chats = U_PATHETIC_CHATS
     chat_id = message.chat.id
     # Trying To Avoid Flood Waits
-    if chat_id not in ADMEME_CHATS + PATHETIC_CHATS:
+    if chat_id not in admin_chats + pathetic_chats:
         if await me_can_restrict_members(message, chat_id):
-            ADMEME_CHATS.append(chat_id)
+            admin_chats.append(chat_id)
         else:
-            PATHETIC_CHATS.append(chat_id)
-    if chat_id in PATHETIC_CHATS:
+            pathetic_chats.append(chat_id)
+    if chat_id in pathetic_chats:
         return
     for user in message.new_chat_members:
         user_id = user.id
@@ -295,7 +304,7 @@ async def gban_at_entry(message: Message):
         elif Config.ANTISPAM_SENTRY:
             res = requests.get(f'https://api.cas.chat/check?user_id={user_id}').json()
             if res['ok']:
-                reason = res['description'] if 'description' in res else None
+                reason = res['result']['messages'][0] if 'result' in res else None
                 await asyncio.gather(
                     message.client.kick_chat_member(chat_id, user_id),
                     message.reply(

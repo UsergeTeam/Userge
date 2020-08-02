@@ -28,11 +28,9 @@ _MGCLIENT: AgnosticClient = AsyncIOMotorClient(Config.DB_URI)
 _RUN = asyncio.get_event_loop().run_until_complete
 
 if "Userge" in _RUN(_MGCLIENT.list_database_names()):
-    LogBot.reply_last_msg(
-        "Userge Database Found :) => Now Logging to it...", _LOG.info, _LOG_STR)
+    _LOG.info(_LOG_STR, "Userge Database Found :) => Now Logging to it...")
 else:
-    LogBot.reply_last_msg(
-        "Userge Database Not Found :( => Creating New Database...", _LOG.info, _LOG_STR)
+    _LOG.info(_LOG_STR, "Userge Database Not Found :( => Creating New Database...")
 
 _DATABASE: AgnosticDatabase = _MGCLIENT["Userge"]
 _COL_LIST: List[str] = _RUN(_DATABASE.list_collection_names())

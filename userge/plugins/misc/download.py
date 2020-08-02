@@ -7,7 +7,6 @@
 # All rights reserved.
 
 import os
-import time
 import math
 import asyncio
 from datetime import datetime
@@ -24,21 +23,17 @@ LOGGER = userge.getLogger(__name__)
 @userge.on_cmd("download", about={
     'header': "Download files to server",
     'usage': "{tr}download [url | reply to telegram media]",
-    'examples': "{tr}download https://speed.hetzner.de/100MB.bin | testing upload.bin"})
+    'examples': "{tr}download https://speed.hetzner.de/100MB.bin | testing upload.bin"},
+    check_downpath=True)
 async def down_load_media(message: Message):
-    await message.edit("Trying to Download...")
-    if not os.path.isdir(Config.DOWN_PATH):
-        os.mkdir(Config.DOWN_PATH)
+    await message.edit("`Trying to Download...`")
     if message.reply_to_message and message.reply_to_message.media:
         start_t = datetime.now()
-        c_time = time.time()
         dl_loc = await message.client.download_media(
             message=message.reply_to_message,
             file_name=Config.DOWN_PATH,
             progress=progress,
-            progress_args=(
-                "trying to download", userge, message, c_time
-            )
+            progress_args=(message, "trying to download")
         )
         if message.process_is_canceled:
             await message.edit("`Process Canceled!`", del_in=5)

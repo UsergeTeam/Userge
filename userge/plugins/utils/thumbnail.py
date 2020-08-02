@@ -29,14 +29,12 @@ async def save_thumb_nail(message: Message):
             and (replied.photo
                  or (replied.document and "image" in replied.document.mime_type))):
         start_t = datetime.now()
-        c_time = time.time()
         if os.path.exists(THUMB_PATH):
             os.remove(THUMB_PATH)
         await message.client.download_media(message=replied,
                                             file_name=THUMB_PATH,
                                             progress=progress,
-                                            progress_args=(
-                                                "trying to download", userge, message, c_time))
+                                            progress_args=(message, "trying to download"))
         end_t = datetime.now()
         m_s = (end_t - start_t).seconds
         await message.edit(f"thumbnail saved in {m_s} seconds.", del_in=3)
