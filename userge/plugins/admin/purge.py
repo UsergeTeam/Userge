@@ -19,7 +19,7 @@ from userge import userge, Message
     'usage': "reply {tr}purge to the start message to purge.\n"
              "use {tr}purge [user_id | user_name] to purge messages from that user or use flags",
     'examples': ['{tr}purge', '{tr}purge -u', '{tr}purge [user_id | user_name]']},
-    allow_bots=False, allow_private=False, del_pre=True)
+    allow_bots=False, allow_private=True, del_pre=True)
 async def purge_(message: Message):
     await message.edit("`purging ...`")
     from_user_id = 0
