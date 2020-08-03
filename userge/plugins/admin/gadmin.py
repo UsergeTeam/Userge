@@ -43,7 +43,7 @@ async def promote_usr(message: Message):
     get_group = await message.client.get_chat(chat_id)
     check_user = await message.client.get_chat_member(message.chat.id, message.from_user.id)
 
-    if check_user.can_promote_members:
+    if (check_user.status == "creator" or check_user.can_promote_members):
 
         await message.edit("`Trying to Promote User.. Hang on!! ⏳`")
 
@@ -137,7 +137,7 @@ async def demote_usr(message: Message):
     get_group = await message.client.get_chat(chat_id)
     check_user = await message.client.get_chat_member(message.chat.id, message.from_user.id)
 
-    if check_user.can_promote_members:
+    if (check_user.status == "creator" or check_user.can_promote_members):
 
         await message.edit("`Trying to Demote User.. Hang on!! ⏳`")
 
