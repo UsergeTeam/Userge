@@ -9,7 +9,6 @@
 # All rights reserved.
 
 import os
-import time
 from datetime import datetime
 from userge import userge, Config, Message
 from userge.utils import progress

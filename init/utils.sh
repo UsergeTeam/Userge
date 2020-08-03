@@ -13,7 +13,7 @@ declare -r pVer=$(sed -E 's/\w+ ([2-3])\.([0-9]+)\.([0-9]+)/\1.\2.\3/g' < <(pyth
 log() {
     local text="$*"
     test ${#text} -gt 0 && test ${text::1} != '~' \
-        && echo -e "[$(date +'%d-%b-%y %H:%M:%S') - INIT] - ${text#\~}"
+        && echo -e "[$(date +'%d-%b-%y %H:%M:%S') - INFO] - init - ${text#\~}"
 }
 
 quit() {
