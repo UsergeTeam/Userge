@@ -60,7 +60,7 @@ async def helpme(message: Message) -> None:  # pylint: disable=missing-function-
             out_str = f"""⚔ <b><u>(<code>{len(commands)}</code>) Command(s) Available</u></b>
 
 🔧 <b>Plugin:</b>  <code>{key}</code>
-📘 <b>About:</b>  <code>{plugins[key].about}</code>\n\n"""
+📘 <b>Doc:</b>  <code>{plugins[key].doc}</code>\n\n"""
             for i, cmd in enumerate(commands, start=1):
                 out_str += (f"    🤖 <b>cmd(<code>{i}</code>):</b>  <code>{cmd.name}</code>\n"
                             f"    📚 <b>info:</b>  <i>{cmd.doc}</i>\n\n")
@@ -269,7 +269,7 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
 
 🎭 **Category** : `{pos_list[1]}`
 🔖 **Name** : `{plg.name}`
-📝 **About** : `{plg.about}`
+📝 **Doc** : `{plg.doc}`
 ⚔ **Commands** : `{len(plg.commands)}`
 ⚖ **Filters** : `{len(plg.filters)}`
 ✅ **Loaded** : `{plg.is_loaded}`
@@ -299,25 +299,20 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
         plg = userge.manager.plugins[pos_list[2]]
         flts = {flt.name: flt for flt in plg.commands + plg.filters}
         flt = flts[pos_list[-1]]
-        if hasattr(flt, 'doc'):
-            text = f"""⚔ **--Command Status--** ⚔
-
+        flt_data = f"""
 🔖 **Name** : `{flt.name}`
 📝 **Doc** : `{flt.doc}`
 🤖 **Via Bot** : `{flt.allow_via_bot}`
 ✅ **Loaded** : `{flt.is_loaded}`
-➕ **Enabled** : `{flt.is_enabled}`
-
+➕ **Enabled** : `{flt.is_enabled}`"""
+        if hasattr(flt, 'about'):
+            text = f"""⚔ **--Command Status--**
+{flt_data}
 {flt.about}
 """
         else:
             text = f"""⚖ **--Filter Status--** ⚖
-
-🔖 **Name** : `{flt.name}`
-📝 **About** : `{flt.about}`
-🤖 **Via Bot** : `{flt.allow_via_bot}`
-✅ **Loaded** : `{flt.is_loaded}`
-➕ **Enabled** : `{flt.is_enabled}`
+{flt_data}
 """
         buttons = default_buttons(cur_pos)
         tmp_btns = []

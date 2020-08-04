@@ -59,6 +59,7 @@ async def eval_(message: Message):
     output = "**EVAL**:\n```{}```\n\n\
 **OUTPUT**:\n```{}```".format(cmd, evaluation.strip())
     await message.edit_or_send_as_file(text=output,
+                                       parse_mode='md',
                                        filename="eval.txt",
                                        caption=cmd)
 
@@ -84,6 +85,7 @@ async def exec_(message: Message):
 __Command:__\n`{cmd}`\n__PID:__\n`{pid}`\n__RETURN:__\n`{ret}`\n\n\
 **stderr:**\n`{err}`\n\n**stdout:**\n``{out}`` "
     await message.edit_or_send_as_file(text=output,
+                                       parse_mode='md',
                                        filename="exec.txt",
                                        caption=cmd)
 

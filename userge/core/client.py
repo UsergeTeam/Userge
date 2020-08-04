@@ -21,7 +21,7 @@ from typing import List, Awaitable, Any, Optional
 import psutil
 
 from userge import logging, Config
-from userge.logbot import LogBot
+from userge import logbot
 from userge.utils import time_formatter
 from userge.utils.exceptions import UsergeBotNotFound
 from userge.plugins import get_all_plugins
@@ -81,7 +81,7 @@ class _AbstractUserge(Methods, RawClient):
     async def _load_plugins(self) -> None:
         _IMPORTED.clear()
         _INIT_TASKS.clear()
-        LogBot.edit_last_msg("Importing All Plugins", _LOG.info, _LOG_STR)
+        logbot.edit_last_msg("Importing All Plugins", _LOG.info, _LOG_STR)
         for name in get_all_plugins():
             try:
                 await self.load_plugin(name)
@@ -191,8 +191,8 @@ class Userge(_AbstractUserge):
             run(coro)
         else:
             _LOG.info(_LOG_STR, "Idling Userge")
-            LogBot.edit_last_msg("Userge has Started Successfully !")
-            LogBot.end()
+            logbot.edit_last_msg("Userge has Started Successfully !")
+            logbot.end()
             run(Userge.idle())
         _LOG.info(_LOG_STR, "Exiting Userge")
         for task in running_tasks:

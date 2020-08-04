@@ -99,8 +99,8 @@ class Manager:
         """ initialize all plugins """
         await asyncio.gather(*[plg.init() for _, plg in self.plugins.items()])
 
-    def add_plugin(self, module_name: str) -> Plugin:
-        """ add plugin to manager """
+    def get_plugin(self, module_name: str) -> Plugin:
+        """ get plugin from manager """
         name = module_name.split('.')[-1]
         if name in self.plugins:
             return self.plugins[name]
@@ -109,12 +109,13 @@ class Manager:
         self.plugins[name] = plg
         return plg
 
-    def update_plugin(self, module_name: str, about: Optional[str]) -> None:
+    def update_plugin(self, module_name: str, doc: Optional[str]) -> None:
         """ get plugin from name """
         name = module_name.split('.')[-1]
         if name not in self.plugins:
-            self.add_plugin(module_name)
-        self.plugins[name].about = about.strip() if about else None
+            self.get_plugin(module_name)
+        if doc:
+            self.plugins[name].doc = doc.strip()
 
     def get_plugins(self) -> Dict[str, List[str]]:
         """ returns categorized plugins """

@@ -169,35 +169,44 @@ async def uploadtotg(message: Message):
         await message.edit("wrong syntax\n`.upload [path]`")
     else:
         await message.delete()
-        await explorer(message, string, del_path)
+        await upload_path(message, string, del_path)
 
 
-async def explorer(message: Message, path: Path, del_path):
-    if path.is_file():
+async def upload_path(message: Message, path: Path, del_path):
+    file_paths = []
+
+    def explorer(path: Path) -> None:
+        if path.is_file() and path.stat().st_size:
+            file_paths.append(path)
+        elif path.is_dir():
+            for i in sorted(path.iterdir()):
+                explorer(i)
+    explorer(Path(path))
+    current = 0
+    for p_t in file_paths:
+        current += 1
         try:
-            if path.stat().st_size:
-                await upload(message, path, del_path)
-        except FloodWait as x:
-            time.sleep(x.x)  # asyncio sleep ?
-    elif path.is_dir():
-        for i in sorted(path.iterdir()):
-            await explorer(message, i, del_path)
+            await upload(message, p_t, del_path, f"{current}/{len(file_paths)}")
+        except FloodWait as f_e:
+            time.sleep(f_e.x)  # asyncio sleep ?
+        if message.process_is_canceled:
+            break
 
 
-async def upload(message: Message, path: Path, del_path: bool = False):
+async def upload(message: Message, path: Path, del_path: bool = False, extra: str = ''):
     if path.name.endswith((".mkv", ".mp4", ".webm")) and ('d' not in message.flags):
-        await vid_upload(message, path, del_path)
+        await vid_upload(message, path, del_path, extra)
     elif path.name.endswith((".mp3", ".flac", ".wav", ".m4a")) and ('d' not in message.flags):
-        await audio_upload(message, path, del_path)
+        await audio_upload(message, path, del_path, extra)
     elif path.name.endswith((".jpg", ".jpeg", ".png", ".bmp")) and ('d' not in message.flags):
-        await photo_upload(message, path, del_path)
+        await photo_upload(message, path, del_path, extra)
     else:
-        await doc_upload(message, path, del_path)
+        await doc_upload(message, path, del_path, extra)
 
 
-async def doc_upload(message: Message, path, del_path: bool):
+async def doc_upload(message: Message, path, del_path: bool, extra: str):
     sent: Message = await message.client.send_message(
-        message.chat.id, f"`Uploading {path.name} as a doc ...`")
+        message.chat.id, f"`Uploading {path.name} as a doc ... {extra}`")
     start_t = datetime.now()
     thumb = await get_thumb()
     await message.client.send_chat_action(message.chat.id, "upload_document")
@@ -210,7 +219,7 @@ async def doc_upload(message: Message, path, del_path: bool):
             parse_mode="html",
             disable_notification=True,
             progress=progress,
-            progress_args=(message, "uploading", str(path.name))
+            progress_args=(message, f"uploading {extra}", str(path.name))
         )
     except Exception as u_e:
         await sent.edit(u_e)
@@ -223,7 +232,7 @@ async def doc_upload(message: Message, path, del_path: bool):
             os.remove(str(path))
 
 
-async def vid_upload(message: Message, path, del_path: bool):
+async def vid_upload(message: Message, path, del_path: bool, extra: str):
     strpath = str(path)
     thumb = await get_thumb(strpath)
     duration = 0
@@ -231,7 +240,7 @@ async def vid_upload(message: Message, path, del_path: bool):
     if metadata and metadata.has("duration"):
         duration = metadata.get("duration").seconds
     sent: Message = await message.client.send_message(
-        message.chat.id, f"`Uploading {path.name} as a video ..`")
+        message.chat.id, f"`Uploading {path.name} as a video ... {extra}`")
     start_t = datetime.now()
     await message.client.send_chat_action(message.chat.id, "upload_video")
     try:
@@ -244,7 +253,7 @@ async def vid_upload(message: Message, path, del_path: bool):
             parse_mode="html",
             disable_notification=True,
             progress=progress,
-            progress_args=(message, "uploading", str(path.name))
+            progress_args=(message, f"uploading {extra}", str(path.name))
         )
     except Exception as u_e:
         await sent.edit(u_e)
@@ -258,7 +267,7 @@ async def vid_upload(message: Message, path, del_path: bool):
             os.remove(str(path))
 
 
-async def audio_upload(message: Message, path, del_path: bool):
+async def audio_upload(message: Message, path, del_path: bool, extra: str):
     title = None
     artist = None
     thumb = None
@@ -283,7 +292,7 @@ async def audio_upload(message: Message, path, del_path: bool):
     if metadata and metadata.has("duration"):
         duration = metadata.get("duration").seconds
     sent: Message = await message.client.send_message(
-        message.chat.id, f"`Uploading {path.name} as audio ...`")
+        message.chat.id, f"`Uploading {path.name} as audio ... {extra}`")
     start_t = datetime.now()
     await message.client.send_chat_action(message.chat.id, "upload_audio")
     try:
@@ -298,7 +307,7 @@ async def audio_upload(message: Message, path, del_path: bool):
             parse_mode="html",
             disable_notification=True,
             progress=progress,
-            progress_args=(message, "uploading", str(path.name))
+            progress_args=(message, f"uploading {extra}", str(path.name))
         )
     except Exception as u_e:
         await sent.edit(u_e)
@@ -313,10 +322,10 @@ async def audio_upload(message: Message, path, del_path: bool):
             os.remove(str(path))
 
 
-async def photo_upload(message: Message, path, del_path: bool):
+async def photo_upload(message: Message, path, del_path: bool, extra: str):
     strpath = str(path)
     sent: Message = await message.client.send_message(
-        message.chat.id, f"`Uploading {path.name} as photo ...`")
+        message.chat.id, f"`Uploading {path.name} as photo ... {extra}`")
     start_t = datetime.now()
     await message.client.send_chat_action(message.chat.id, "upload_photo")
     try:
@@ -327,7 +336,7 @@ async def photo_upload(message: Message, path, del_path: bool):
             parse_mode="html",
             disable_notification=True,
             progress=progress,
-            progress_args=(message, "uploading", str(path.name))
+            progress_args=(message, f"uploading {extra}", str(path.name))
         )
     except Exception as u_e:
         await sent.edit(u_e)

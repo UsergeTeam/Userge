@@ -57,7 +57,7 @@ async def status(message: Message) -> None:
                 out_str = f"""🗃 **--Plugin Status--** 🗃
 
 🔖 **Name** : `{plg.name}`
-📝 **About** : `{plg.about}`
+📝 **Doc** : `{plg.doc}`
 ✅ **Loaded** : `{plg.is_loaded}`
 ➕ **Enabled** : `{plg.is_enabled}`
 
@@ -69,6 +69,7 @@ async def status(message: Message) -> None:
         `{'`,    `'.join((cmd.name for cmd in plg.disabled_commands))}`
         ❎ **Unloaded** : `{len(plg.unloaded_commands)}`
         `{'`,    `'.join((cmd.name for cmd in plg.unloaded_commands))}`
+
 ⚖ **Filters** : `{len(plg.filters)}`
         ✅ **Loaded** : `{len(plg.loaded_filters)}`
         ➕ **Enabled** : `{len(plg.enabled_filters)}`
@@ -129,7 +130,7 @@ async def status(message: Message) -> None:
                 out_str = f"""⚖ **--Filter Status--** ⚖
 
 🔖 **Name** : `{flt.name}`
-📝 **About** : `{flt.about}`
+📝 **Doc** : `{flt.doc}`
 🤖 **Via Bot** : `{flt.allow_via_bot}`
 ✅ **Loaded** : `{flt.is_loaded}`
 ➕ **Enabled** : `{flt.is_enabled}`

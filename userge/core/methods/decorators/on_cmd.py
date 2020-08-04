@@ -10,10 +10,7 @@
 
 __all__ = ['OnCmd']
 
-import re
 from typing import Dict, List, Union
-
-from pyrogram import Filters
 
 from userge import Config
 from ... import types
@@ -24,18 +21,26 @@ class OnCmd(RawDecorator):  # pylint: disable=missing-class-docstring
     def on_cmd(self,
                command: str,
                about: Union[str, Dict[str, Union[str, List[str], Dict[str, str]]]],
+               *,
                group: int = 0,
                name: str = '',
                trigger: str = Config.CMD_TRIGGER,
                filter_me: bool = True,
-               only_admins: bool = False,
                allow_private: bool = True,
                allow_bots: bool = True,
                allow_groups: bool = True,
                allow_channels: bool = True,
+               only_admins: bool = False,
                allow_via_bot: bool = True,
                check_client: bool = False,
                check_downpath: bool = False,
+               check_change_info_perm: bool = False,
+               check_edit_perm: bool = False,
+               check_delete_perm: bool = False,
+               check_restrict_perm: bool = False,
+               check_promote_perm: bool = False,
+               check_invite_perm: bool = False,
+               check_pin_perm: bool = False,
                **kwargs: Union[str, bool]
                ) -> RawDecorator._PYRORETTYPE:
         """\nDecorator for handling messages.
@@ -71,31 +76,59 @@ class OnCmd(RawDecorator):  # pylint: disable=missing-class-docstring
                 trigger to start command.
 
             filter_me (``bool``, *optional*):
-                If ``False``, anyone can access,  defaults to True.
-
-            only_admins (``bool``, *optional*):
-                If ``True``, client should be an admin,  defaults to False.
+                If ``False``, anyone can access, defaults to True.
 
             allow_private (``bool``, *optional*):
-                If ``False``, prohibit private chats,  defaults to True.
+                If ``False``, prohibit private chats, defaults to True.
 
             allow_bots (``bool``, *optional*):
-                If ``False``, prohibit bot chats,  defaults to True.
+                If ``False``, prohibit bot chats, defaults to True.
 
             allow_groups (``bool``, *optional*):
-                If ``False``, prohibit group chats,  defaults to True.
+                If ``False``, prohibit group chats, defaults to True.
 
             allow_channels (``bool``, *optional*):
-                If ``False``, prohibit channel chats,  defaults to True.
+                If ``False``, prohibit channel chats, defaults to True.
+
+            only_admins (``bool``, *optional*):
+                If ``True``, client should be an admin, defaults to False.
 
             allow_via_bot (``bool``, *optional*):
-                If ``True``, allow this via your bot,  defaults to True.
+                If ``True``, allow this via your bot, defaults to True.
 
             check_client (``bool``, *optional*):
-                If ``True``, check client is bot or not before execute,  defaults to False.
+                If ``True``, check client is bot or not before execute, defaults to False.
 
             check_downpath (``bool``, *optional*):
-                If ``True``, check downpath and make if not exist,  defaults to False.
+                If ``True``, check downpath and make if not exist, defaults to False.
+
+            check_change_info_perm (``bool``, *optional*):
+                If ``True``, check user has change_info permission before execute,
+                defaults to False.
+
+            check_edit_perm (``bool``, *optional*):
+                If ``True``, check user has edit permission before execute,
+                defaults to False.
+
+            check_delete_perm (``bool``, *optional*):
+                If ``True``, check user has delete permission before execute,
+                defaults to False.
+
+            check_restrict_perm (``bool``, *optional*):
+                If ``True``, check user has restrict permission before execute,
+                defaults to False.
+
+            check_promote_perm (``bool``, *optional*):
+                If ``True``, check user has promote permission before execute,
+                defaults to False.
+
+            check_invite_perm (``bool``, *optional*):
+                If ``True``, check user has invite permission before execute,
+                defaults to False.
+
+            check_pin_perm (``bool``, *optional*):
+                If ``True``, check user has pin permission before execute,
+                defaults to False.
 
             kwargs:
                 prefix (``str``, *optional*):
@@ -105,47 +138,23 @@ class OnCmd(RawDecorator):  # pylint: disable=missing-class-docstring
                     If ``True``, flags returns without prefix,
                     defaults to False.
         """
-        pattern = f"^(?:\\{trigger}|\\{Config.SUDO_TRIGGER}){command.lstrip('^')}" if trigger \
-            else f"^{command.lstrip('^')}"
-        if [i for i in '^()[]+*.\\|?:$' if i in command]:
-            match = re.match("(\\w[\\w_]*)", command)
-            cname = match.groups()[0] if match else ''
-            cname = name or cname
-            cname = trigger + cname if cname else ''
-        else:
-            cname = trigger + command
-            cname = name or cname
-            pattern += r"(?:\s([\S\s]+))?$"
-        cmd = types.raw.Command(self, cname, about, group, allow_via_bot)
-        scope: List[str] = []
-        if only_admins:
-            scope.append('admin')
-        if allow_private:
-            scope.append('private')
-        if allow_bots:
-            scope.append('bot')
-        if allow_groups:
-            scope += ['group', 'supergroup']
-        if allow_channels:
-            scope.append('channel')
-        filters_ = Filters.create(lambda _, __: cmd.is_enabled) & Filters.regex(pattern=pattern)
-        if filter_me:
-            outgoing_flt = Filters.create(
-                lambda _, m:
-                not (m.from_user and m.from_user.is_bot)
-                and (m.outgoing or (m.from_user and m.from_user.is_self))
-                and not (m.chat and m.chat.type == "channel" and m.edit_date)
-                and (m.text.startswith(trigger) if trigger else True))
-            incoming_flt = Filters.create(
-                lambda _, m:
-                not m.outgoing
-                and (
-                    (Config.OWNER_ID
-                     and (m.from_user and m.from_user.id == Config.OWNER_ID))
-                    or ((cname.lstrip(trigger) in Config.ALLOWED_COMMANDS)
-                        and (m.from_user and m.from_user.id in Config.SUDO_USERS)))
-                and (m.text.startswith(Config.SUDO_TRIGGER) if trigger else True))
-            filters_ = filters_ & (outgoing_flt | incoming_flt)
-        return self._build_decorator(log=f"On {pattern}", filters=filters_, flt=cmd,
-                                     check_client=allow_via_bot and check_client,
-                                     check_downpath=check_downpath, scope=scope, **kwargs)
+        return self._build_decorator(
+            types.raw.Command.parse(command, about,
+                                    trigger, name, filter_me,
+                                    client=self,
+                                    group=group,
+                                    allow_private=allow_private,
+                                    allow_bots=allow_bots,
+                                    allow_groups=allow_groups,
+                                    allow_channels=allow_channels,
+                                    only_admins=only_admins,
+                                    allow_via_bot=allow_via_bot,
+                                    check_client=check_client,
+                                    check_downpath=check_downpath,
+                                    check_change_info_perm=check_change_info_perm,
+                                    check_edit_perm=check_edit_perm,
+                                    check_delete_perm=check_delete_perm,
+                                    check_restrict_perm=check_restrict_perm,
+                                    check_promote_perm=check_promote_perm,
+                                    check_invite_perm=check_invite_perm,
+                                    check_pin_perm=check_pin_perm), **kwargs)

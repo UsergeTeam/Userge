@@ -11,13 +11,14 @@
 __all__ = ['OnLeftMember']
 
 from pyrogram import Filters
+from pyrogram.client.filters.filter import Filter as RawFilter
 
 from . import RawDecorator
 
 
 class OnLeftMember(RawDecorator):  # pylint: disable=missing-class-docstring
     def on_left_member(self,
-                       leaving_chats: Filters.chat,
+                       leaving_chats: RawFilter,
                        group: int = -2,
                        allow_via_bot: bool = True,
                        check_client: bool = True,
@@ -33,13 +34,13 @@ class OnLeftMember(RawDecorator):  # pylint: disable=missing-class-docstring
                 The group identifier, defaults to 0.
 
             allow_via_bot (``bool``, *optional*):
-                If ``True``, allow this via your bot,  defaults to True.
+                If ``True``, allow this via your bot, defaults to True.
 
             check_client (``bool``, *optional*):
-                If ``True``, check client is bot or not before execute,  defaults to True.
+                If ``True``, check client is bot or not before execute, defaults to True.
 
             check_downpath (``bool``, *optional*):
-                If ``True``, check downpath and make if not exist,  defaults to False.
+                If ``True``, check downpath and make if not exist, defaults to False.
         """
         return self.on_filters(
             filters=Filters.group & Filters.left_chat_member & leaving_chats,

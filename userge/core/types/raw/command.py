@@ -10,9 +10,11 @@
 
 __all__ = ['Command']
 
-from typing import Union, Dict, List, Optional, Callable, Any
+import re
 
-from pyrogram.client.handlers.handler import Handler
+from typing import Union, Dict, List
+
+from pyrogram import Filters
 
 from userge import Config, logging
 from .filter import Filter
@@ -24,31 +26,52 @@ _LOG_STR = "<<<!  [[[[[  %s  ]]]]]  !>>>"
 
 class Command(Filter):
     """ command class """
-    def __init__(self,  # pylint: disable=super-init-not-called
-                 client: '_client.Userge',
-                 name: str,
-                 about: Union[str, Dict[str, Union[str, List[str], Dict[str, str]]]],
-                 group: int,
-                 allow_via_bot: bool) -> None:
-        self._client = client
-        self.name = name
-        self.about = _format_about(about)
-        self._group = group
-        self._allow_via_bot = allow_via_bot
-        self._enabled = True
-        self._loaded = False
-        self._handler: Handler
-        self.doc: Optional[str]
-        _LOG.debug(_LOG_STR, f"created command -> {self.name}")
+    def __init__(self, about: str, trigger: str, pattern: str,
+                 **kwargs: Union['_client.Userge', int, str, bool]) -> None:
+        self.about = about
+        self.trigger = trigger
+        self.pattern = pattern
+        super().__init__(**kwargs)
 
     def __repr__(self) -> str:
         return f"<command - {self.name}>"
 
-    def update(self, func: Callable[[Any], Any], handler: Handler) -> None:
-        """ update command """
-        self._handler = handler
-        self.doc = func.__doc__.strip() if func.__doc__ else None
-        _LOG.debug(_LOG_STR, f"created command -> {self.name}")
+    @classmethod
+    def parse(cls, command: str,  # pylint: disable=arguments-differ
+              about: Union[str, Dict[str, Union[str, List[str], Dict[str, str]]]],
+              trigger: str, name: str, filter_me: bool,
+              **kwargs: Union['_client.Userge', int, bool]) -> 'Command':
+        """ parse command """
+        pattern = f"^(?:\\{trigger}|\\{Config.SUDO_TRIGGER}){command.lstrip('^')}" if trigger \
+            else f"^{command.lstrip('^')}"
+        if [i for i in '^()[]+*.\\|?:$' if i in command]:
+            match = re.match("(\\w[\\w_]*)", command)
+            cname = match.groups()[0] if match else ''
+            cname = name or cname
+            cname = trigger + cname if cname else ''
+        else:
+            cname = trigger + command
+            cname = name or cname
+            pattern += r"(?:\s([\S\s]+))?$"
+        filters_ = Filters.regex(pattern=pattern)
+        if filter_me:
+            outgoing_flt = Filters.create(
+                lambda _, m:
+                not (m.from_user and m.from_user.is_bot)
+                and (m.outgoing or (m.from_user and m.from_user.is_self))
+                and not (m.chat and m.chat.type == "channel" and m.edit_date)
+                and (m.text.startswith(trigger) if trigger else True))
+            incoming_flt = Filters.create(
+                lambda _, m:
+                not m.outgoing
+                and (
+                    (Config.OWNER_ID
+                     and (m.from_user and m.from_user.id == Config.OWNER_ID))
+                    or ((cname.lstrip(trigger) in Config.ALLOWED_COMMANDS)
+                        and (m.from_user and m.from_user.id in Config.SUDO_USERS)))
+                and (m.text.startswith(Config.SUDO_TRIGGER) if trigger else True))
+            filters_ = filters_ & (outgoing_flt | incoming_flt)
+        return cls(_format_about(about), trigger, pattern, filters=filters_, name=cname, **kwargs)
 
 
 def _format_about(about: Union[str, Dict[str, Union[str, List[str], Dict[str, str]]]]) -> str:

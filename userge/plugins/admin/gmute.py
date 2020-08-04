@@ -13,17 +13,11 @@ import asyncio
 from pyrogram import ChatPermissions
 from pyrogram.errors.exceptions.bad_request_400 import ChatAdminRequired, UserAdminInvalid
 
-from userge.plugins.admin.gban import me_can_restrict_members
 from userge import userge, Config, Message, get_collection, Filters
 
 GMUTE_USER_BASE = get_collection("GMUTE_USER")
 CHANNEL = userge.getCLogger(__name__)
 LOG = userge.getLogger(__name__)
-
-U_ADMEME_CHATS = []
-U_PATHETIC_CHATS = []
-B_ADMEME_CHATS = []
-B_PATHETIC_CHATS = []
 
 
 @userge.on_cmd("gmute", about={
@@ -81,8 +75,7 @@ async def gmute_user(msg: Message):
             try:
                 await chat.restrict_member(
                     user_id,
-                    ChatPermissions(
-                        can_send_messages=False))
+                    ChatPermissions())
                 await CHANNEL.log(
                     r"\\**#Antispam_Log**//"
                     f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
@@ -136,14 +129,17 @@ async def ungmute_user(msg: Message):
                 await chat.restrict_member(
                     user_id,
                     ChatPermissions(
-                        can_send_messages=True,
-                        can_send_media_messages=True,
-                        can_send_stickers=True,
-                        can_send_animations=True,
-                        can_send_games=True,
-                        can_use_inline_bots=True,
-                        can_add_web_page_previews=True,
-                        can_send_polls=True))
+                        can_send_messages=chat.permissions.can_send_messages,
+                        can_send_media_messages=chat.permissions.can_send_media_messages,
+                        can_send_stickers=chat.permissions.can_send_stickers,
+                        can_send_animations=chat.permissions.can_send_animations,
+                        can_send_games=chat.permissions.can_send_games,
+                        can_use_inline_bots=chat.permissions.can_use_inline_bots,
+                        can_add_web_page_previews=chat.permissions.can_add_web_page_previews,
+                        can_send_polls=chat.permissions.can_send_polls,
+                        can_change_info=chat.permissions.can_change_info,
+                        can_invite_users=chat.permissions.can_invite_users,
+                        can_pin_messages=chat.permissions.can_pin_messages))
                 await CHANNEL.log(
                     r"\\**#Antispam_Log**//"
                     f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
@@ -171,24 +167,10 @@ async def list_gmuted(msg: Message):
         f"**--Globally Muted Users List--**\n\n{users}" if users else "`Gmute List is Empty`")
 
 
-@userge.on_filters(Filters.group & Filters.new_chat_members & ~Filters.me, group=1)
+@userge.on_filters(Filters.group & Filters.new_chat_members, group=1, check_restrict_perm=True)
 async def gmute_at_entry(msg: Message):
     """ handle gmute """
-    if msg.client.is_bot:
-        admin_chats = B_ADMEME_CHATS
-        pathetic_chats = B_PATHETIC_CHATS
-    else:
-        admin_chats = U_ADMEME_CHATS
-        pathetic_chats = U_PATHETIC_CHATS
     chat_id = msg.chat.id
-    # Trying To Avoid Flood Waits
-    if chat_id not in admin_chats + pathetic_chats:
-        if await me_can_restrict_members(msg, chat_id):
-            admin_chats.append(chat_id)
-        else:
-            pathetic_chats.append(chat_id)
-    if chat_id in pathetic_chats:
-        return
     for user in msg.new_chat_members:
         user_id = user.id
         first_name = user.first_name
@@ -196,8 +178,7 @@ async def gmute_at_entry(msg: Message):
         if gmuted:
             await asyncio.gather(
                 msg.client.restrict_chat_member(
-                    chat_id, user_id, ChatPermissions(
-                        can_send_messages=False)),
+                    chat_id, user_id, ChatPermissions()),
                 msg.reply(
                     r"\\**#Userge_Antispam**//"
                     "\n\nGlobally Muted User Detected in this Chat.\n\n"

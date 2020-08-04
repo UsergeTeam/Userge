@@ -22,20 +22,6 @@ WHITELIST = get_collection("WHITELIST_USER")
 CHANNEL = userge.getCLogger(__name__)
 LOG = userge.getLogger(__name__)
 
-U_ADMEME_CHATS = []
-U_PATHETIC_CHATS = []
-B_ADMEME_CHATS = []
-B_PATHETIC_CHATS = []
-
-
-async def me_can_restrict_members(message: Message, chat_id: int):
-    check_user = await message.client.get_chat_member(chat_id, (await message.client.get_me()).id)
-    if check_user.status == "creator":
-        return True
-    if check_user.status == "administrator" and check_user.can_restrict_members:
-        return True
-    return False
-
 
 @userge.on_cmd("gban", about={
     'header': "Globally Ban A User",
@@ -262,24 +248,10 @@ async def list_white(message: Message):
         f"**--Whitelisted Users List--**\n\n{msg}" if msg else "`whitelist empty!`")
 
 
-@userge.on_filters(Filters.group & Filters.new_chat_members & ~Filters.me, group=1)
+@userge.on_filters(Filters.group & Filters.new_chat_members, group=1, check_restrict_perm=True)
 async def gban_at_entry(message: Message):
     """ handle gbans """
-    if message.client.is_bot:
-        admin_chats = B_ADMEME_CHATS
-        pathetic_chats = B_PATHETIC_CHATS
-    else:
-        admin_chats = U_ADMEME_CHATS
-        pathetic_chats = U_PATHETIC_CHATS
     chat_id = message.chat.id
-    # Trying To Avoid Flood Waits
-    if chat_id not in admin_chats + pathetic_chats:
-        if await me_can_restrict_members(message, chat_id):
-            admin_chats.append(chat_id)
-        else:
-            pathetic_chats.append(chat_id)
-    if chat_id in pathetic_chats:
-        return
     for user in message.new_chat_members:
         user_id = user.id
         first_name = user.first_name

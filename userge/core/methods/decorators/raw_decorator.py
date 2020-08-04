@@ -15,11 +15,12 @@ import time
 import asyncio
 from traceback import format_exc
 from functools import partial
-from typing import List, Union, Any, Callable, Optional
+from typing import List, Dict, Union, Any, Callable, Optional
 
 from pyrogram import (
-    MessageHandler, Message as RawMessage, Filters,
+    Message as RawMessage, Filters,
     StopPropagation, ContinuePropagation)
+from pyrogram.client.types import ChatMember
 from pyrogram.errors.exceptions.bad_request_400 import ChatAdminRequired, PeerIdInvalid
 
 from userge import logging, Config
@@ -30,16 +31,31 @@ _LOG = logging.getLogger(__name__)
 _LOG_STR = "<<<!  :::::  %s  :::::  !>>>"
 
 _PYROFUNC = Callable[['types.bound.Message'], Any]
-_START_TO = time.time()
+_TASK_1_START_TO = time.time()
+_TASK_2_START_TO = time.time()
 
 _B_ID = 0
 _B_CMN_CHT: List[int] = []
-_B_AD_CHT: List[int] = []
-_B_NM_CHT: List[int] = []
+_B_AD_CHT: Dict[int, ChatMember] = {}
+_B_NM_CHT: Dict[int, ChatMember] = {}
 
 _U_ID = 0
-_U_AD_CHT: List[int] = []
-_U_NM_CHT: List[int] = []
+_U_AD_CHT: Dict[int, ChatMember] = {}
+_U_NM_CHT: Dict[int, ChatMember] = {}
+
+
+async def _init(r_c: Union['_client.Userge', '_client._UsergeBot']) -> None:
+    global _U_ID, _B_ID  # pylint: disable=global-statement
+    if isinstance(r_c, _client.Userge):
+        if not _U_ID:
+            _U_ID = (await r_c.get_me()).id
+        if RawClient.DUAL_MODE and not _B_ID:
+            _B_ID = (await r_c.bot.get_me()).id
+    else:
+        if not _B_ID:
+            _B_ID = (await r_c.get_me()).id
+        if RawClient.DUAL_MODE and not _U_ID:
+            _U_ID = (await r_c.ubot.get_me()).id
 
 
 async def _raise_func(r_c: Union['_client.Userge', '_client._UsergeBot'],
@@ -55,13 +71,57 @@ async def _raise_func(r_c: Union['_client.Userge', '_client._UsergeBot'],
         pass
 
 
-async def _get_bot_chats(r_c: Union['_client.Userge', '_client._UsergeBot'],
-                         r_m: RawMessage) -> List[int]:
-    global _START_TO, _B_ID  # pylint: disable=global-statement
+async def _is_admin(r_c: Union['_client.Userge', '_client._UsergeBot'],
+                    r_m: RawMessage) -> bool:
+    global _TASK_1_START_TO  # pylint: disable=global-statement
+    if r_m.chat.type in ("private", "bot"):
+        return False
+    if round(time.time() - _TASK_1_START_TO) > 10:
+        _U_AD_CHT.clear()
+        _U_NM_CHT.clear()
+        _B_AD_CHT.clear()
+        _B_NM_CHT.clear()
+        _TASK_1_START_TO = time.time()
     if isinstance(r_c, _client.Userge):
-        if round(time.time() - _START_TO) > 20:
-            if not _B_ID:
-                _B_ID = (await r_c.bot.get_me()).id
+        if r_m.chat.id not in {**_U_AD_CHT, **_U_NM_CHT}:
+            user = await r_m.chat.get_member(_U_ID)
+            if user.status in ("creator", "administrator"):
+                _U_AD_CHT[r_m.chat.id] = user
+            else:
+                _U_NM_CHT[r_m.chat.id] = user
+        return r_m.chat.id in _U_AD_CHT
+    if r_m.chat.id not in {**_B_AD_CHT, **_B_NM_CHT}:
+        bot = await r_m.chat.get_member(_B_ID)
+        if bot.status == "administrator":
+            _B_AD_CHT[r_m.chat.id] = bot
+        else:
+            _B_NM_CHT[r_m.chat.id] = bot
+    return r_m.chat.id in _B_AD_CHT
+
+
+def _get_chat_member(r_c: Union['_client.Userge', '_client._UsergeBot'],
+                     r_m: RawMessage) -> Optional[ChatMember]:
+    if r_m.chat.type in ("private", "bot"):
+        return None
+    if isinstance(r_c, _client.Userge):
+        if r_m.chat.id in _U_AD_CHT:
+            return _U_AD_CHT[r_m.chat.id]
+        return _U_NM_CHT[r_m.chat.id]
+    if r_m.chat.id in _B_AD_CHT:
+        return _B_AD_CHT[r_m.chat.id]
+    return _B_NM_CHT[r_m.chat.id]
+
+
+def _only_one_is_admin(r_m: RawMessage) -> bool:
+    return ((r_m.chat.id in _B_AD_CHT and r_m.chat.id not in _U_AD_CHT)
+            or (r_m.chat.id not in _B_AD_CHT and r_m.chat.id in _U_AD_CHT))
+
+
+async def _bot_is_present(r_c: Union['_client.Userge', '_client._UsergeBot'],
+                          r_m: RawMessage) -> bool:
+    global _TASK_2_START_TO  # pylint: disable=global-statement
+    if isinstance(r_c, _client.Userge):
+        if round(time.time() - _TASK_2_START_TO) > 10:
             try:
                 chats = await r_c.get_common_chats(_B_ID)
                 _B_CMN_CHT.clear()
@@ -69,37 +129,11 @@ async def _get_bot_chats(r_c: Union['_client.Userge', '_client._UsergeBot'],
                     _B_CMN_CHT.append(chat.id)
             except PeerIdInvalid:
                 pass
-            _START_TO = time.time()
+            _TASK_2_START_TO = time.time()
     else:
         if r_m.chat.id not in _B_CMN_CHT:
             _B_CMN_CHT.append(r_m.chat.id)
-    return _B_CMN_CHT
-
-
-async def _is_admin(r_c: Union['_client.Userge', '_client._UsergeBot'],
-                    r_m: RawMessage) -> bool:
-    global _U_ID, _B_ID  # pylint: disable=global-statement
-    if r_m.chat.type in ("private", "bot"):
-        return False
-    if isinstance(r_c, _client.Userge):
-        if not _U_ID:
-            _U_ID = (await r_c.get_me()).id
-        if r_m.chat.id not in _U_AD_CHT + _U_NM_CHT:
-            user = await r_m.chat.get_member(_U_ID)
-            if user.status in ("creator", "administrator"):
-                _U_AD_CHT.append(r_m.chat.id)
-            else:
-                _U_NM_CHT.append(r_m.chat.id)
-        return r_m.chat.id in _U_AD_CHT
-    if not _B_ID:
-        _B_ID = (await r_c.get_me()).id
-    if r_m.chat.id not in _B_AD_CHT + _B_NM_CHT:
-        bot = await r_m.chat.get_member(_B_ID)
-        if bot.status in ("creator", "administrator"):
-            _B_AD_CHT.append(r_m.chat.id)
-        else:
-            _B_NM_CHT.append(r_m.chat.id)
-    return r_m.chat.id in _B_AD_CHT
+    return r_m.chat.id in _B_CMN_CHT
 
 
 class RawDecorator(RawClient):
@@ -111,57 +145,97 @@ class RawDecorator(RawClient):
         self._tasks: List[Callable[[Any], Any]] = []
         super().__init__(**kwargs)
 
-    def on_filters(self, filters: Filters, group: int = 0, allow_via_bot: bool = True,
-                   check_client: bool = False, check_downpath: bool = False
-                   ) -> 'RawDecorator._PYRORETTYPE':
+    def on_filters(self, filters: Filters, group: int = 0,
+                   **kwargs: Union[bool]) -> 'RawDecorator._PYRORETTYPE':
         """ abstract on filter method """
 
     def _build_decorator(self,
-                         log: str,
-                         filters: Filters,
                          flt: Union['types.raw.Command', 'types.raw.Filter'],
-                         check_client: bool,
-                         check_downpath: bool,
-                         scope: Optional[List[str]] = None,
-                         **kwargs: Union[str, bool]
-                         ) -> 'RawDecorator._PYRORETTYPE':
+                         **kwargs: Union[str, bool]) -> 'RawDecorator._PYRORETTYPE':
         def decorator(func: _PYROFUNC) -> _PYROFUNC:
             async def template(r_c: Union['_client.Userge', '_client._UsergeBot'],
                                r_m: RawMessage) -> None:
+                await _init(r_c)
+                _raise = partial(_raise_func, r_c, r_m.chat.id, r_m.message_id)
+                if r_m.chat and r_m.chat.type not in flt.scope:
+                    if isinstance(flt, types.raw.Command):
+                        await _raise(f"`invalid chat type [{r_m.chat.type}]`")
+                    return
+                if (r_m.chat and r_m.from_user
+                        and flt.only_admins and not await _is_admin(r_c, r_m)):
+                    if isinstance(flt, types.raw.Command):
+                        await _raise("`chat admin required`")
+                    return
+                if r_m.chat and r_m.from_user and flt.check_perm:
+                    is_admin = await _is_admin(r_c, r_m)
+                    c_m = _get_chat_member(r_c, r_m)
+                    if not c_m:
+                        if isinstance(flt, types.raw.Command):
+                            await _raise(f"`invalid chat type [{r_m.chat.type}]`")
+                        return
+                    if c_m.status != "creator":
+                        if flt.check_change_info_perm and not c_m.can_change_info:
+                            if isinstance(flt, types.raw.Command):
+                                await _raise("`required permisson [change_info]`")
+                            return
+                        if flt.check_edit_perm and not c_m.can_edit_messages:
+                            if isinstance(flt, types.raw.Command):
+                                await _raise("`required permisson [edit_messages]`")
+                            return
+                        if flt.check_delete_perm and not c_m.can_delete_messages:
+                            if isinstance(flt, types.raw.Command):
+                                await _raise("`required permisson [delete_messages]`")
+                            return
+                        if flt.check_restrict_perm and not c_m.can_restrict_members:
+                            if isinstance(flt, types.raw.Command):
+                                if is_admin:
+                                    await _raise("`required permisson [restrict_members]`")
+                                else:
+                                    await _raise("`chat admin required`")
+                            return
+                        if flt.check_promote_perm and not c_m.can_promote_members:
+                            if isinstance(flt, types.raw.Command):
+                                if is_admin:
+                                    await _raise("`required permisson [promote_members]`")
+                                else:
+                                    await _raise("`chat admin required`")
+                            return
+                        if flt.check_invite_perm and not c_m.can_invite_users:
+                            if isinstance(flt, types.raw.Command):
+                                await _raise("`required permisson [invite_users]`")
+                            return
+                        if flt.check_pin_perm and not c_m.can_pin_messages:
+                            if isinstance(flt, types.raw.Command):
+                                await _raise("`required permisson [pin_messages]`")
+                            return
                 if RawClient.DUAL_MODE:
-                    if check_client or (r_m.from_user and r_m.from_user.id in Config.SUDO_USERS):
+                    if ((flt.check_client
+                         or (r_m.from_user and r_m.from_user.id in Config.SUDO_USERS))
+                            and not (flt.only_admins and _only_one_is_admin(r_m))):
                         if Config.USE_USER_FOR_CLIENT_CHECKS:
                             # pylint: disable=protected-access
                             if isinstance(r_c, _client._UsergeBot):
                                 return
                         else:
-                            if r_m.chat.id in await _get_bot_chats(r_c, r_m):
+                            if await _bot_is_present(r_c, r_m):
                                 if isinstance(r_c, _client.Userge):
                                     return
-                _raise = partial(_raise_func, r_c, r_m.chat.id, r_m.message_id)
-                if isinstance(flt, types.raw.Command) and r_m.chat and r_m.chat.type not in scope:
-                    await _raise(f"`invalid chat type [{r_m.chat.type}]`")
-                elif (isinstance(flt, types.raw.Command) and r_m.chat and r_m.from_user
-                      and 'admin' in scope and not await _is_admin(r_c, r_m)):
-                    await _raise("`chat admin required`")
-                else:
-                    if check_downpath:
-                        if not os.path.isdir(Config.DOWN_PATH):
-                            os.makedirs(Config.DOWN_PATH)
-                    try:
-                        await func(types.bound.Message(r_c, r_m, **kwargs))
-                    except (StopPropagation, ContinuePropagation):  # pylint: disable=W0706
-                        raise
-                    except Exception as f_e:  # pylint: disable=broad-except
-                        _LOG.exception(_LOG_STR, f_e)
-                        await self._channel.log(f"**PLUGIN** : `{func.__module__}`\n"
-                                                f"**FUNCTION** : `{func.__name__}`\n"
-                                                f"\n```{format_exc().strip()}```",
-                                                "TRACEBACK")
-                        await _raise(f"`{f_e}`\n__see logs for more info__")
-            _LOG.debug(_LOG_STR, f"Loading => [ async def {func.__name__}(message) ] "
-                       f"from {func.__module__} `{log}`")
-            flt.update(func, MessageHandler(template, filters))
-            self.manager.add_plugin(func.__module__).add(flt)
+                if flt.check_downpath and not os.path.isdir(Config.DOWN_PATH):
+                    os.makedirs(Config.DOWN_PATH)
+                try:
+                    await func(types.bound.Message(r_c, r_m, **kwargs))
+                except (StopPropagation, ContinuePropagation):  # pylint: disable=W0706
+                    raise
+                except Exception as f_e:  # pylint: disable=broad-except
+                    _LOG.exception(_LOG_STR, f_e)
+                    await self._channel.log(f"**PLUGIN** : `{func.__module__}`\n"
+                                            f"**FUNCTION** : `{func.__name__}`\n"
+                                            f"\n```{format_exc().strip()}```",
+                                            "TRACEBACK")
+                    await _raise(f"`{f_e}`\n__see logs for more info__")
+            flt.update(func, template)
+            self.manager.get_plugin(func.__module__).add(flt)
+            _LOG.debug(_LOG_STR, f"Imported => [ async def {func.__name__}(message) ] "
+                       f"from {func.__module__} {flt}")
             return func
         return decorator

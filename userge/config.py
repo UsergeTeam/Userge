@@ -17,13 +17,13 @@ import heroku3
 from git import Repo
 from pyrogram import Filters
 
-from userge.logbot import LogBot
+from userge import logbot
 from userge import logging
 from . import versions
 
 _REPO = Repo()
 _LOG = logging.getLogger(__name__)
-LogBot.reply_last_msg("Setting Configs ...")
+logbot.reply_last_msg("Setting Configs ...")
 
 
 class Config:
@@ -78,14 +78,14 @@ class Config:
 
 
 if Config.HEROKU_API_KEY:
-    LogBot.reply_last_msg("Checking Heroku App...", _LOG.info)
+    logbot.reply_last_msg("Checking Heroku App...", _LOG.info)
     for heroku_app in heroku3.from_key(Config.HEROKU_API_KEY).apps():
         if (heroku_app and Config.HEROKU_APP_NAME
                 and heroku_app.name == Config.HEROKU_APP_NAME):
             _LOG.info("Heroku App : %s Found...", heroku_app.name)
             Config.HEROKU_APP = heroku_app
             break
-    LogBot.del_last_msg()
+    logbot.del_last_msg()
 
 
 def get_version() -> str:
