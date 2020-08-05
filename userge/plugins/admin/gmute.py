@@ -8,6 +8,8 @@
 #
 # All rights reserved
 
+import asyncio
+
 from pyrogram import ChatPermissions
 from pyrogram.errors.exceptions.bad_request_400 import ChatAdminRequired, UserAdminInvalid
 
@@ -91,7 +93,7 @@ async def gmute_user(msg: Message):
             except ChatAdminRequired:
                 pass
             except UserAdminInvalid:
-            	pass
+                pass
     LOG.info("G-Muted %s", str(user_id))
     try:
         if msg.reply_to_message:
@@ -153,7 +155,7 @@ async def ungmute_user(msg: Message):
             except ChatAdminRequired:
                 pass
             except UserAdminInvalid:
-            	pass
+                pass
     LOG.info("UnGMuted %s", str(user_id))
 
 
@@ -167,7 +169,7 @@ async def list_gmuted(msg: Message):
     users = ''
     async for c in GMUTE_USER_BASE.find():
         users += ("**User** : " + str(c['firstname']) + "-> with **User ID** -> "
-                + str(c['user_id']) + " is **GMuted for** : " + str(c['reason']) + "\n\n")
+                  + str(c['user_id']) + " is **GMuted for** : " + str(c['reason']) + "\n\n")
     await msg.edit_or_send_as_file(
         f"**--Globally Muted Users List--**\n\n{users}" if msg else "`Gmute List is Empty`")
 
