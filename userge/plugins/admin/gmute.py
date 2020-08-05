@@ -168,10 +168,11 @@ async def list_gmuted(msg: Message):
     """ views gmuted users """
     users = ''
     async for c in GMUTE_USER_BASE.find():
-        users += ("**User** : " + str(c['firstname']) + "-> with **User ID** -> "
-                  + str(c['user_id']) + " is **GMuted for** : " + str(c['reason']) + "\n\n")
+        users += ("**User** : " + str(c['firstname']))
+        users += ("\n**User ID** : " + str(c['user_id']))
+        users += ("\n**Reason for GMuted** : " + str(c['reason']) + "\n\n")
     await msg.edit_or_send_as_file(
-        f"**--Globally Muted Users List--**\n\n{users}" if msg else "`Gmute List is Empty`")
+        f"**--Globally Muted Users List--**\n\n{users}" if users else "`Gmute List is Empty`")
 
 
 @userge.on_filters(Filters.group & Filters.new_chat_members & ~Filters.me, group=1)
