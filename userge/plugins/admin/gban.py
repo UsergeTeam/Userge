@@ -12,7 +12,8 @@ import asyncio
 
 import requests
 import spamwatch
-from pyrogram.errors.exceptions.bad_request_400 import ChatAdminRequired
+from pyrogram.errors.exceptions.bad_request_400 import (
+    ChatAdminRequired, UserAdminInvalid)
 
 from userge import userge, Message, Config, get_collection, Filters
 
@@ -102,6 +103,8 @@ async def gban_user(message: Message):
                     f"**Reason:** `{reason}`\n\n$GBAN #id{user_id}")
             except ChatAdminRequired:
                 pass
+            except UserAdminInvalid:
+                pass
     LOG.info("G-Banned %s", str(user_id))
     try:
         if message.reply_to_message:
@@ -151,6 +154,8 @@ async def ungban_user(message: Message):
                     f"**Chat:** {chat.title}\n"
                     f"**Chat ID:** `{chat.id}`\n\n$UNGBAN #id{user_id}")
             except ChatAdminRequired:
+                pass
+            except UserAdminInvalid:
                 pass
     LOG.info("UnGbanned %s", str(user_id))
 
