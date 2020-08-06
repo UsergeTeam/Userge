@@ -181,7 +181,7 @@ async def upload_path(message: Message, path: Path, del_path):
         elif path.is_dir():
             for i in sorted(path.iterdir()):
                 explorer(i)
-    explorer(Path(path))
+    explorer(path)
     current = 0
     for p_t in file_paths:
         current += 1
