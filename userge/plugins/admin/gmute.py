@@ -105,7 +105,7 @@ async def gmute_user(msg: Message):
 @userge.on_cmd("ungmute", about={
     'header': "Globally Unmute an User",
     'description': "Removes an user from your GMute List",
-    'examples': "{tr}unmute [userid | reply]"},
+    'examples': "{tr}ungmute [userid | reply]"},
     allow_channels=False, allow_bots=False)
 async def ungmute_user(msg: Message):
     """ unmute a user globally """
@@ -157,7 +157,7 @@ async def ungmute_user(msg: Message):
 
 @userge.on_cmd("gmlist", about={
     'header': "Get a List of GMuted Users",
-    'description': "Get Up-to-date list of users GMutee by you.",
+    'description': "Get Up-to-date list of users GMuted by you.",
     'examples': "{tr}gmlist"},
     allow_channels=False)
 async def list_gmuted(msg: Message):
