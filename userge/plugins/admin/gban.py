@@ -101,9 +101,7 @@ async def gban_user(message: Message):
                     f"**Chat:** {chat.title}\n"
                     f"**Chat ID:** `{chat.id}`\n"
                     f"**Reason:** `{reason}`\n\n$GBAN #id{user_id}")
-            except ChatAdminRequired:
-                pass
-            except UserAdminInvalid:
+            except (ChatAdminRequired, UserAdminInvalid):
                 pass
     LOG.info("G-Banned %s", str(user_id))
     try:
@@ -153,9 +151,7 @@ async def ungban_user(message: Message):
                     f"**User ID:** `{user_id}`\n"
                     f"**Chat:** {chat.title}\n"
                     f"**Chat ID:** `{chat.id}`\n\n$UNGBAN #id{user_id}")
-            except ChatAdminRequired:
-                pass
-            except UserAdminInvalid:
+            except (ChatAdminRequired, UserAdminInvalid):
                 pass
     LOG.info("UnGbanned %s", str(user_id))
 
