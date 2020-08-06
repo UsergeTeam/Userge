@@ -90,9 +90,7 @@ async def gmute_user(msg: Message):
                     f"**Chat:** {chat.title}\n"
                     f"**Chat ID:** `{chat.id}`\n"
                     f"**Reason:** `{reason}`\n\n$GMUTE #id{user_id}")
-            except ChatAdminRequired:
-                pass
-            except UserAdminInvalid:
+            except (ChatAdminRequired, UserAdminInvalid):
                 pass
     LOG.info("G-Muted %s", str(user_id))
     try:
@@ -152,9 +150,7 @@ async def ungmute_user(msg: Message):
                     f"**User ID:** `{user_id}`\n"
                     f"**Chat:** {chat.title}\n"
                     f"**Chat ID:** `{chat.id}`\n\n$UNGMUTED #id{user_id}")
-            except ChatAdminRequired:
-                pass
-            except UserAdminInvalid:
+            except (ChatAdminRequired, UserAdminInvalid):
                 pass
     LOG.info("UnGMuted %s", str(user_id))
 
