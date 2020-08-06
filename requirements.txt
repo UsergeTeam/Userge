@@ -1,4 +1,4 @@
-git+https://github.com/pyrogram/pyrogram.git@asyncio-dev
+git+https://github.com/pokurt/pyrogram@asyncio-dev
 aiofiles
 aiohttp
 bs4
