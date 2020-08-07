@@ -47,6 +47,9 @@ _U_NM_CHT: Dict[int, ChatMember] = {}
 async def _update_u_cht(r_m: RawMessage) -> ChatMember:
     if r_m.chat.id not in {**_U_AD_CHT, **_U_NM_CHT}:
         user = await r_m.chat.get_member(_U_ID)
+        user.can_all = None
+        if user.status == "creator":
+            user.can_all = True
         if user.status in ("creator", "administrator"):
             _U_AD_CHT[r_m.chat.id] = user
         else:
@@ -172,10 +175,6 @@ async def _both_have_perm(flt: Union['types.raw.Command', 'types.raw.Filter'],
         bot = await _update_b_cht(r_m)
     except PeerIdInvalid:
         return False
-    if user.status == "creator":
-        user.can_all = True
-    else:
-        user.can_all = False
     if flt.check_change_info_perm and not (
             (user.can_all or user.can_change_info) and bot.can_change_info):
         return False
