@@ -204,7 +204,7 @@ async def upload(message: Message, path: Path, del_path: bool = False, extra: st
         await doc_upload(message, path, del_path, extra)
 
 
-async def doc_upload(message: Message, path, del_path: bool, extra: str):
+async def doc_upload(message: Message, path, del_path: bool = False, extra: str = ''):
     sent: Message = await message.client.send_message(
         message.chat.id, f"`Uploading {path.name} as a doc ... {extra}`")
     start_t = datetime.now()
@@ -232,7 +232,7 @@ async def doc_upload(message: Message, path, del_path: bool, extra: str):
             os.remove(str(path))
 
 
-async def vid_upload(message: Message, path, del_path: bool, extra: str):
+async def vid_upload(message: Message, path, del_path: bool = False, extra: str = ''):
     strpath = str(path)
     thumb = await get_thumb(strpath)
     duration = 0
@@ -267,7 +267,7 @@ async def vid_upload(message: Message, path, del_path: bool, extra: str):
             os.remove(str(path))
 
 
-async def audio_upload(message: Message, path, del_path: bool, extra: str):
+async def audio_upload(message: Message, path, del_path: bool = False, extra: str = ''):
     title = None
     artist = None
     thumb = None
@@ -322,7 +322,7 @@ async def audio_upload(message: Message, path, del_path: bool, extra: str):
             os.remove(str(path))
 
 
-async def photo_upload(message: Message, path, del_path: bool, extra: str):
+async def photo_upload(message: Message, path, del_path: bool = False, extra: str = ''):
     strpath = str(path)
     sent: Message = await message.client.send_message(
         message.chat.id, f"`Uploading {path.name} as photo ... {extra}`")
