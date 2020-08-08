@@ -51,7 +51,7 @@ async def autopic(message: Message):
                                   {"$set": {'on': False}}, upsert=True)
         await asyncio.sleep(1)
         await message.edit('`setting old photo...`')
-        await userge.set_profile_photo(BASE_PIC)
+        await userge.set_profile_photo(photo=BASE_PIC)
         await message.edit('auto profile picture updation has been **stopped**',
                            del_in=5, log=__name__)
         return
@@ -114,7 +114,7 @@ async def apic_worker():
                 xy=((i_width - d_width) / 2, i_height - d_height - int((20 / 640)*i_width)),
                 text=date_time, fill=(255, 255, 255), font=s_font, align="center")
             img.convert('RGB').save(MDFY_PIC)
-            await userge.set_profile_photo(MDFY_PIC)
+            await userge.set_profile_photo(photo=MDFY_PIC)
             os.remove(MDFY_PIC)
             LOG.info("profile photo has been updated!")
         await asyncio.sleep(1)
