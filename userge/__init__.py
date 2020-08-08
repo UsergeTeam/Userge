@@ -9,6 +9,7 @@
 # All rights reserved.
 
 from userge.logger import logging  # noqa
+from userge.functions import deEmojify, media_to_image
 from userge.config import Config, get_version  # noqa
 from userge.core import (  # noqa
     Userge, Filters, Message, get_collection, pool)
