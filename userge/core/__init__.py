@@ -12,6 +12,5 @@ from pyrogram import Filters  # noqa
 
 from .database import get_collection  # noqa
 from .types.bound import Message  # noqa
-from .types.new.channel_logger import _parse_buttons  # noqa
 from .ext import pool  # noqa
 from .client import Userge  # noqa
