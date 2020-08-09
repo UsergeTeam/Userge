@@ -275,7 +275,7 @@ class RawDecorator(RawClient):
                             or (r_m.from_user and r_m.from_user.id in Config.SUDO_USERS)):
                         cond = True
                         if flt.only_admins:
-                            cond = cond and await _both_are_admins(r_m, r_m)
+                            cond = cond and await _both_are_admins(r_c, r_m)
                         if flt.check_perm:
                             cond = cond and await _both_have_perm(flt, r_c, r_m)
                         if cond:
