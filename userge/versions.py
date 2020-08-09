@@ -21,4 +21,4 @@ __python_version__ = f"{version_info[0]}.{version_info[1]}.{version_info[2]}"
 __license__ = ("[GNU GPL v3.0]"
                "(https://github.com/UdaySriHarsha/Userge/blob/master/LICENSE)")
 
-__copyright__ = "[UdaySriHarsha](https://github.com/UdaySriharsha)"
+__copyright__ = "[UdaySriHarsha](https://github.com/UdaySriHarsha)"
