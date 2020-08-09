@@ -1,12 +1,12 @@
 version: "1"
 rules:
   - base: alpha
-    upstream: UsergeTeam:alpha
+    upstream: Darkrider21:alpha
     mergeMethod: rebase
     mergeUnstable: false
   - base: beta
     upstream: UsergeTeam:beta
     mergeMethod: rebase
   - base: master
-    upstream: UsergeTeam:master
+    upstream: Darkrider21:master
     mergeMethod: rebase
