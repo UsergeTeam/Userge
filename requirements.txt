@@ -12,6 +12,7 @@ google-auth-oauthlib
 googletrans
 hachoir
 heroku3
+html-telegraph-poster
 motor
 nest_asyncio
 oauth2client

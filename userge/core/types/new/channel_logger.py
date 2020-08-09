@@ -10,84 +10,22 @@
 
 __all__ = ['ChannelLogger']
 
-import re
 import asyncio
-from typing import Optional, List, Tuple, Union
+from typing import Optional, Union
 
-from pyrogram import Message as RawMessage, InlineKeyboardButton, InlineKeyboardMarkup
+from pyrogram import Message as RawMessage
 
 from userge import logging, Config
-from userge.utils import SafeDict
+from userge.utils import SafeDict, get_file_id_and_ref, parse_buttons
 from ..bound import message as _message  # pylint: disable=unused-import
 from ... import client as _client  # pylint: disable=unused-import
 
 _LOG = logging.getLogger(__name__)
 _LOG_STR = "<<<!  :::::  %s  :::::  !>>>"
-_BTN_URL_REGEX = re.compile(r"(\[([^\[]+?)\]\[buttonurl:(?:/{0,2})(.+?)(:same)?\])")
 
 
 def _gen_string(name: str) -> str:
     return "**logger** : #" + name.split('.')[-1].upper() + "\n\n{}"
-
-
-def _get_file_id_and_ref(
-        message: '_message.Message') -> Tuple[Optional[str], Optional[str]]:
-    if message.audio:
-        file_ = message.audio
-    elif message.animation:
-        file_ = message.animation
-    elif message.photo:
-        file_ = message.photo
-    elif message.sticker:
-        file_ = message.sticker
-    elif message.voice:
-        file_ = message.voice
-    elif message.video_note:
-        file_ = message.video_note
-    elif message.video:
-        file_ = message.video
-    else:
-        file_ = message.document
-    if file_:
-        return file_.file_id, file_.file_ref
-    return None, None
-
-
-def _parse_buttons(
-        markdown_note: str) -> Tuple[str, List[Optional[List[InlineKeyboardButton]]]]:
-    prev = 0
-    note_data = ""
-    buttons: List[Tuple[str, str, str]] = []
-    for match in _BTN_URL_REGEX.finditer(markdown_note):
-        # Check if btnurl is escaped
-        n_escapes = 0
-        to_check = match.start(1) - 1
-        while to_check > 0 and markdown_note[to_check] == "\\":
-            n_escapes += 1
-            to_check -= 1
-        # if even, not escaped -> create button
-        if n_escapes % 2 == 0:
-            # create a tuple with button label, url, and newline status
-            buttons.append((match.group(2), match.group(3), bool(match.group(4))))
-            note_data += markdown_note[prev:match.start(1)]
-            prev = match.end(1)
-        # if odd, escaped -> move along
-        else:
-            note_data += markdown_note[prev:to_check]
-            prev = match.start(1) - 1
-    note_data += markdown_note[prev:]
-    return note_data.strip(), _build_keyboard(buttons)
-
-
-def _build_keyboard(
-        buttons: List[Tuple[str, str, str]]) -> List[Optional[List[InlineKeyboardButton]]]:
-    keyb: List[List[InlineKeyboardButton]] = []
-    for btn in buttons:
-        if btn[2] and keyb:
-            keyb[-1].append(InlineKeyboardButton(btn[0], url=btn[1]))
-        else:
-            keyb.append([InlineKeyboardButton(btn[0], url=btn[1])])
-    return keyb
 
 
 class ChannelLogger:
@@ -218,7 +156,7 @@ class ChannelLogger:
         if message and message.caption:
             caption = caption + message.caption.html
         if message:
-            file_id, file_ref = _get_file_id_and_ref(message)
+            file_id, file_ref = get_file_id_and_ref(message)
         if message and message.media and file_id and file_ref:
             if caption:
                 caption = self._string.format(caption.strip())
@@ -278,8 +216,8 @@ class ChannelLogger:
                     'chat': chat.title if chat.title else "this group",
                     'count': chat.members_count})
                 caption = caption.format_map(SafeDict(**u_dict))
-            file_id, file_ref = _get_file_id_and_ref(message)
-            caption, buttons = _parse_buttons(caption)
+            file_id, file_ref = get_file_id_and_ref(message)
+            caption, buttons = parse_buttons(caption)
             if message.media and file_id and file_ref:
                 msg = await client.send_cached_media(
                     chat_id=chat_id,
@@ -287,16 +225,14 @@ class ChannelLogger:
                     file_ref=file_ref,
                     caption=caption,
                     reply_to_message_id=reply_to_message_id,
-                    reply_markup=InlineKeyboardMarkup(buttons)
-                    if hasattr(client, 'ubot') and buttons else None)
+                    reply_markup=buttons if client.is_bot and buttons else None)
             else:
                 msg = await client.send_message(
                     chat_id=chat_id,
                     text=caption,
                     reply_to_message_id=reply_to_message_id,
                     disable_web_page_preview=True,
-                    reply_markup=InlineKeyboardMarkup(buttons)
-                    if hasattr(client, 'ubot') and buttons else None)
+                    reply_markup=buttons if client.is_bot and buttons else None)
             if del_in and msg:
                 await asyncio.sleep(del_in)
                 await msg.delete()
