@@ -6,19 +6,7 @@
 #
 # All rights reserved.
 
-import aiofiles
-
 from userge import userge, Message, logging
-
-
-@userge.on_cmd("logs", about={'header': "check userge logs"}, allow_channels=False)
-async def check_logs(message: Message):
-    """ check logs """
-    await message.edit("`checking logs ...`")
-    async with aiofiles.open("logs/userge.log", "r") as l_f:
-        await message.edit_or_send_as_file(f"**USERGE LOGS** :\n\n`{await l_f.read()}`",
-                                           filename='userge.log',
-                                           caption='userge.log')
 
 _LEVELS = {
     'debug': logging.DEBUG,
@@ -27,6 +15,16 @@ _LEVELS = {
     'error': logging.ERROR,
     'critical': logging.CRITICAL
 }
+
+
+@userge.on_cmd("logs", about={'header': "check userge logs"}, allow_channels=False)
+async def check_logs(message: Message):
+    """ check logs """
+    await message.edit("`checking logs ...`")
+    await message.client.send_document(chat_id=message.chat.id,
+                                       document="logs/userge.log",
+                                       caption='userge.log')
+    await message.delete()
 
 
 @userge.on_cmd("setlvl", about={

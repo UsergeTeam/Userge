@@ -33,7 +33,7 @@ class Plugin:
         _LOG.debug(_LOG_STR, f"created plugin -> {self.name}")
 
     def __repr__(self) -> str:
-        return f"plugin {self.name} - {self.doc} [{self.commands + self.filters}]"
+        return f"<plugin {self.name} {self.commands + self.filters}>"
 
     @property
     def is_enabled(self) -> bool:
@@ -122,7 +122,7 @@ class Plugin:
             if tmp:
                 enabled.append(tmp)
         if enabled:
-            _LOG.info(_LOG_STR, f"enabled plugin -> {self.name}")
+            _LOG.info(_LOG_STR, f"enabled {self}")
         return enabled
 
     async def disable(self) -> List[str]:
@@ -135,7 +135,7 @@ class Plugin:
             if tmp:
                 disabled.append(tmp)
         if disabled:
-            _LOG.info(_LOG_STR, f"disabled plugin -> {self.name}")
+            _LOG.info(_LOG_STR, f"disabled {self}")
         return disabled
 
     async def load(self) -> List[str]:
@@ -148,7 +148,7 @@ class Plugin:
             if tmp:
                 loaded.append(tmp)
         if loaded:
-            _LOG.info(_LOG_STR, f"loaded plugin -> {self.name}")
+            _LOG.info(_LOG_STR, f"loaded {self}")
         return loaded
 
     async def unload(self) -> List[str]:
@@ -161,5 +161,5 @@ class Plugin:
             if tmp:
                 unloaded.append(tmp)
         if unloaded:
-            _LOG.info(_LOG_STR, f"unloaded plugin -> {self.name}")
+            _LOG.info(_LOG_STR, f"unloaded {self}")
         return unloaded

@@ -119,7 +119,7 @@ async def take_screen_shot(video_file: str, duration: int, path: str = '') -> Op
     return thumb_image_path if os.path.exists(thumb_image_path) else None
 
 
-def parse_buttons(markdown_note: str) -> Tuple[str, Optional[InlineKeyboardButton]]:
+def parse_buttons(markdown_note: str) -> Tuple[str, Optional[InlineKeyboardMarkup]]:
     """ markdown_note to string and buttons """
     prev = 0
     note_data = ""

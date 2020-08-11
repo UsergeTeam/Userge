@@ -148,6 +148,7 @@ def _yt_description(link):
         x = ytdl.YoutubeDL({'no-playlist': True, 'logger': LOGGER}).extract_info(
             link, download=False)
     except ytdl.utils.YoutubeDLError as y_e:
+        LOGGER.exception(y_e)
         return y_e
     else:
         return x.get('description', '')
@@ -166,8 +167,9 @@ def _yt_getInfo(link):
         for i in formats:
             out += (f"`{i.get('format_id', '')} | {i.get('format_note', None)}"
                     f" | {i.get('ext', None)}`\n")
-    except ytdl.utils.YoutubeDLError as e:
-        return e
+    except ytdl.utils.YoutubeDLError as y_e:
+        LOGGER.exception(y_e)
+        return y_e
     else:
         return {'thumb': thumb, 'table': out, 'uploader': x.get('uploader_id', None),
                 'title': x.get('title', None)}
@@ -189,8 +191,7 @@ def _tubeDl(url: list, prog, starttime, uid=None):
                                      '%(title)s-%(format)s.%(ext)s'),
              'logger': LOGGER,
              'postprocessors': [
-                 {'key': 'FFmpegMetadata'}
-             ]}
+                 {'key': 'FFmpegMetadata'}]}
     _quality = {'format': 'bestvideo+bestaudio/best' if not uid else str(uid)}
     _opts.update(_quality)
     loop = asyncio.new_event_loop()
@@ -199,8 +200,9 @@ def _tubeDl(url: list, prog, starttime, uid=None):
         x = ytdl.YoutubeDL(_opts)
         x.add_progress_hook(prog)
         dloader = x.download(url)
-    except ytdl.utils.YoutubeDLError as e:
-        return e
+    except ytdl.utils.YoutubeDLError as y_e:
+        LOGGER.exception(y_e)
+        return y_e
     else:
         return dloader
     finally:
@@ -212,25 +214,25 @@ def _mp3Dl(url, prog, starttime):
     _opts = {'outtmpl': os.path.join(Config.DOWN_PATH, str(starttime), '%(title)s.%(ext)s'),
              'logger': LOGGER,
              'writethumbnail': True,
+             'prefer_ffmpeg': True,
+             'format': 'bestaudio/best',
              'postprocessors': [
                  {
                      'key': 'FFmpegExtractAudio',
                      'preferredcodec': 'mp3',
                      'preferredquality': '320',
                  },
-                 {'key': 'EmbedThumbnail'},
-                 {'key': 'FFmpegMetadata'},
-             ]}
-    _quality = {'format': 'bestaudio/best'}
-    _opts.update(_quality)
+                 # {'key': 'EmbedThumbnail'},  ERROR: Conversion failed!
+                 {'key': 'FFmpegMetadata'}]}
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     try:
         x = ytdl.YoutubeDL(_opts)
         x.add_progress_hook(prog)
         dloader = x.download(url)
-    except ytdl.utils.YoutubeDLError as e:
-        return e
+    except ytdl.utils.YoutubeDLError as y_e:
+        LOGGER.exception(y_e)
+        return y_e
     else:
         return dloader
     finally:

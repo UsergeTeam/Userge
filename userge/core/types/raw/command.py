@@ -34,7 +34,7 @@ class Command(Filter):
         super().__init__(**kwargs)
 
     def __repr__(self) -> str:
-        return f"<command - {self.name}>"
+        return f"<command {self.name}>"
 
     @classmethod
     def parse(cls, command: str,  # pylint: disable=arguments-differ

@@ -31,8 +31,9 @@ async def progress(current: int,
         await message.client.stop_transmission()
     task_id = f"{message.chat.id}.{message.message_id}"
     if current == total:
-        if task_id in _TASKS:
-            del _TASKS[task_id]
+        if task_id not in _TASKS:
+            return
+        del _TASKS[task_id]
         try:
             await message.try_to_edit("`finalizing process ...`")
         except FloodWait as f_e:

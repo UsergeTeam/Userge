@@ -144,7 +144,7 @@ class Filter:
         self._handler: Handler
 
     def __repr__(self) -> str:
-        return f"<filter - {self.name}>"
+        return f"<filter {self.name}>"
 
     @property
     def is_enabled(self) -> bool:
@@ -179,7 +179,7 @@ class Filter:
         self.doc = func.__doc__.strip() if func.__doc__ else None
         self._func = func
         self._handler = MessageHandler(template, self.filters)
-        _LOG.debug(_LOG_STR, f"updated filter -> {self.name}")
+        _LOG.debug(_LOG_STR, f"updated {self}")
 
     async def enable(self) -> str:
         """ enable the filter """
@@ -187,7 +187,7 @@ class Filter:
             return ''
         self._enabled = True
         await _enable(self.name)
-        _LOG.debug(_LOG_STR, f"enabled filter -> {self.name}")
+        _LOG.debug(_LOG_STR, f"enabled {self}")
         return self.name
 
     async def disable(self) -> str:
@@ -196,7 +196,7 @@ class Filter:
             return ''
         self._enabled = False
         await _disable(self.name)
-        _LOG.debug(_LOG_STR, f"disabled filter -> {self.name}")
+        _LOG.debug(_LOG_STR, f"disabled {self}")
         return self.name
 
     async def load(self) -> str:
@@ -209,7 +209,7 @@ class Filter:
             self._client._bot.add_handler(self._handler, self._group)
         self._loaded = True
         await _load(self.name)
-        _LOG.debug(_LOG_STR, f"loaded filter -> {self.name}")
+        _LOG.debug(_LOG_STR, f"loaded {self}")
         return self.name
 
     async def unload(self) -> str:
@@ -222,5 +222,5 @@ class Filter:
             self._client._bot.remove_handler(self._handler, self._group)
         self._loaded = False
         await _unload(self.name)
-        _LOG.debug(_LOG_STR, f"unloaded filter -> {self.name}")
+        _LOG.debug(_LOG_STR, f"unloaded {self}")
         return self.name
