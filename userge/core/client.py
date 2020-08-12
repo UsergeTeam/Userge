@@ -26,7 +26,7 @@ from userge.utils import time_formatter
 from userge.utils.exceptions import UsergeBotNotFound
 from userge.plugins import get_all_plugins
 from .methods import Methods
-from .ext import RawClient
+from .ext import RawClient, pool
 
 _LOG = logging.getLogger(__name__)
 _LOG_STR = "<<<!  #####  %s  #####  !>>>"
@@ -162,6 +162,7 @@ class Userge(_AbstractUserge):
 
     async def start(self) -> None:
         """ start client and bot """
+        pool._start()  # pylint: disable=protected-access
         _LOG.info(_LOG_STR, "Starting Userge")
         await super().start()
         if self._bot is not None:
@@ -171,6 +172,7 @@ class Userge(_AbstractUserge):
 
     async def stop(self) -> None:  # pylint: disable=arguments-differ
         """ stop client and bot """
+        await pool._stop()  # pylint: disable=protected-access
         if self._bot is not None:
             _LOG.info(_LOG_STR, "Stopping UsergeBot")
             await self._bot.stop()

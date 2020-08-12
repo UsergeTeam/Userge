@@ -231,7 +231,7 @@ class _GDrive:
             c_time = time.time()
             response = None
             while response is None:
-                status, response = u_file_obj.next_chunk()
+                status, response = u_file_obj.next_chunk(num_retries=5)
                 if self._is_canceled:
                     raise ProcessCanceled
                 if status:
@@ -328,7 +328,7 @@ class _GDrive:
             c_time = time.time()
             done = False
             while done is False:
-                status, done = d_file_obj.next_chunk()
+                status, done = d_file_obj.next_chunk(num_retries=5)
                 if self._is_canceled:
                     raise ProcessCanceled
                 if status:
