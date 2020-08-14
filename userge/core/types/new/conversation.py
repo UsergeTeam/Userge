@@ -156,7 +156,7 @@ class Conversation:
 
     async def __aenter__(self) -> 'Conversation':
         self._chat_id = int(self._chat) if isinstance(self._chat, int) else \
-            (await self._client.get_chats(self._chat)).id
+            (await self._client.get_chat(self._chat)).id
         if self._chat_id in _CONV_DICT:
             error = f"already started conversation with {self._chat_id} !"
             _LOG.error(_LOG_STR, error)
