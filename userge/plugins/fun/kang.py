@@ -11,6 +11,7 @@
 import io
 import os
 import random
+import emoji
 import urllib.request
 
 from PIL import Image
@@ -33,7 +34,7 @@ async def kang_(message: Message):
     user = await userge.get_me()
     replied = message.reply_to_message
     photo = None
-    emoji = None
+    emoji_ = None
     is_anim = False
     resize = False
     if replied and replied.media:
@@ -44,7 +45,7 @@ async def kang_(message: Message):
         elif replied.document and "tgsticker" in replied.document.mime_type:
             is_anim = True
         elif replied.sticker:
-            emoji = replied.sticker.emoji
+            emoji_ = replied.sticker.emoji
             is_anim = replied.sticker.is_animated
             if not replied.sticker.file_name.endswith('.tgs'):
                 resize = True
@@ -59,18 +60,27 @@ async def kang_(message: Message):
         return
     if photo:
         args = message.input_str.split()
-        if not emoji:
-            emoji = "🤔"
         pack = 1
         if len(args) == 2:
-            emoji, pack = args
+            emoji_, pack = args
         elif len(args) == 1:
             if args[0].isnumeric():
                 pack = int(args[0])
             else:
-                emoji = args[0]
+                emoji_ = args[0]
+
+        if emoji_ and emoji_ not in emoji.UNICODE_EMOJI:
+            emoji_ = None
+        if not emoji_:
+            emoji_ = "🤔"
+
+        u_name = user.username
+        if u_name:
+            u_name = "@" + u_name
+        else:
+            u_name = user.first_name or user.id
         packname = f"a{user.id}_by_userge_{pack}"
-        custom_packnick = Config.CUSTOM_PACK_NAME or f"@{user.id}'s kang pack"
+        custom_packnick = Config.CUSTOM_PACK_NAME or f"{u_name}'s kang pack"
         packnick = f"{custom_packnick} Vol.{pack}"
         cmd = '/newpack'
         if resize:
@@ -113,7 +123,7 @@ async def kang_(message: Message):
                         await conv.get_response(mark_read=True)
                         await conv.send_document(photo)
                         await conv.get_response(mark_read=True)
-                        await conv.send_message(emoji)
+                        await conv.send_message(emoji_)
                         await conv.get_response(mark_read=True)
                         await conv.send_message("/publish")
                         if is_anim:
@@ -135,7 +145,7 @@ async def kang_(message: Message):
                     await message.edit("`Failed to add sticker, use` @Stickers "
                                        "`bot to add the sticker manually.`")
                     return
-                await conv.send_message(emoji)
+                await conv.send_message(emoji_)
                 await conv.get_response(mark_read=True)
                 await conv.send_message('/done')
                 await conv.get_response(mark_read=True)
@@ -156,7 +166,7 @@ async def kang_(message: Message):
                     await message.edit("`Failed to add sticker, use` @Stickers "
                                        "`bot to add the sticker manually.`")
                     return
-                await conv.send_message(emoji)
+                await conv.send_message(emoji_)
                 await conv.get_response(mark_read=True)
                 await conv.send_message("/publish")
                 if is_anim:
