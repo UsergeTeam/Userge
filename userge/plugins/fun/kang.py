@@ -70,7 +70,7 @@ async def kang_(message: Message):
             else:
                 emoji = args[0]
         packname = f"a{user.id}_by_userge_{pack}"
-        custom_packnick = Config.CUSTOM_PACK_NAME or f"@{user.id}'s kang pack"
+        custom_packnick = Config.CUSTOM_PACK_NAME or f"@{user.username}'s kang pack"
         packnick = f"{custom_packnick} Vol.{pack}"
         cmd = '/newpack'
         if resize:
