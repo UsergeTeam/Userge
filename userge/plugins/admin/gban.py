@@ -288,7 +288,7 @@ async def gban_at_entry(message: Message):
                     "\n\nGlobally Banned User Detected in this Chat.\n\n"
                     f"**User:** [{first_name}](tg://user?id={user_id})\n"
                     f"**ID:** `{user_id}`\n**Reason:** `{gbanned['reason']}`\n\n"
-                    "**Quick Action:** Banned"),
+                    "**Quick Action:** Banned", del_in=10),
                 CHANNEL.log(
                     r"\\**#Antispam_Log**//"
                     "\n\n**GBanned User $SPOTTED**\n"
@@ -308,7 +308,7 @@ async def gban_at_entry(message: Message):
                         "**$SENTRY CAS Federation Ban**\n"
                         f"**User:** [{first_name}](tg://user?id={user_id})\n"
                         f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n\n"
-                        "**Quick Action:** Banned"),
+                        "**Quick Action:** Banned", del_in=10),
                     CHANNEL.log(
                         r"\\**#Antispam_Log**//"
                         "\n\n**GBanned User $SPOTTED**\n"
@@ -328,7 +328,7 @@ async def gban_at_entry(message: Message):
                             "**$SENTRY SpamWatch Federation Ban**\n"
                             f"**User:** [{first_name}](tg://user?id={user_id})\n"
                             f"**ID:** `{user_id}`\n**Reason:** `{intruder.reason}`\n\n"
-                            "**Quick Action:** Banned"),
+                            "**Quick Action:** Banned", del_in=10),
                         CHANNEL.log(
                             r"\\**#Antispam_Log**//"
                             "\n\n**GBanned User $SPOTTED**\n"
