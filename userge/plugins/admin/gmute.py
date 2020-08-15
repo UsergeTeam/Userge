@@ -184,7 +184,7 @@ async def gmute_at_entry(msg: Message):
                     "\n\nGlobally Muted User Detected in this Chat.\n\n"
                     f"**User:** [{first_name}](tg://user?id={user_id})\n"
                     f"**ID:** `{user_id}`\n**Reason:** `{gmuted['reason']}`\n\n"
-                    "**Quick Action:** Muted"),
+                    "**Quick Action:** Muted", del_in=10),
                 CHANNEL.log(
                     r"\\**#Antispam_Log**//"
                     "\n\n**GMuted User $SPOTTED**\n"
