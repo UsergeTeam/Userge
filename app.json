@@ -12,122 +12,13 @@
     "website": "https://github.com/Userge",
     "success_url": "https://t.me/theUserge",
     "env": {
-        "API_ID": {
-            "description": "Get this value from https://my.telegram.org"
-        },
-        "API_HASH": {
-            "description": "Get this value from https://my.telegram.org"
-        },
+        "API_ID": {"description": "Get this value from https://my.telegram.org"},
+        "API_HASH": {"description": "Get this value from https://my.telegram.org"},
+        "DATABASE_URL": {"description": "Mongodb url from https://cloud.mongodb.com/"},
+        "LOG_CHANNEL_ID": {"description": "Telegram Log Channel ID"},
         "HU_STRING_SESSION": {
             "description": "Get it by 'https://GenUserGeString.usergeuserbot.repl.run' or use `bash genStr`",
-            "required": false
-        },
-        "BOT_TOKEN": {
-            "description": "Get this from https://t.me/botfather if you like to use userge as a bot",
-            "required": false
-        },
-        "OWNER_ID": {
-            "description": "Your user_id if you are gonna use userge as a bot",
-            "required": false
-        },
-        "WORKERS": {
-            "description": "Userbot Workers Count : Default = 4",
-            "required": false
-        },
-        "DATABASE_URL": {
-            "description": "Mongodb url from https://cloud.mongodb.com/"
-        },
-        "G_DRIVE_CLIENT_ID": {
-            "description": "Googel Drive API Keys from https://console.developers.google.com/",
-            "required": false
-        },
-        "G_DRIVE_CLIENT_SECRET": {
-            "description": "Googel Drive API Keys from https://console.developers.google.com/",
-            "required": false
-        },
-        "G_DRIVE_IS_TD": {
-            "description": "Set true if it is TeamDrive",
-            "required": false
-        },
-        "LOG_CHANNEL_ID": {
-            "description": "Telegram Log Channel ID"
-        },
-        "G_DRIVE_INDEX_LINK": {
-            "description": "Index link for gdrive",
-            "required": false
-        },
-        "LOAD_UNOFFICIAL_PLUGINS": {
-            "description": "Set True if your like to use unofficial plugins",
-            "required": false
-        },
-        "DOWN_PATH": {
-            "description": "Set name to your working directory",
-            "required": false
-        },
-        "PREFERRED_LANGUAGE": {
-            "description": "Your Languge ( ex: if english => 'en' )",
-            "required": false
-        },
-        "CURRENCY_API": {
-            "description": "get API key from 'https://free.currencyconverterapi.com'",
-            "required": false
-        },
-        "OCR_SPACE_API_KEY": {
-            "description": "get OCR API key from 'http://eepurl.com/bOLOcf'",
-            "required": false
-        },
-        "WEATHER_DEFCITY": {
-            "description": "add default city for weather",
-            "required": false
-        },
-        "OPEN_WEATHER_MAP": {
-            "description": "Weather API get it from 'https://openweathermap.org/",
-            "required": false
-        },
-        "ANTISPAM_SENTRY": {
-            "description": "Toggle API Auto Bans, Active if set to True",
-            "required": false
-        },
-        "SPAM_WATCH_API": {
-            "description": "SpamWatch API get it from @SpamWatch in Telegram",
-            "required": false
-        },
-        "REMOVE_BG_API_KEY": {
-            "description": "RemoveBg API Key get it from https://www.remove.bg/api",
-            "required": false
-        },
-        "G_DRIVE_PARENT_ID": {
-            "description": "GDrive Folder ID",
-            "required": false
-        },
-        "HEROKU_APP_NAME": {
-            "description": "given app name to the heroku app",
-            "required": false
-        },
-        "HEROKU_API_KEY": {
-            "description": "get a Heroku API key from http://dashboard.heroku.com/account",
-            "required": false
-        },
-        "UPSTREAM_REPO": {
-            "description": "set this to your USERGE fork on GitHub",
-            "required": false
-        },
-        "CMD_TRIGGER": {
-            "description": "set command prefix",
-            "required": false
-        },
-        "SUDO_TRIGGER": {
-            "description": "set command prefix for SUDO users",
-            "required": false
-        },
-        "FINISHED_PROGRESS_STR": {
-            "description": "single character for finished progress",
-            "required": false
-        },
-        "UNFINISHED_PROGRESS_STR": {
-            "description": "single character for unfinished progress",
-            "required": false
-        }
+            "required": false}
     },
     "addons": [],
     "buildpacks": [

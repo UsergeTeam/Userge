@@ -47,15 +47,14 @@ async def paste_(message: Message) -> None:
         flags.remove('n')
     if flags and len(flags) == 1:
         file_ext = '.' + flags[0]
-    await message.edit("`Pasting text...`")
+    await message.edit("`Pasting text ...`")
     if use_neko:
         resp = post(NEKOBIN_URL + "api/documents", json={"content": text})
         if resp.status_code == 201:
             response = resp.json()
             key = response['result']['key']
             final_url = NEKOBIN_URL + key + file_ext
-            reply_text = "--Pasted successfully!--\n\n"
-            reply_text += f"**Nekobin URL** : {final_url}"
+            reply_text = f"**Nekobin** [URL]({final_url})"
             await message.edit(reply_text, disable_web_page_preview=True)
         else:
             await message.err("Failed to reach Nekobin")
@@ -65,12 +64,11 @@ async def paste_(message: Message) -> None:
             response = resp.json()
             key = response['key']
             final_url = DOGBIN_URL + key
-            reply_text = "--Pasted successfully!--\n\n"
             if response['isUrl']:
-                reply_text += (f"**Shortened URL** : {final_url}\n"
-                               f"**Dogbin URL** : {DOGBIN_URL}v/{key}")
+                reply_text = (f"**Shortened** [URL]({final_url})\n"
+                              f"**Dogbin** [URL]({DOGBIN_URL}v/{key})")
             else:
-                reply_text += f"**Dogbin URL** : {final_url}{file_ext}"
+                reply_text = f"**Dogbin** [URL]({final_url}{file_ext})"
             await message.edit(reply_text, disable_web_page_preview=True)
         else:
             await message.err("Failed to reach Dogbin")

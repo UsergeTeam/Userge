@@ -42,6 +42,7 @@ class Config:
     SUDO_TRIGGER = os.environ.get("SUDO_TRIGGER")
     FINISHED_PROGRESS_STR = os.environ.get("FINISHED_PROGRESS_STR")
     UNFINISHED_PROGRESS_STR = os.environ.get("UNFINISHED_PROGRESS_STR")
+    CUSTOM_PACK_NAME = os.environ.get("CUSTOM_PACK_NAME")
     UPSTREAM_REPO = os.environ.get("UPSTREAM_REPO")
     UPSTREAM_REMOTE = os.environ.get("UPSTREAM_REMOTE")
     SCREENSHOT_API = os.environ.get("SCREENSHOT_API", None)
@@ -62,7 +63,6 @@ class Config:
     HEROKU_APP_NAME = os.environ.get("HEROKU_APP_NAME", None)
     HEROKU_GIT_URL = os.environ.get("HEROKU_GIT_URL", None)
     G_DRIVE_IS_TD = os.environ.get("G_DRIVE_IS_TD") == "true"
-    ANTISPAM_SENTRY = os.environ.get("ANTISPAM_SENTRY") == "true"
     LOAD_UNOFFICIAL_PLUGINS = os.environ.get("LOAD_UNOFFICIAL_PLUGINS") == "true"
     TMP_PATH = "userge/plugins/temp/"
     MAX_MESSAGE_LENGTH = 4096
@@ -72,8 +72,10 @@ class Config:
     ALLOWED_CHATS = Filters.chat([])
     ALLOW_ALL_PMS = True
     USE_USER_FOR_CLIENT_CHECKS = False
+    SUDO_ENABLED = False
     SUDO_USERS: Set[int] = set()
     ALLOWED_COMMANDS: Set[str] = set()
+    ANTISPAM_SENTRY = False
     HEROKU_APP = None
 
 

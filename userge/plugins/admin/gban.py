@@ -17,10 +17,32 @@ from pyrogram.errors.exceptions.bad_request_400 import (
 
 from userge import userge, Message, Config, get_collection, Filters
 
+SAVED_SETTINGS = get_collection("CONFIGS")
 GBAN_USER_BASE = get_collection("GBAN_USER")
 WHITELIST = get_collection("WHITELIST_USER")
 CHANNEL = userge.getCLogger(__name__)
 LOG = userge.getLogger(__name__)
+
+
+async def _init() -> None:
+    s_o = await SAVED_SETTINGS.find_one({'_id': 'ANTISPAM_ENABLED'})
+    if s_o:
+        Config.ANTISPAM_SENTRY = s_o['data']
+
+
+@userge.on_cmd("antispam", about={
+    'header': "enable / disable antispam",
+    'description': "Toggle API Auto Bans"}, allow_channels=False)
+async def antispam_(message: Message):
+    """ enable / disable antispam """
+    if Config.ANTISPAM_SENTRY:
+        Config.ANTISPAM_SENTRY = False
+        await message.edit("`antispam disabled !`", del_in=3)
+    else:
+        Config.ANTISPAM_SENTRY = True
+        await message.edit("`antispam enabled !`", del_in=3)
+    await SAVED_SETTINGS.update_one(
+        {'_id': 'ANTISPAM_ENABLED'}, {"$set": {'data': Config.ANTISPAM_SENTRY}}, upsert=True)
 
 
 @userge.on_cmd("gban", about={

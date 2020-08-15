@@ -65,9 +65,8 @@ class Command(Filter):
                 lambda _, m:
                 not m.outgoing
                 and (
-                    (Config.OWNER_ID
-                     and (m.from_user and m.from_user.id == Config.OWNER_ID))
-                    or ((cname.lstrip(trigger) in Config.ALLOWED_COMMANDS)
+                    (Config.OWNER_ID and (m.from_user and m.from_user.id == Config.OWNER_ID))
+                    or (Config.SUDO_ENABLED and (cname.lstrip(trigger) in Config.ALLOWED_COMMANDS)
                         and (m.from_user and m.from_user.id in Config.SUDO_USERS)))
                 and (m.text.startswith(Config.SUDO_TRIGGER) if trigger else True))
             filters_ = filters_ & (outgoing_flt | incoming_flt)

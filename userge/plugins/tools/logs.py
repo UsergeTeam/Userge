@@ -6,7 +6,7 @@
 #
 # All rights reserved.
 
-from userge import userge, Message, logging
+from userge import userge, Message, logging, Config, pool
 
 _LEVELS = {
     'debug': logging.DEBUG,
@@ -17,13 +17,25 @@ _LEVELS = {
 }
 
 
-@userge.on_cmd("logs", about={'header': "check userge logs"}, allow_channels=False)
+@userge.on_cmd("logs", about={
+    'header': "check userge logs",
+    'flags': {
+        '-h': "get heroku logs",
+        '-l': "heroku logs lines limit : default 100"}}, allow_channels=False)
 async def check_logs(message: Message):
     """ check logs """
     await message.edit("`checking logs ...`")
-    await message.client.send_document(chat_id=message.chat.id,
-                                       document="logs/userge.log",
-                                       caption='userge.log')
+    if '-h' in message.flags and Config.HEROKU_APP:
+        limit = int(message.flags.get('-l', 100))
+        logs = await pool.run_in_thread(Config.HEROKU_APP.get_log)(lines=limit)
+        await message.client.send_as_file(chat_id=message.chat.id,
+                                          text=logs,
+                                          filename='userge-heroku.log',
+                                          caption=f'userge-heroku.log [ {limit} lines ]')
+    else:
+        await message.client.send_document(chat_id=message.chat.id,
+                                           document="logs/userge.log",
+                                           caption='userge.log')
     await message.delete()
 
 

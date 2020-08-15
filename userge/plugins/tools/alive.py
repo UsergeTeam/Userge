@@ -9,6 +9,7 @@
 from pyrogram.errors.exceptions import FileIdInvalid, FileReferenceEmpty
 from pyrogram.errors.exceptions.bad_request_400 import BadRequest, ChannelInvalid, MediaEmpty
 
+from userge.core.ext import RawClient
 from userge import userge, Message, Config, versions, get_version
 
 LOGO_STICKER_ID, LOGO_STICKER_REF = None, None
@@ -20,20 +21,24 @@ async def alive(message: Message):
     await message.delete()
     await sendit(message)
     output = f"""
-**USERGE is Up and Running**
+**uptime** : `{userge.uptime}`
+**version** : `{get_version()}`
 
-       __Durable as a Serge__
+• **sudo** : `{_parse_arg(Config.SUDO_ENABLED)}`
+• **antispam** : `{_parse_arg(Config.ANTISPAM_SENTRY)}`
+• **dualmode** : `{_parse_arg(RawClient.DUAL_MODE)}`
+• **unofficial** : `{_parse_arg(Config.LOAD_UNOFFICIAL_PLUGINS)}`
 
-• **uptime** : `{userge.uptime}`
-• **python version** : `{versions.__python_version__}`
-• **pyrogram version** : `{versions.__pyro_version__}`
-• **userge version** : `{get_version()}`
-• **unofficial enabled** : `{Config.LOAD_UNOFFICIAL_PLUGINS}`
-• **license** : {versions.__license__}
-• **copyright** : {versions.__copyright__}
-• **repo** : [Userge]({Config.UPSTREAM_REPO})
+    **__python__** : `{versions.__python_version__}`
+    **__pyrogram__** : `{versions.__pyro_version__}`
+
+**{versions.__license__}** | **{versions.__copyright__}** | **[Repo]({Config.UPSTREAM_REPO})**
 """
     await message.client.send_message(message.chat.id, output, disable_web_page_preview=True)
+
+
+def _parse_arg(arg: bool) -> str:
+    return "enabled" if arg else "disabled"
 
 
 async def refresh_id():

@@ -31,8 +31,6 @@ from userge import userge, Message, Config, pool
 async def kang_(message: Message):
     """ kang a sticker """
     user = await userge.get_me()
-    if not user.username:
-        user.username = user.first_name or user.id
     replied = message.reply_to_message
     photo = None
     emoji = None
@@ -71,8 +69,9 @@ async def kang_(message: Message):
                 pack = int(args[0])
             else:
                 emoji = args[0]
-        packname = f"a{user.id}_by_{user.username}_{pack}"
-        packnick = f"@{user.username}'s kang pack Vol.{pack}"
+        packname = f"a{user.id}_by_userge_{pack}"
+        custom_packnick = Config.CUSTOM_PACK_NAME or f"@{user.id}'s kang pack"
+        packnick = f"{custom_packnick} Vol.{pack}"
         cmd = '/newpack'
         if resize:
             photo = resize_photo(photo)
@@ -101,8 +100,8 @@ async def kang_(message: Message):
                 limit = "50" if is_anim else "120"
                 while limit in msg.text:
                     pack += 1
-                    packname = f"a{user.id}_by_{user.username}_{pack}"
-                    packnick = f"@{user.username}'s kang pack Vol.{pack}"
+                    packname = f"a{user.id}_by_userge_{pack}"
+                    packnick = f"{custom_packnick} Vol.{pack}"
                     await message.edit("`Switching to Pack " + str(pack) +
                                        " due to insufficient space`")
                     await conv.send_message(packname)
@@ -154,8 +153,8 @@ async def kang_(message: Message):
                 await conv.send_document(photo)
                 rsp = await conv.get_response(mark_read=True)
                 if "Sorry, the file type is invalid." in rsp.text:
-                    await args.edit("`Failed to add sticker, use` @Stickers "
-                                    "`bot to add the sticker manually.`")
+                    await message.edit("`Failed to add sticker, use` @Stickers "
+                                       "`bot to add the sticker manually.`")
                     return
                 await conv.send_message(emoji)
                 await conv.get_response(mark_read=True)
@@ -168,8 +167,7 @@ async def kang_(message: Message):
                 await conv.get_response(mark_read=True)
                 await conv.send_message(packname)
                 await conv.get_response(mark_read=True)
-        await message.edit(f"`Sticker kanged successfully!`\n"
-                           f"Pack can be found [here](t.me/addstickers/{packname})")
+        await message.edit(f"**Sticker** [kanged](t.me/addstickers/{packname})!")
         if os.path.exists(str(photo)):
             os.remove(photo)
 
