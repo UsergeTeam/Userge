@@ -145,7 +145,7 @@ async def kang_(message: Message):
                     await message.edit("`Failed to add sticker, use` @Stickers "
                                        "`bot to add the sticker manually.`")
                     return
-                await conv.send_message(emoji)
+                await conv.send_message(emoji_)
                 await conv.get_response(mark_read=True)
                 await conv.send_message('/done')
                 await conv.get_response(mark_read=True)
