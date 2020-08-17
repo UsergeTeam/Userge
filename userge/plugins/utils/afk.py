@@ -56,7 +56,7 @@ async def active_afk(message: Message) -> None:
             {'_id': 'AFK'}, {"$set": {'on': True, 'data': REASON, 'time': TIME}}, upsert=True))
 
 
-@userge.on_filters(IS_AFK_FILTER & ~Filters.me & ~Filters.bot & (
+@userge.on_filters(IS_AFK_FILTER & ~Filters.me & ~Filters.bot & ~Filters.edited & (
     Filters.mentioned | (Filters.private & ~Filters.service & (
         Filters.create(lambda _, __: Config.ALLOW_ALL_PMS) | Config.ALLOWED_CHATS))),
     allow_via_bot=False)
