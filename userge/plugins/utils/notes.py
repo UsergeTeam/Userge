@@ -165,7 +165,7 @@ async def mv_to_global_note(message: Message) -> None:
                check_client=True)
 async def get_note(message: Message) -> None:
     """ get any saved note """
-    if not (message.from_user or message.chat):
+    if not message.from_user:
         return
     if message.chat.id not in NOTES_DATA:
         return
