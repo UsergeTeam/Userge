@@ -368,7 +368,7 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
                     input_message_content=InputTextMessageContent(
                         "🖥 **Userge Main Menu** 🖥"
                     ),
-                    url="https://github.com/UsergeTeam/Userge",
+                    url="https://github.com/DarkRider21/Userge",
                     description="Userge Main Menu",
                     thumb_url="https://imgur.com/download/Inyeb1S",
                     reply_markup=InlineKeyboardMarkup(main_menu_buttons())
