@@ -49,7 +49,8 @@ async def shutdown_(message: Message) -> None:
         try:
             Config.HEROKU_APP.scale_formation_process("worker", 0)
         except Exception as h_e:  # pylint: disable=broad-except
-            await message.err(h_e)
+            await message.edit(f"**heroku error** : `{h_e}`")
+            await asyncio.sleep(3)
     else:
         await asyncio.sleep(1)
     await message.delete()

@@ -299,7 +299,7 @@ async def gban_at_entry(message: Message):
         elif Config.ANTISPAM_SENTRY:
             res = requests.get(f'https://api.cas.chat/check?user_id={user_id}').json()
             if res['ok']:
-                reason = res['result']['messages'][0] if 'result' in res else None
+                reason = ' | '.join(res['result']['messages']) if 'result' in res else None
                 await asyncio.gather(
                     message.client.kick_chat_member(chat_id, user_id),
                     message.reply(

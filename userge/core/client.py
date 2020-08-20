@@ -16,7 +16,7 @@ import time
 import asyncio
 import importlib
 from types import ModuleType
-from typing import List, Awaitable, Any, Optional
+from typing import List, Awaitable, Any, Optional, Union
 
 import psutil
 
@@ -154,9 +154,11 @@ class Userge(_AbstractUserge):
         super().__init__(**kwargs)
 
     @property
-    def bot(self) -> '_UsergeBot':
+    def bot(self) -> Union['_UsergeBot', 'Userge']:
         """ returns usergebot """
         if self._bot is None:
+            if Config.BOT_TOKEN:
+                return self
             raise UsergeBotNotFound("Need BOT_TOKEN ENV!")
         return self._bot
 

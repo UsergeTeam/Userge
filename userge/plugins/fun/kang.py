@@ -45,6 +45,9 @@ async def kang_(message: Message):
         elif replied.document and "tgsticker" in replied.document.mime_type:
             is_anim = True
         elif replied.sticker:
+            if not replied.sticker.file_name:
+                await message.edit("`Sticker has no Name!`")
+                return
             emoji_ = replied.sticker.emoji
             is_anim = replied.sticker.is_animated
             if not replied.sticker.file_name.endswith('.tgs'):
