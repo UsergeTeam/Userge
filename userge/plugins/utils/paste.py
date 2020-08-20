@@ -9,8 +9,9 @@
 # All rights reserved.
 
 import os
-from requests import get, post
-from requests.exceptions import HTTPError, Timeout, TooManyRedirects
+
+import aiohttp
+from aiohttp import ClientResponseError, ServerTimeoutError, TooManyRedirects
 
 from userge import userge, Message, Config
 
@@ -48,30 +49,31 @@ async def paste_(message: Message) -> None:
     if flags and len(flags) == 1:
         file_ext = '.' + flags[0]
     await message.edit("`Pasting text ...`")
-    if use_neko:
-        resp = post(NEKOBIN_URL + "api/documents", json={"content": text})
-        if resp.status_code == 201:
-            response = resp.json()
-            key = response['result']['key']
-            final_url = NEKOBIN_URL + key + file_ext
-            reply_text = f"**Nekobin** [URL]({final_url})"
-            await message.edit(reply_text, disable_web_page_preview=True)
+    async with aiohttp.ClientSession() as ses:
+        if use_neko:
+            async with ses.post(NEKOBIN_URL + "api/documents", json={"content": text}) as resp:
+                if resp.status == 201:
+                    response = await resp.json()
+                    key = response['result']['key']
+                    final_url = NEKOBIN_URL + key + file_ext
+                    reply_text = f"**Nekobin** [URL]({final_url})"
+                    await message.edit(reply_text, disable_web_page_preview=True)
+                else:
+                    await message.err("Failed to reach Nekobin")
         else:
-            await message.err("Failed to reach Nekobin")
-    else:
-        resp = post(DOGBIN_URL + "documents", data=text.encode('utf-8'))
-        if resp.status_code == 200:
-            response = resp.json()
-            key = response['key']
-            final_url = DOGBIN_URL + key
-            if response['isUrl']:
-                reply_text = (f"**Shortened** [URL]({final_url})\n"
-                              f"**Dogbin** [URL]({DOGBIN_URL}v/{key})")
-            else:
-                reply_text = f"**Dogbin** [URL]({final_url}{file_ext})"
-            await message.edit(reply_text, disable_web_page_preview=True)
-        else:
-            await message.err("Failed to reach Dogbin")
+            async with ses.post(DOGBIN_URL + "documents", data=text.encode('utf-8')) as resp:
+                if resp.status == 200:
+                    response = await resp.json()
+                    key = response['key']
+                    final_url = DOGBIN_URL + key
+                    if response['isUrl']:
+                        reply_text = (f"**Shortened** [URL]({final_url})\n"
+                                      f"**Dogbin** [URL]({DOGBIN_URL}v/{key})")
+                    else:
+                        reply_text = f"**Dogbin** [URL]({final_url}{file_ext})"
+                    await message.edit(reply_text, disable_web_page_preview=True)
+                else:
+                    await message.err("Failed to reach Dogbin")
 
 
 @userge.on_cmd("getpaste", about={
@@ -103,17 +105,17 @@ async def get_paste_(message: Message):
     else:
         await message.err("Is that even a paste url?")
         return
-    resp = get(raw_link)
-    try:
-        resp.raise_for_status()
-    except HTTPError:
-        await message.err(
-            f"Request returned an unsuccessful status code -> {HTTPError}")
-    except Timeout:
-        await message.err(f"Request timed out -> {Timeout}")
-    except TooManyRedirects:
-        await message.err(
-            f"Request exceeded the configured number of maximum redirections -> {TooManyRedirects}")
-    else:
-        await message.edit_or_send_as_file(
-            f"--Fetched dogbin URL content successfully!--\n\n**Content** :\n`{resp.text}`")
+    async with aiohttp.ClientSession(raise_for_status=True) as ses:
+        try:
+            async with ses.get(raw_link) as resp:
+                text = await resp.text()
+        except ServerTimeoutError as e_r:
+            await message.err(f"Request timed out -> {e_r}")
+        except TooManyRedirects as e_r:
+            await message.err("Request exceeded the configured "
+                              f"number of maximum redirections -> {e_r}")
+        except ClientResponseError as e_r:
+            await message.err(f"Request returned an unsuccessful status code -> {e_r}")
+        else:
+            await message.edit_or_send_as_file("--Fetched Content Successfully!--"
+                                               f"\n\n**Content** :\n`{text}`")

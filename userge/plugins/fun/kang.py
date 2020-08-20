@@ -12,14 +12,14 @@ import io
 import os
 import random
 import emoji
-import urllib.request
 
+import aiohttp
 from PIL import Image
 from pyrogram.api.functions.messages import GetStickerSet
 from pyrogram.api.types import InputStickerSetShortName
 from pyrogram.errors.exceptions.bad_request_400 import YouBlockedUser
 
-from userge import userge, Message, Config, pool
+from userge import userge, Message, Config
 
 
 @userge.on_cmd(
@@ -92,13 +92,9 @@ async def kang_(message: Message):
             packname += "_anim"
             packnick += " (Animated)"
             cmd = '/newanimated'
-
-        @pool.run_in_thread
-        def get_response():
-            response = urllib.request.urlopen(  # nosec
-                urllib.request.Request(f'http://t.me/addstickers/{packname}'))
-            return response.read().decode("utf8").split('\n')
-        htmlstr = await get_response()
+        async with aiohttp.ClientSession() as ses:
+            async with ses.get(f'http://t.me/addstickers/{packname}') as res:
+                htmlstr = (await res.text()).split('\n')
         if ("  A <strong>Telegram</strong> user has created "
                 "the <strong>Sticker&nbsp;Set</strong>.") not in htmlstr:
             async with userge.conversation('Stickers', limit=30) as conv:

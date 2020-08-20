@@ -6,8 +6,9 @@
 #
 # All rights reserved.
 
-from requests import get
 from emoji import get_emoji_regexp
+
+import aiohttp
 
 from userge import userge, Message, Config
 
@@ -41,9 +42,11 @@ async def cur_conv(message: Message):
         return
 
     if amount.isdigit():
-        data = get(
-            "https://free.currconv.com/api/v7/convert?"
-            f"apiKey={Config.CURRENCY_API}&q={currency_from}_{currency_to}&compact=ultra").json()
+        async with aiohttp.ClientSession() as ses:
+            async with ses.get("https://free.currconv.com/api/v7/convert?"
+                               f"apiKey={Config.CURRENCY_API}&q="
+                               f"{currency_from}_{currency_to}&compact=ultra") as res:
+                data = await res.json()
         result = data[f'{currency_from}_{currency_to}']
         result = float(amount) / float(result)
         result = round(result, 5)

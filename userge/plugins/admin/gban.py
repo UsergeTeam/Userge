@@ -9,13 +9,15 @@
 # All rights reserved
 
 import asyncio
+from typing import Union
 
-import requests
+import aiohttp
 import spamwatch
+from spamwatch.types import Ban
 from pyrogram.errors.exceptions.bad_request_400 import (
     ChatAdminRequired, UserAdminInvalid)
 
-from userge import userge, Message, Config, get_collection, Filters
+from userge import userge, Message, Config, get_collection, Filters, pool
 
 SAVED_SETTINGS = get_collection("CONFIGS")
 GBAN_USER_BASE = get_collection("GBAN_USER")
@@ -297,7 +299,9 @@ async def gban_at_entry(message: Message):
                     f"Banned in {message.chat.title}")
             )
         elif Config.ANTISPAM_SENTRY:
-            res = requests.get(f'https://api.cas.chat/check?user_id={user_id}').json()
+            async with aiohttp.ClientSession() as ses:
+                async with ses.get(f'https://api.cas.chat/check?user_id={user_id}') as resp:
+                    res = await resp.json()
             if res['ok']:
                 reason = ' | '.join(res['result']['messages']) if 'result' in res else None
                 await asyncio.gather(
@@ -318,7 +322,7 @@ async def gban_at_entry(message: Message):
                         f" Banned in {message.chat.title}\n\n$AUTOBAN #id{user_id}")
                 )
             elif Config.SPAM_WATCH_API:
-                intruder = spamwatch.Client(Config.SPAM_WATCH_API).get_ban(user_id)
+                intruder = await _get_spamwatch_data(user_id)
                 if intruder:
                     await asyncio.gather(
                         message.client.kick_chat_member(chat_id, user_id),
@@ -339,3 +343,8 @@ async def gban_at_entry(message: Message):
                             f"$AUTOBAN #id{user_id}")
                     )
     message.continue_propagation()
+
+
+@pool.run_in_thread
+def _get_spamwatch_data(user_id: int) -> Union[Ban, bool]:
+    return spamwatch.Client(Config.SPAM_WATCH_API).get_ban(user_id)

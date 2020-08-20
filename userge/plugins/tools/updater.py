@@ -64,7 +64,7 @@ async def check_update(message: Message):
         for i in repo.iter_commits(f'HEAD..{Config.UPSTREAM_REMOTE}/{branch}'):
             out += (f"🔨 **#{i.count()}** : "
                     f"[{i.summary}]({Config.UPSTREAM_REPO.rstrip('/')}/commit/{i}) "
-                    f"👷 __{i.committer}__\n\n")
+                    f"👷 __{i.author}__\n\n")
     except GitCommandError as error:
         await message.err(error, del_in=5)
         return
