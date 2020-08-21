@@ -102,7 +102,6 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
                     show_alert=True)
         return wrapper
 
-
     def check_users(func):
         async def prvt_wrapper(_, c_q: CallbackQuery):
             if c_q.from_user.id == PRVT_MSG['_id'] or c_q.from_user.id == Config.OWNER_ID:
@@ -114,7 +113,6 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
                 await c_q.answer(
                     "Sorry, you can't see this Private Msg... 😔", show_alert=True)
         return prvt_wrapper
-
 
     @ubot.on_callback_query(filters=Filters.regex(pattern=r"\((.+)\)(next|prev)\((\d+)\)"))
     @check_owner
@@ -346,12 +344,11 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
         buttons = [tmp_btns] + buttons
         return text, buttons
 
-
     @ubot.on_callback_query(filters=Filters.regex(pattern=r"^prvtmsg$"))
     @check_users
     async def prvt_msg(_, c_q: CallbackQuery):
-        prvt_msg = PRVT_MSG["msg"]
-        await c_q.answer(prvt_msg, show_alert=True)
+        prvte_msg = PRVT_MSG["msg"]
+        await c_q.answer(prvte_msg, show_alert=True)
 
     @ubot.on_inline_query()
     async def inline_answer(_, inline_query: InlineQuery):
