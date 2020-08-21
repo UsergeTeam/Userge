@@ -61,6 +61,7 @@ async def helpme(message: Message) -> None:  # pylint: disable=missing-function-
                      or plugins[key].enabled_commands[0].name.lstrip(Config.CMD_TRIGGER) != key)):
             commands = plugins[key].enabled_commands
             out_str = f"""⚔ <b><u>(<code>{len(commands)}</code>) Command(s) Available</u></b>
+
 🔧 <b>Plugin:</b>  <code>{key}</code>
 📘 <b>Doc:</b>  <code>{plugins[key].doc}</code>\n\n"""
             for i, cmd in enumerate(commands, start=1):
@@ -280,6 +281,7 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
         pos_list = cur_pos.split('|')
         plg = userge.manager.plugins[pos_list[2]]
         text = f"""🗃 **--Plugin Status--** 🗃
+
 🎭 **Category** : `{pos_list[1]}`
 🔖 **Name** : `{plg.name}`
 📝 **Doc** : `{plg.doc}`
