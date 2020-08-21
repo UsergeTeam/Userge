@@ -31,6 +31,7 @@ _CATEGORY = {
     'plugins': '💎'
 }
 SAVED_SETTINGS = get_collection("CONFIGS")
+PRVT_MSG = {}
 
 
 async def _init() -> None:
@@ -60,7 +61,6 @@ async def helpme(message: Message) -> None:  # pylint: disable=missing-function-
                      or plugins[key].enabled_commands[0].name.lstrip(Config.CMD_TRIGGER) != key)):
             commands = plugins[key].enabled_commands
             out_str = f"""⚔ <b><u>(<code>{len(commands)}</code>) Command(s) Available</u></b>
-
 🔧 <b>Plugin:</b>  <code>{key}</code>
 📘 <b>Doc:</b>  <code>{plugins[key].doc}</code>\n\n"""
             for i, cmd in enumerate(commands, start=1):
@@ -101,6 +101,20 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
                     f"Only {user_dict['flname']} Can Access this...! Build Your Own @TheUserge 🤘",
                     show_alert=True)
         return wrapper
+
+
+    def check_users(func):
+        async def prvt_wrapper(_, c_q: CallbackQuery):
+            if c_q.from_user.id == PRVT_MSG['_id'] or c_q.from_user.id == Config.OWNER_ID:
+                try:
+                    await func(c_q)
+                except Exception:
+                    pass
+            else:
+                await c_q.answer(
+                    "Sorry, you can't see this Private Msg... 😔", show_alert=True)
+        return prvt_wrapper
+
 
     @ubot.on_callback_query(filters=Filters.regex(pattern=r"\((.+)\)(next|prev)\((\d+)\)"))
     @check_owner
@@ -268,7 +282,6 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
         pos_list = cur_pos.split('|')
         plg = userge.manager.plugins[pos_list[2]]
         text = f"""🗃 **--Plugin Status--** 🗃
-
 🎭 **Category** : `{pos_list[1]}`
 🔖 **Name** : `{plg.name}`
 📝 **Doc** : `{plg.doc}`
@@ -333,6 +346,13 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
         buttons = [tmp_btns] + buttons
         return text, buttons
 
+
+    @ubot.on_callback_query(filters=Filters.regex(pattern=r"^prvtmsg$"))
+    @check_users
+    async def prvt_msg(_, c_q: CallbackQuery):
+        prvt_msg = PRVT_MSG["msg"]
+        await c_q.answer(prvt_msg, show_alert=True)
+
     @ubot.on_inline_query()
     async def inline_answer(_, inline_query: InlineQuery):
         results = [
@@ -374,4 +394,26 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
                     reply_markup=InlineKeyboardMarkup(main_menu_buttons())
                 )
             )
+            if '-' in inline_query.query:
+                username, msg = inline_query.query.split('-', maxsplit=1)
+                PRVT_MSG.clear()
+                prvte_msg = [[InlineKeyboardButton("Show Message 🔐", callback_data="prvtmsg")]]
+                try:
+                    user = await userge.get_users(username.strip())
+                except Exception:
+                    return
+
+                PRVT_MSG['_id'] = user.id
+                PRVT_MSG['msg'] = msg.strip()
+                msg_c = f"🔒 A private message to {user.username}, Only he/she can open it."
+                results.append(
+                    InlineQueryResultArticle(
+                        id=uuid4(),
+                        title=f"A Private Msg to {user.first_name}",
+                        input_message_content=InputTextMessageContent(msg_c),
+                        description="Only he/she can open it",
+                        thumb_url="https://imgur.com/download/Inyeb1S",
+                        reply_markup=InlineKeyboardMarkup(prvte_msg)
+                    )
+                )
         await inline_query.answer(results=results, cache_time=1)
