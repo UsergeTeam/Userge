@@ -157,10 +157,10 @@ async def _dyno_saver_worker() -> None:
                         prog = round(current_idle_time * 100 / MAX_IDLE_TIME, 2)
                         mins = int(MAX_IDLE_TIME / 60)
                         if prog >= 75 and not warned:
-                            rem = int((100 - prog) * MAX_IDLE_TIME)
+                            rem = int((100 - prog) * MAX_IDLE_TIME / 100)
                             await CHANNEL.log(
                                 f"#WARNING\n\ndyno kill worker `{prog}%` completed !"
-                                f"`{rem}`s remaining !")
+                                f"\n`{rem}`s remaining !")
                             warned = True
                         LOG.info(f"< dyno kill worker ... ({prog}%)({mins}) >")
                     await asyncio.sleep(1)
