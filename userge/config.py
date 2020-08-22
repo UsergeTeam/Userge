@@ -77,6 +77,7 @@ class Config:
     ALLOWED_COMMANDS: Set[str] = set()
     ANTISPAM_SENTRY = False
     HEROKU_APP = None
+    STATUS = None
 
 
 if Config.HEROKU_API_KEY:

@@ -10,6 +10,7 @@
 
 __all__ = ['RawClient']
 
+import time
 from typing import Optional
 
 import nest_asyncio
@@ -21,6 +22,7 @@ from .. import types, client  # pylint: disable=unused-import
 class RawClient(Client):
     """ userge raw client """
     DUAL_MODE = False
+    LAST_OUTGOING_TIME = time.time()
 
     def __init__(self, bot: Optional['client._UsergeBot'] = None, **kwargs) -> None:
         self._bot = bot
