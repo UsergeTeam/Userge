@@ -103,18 +103,6 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
                     show_alert=True)
         return wrapper
 
-    def check_users(func):
-        async def prvt_wrapper(_, c_q: CallbackQuery):
-            if c_q.from_user.id == PRVT_MSG['_id'] or c_q.from_user.id == Config.OWNER_ID:
-                try:
-                    await func(c_q)
-                except Exception:
-                    pass
-            else:
-                await c_q.answer(
-                    "Sorry, you can't see this Private Msg... 😔", show_alert=True)
-        return prvt_wrapper
-
     @ubot.on_callback_query(filters=Filters.regex(pattern=r"\((.+)\)(next|prev)\((\d+)\)"))
     @check_owner
     async def callback_next_prev(callback_query: CallbackQuery):
@@ -218,6 +206,15 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
             text, buttons = plugin_data(cur_pos)
         await callback_query.edit_message_text(
             text, reply_markup=InlineKeyboardMarkup(buttons))
+
+    @ubot.on_callback_query(filters=Filters.regex(pattern=r"^prvtmsg$"))
+    async def prvt_msg(_, c_q: CallbackQuery):
+        if c_q.from_user.id == PRVT_MSG['_id'] or c_q.from_user.id == Config.OWNER_ID:
+            await c_q.answer(PRVT_MSG['msg'], show_alert=True)
+        else:
+            user = PRVT_MSG['name']
+            await c_q.answer(
+                f"Only {user} can see this Private Msg... 😔", show_alert=True)
 
     def is_filter(name: str) -> bool:
         split_ = name.split('.')
@@ -346,12 +343,6 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
         buttons = [tmp_btns] + buttons
         return text, buttons
 
-    @ubot.on_callback_query(filters=Filters.regex(pattern=r"^prvtmsg$"))
-    @check_users
-    async def prvt_msg(_, c_q: CallbackQuery):
-        prvte_msg = PRVT_MSG["msg"]
-        await c_q.answer(prvte_msg, show_alert=True)
-
     @ubot.on_inline_query()
     async def inline_answer(_, inline_query: InlineQuery):
         results = [
@@ -398,13 +389,14 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
                 PRVT_MSG.clear()
                 prvte_msg = [[InlineKeyboardButton("Show Message 🔐", callback_data="prvtmsg")]]
                 try:
-                    user = await userge.get_users(username.strip())
+                    user = await userge.get_user_dict(username.strip())
                 except Exception:
                     return
 
-                PRVT_MSG['_id'] = user.id
+                PRVT_MSG['_id'] = user['id']
+                PRVT_MSG['name'] = user['mention']
                 PRVT_MSG['msg'] = msg.strip()
-                msg_c = f"🔒 A private message to {user.username}, Only he/she can open it."
+                msg_c = f"🔒 A private message to {user['mention']}, Only he/she can open it."
                 results.append(
                     InlineQueryResultArticle(
                         id=uuid4(),
