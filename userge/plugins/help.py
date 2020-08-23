@@ -394,9 +394,9 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
                     return
 
                 PRVT_MSG['_id'] = user['id']
-                PRVT_MSG['name'] = user['mention']
+                PRVT_MSG['name'] = user['flname']
                 PRVT_MSG['msg'] = msg.strip()
-                msg_c = f"🔒 A private message to {user['mention']}, Only he/she can open it."
+                msg_c = f"🔒 A private message to {'@' + user['mention']}, Only he/she can open it."
                 results.append(
                     InlineQueryResultArticle(
                         id=uuid4(),
