@@ -400,7 +400,7 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
                 results.append(
                     InlineQueryResultArticle(
                         id=uuid4(),
-                        title=f"A Private Msg to {user.first_name}",
+                        title=f"A Private Msg to {user['fname']}",
                         input_message_content=InputTextMessageContent(msg_c),
                         description="Only he/she can open it",
                         thumb_url="https://imgur.com/download/Inyeb1S",
