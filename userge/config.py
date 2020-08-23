@@ -64,6 +64,7 @@ class Config:
     HEROKU_GIT_URL = os.environ.get("HEROKU_GIT_URL", None)
     G_DRIVE_IS_TD = os.environ.get("G_DRIVE_IS_TD") == "true"
     LOAD_UNOFFICIAL_PLUGINS = os.environ.get("LOAD_UNOFFICIAL_PLUGINS") == "true"
+    THUMB_PATH = DOWN_PATH + "thumb_image.jpg"
     TMP_PATH = "userge/plugins/temp/"
     MAX_MESSAGE_LENGTH = 4096
     MSG_DELETE_TIMEOUT = 120

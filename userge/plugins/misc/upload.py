@@ -32,7 +32,6 @@ LOGGER = userge.getLogger(__name__)
 CHANNEL = userge.getCLogger(__name__)
 
 LOGO_PATH = 'resources/userge.png'
-THUMB_PATH = Config.DOWN_PATH + "thumb_image.jpg"
 
 
 @userge.on_cmd("rename", about={
@@ -276,7 +275,7 @@ async def audio_upload(message: Message, path, del_path: bool = False, extra: st
     file_size = humanbytes(os.stat(strpath).st_size)
     try:
         album_art = stagger.read_tag(strpath)
-        if (album_art.picture and not os.path.lexists(THUMB_PATH)):
+        if (album_art.picture and not os.path.lexists(Config.THUMB_PATH)):
             bytes_pic_data = album_art[stagger.id3.APIC][0].data
             bytes_io = io.BytesIO(bytes_pic_data)
             image_file = Image.open(bytes_io)
@@ -350,8 +349,8 @@ async def photo_upload(message: Message, path, del_path: bool = False, extra: st
 
 
 async def get_thumb(path: str = ''):
-    if os.path.exists(THUMB_PATH):
-        return THUMB_PATH
+    if os.path.exists(Config.THUMB_PATH):
+        return Config.THUMB_PATH
     if path:
         metadata = extractMetadata(createParser(path))
         if metadata and metadata.has("duration"):
@@ -364,7 +363,7 @@ async def get_thumb(path: str = ''):
 
 async def remove_thumb(thumb: str) -> None:
     if (thumb and os.path.exists(thumb)
-            and thumb != LOGO_PATH and thumb != THUMB_PATH):
+            and thumb != LOGO_PATH and thumb != Config.THUMB_PATH):
         os.remove(thumb)
 
 

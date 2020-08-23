@@ -465,6 +465,7 @@ class _GDrive:
                 new_id = self._copy_dir(file_['id'], dir_id)
             else:
                 self._copy_file(file_['id'], parent_id)
+                time.sleep(0.5)  # due to user rate limits
                 new_id = parent_id
         return new_id
 
