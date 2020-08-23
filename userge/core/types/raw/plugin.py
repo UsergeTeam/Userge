@@ -116,50 +116,33 @@ class Plugin:
         """ enable all commands in the plugin """
         if self.is_enabled:
             return []
-        enabled: List[str] = []
-        for flt in self.commands + self.filters:
-            tmp = await flt.enable()
-            if tmp:
-                enabled.append(tmp)
-        if enabled:
-            _LOG.info(_LOG_STR, f"enabled {self}")
-        return enabled
+        return await _do_it(self, 'enable')
 
     async def disable(self) -> List[str]:
         """ disable all commands in the plugin """
         if not self.is_enabled:
             return []
-        disabled: List[str] = []
-        for flt in self.commands + self.filters:
-            tmp = await flt.disable()
-            if tmp:
-                disabled.append(tmp)
-        if disabled:
-            _LOG.info(_LOG_STR, f"disabled {self}")
-        return disabled
+        return await _do_it(self, 'disable')
 
     async def load(self) -> List[str]:
         """ load all commands in the plugin """
         if self.is_loaded:
             return []
-        loaded: List[str] = []
-        for flt in self.commands + self.filters:
-            tmp = await flt.load()
-            if tmp:
-                loaded.append(tmp)
-        if loaded:
-            _LOG.info(_LOG_STR, f"loaded {self}")
-        return loaded
+        return await _do_it(self, 'load')
 
     async def unload(self) -> List[str]:
         """ unload all commands in the plugin """
         if not self.is_loaded:
             return []
-        unloaded: List[str] = []
-        for flt in self.commands + self.filters:
-            tmp = await flt.unload()
-            if tmp:
-                unloaded.append(tmp)
-        if unloaded:
-            _LOG.info(_LOG_STR, f"unloaded {self}")
-        return unloaded
+        return await _do_it(self, 'unload')
+
+
+async def _do_it(plg: Plugin, work_type: str) -> List[str]:
+    done: List[str] = []
+    for flt in plg.commands + plg.filters:
+        tmp = await getattr(flt, work_type)()
+        if tmp:
+            done.append(tmp)
+    if done:
+        _LOG.info(_LOG_STR, f"{work_type.rstrip('e')}ed {plg}")
+    return done
