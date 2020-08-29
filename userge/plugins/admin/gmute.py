@@ -28,19 +28,13 @@ LOG = userge.getLogger(__name__)
 async def gmute_user(msg: Message):
     """ Mute a user globally """
     await msg.edit("`Globally Muting this User...`")
-    if msg.reply_to_message:
-        user_id = msg.reply_to_message.from_user.id
-        reason = msg.input_str
-    else:
-        args = msg.input_str.split(maxsplit=1)
-        if len(args) == 2:
-            user_id, reason = args
-        else:
-            await msg.edit(
-                "`no valid user_id or message specified,`"
-                "`don't do .help gmute for more info. "
-                "Coz no one's gonna help ya`(｡ŏ_ŏ) ⚠")
-            return
+    user_id, reason = msg.extract_user_and_reason
+    if not user_id:
+        await msg.edit(
+            "`no valid user_id or message specified,`"
+            "`don't do .help gmute for more info. "
+            "Coz no one's gonna help ya`(｡ŏ_ŏ) ⚠")
+        return
     get_mem = await msg.client.get_user_dict(user_id)
     firstname = get_mem['fname']
     if not reason:
@@ -103,10 +97,7 @@ async def gmute_user(msg: Message):
 async def ungmute_user(msg: Message):
     """ unmute a user globally """
     await msg.edit("`UnGMuting this User...`")
-    if msg.reply_to_message:
-        user_id = msg.reply_to_message.from_user.id
-    else:
-        user_id = msg.input_str
+    user_id, _ = msg.extract_user_and_reason
     if not user_id:
         await msg.err("user-id not found")
         return

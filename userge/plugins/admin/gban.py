@@ -57,19 +57,13 @@ async def antispam_(message: Message):
 async def gban_user(message: Message):
     """ ban a user globally """
     await message.edit("`GBanning...`")
-    if message.reply_to_message:
-        user_id = message.reply_to_message.from_user.id
-        reason = message.input_str
-    else:
-        args = message.input_str.split(maxsplit=1)
-        if len(args) == 2:
-            user_id, reason = args
-        else:
-            await message.edit(
-                "`no valid user_id or message specified,`"
-                "`don't do .help gban for more info. "
-                "Coz no one's gonna help ya`(｡ŏ_ŏ) ⚠", del_in=0)
-            return
+    user_id, reason = message.extract_user_and_reason
+    if not user_id:
+        await message.edit(
+            "`no valid user_id or message specified,`"
+            "`don't do .help gban for more info. "
+            "Coz no one's gonna help ya`(｡ŏ_ŏ) ⚠", del_in=0)
+        return
     get_mem = await message.client.get_user_dict(user_id)
     firstname = get_mem['fname']
     if not reason:
@@ -131,10 +125,7 @@ async def gban_user(message: Message):
 async def ungban_user(message: Message):
     """ unban a user globally """
     await message.edit("`UnGBanning...`")
-    if message.reply_to_message:
-        user_id = message.reply_to_message.from_user.id
-    else:
-        user_id = message.input_str
+    user_id, _ = message.extract_user_and_reason
     if not user_id:
         await message.err("user-id not found")
         return
@@ -189,10 +180,7 @@ async def list_gbanned(message: Message):
     allow_channels=False, allow_bots=False)
 async def whitelist(message: Message):
     """ add user to whitelist """
-    if message.reply_to_message:
-        user_id = message.reply_to_message.from_user.id
-    else:
-        user_id = message.input_str
+    user_id, _ = message.extract_user_and_reason
     if not user_id:
         await message.err("user-id not found")
         return
@@ -227,10 +215,7 @@ async def whitelist(message: Message):
     allow_channels=False, allow_bots=False)
 async def rmwhitelist(message: Message):
     """ remove a user from whitelist """
-    if message.reply_to_message:
-        user_id = message.reply_to_message.from_user.id
-    else:
-        user_id = message.input_str
+    user_id, _ = message.extract_user_and_reason
     if not user_id:
         await message.err("user-id not found")
         return

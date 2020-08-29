@@ -6,6 +6,7 @@
 #
 # All rights reserved.
 
+from pyrogram.errors import ChatSendMediaForbidden
 from pyrogram.errors.exceptions import FileIdInvalid, FileReferenceEmpty
 from pyrogram.errors.exceptions.bad_request_400 import BadRequest, ChannelInvalid, MediaEmpty
 
@@ -56,7 +57,7 @@ async def _send_alive(message: Message, text: str) -> None:
                                             animation=LOGO_ID,
                                             file_ref=LOGO_REF,
                                             caption=text)
-    except MediaEmpty:
+    except (MediaEmpty, ChatSendMediaForbidden):
         await message.client.send_message(chat_id=message.chat.id,
                                           text=text,
                                           disable_web_page_preview=True)

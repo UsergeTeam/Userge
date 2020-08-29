@@ -58,7 +58,8 @@ async def who_is(message: Message):
         message_out_str += "<b>🔗 Permanent Link To Profile:</b> "
         message_out_str += f"<a href='tg://user?id={from_user.id}'>{from_user.first_name}</a>"
 
-        if from_user.photo:
+        s_perm = message.chat.permissions.can_send_media_messages
+        if from_user.photo and s_perm:
             local_user_photo = await message.client.download_media(
                 message=from_user.photo.big_file_id)
             await message.client.send_photo(chat_id=message.chat.id,
@@ -69,5 +70,8 @@ async def who_is(message: Message):
             os.remove(local_user_photo)
             await message.delete()
         else:
-            message_out_str = "<b>📷 NO DP Found 📷</b>\n\n" + message_out_str
+            cuz = "NO DP Found"
+            if not s_perm:
+                cuz = "Chat Send Media Forbidden"
+            message_out_str = "<b>📷 " + cuz + " 📷</b>\n\n" + message_out_str
             await message.edit(message_out_str)
