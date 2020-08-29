@@ -84,6 +84,8 @@ class Message(RawMessage):
         input_ = self.input_raw
         if not input_ and self.reply_to_message:
             input_ = (self.reply_to_message.text.html if self.reply_to_message.text else '').strip()
+            if not input_ and self.reply_to_message.caption:
+                input_ = (self.reply_to_message.caption.html or '').strip()
         return input_
 
     @property
@@ -92,6 +94,8 @@ class Message(RawMessage):
         input_ = self.input_str
         if not input_ and self.reply_to_message:
             input_ = (self.reply_to_message.text or '').strip()
+            if not input_ and self.reply_to_message.caption:
+                input_ = self.reply_to_message.caption or '').strip()
         return input_
 
     @property
