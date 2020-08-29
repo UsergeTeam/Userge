@@ -19,40 +19,16 @@ LOGO_ID, LOGO_REF = None, None
     'header': "This command is just for fun"}, allow_channels=False)
 async def alive(message: Message):
     await message.delete()
-    try:
-        await sendit(message.chat.id)
-    except (FileIdInvalid, FileReferenceEmpty, BadRequest):
-        await refresh_id()
-        await sendit(message.chat.id)
-
-
-def _parse_arg(arg: bool) -> str:
-    return "✓" if arg else "X"
-
-
-async def refresh_id():
-    global LOGO_ID, LOGO_REF  # pylint: disable=global-statement
-    gif = (await userge.get_messages('UserGeOt', 511623)).animation
-    LOGO_ID = gif.file_id
-    LOGO_REF = gif.file_ref
-
-
-async def sendit(message):
-    if not LOGO_ID:
-        try:
-            await refresh_id()
-        except ChannelInvalid:
-            pass
     output = f"""
-**⌚️ Uptime** : `{userge.uptime}`
-**💥 Version** : `{get_version()}`
+**⌚ uptime** : `{userge.uptime}`
+**💥 version** : `{get_version()}`
 
-• **Sudo**: `{_parse_arg(Config.SUDO_ENABLED)}`
-• **Anti-Spam**: `{_parse_arg(Config.ANTISPAM_SENTRY)}`
-• **Dual-Mode**: `{_parse_arg(RawClient.DUAL_MODE)}`
+• **sudo**: `{_parse_arg(Config.SUDO_ENABLED)}`
+• **anti-spam**: `{_parse_arg(Config.ANTISPAM_SENTRY)}`
+• **dual-mode**: `{_parse_arg(RawClient.DUAL_MODE)}`
 """
     if Config.HEROKU_APP:
-        output += f"• **Dyno-Saver**: `{_parse_arg(Config.RUN_DYNO_SAVER)}`"
+        output += f"• **dyno-saver**: `{_parse_arg(Config.RUN_DYNO_SAVER)}`"
     output += f"""
 • **unofficial**: `{_parse_arg(Config.LOAD_UNOFFICIAL_PLUGINS)}`
 
@@ -62,7 +38,37 @@ async def sendit(message):
 **{versions.__license__}** | **{versions.__copyright__}** | **[Repo]({Config.UPSTREAM_REPO})**
 """
     try:
-        await message.reply_animation(
-            LOGO_ID, file_ref=LOGO_REF, caption=output)
+        await _send_alive(message, output)
+    except (FileIdInvalid, FileReferenceEmpty, BadRequest):
+        await _refresh_id()
+        await _send_alive(message, output)
+
+
+def _parse_arg(arg: bool) -> str:
+    return "enabled" if arg else "disabled"
+
+
+async def _send_alive(message: Message, text: str) -> None:
+    if not (LOGO_ID and LOGO_REF):
+        await _refresh_id()
+    try:
+        await message.client.send_animation(chat_id=message.chat.id,
+                                            animation=LOGO_ID,
+                                            file_ref=LOGO_REF,
+                                            caption=text)
     except MediaEmpty:
-        pass
+        await message.client.send_message(chat_id=message.chat.id,
+                                          text=text,
+                                          disable_web_page_preview=True)
+
+
+async def _refresh_id():
+    global LOGO_ID, LOGO_REF  # pylint: disable=global-statement
+    try:
+        gif = (await userge.get_messages('theUserge', 31)).animation
+    except ChannelInvalid:
+        LOGO_ID = None
+        LOGO_REF = None
+    else:
+        LOGO_ID = gif.file_id
+        LOGO_REF = gif.file_ref
