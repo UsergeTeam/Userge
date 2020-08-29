@@ -10,7 +10,7 @@
 
 __all__ = ['OnFilters']
 
-from pyrogram.client.filters.filter import Filter as RawFilter
+from pyrogram.filters import Filter as RawFilter
 
 from ... import types
 from . import RawDecorator
@@ -38,7 +38,7 @@ class OnFilters(RawDecorator):  # pylint: disable=missing-class-docstring
         """\nDecorator for handling filters
 
         Parameters:
-            filters (:obj:`~pyrogram.Filters`):
+            filters (:obj:`~pyrogram.filters`):
                 Pass one or more filters to allow only a subset of
                 messages to be passed in your function.
 

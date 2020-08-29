@@ -17,7 +17,7 @@ from spamwatch.types import Ban
 from pyrogram.errors.exceptions.bad_request_400 import (
     ChatAdminRequired, UserAdminInvalid)
 
-from userge import userge, Message, Config, get_collection, Filters, pool
+from userge import userge, Message, Config, get_collection, filters, pool
 
 SAVED_SETTINGS = get_collection("CONFIGS")
 GBAN_USER_BASE = get_collection("GBAN_USER")
@@ -272,7 +272,7 @@ async def list_white(message: Message):
         f"**--Whitelisted Users List--**\n\n{msg}" if msg else "`whitelist empty!`")
 
 
-@userge.on_filters(Filters.group & Filters.new_chat_members, group=1, check_restrict_perm=True)
+@userge.on_filters(filters.group & filters.new_chat_members, group=1, check_restrict_perm=True)
 async def gban_at_entry(message: Message):
     """ handle gbans """
     chat_id = message.chat.id

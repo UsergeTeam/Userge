@@ -14,7 +14,7 @@ import re
 import asyncio
 from typing import List, Dict, Union, Optional, Sequence
 
-from pyrogram import InlineKeyboardMarkup, Message as RawMessage
+from pyrogram.types import InlineKeyboardMarkup, Message as RawMessage
 from pyrogram.errors.exceptions import MessageAuthorRequired, MessageTooLong
 from pyrogram.errors.exceptions.bad_request_400 import MessageNotModified, MessageIdInvalid
 from pyrogram.errors.exceptions.forbidden_403 import MessageDeleteForbidden

@@ -16,7 +16,7 @@ from os.path import basename
 from typing import Tuple, List, Optional
 
 from html_telegraph_poster import TelegraphPoster
-from pyrogram import InlineKeyboardButton, InlineKeyboardMarkup
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 import userge
 

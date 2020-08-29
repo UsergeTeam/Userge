@@ -792,7 +792,7 @@ class Worker(_GDrive):
                         speed,
                         estimated_total_time)
                     count += 1
-                    if count >= 5:
+                    if count >= Config.EDIT_SLEEP_TIMEOUT:
                         count = 0
                         await self._message.try_to_edit(
                             progress_str, disable_web_page_preview=True)
@@ -817,7 +817,7 @@ class Worker(_GDrive):
             count += 1
             if self._message.process_is_canceled:
                 self._cancel()
-            if self._progress is not None and count >= 5:
+            if self._progress is not None and count >= Config.EDIT_SLEEP_TIMEOUT:
                 count = 0
                 await self._message.try_to_edit(self._progress)
             await asyncio.sleep(1)
@@ -847,7 +847,7 @@ class Worker(_GDrive):
             count += 1
             if self._message.process_is_canceled:
                 self._cancel()
-            if self._progress is not None and count >= 5:
+            if self._progress is not None and count >= Config.EDIT_SLEEP_TIMEOUT:
                 count = 0
                 await self._message.try_to_edit(self._progress)
             await asyncio.sleep(1)
@@ -878,7 +878,7 @@ class Worker(_GDrive):
             count += 1
             if self._message.process_is_canceled:
                 self._cancel()
-            if self._progress is not None and count >= 5:
+            if self._progress is not None and count >= Config.EDIT_SLEEP_TIMEOUT:
                 count = 0
                 await self._message.try_to_edit(self._progress)
             await asyncio.sleep(1)

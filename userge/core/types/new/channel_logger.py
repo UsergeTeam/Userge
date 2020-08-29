@@ -13,7 +13,7 @@ __all__ = ['ChannelLogger']
 import asyncio
 from typing import Optional, Union
 
-from pyrogram import Message as RawMessage
+from pyrogram.types import Message as RawMessage
 
 from userge import logging, Config
 from userge.utils import SafeDict, get_file_id_and_ref, parse_buttons

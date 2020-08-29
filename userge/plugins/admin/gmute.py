@@ -10,10 +10,10 @@
 
 import asyncio
 
-from pyrogram import ChatPermissions
+from pyrogram.types import ChatPermissions
 from pyrogram.errors.exceptions.bad_request_400 import ChatAdminRequired, UserAdminInvalid
 
-from userge import userge, Config, Message, get_collection, Filters
+from userge import userge, Config, Message, get_collection, filters
 
 GMUTE_USER_BASE = get_collection("GMUTE_USER")
 CHANNEL = userge.getCLogger(__name__)
@@ -167,7 +167,7 @@ async def list_gmuted(msg: Message):
         f"**--Globally Muted Users List--**\n\n{users}" if users else "`Gmute List is Empty`")
 
 
-@userge.on_filters(Filters.group & Filters.new_chat_members, group=1, check_restrict_perm=True)
+@userge.on_filters(filters.group & filters.new_chat_members, group=1, check_restrict_perm=True)
 async def gmute_at_entry(msg: Message):
     """ handle gmute """
     chat_id = msg.chat.id

@@ -9,7 +9,9 @@
 # All rights reserved.
 
 import os
-from pyrogram import ChatPermissions
+
+from pyrogram.types import ChatPermissions
+
 from userge import userge, Message
 
 CHANNEL = userge.getCLogger(__name__)

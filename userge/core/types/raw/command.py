@@ -14,14 +14,11 @@ import re
 
 from typing import Union, Dict, List
 
-from pyrogram import Filters
+from pyrogram import filters
 
-from userge import Config, logging
+from userge import Config
 from .filter import Filter
 from ... import client as _client  # pylint: disable=unused-import
-
-_LOG = logging.getLogger(__name__)
-_LOG_STR = "<<<!  [[[[[  %s  ]]]]]  !>>>"
 
 
 class Command(Filter):
@@ -53,16 +50,16 @@ class Command(Filter):
             cname = trigger + command
             cname = name or cname
             pattern += r"(?:\s([\S\s]+))?$"
-        filters_ = Filters.regex(pattern=pattern)
+        filters_ = filters.regex(pattern=pattern)
         if filter_me:
-            outgoing_flt = Filters.create(
-                lambda _, m:
+            outgoing_flt = filters.create(
+                lambda _, __, m:
                 not (m.from_user and m.from_user.is_bot)
                 and (m.outgoing or (m.from_user and m.from_user.is_self))
                 and not (m.chat and m.chat.type == "channel" and m.edit_date)
                 and (m.text and m.text.startswith(trigger) if trigger else True))
-            incoming_flt = Filters.create(
-                lambda _, m:
+            incoming_flt = filters.create(
+                lambda _, __, m:
                 not m.outgoing
                 and m.from_user and m.text
                 and ((m.from_user.id == Config.OWNER_ID)

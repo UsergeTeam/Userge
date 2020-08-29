@@ -17,10 +17,9 @@ from traceback import format_exc
 from functools import partial
 from typing import List, Dict, Union, Any, Callable, Optional
 
-from pyrogram import (
-    Message as RawMessage, Filters,
-    StopPropagation, ContinuePropagation)
-from pyrogram.client.types import ChatMember
+from pyrogram import StopPropagation, ContinuePropagation
+from pyrogram.filters import Filter as RawFilter
+from pyrogram.types import Message as RawMessage, ChatMember
 from pyrogram.errors.exceptions.bad_request_400 import ChatAdminRequired, PeerIdInvalid
 
 from userge import logging, Config
@@ -213,7 +212,7 @@ class RawDecorator(RawClient):
         self._tasks: List[Callable[[Any], Any]] = []
         super().__init__(**kwargs)
 
-    def on_filters(self, filters: Filters, group: int = 0,
+    def on_filters(self, filters: RawFilter, group: int = 0,
                    **kwargs: Union[bool]) -> 'RawDecorator._PYRORETTYPE':
         """ abstract on filter method """
 

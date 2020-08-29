@@ -485,7 +485,7 @@ async def split_(message: Message) -> None:
         if message.process_is_canceled:
             s_obj.cancel()
         count += 1
-        if count >= 5:
+        if count >= Config.EDIT_SLEEP_TIMEOUT:
             count = 0
             await message.try_to_edit(tmp.format(s_obj.progress,
                                                  s_obj.percentage,
@@ -544,7 +544,7 @@ async def combine_(message: Message) -> None:
         if message.process_is_canceled:
             c_obj.cancel()
         count += 1
-        if count >= 5:
+        if count >= Config.EDIT_SLEEP_TIMEOUT:
             count = 0
             await message.try_to_edit(tmp.format(c_obj.progress,
                                                  c_obj.percentage,
@@ -606,7 +606,7 @@ async def _pack_helper(message: Message, tar: bool = False) -> None:
         if message.process_is_canceled:
             p_obj.cancel()
         count += 1
-        if count >= 5:
+        if count >= Config.EDIT_SLEEP_TIMEOUT:
             count = 0
             await message.try_to_edit(tmp.format(p_obj.progress,
                                                  p_obj.percentage,
@@ -656,7 +656,7 @@ async def unpack_(message: Message) -> None:
         if message.process_is_canceled:
             p_obj.cancel()
         count += 1
-        if count >= 5:
+        if count >= Config.EDIT_SLEEP_TIMEOUT:
             count = 0
             await message.try_to_edit(tmp.format(p_obj.progress,
                                                  p_obj.percentage,

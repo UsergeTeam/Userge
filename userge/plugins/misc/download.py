@@ -88,7 +88,7 @@ async def down_load_media(message: Message):
                     speed,
                     estimated_total_time)
                 count += 1
-                if count >= 5:
+                if count >= Config.EDIT_SLEEP_TIMEOUT:
                     count = 0
                     await message.try_to_edit(progress_str, disable_web_page_preview=True)
                 await asyncio.sleep(1)

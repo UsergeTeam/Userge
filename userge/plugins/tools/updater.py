@@ -73,7 +73,7 @@ async def check_update(message: Message):
             await message.edit(f'`New update found for [{branch}], Now pulling...`')
             await asyncio.sleep(1)
             repo.git.reset('--hard', 'FETCH_HEAD')
-            await CHANNEL.log(f"**UPDATED Userge from [{branch}]:\n\n📄 CHANGELOG 📄**\n\n{out}")
+            await CHANNEL.log(f"**PULLED update from [{branch}]:\n\n📄 CHANGELOG 📄**\n\n{out}")
         elif not push_to_heroku:
             changelog_str = f'**New UPDATE available for [{branch}]:\n\n📄 CHANGELOG 📄**\n\n'
             await message.edit_or_send_as_file(changelog_str + out, disable_web_page_preview=True)
@@ -92,8 +92,8 @@ async def check_update(message: Message):
         return
     await message.edit(
         f'`Now pushing updates from [{branch}] to heroku...\n'
-        'this will take upto 3 min`\n\n'
-        f'* **Restart** me after about 3 min using `{Config.CMD_TRIGGER}restart -h`\n\n'
+        'this will take upto 5 min`\n\n'
+        f'* **Restart** after 5 min using `{Config.CMD_TRIGGER}restart -h`\n\n'
         '* After restarted successfully, check updates again :)')
     if "heroku" in repo.remotes:
         remote = repo.remote("heroku")

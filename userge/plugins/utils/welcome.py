@@ -8,12 +8,12 @@
 #
 # All rights reserved.
 
-from userge import userge, Filters, Message, Config, get_collection
+from userge import userge, filters, Message, Config, get_collection
 
 WELCOME_COLLECTION = get_collection("welcome")
 LEFT_COLLECTION = get_collection("left")
-WELCOME_CHATS = Filters.chat([])
-LEFT_CHATS = Filters.chat([])
+WELCOME_CHATS = filters.chat([])
+LEFT_CHATS = filters.chat([])
 CHANNEL = userge.getCLogger(__name__)
 
 

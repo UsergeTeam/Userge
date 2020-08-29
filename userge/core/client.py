@@ -10,18 +10,15 @@
 
 __all__ = ['Userge']
 
-import os
-import sys
 import time
 import asyncio
 import importlib
 from types import ModuleType
 from typing import List, Awaitable, Any, Optional, Union
 
-import psutil
+from pyrogram import idle
 
-from userge import logging, Config
-from userge import logbot
+from userge import logging, Config, logbot
 from userge.utils import time_formatter
 from userge.utils.exceptions import UsergeBotNotFound
 from userge.plugins import get_all_plugins
@@ -107,22 +104,6 @@ class _AbstractUserge(Methods, RawClient):
         await self.finalize_load()
         return len(reloaded)
 
-    async def restart(self, update_req: bool = False) -> None:  # pylint: disable=arguments-differ
-        """ Restart the AbstractUserge """
-        _LOG.info(_LOG_STR, "Restarting Userge")
-        await self.stop()
-        try:
-            c_p = psutil.Process(os.getpid())
-            for handler in c_p.open_files() + c_p.connections():
-                os.close(handler.fd)
-        except Exception as c_e:  # pylint: disable=broad-except
-            _LOG.error(_LOG_STR, c_e)
-        if update_req:
-            _LOG.info(_LOG_STR, "Installing Requirements...")
-            os.system("pip3 install -U pip && pip3 install -r requirements.txt")  # nosec
-        os.execl(sys.executable, sys.executable, '-m', 'userge')  # nosec
-        sys.exit()
-
 
 class _UsergeBot(_AbstractUserge):
     """ UsergeBot, the bot """
@@ -186,7 +167,6 @@ class Userge(_AbstractUserge):
         loop = asyncio.get_event_loop()
         run = loop.run_until_complete
         run(self.start())
-        loop = asyncio.get_event_loop()
         running_tasks: List[asyncio.Task] = []
         for task in self._tasks:
             running_tasks.append(loop.create_task(task()))
@@ -197,7 +177,7 @@ class Userge(_AbstractUserge):
             _LOG.info(_LOG_STR, "Idling Userge")
             logbot.edit_last_msg("Userge has Started Successfully !")
             logbot.end()
-            run(Userge.idle())
+            idle()
         _LOG.info(_LOG_STR, "Exiting Userge")
         for task in running_tasks:
             task.cancel()

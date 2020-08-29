@@ -13,7 +13,9 @@ __all__ = ['Conversation']
 import asyncio
 from typing import Union, Dict, Tuple, Optional
 
-from pyrogram import Message as RawMessage, Filters, MessageHandler
+from pyrogram import filters
+from pyrogram.types import Message as RawMessage
+from pyrogram.handlers import MessageHandler
 
 from userge import logging
 from userge.utils.exceptions import StopConversation
@@ -150,8 +152,8 @@ class Conversation:
         client.add_handler(
             MessageHandler(
                 _on_conversation,
-                Filters.create(
-                    lambda _, query: _CONV_DICT and query.chat
+                filters.create(
+                    lambda _, __, query: _CONV_DICT and query.chat
                     and query.chat.id in _CONV_DICT, 0)))
 
     async def __aenter__(self) -> 'Conversation':

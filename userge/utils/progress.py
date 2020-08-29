@@ -25,7 +25,7 @@ async def progress(current: int,
                    message: 'userge.Message',
                    ud_type: str,
                    file_name: str = '',
-                   delay: int = 5) -> None:
+                   delay: int = userge.Config.EDIT_SLEEP_TIMEOUT) -> None:
     """ progress function """
     if message.process_is_canceled:
         await message.client.stop_transmission()

@@ -12,23 +12,22 @@ import time
 import asyncio
 import shutil
 
-from pyrogram import User
+from pyrogram.types import User
 
 from userge import userge, Message, Config, get_collection
 from userge.core.ext import RawClient
 
 SAVED_SETTINGS = get_collection("CONFIGS")
 MAX_IDLE_TIME = 300
-RUN_DYNO_SAVER = False
 LOG = userge.getLogger(__name__)
 CHANNEL = userge.getCLogger(__name__)
 
 
 async def _init() -> None:
-    global MAX_IDLE_TIME, RUN_DYNO_SAVER  # pylint: disable=global-statement
+    global MAX_IDLE_TIME  # pylint: disable=global-statement
     d_s = await SAVED_SETTINGS.find_one({'_id': 'DYNO_SAVER'})
     if d_s:
-        RUN_DYNO_SAVER = bool(d_s['on'])
+        Config.RUN_DYNO_SAVER = bool(d_s['on'])
         MAX_IDLE_TIME = int(d_s['timeout'])
 
 
@@ -81,15 +80,15 @@ async def shutdown_(message: Message) -> None:
     'examples': ["{tr}die", "{tr}die -t5"]}, allow_channels=False)
 async def die_(message: Message) -> None:
     """ set offline timeout to die userge """
-    global MAX_IDLE_TIME, RUN_DYNO_SAVER  # pylint: disable=global-statement
+    global MAX_IDLE_TIME  # pylint: disable=global-statement
     if not Config.HEROKU_APP:
         await message.err("`heroku app not detected !`")
         return
     await message.edit('`processing ...`')
-    if RUN_DYNO_SAVER:
-        if isinstance(RUN_DYNO_SAVER, asyncio.Task):
-            RUN_DYNO_SAVER.cancel()
-        RUN_DYNO_SAVER = False
+    if Config.RUN_DYNO_SAVER:
+        if isinstance(Config.RUN_DYNO_SAVER, asyncio.Task):
+            Config.RUN_DYNO_SAVER.cancel()
+        Config.RUN_DYNO_SAVER = False
         SAVED_SETTINGS.update_one({'_id': 'DYNO_SAVER'},
                                   {"$set": {'on': False}}, upsert=True)
         await message.edit('auto heroku dyno off worker has been **stopped**',
@@ -104,7 +103,7 @@ async def die_(message: Message) -> None:
                               {"$set": {'on': True, 'timeout': MAX_IDLE_TIME}}, upsert=True)
     await message.edit('auto heroku dyno off worker has been **started** '
                        f'[`{time_in_min}`min]', del_in=3, log=__name__)
-    RUN_DYNO_SAVER = asyncio.get_event_loop().create_task(_dyno_saver_worker())
+    Config.RUN_DYNO_SAVER = asyncio.get_event_loop().create_task(_dyno_saver_worker())
 
 
 @userge.on_cmd("setvar", about={
@@ -207,7 +206,7 @@ async def _dyno_saver_worker() -> None:
     count = 0
     check_delay = 5
     offline_start_time = time.time()
-    while RUN_DYNO_SAVER:
+    while Config.RUN_DYNO_SAVER:
         if not count % check_delay:
             if Config.STATUS is None or Config.STATUS != "online":
                 if Config.STATUS is None:
@@ -216,7 +215,8 @@ async def _dyno_saver_worker() -> None:
                     LOG.info("< state changed to offline ! >")
                     offline_start_time = time.time()
                 warned = False
-                while RUN_DYNO_SAVER and (Config.STATUS is None or Config.STATUS != "online"):
+                while Config.RUN_DYNO_SAVER and (
+                        Config.STATUS is None or Config.STATUS != "online"):
                     if not count % check_delay:
                         if Config.STATUS is None:
                             offline_start_time = RawClient.LAST_OUTGOING_TIME
@@ -228,7 +228,8 @@ async def _dyno_saver_worker() -> None:
                                 Config.HEROKU_APP.scale_formation_process("worker", 0)
                             except Exception as h_e:  # pylint: disable=broad-except
                                 LOG.err(f"heroku app error : {h_e}")
-                                offline_start_time += 30
+                                offline_start_time += 20
+                                await asyncio.sleep(10)
                                 continue
                             LOG.info("< successfully killed heroku dyno ! >")
                             await CHANNEL.log("heroku dyno killed !")

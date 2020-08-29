@@ -12,7 +12,7 @@ import time
 import asyncio
 from random import choice, randint
 
-from userge import userge, Message, Filters, Config, get_collection
+from userge import userge, Message, filters, Config, get_collection
 from userge.utils import time_formatter
 
 CHANNEL = userge.getCLogger(__name__)
@@ -20,7 +20,7 @@ SAVED_SETTINGS = get_collection("CONFIGS")
 AFK_COLLECTION = get_collection("AFK")
 
 IS_AFK = False
-IS_AFK_FILTER = Filters.create(lambda _, __: bool(IS_AFK))
+IS_AFK_FILTER = filters.create(lambda _, __, ___: bool(IS_AFK))
 REASON = ''
 TIME = 0.0
 USERS = {}
@@ -56,9 +56,9 @@ async def active_afk(message: Message) -> None:
             {'_id': 'AFK'}, {"$set": {'on': True, 'data': REASON, 'time': TIME}}, upsert=True))
 
 
-@userge.on_filters(IS_AFK_FILTER & ~Filters.me & ~Filters.bot & ~Filters.edited & (
-    Filters.mentioned | (Filters.private & ~Filters.service & (
-        Filters.create(lambda _, __: Config.ALLOW_ALL_PMS) | Config.ALLOWED_CHATS))),
+@userge.on_filters(IS_AFK_FILTER & ~filters.me & ~filters.bot & ~filters.edited & (
+    filters.mentioned | (filters.private & ~filters.service & (
+        filters.create(lambda _, __, ___: Config.ALLOW_ALL_PMS) | Config.ALLOWED_CHATS))),
     allow_via_bot=False)
 async def handle_afk_incomming(message: Message) -> None:
     """ handle incomming messages when you afk """
@@ -109,7 +109,7 @@ async def handle_afk_incomming(message: Message) -> None:
     await asyncio.gather(*coro_list)
 
 
-@userge.on_filters(IS_AFK_FILTER & Filters.outgoing, group=-1, allow_via_bot=False)
+@userge.on_filters(IS_AFK_FILTER & filters.outgoing, group=-1, allow_via_bot=False)
 async def handle_afk_outgoing(message: Message) -> None:
     """ handle outgoing messages when you afk """
     global IS_AFK  # pylint: disable=global-statement

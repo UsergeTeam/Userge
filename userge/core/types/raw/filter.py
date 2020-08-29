@@ -13,9 +13,10 @@ __all__ = ['Filter', 'clear_db']
 import asyncio
 from typing import List, Tuple, Callable, Any, Optional, Union
 
-from pyrogram import Filters, MessageHandler
-from pyrogram.client.handlers.handler import Handler
-from pyrogram.client.filters.filter import Filter as RawFilter
+from pyrogram import filters as rawfilters
+from pyrogram.filters import Filter as RawFilter
+from pyrogram.handlers import MessageHandler
+from pyrogram.handlers.handler import Handler
 
 from userge import logging, Config
 from ... import client as _client, get_collection  # pylint: disable=unused-import
@@ -109,7 +110,7 @@ class Filter:
                  check_invite_perm: bool,
                  check_pin_perm: bool,
                  name: str = '') -> None:
-        self.filters = Filters.create(lambda _, __: self.is_enabled) & filters
+        self.filters = rawfilters.create(lambda _, __, ___: self.is_enabled) & filters
         self.name = name
         self.scope: List[str] = []
         if allow_bots:

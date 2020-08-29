@@ -25,8 +25,12 @@ async def alive(message: Message):
 **version** : `{get_version()}`
 
 • **sudo** : `{_parse_arg(Config.SUDO_ENABLED)}`
-• **antispam** : `{_parse_arg(Config.ANTISPAM_SENTRY)}`
-• **dualmode** : `{_parse_arg(RawClient.DUAL_MODE)}`
+• **anti-spam** : `{_parse_arg(Config.ANTISPAM_SENTRY)}`
+• **dual-mode** : `{_parse_arg(RawClient.DUAL_MODE)}`
+"""
+    if Config.HEROKU_APP:
+        output += f"• **dyno-saver** : `{_parse_arg(Config.RUN_DYNO_SAVER)}`"
+    output += f"""
 • **unofficial** : `{_parse_arg(Config.LOAD_UNOFFICIAL_PLUGINS)}`
 
     **__python__** : `{versions.__python_version__}`
@@ -38,7 +42,7 @@ async def alive(message: Message):
 
 
 def _parse_arg(arg: bool) -> str:
-    return "enabled" if arg else "disabled"
+    return "✅" if arg else "❎"
 
 
 async def refresh_id():

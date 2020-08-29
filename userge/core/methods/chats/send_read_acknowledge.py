@@ -12,7 +12,7 @@ __all__ = ['SendReadAcknowledge']
 
 from typing import List, Optional, Union
 
-from pyrogram.api import functions
+from pyrogram.raw import functions
 
 from ...ext import RawClient, RawMessage
 
