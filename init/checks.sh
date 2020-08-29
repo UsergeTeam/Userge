@@ -117,7 +117,7 @@ _checkBins() {
 _checkGit() {
     editLastMessage "Checking GIT ..."
     if test ! -d .git; then
-        if test -n $HEROKU_GIT_URL; then
+        if test ! -z $HEROKU_GIT_URL; then
             replyLastMessage "\tClonning Heroku Git ..."
             gitClone $HEROKU_GIT_URL tmp_git || quit "Invalid HEROKU_API_KEY or HEROKU_APP_NAME var !"
             mv tmp_git/.git .
