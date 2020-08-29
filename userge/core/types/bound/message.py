@@ -114,6 +114,42 @@ class Message(RawMessage):
             self._process_canceled = True
         return self._process_canceled
 
+    @property
+    def extract_user_and_reason(self):
+        """ Extracts User and Reason
+        [NOTE]: This method checks for reply first.
+        On Success:
+            user (```str | int | None```) and reason (```str | None```)
+        """
+        user_e = ''
+        reason = ''
+        if self.reply_to_message:
+            user_e = self.reply_to_message.from_user.id
+            reason = self.input_str
+            return user_e, reason
+        if self.input_str:
+            data = str(self.input_str).split(maxsplit=1)
+            # Grab First Word and Process it.
+            if len(data) == 2:
+                user, reason = data
+            elif len(data) == 1:
+                user = data[0]
+            if not user.isdigit():
+                # Extracting text mention entity and skipping if it's @ mention.
+                if self.entities:
+                    for mention in self.entities:
+                        # Catch first text mention
+                        if mention.type == "text_mention":
+                            user_e = mention.user.id
+                            break
+            # User @ Mention.
+            if user.startswith("@"):
+                user_e = user
+            # if user id, convert it to integer
+            if user.isdigit():
+                user_e = int(user)
+        return user_e, reason
+
     def cancel_the_process(self) -> None:
         """ Set True to the self.process_is_canceled """
         _CANCEL_LIST.append(self.message_id)
