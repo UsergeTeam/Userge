@@ -83,7 +83,7 @@ class _AbstractUserge(Methods, RawClient):
             try:
                 await self.load_plugin(name)
             except ImportError as i_e:
-                _LOG.error(_LOG_STR, i_e)
+                _LOG.error(_LOG_STR, f"[{name}] - {i_e}")
         await self.finalize_load()
         _LOG.info(_LOG_STR, f"Imported ({len(_IMPORTED)}) Plugins => "
                   + str([i.__name__ for i in _IMPORTED]))

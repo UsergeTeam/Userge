@@ -2,5 +2,4 @@ tree
 wget
 wget2
 pv
-jq
 p7zip-full
