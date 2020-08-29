@@ -132,25 +132,24 @@ async def ban_usr(message: Message):
             text="`no valid user_id or message specified,`"
             "`do .help ban for more info` ⚠", del_in=5)
         return
-    else:
-        try:
-            get_mem = await message.client.get_chat_member(chat_id, user_id)
-            await message.client.kick_chat_member(chat_id, user_id)
-            await message.edit(
-                f"#BAN\n\n"
-                f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
-                f"(`{get_mem.user.id}`)\n"
-                f"CHAT: `{message.chat.title}` (`{chat_id}`)\n"
-                f"REASON: `{reason}`", log=__name__)
-        except UsernameInvalid:
-            await message.edit("`invalid username, try again with valid info ⚠`", del_in=5)
-        except PeerIdInvalid:
-            await message.edit(
-                "`invalid username or userid, try again with valid info ⚠`", del_in=5)
-        except UserIdInvalid:
-            await message.edit("`invalid userid, try again with valid info ⚠`", del_in=5)
-        except Exception as e_f:
-            await message.edit(f"`something went wrong! 🤔`\n\n**ERROR:** `{e_f}`", del_in=5)
+    try:
+        get_mem = await message.client.get_chat_member(chat_id, user_id)
+        await message.client.kick_chat_member(chat_id, user_id)
+        await message.edit(
+            f"#BAN\n\n"
+            f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
+            f"(`{get_mem.user.id}`)\n"
+            f"CHAT: `{message.chat.title}` (`{chat_id}`)\n"
+            f"REASON: `{reason}`", log=__name__)
+    except UsernameInvalid:
+        await message.edit("`invalid username, try again with valid info ⚠`", del_in=5)
+    except PeerIdInvalid:
+        await message.edit(
+            "`invalid username or userid, try again with valid info ⚠`", del_in=5)
+    except UserIdInvalid:
+        await message.edit("`invalid userid, try again with valid info ⚠`", del_in=5)
+    except Exception as e_f:
+        await message.edit(f"`something went wrong! 🤔`\n\n**ERROR:** `{e_f}`", del_in=5)
 
 
 @userge.on_cmd("unban", about={
