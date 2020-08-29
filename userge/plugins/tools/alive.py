@@ -6,7 +6,7 @@
 #
 # All rights reserved.
 
-from pyrogram.erros import ChatSendMediaForbidden
+from pyrogram.errors import ChatSendMediaForbidden
 from pyrogram.errors.exceptions import FileIdInvalid, FileReferenceEmpty
 from pyrogram.errors.exceptions.bad_request_400 import BadRequest, ChannelInvalid, MediaEmpty
 
