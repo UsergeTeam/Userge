@@ -390,23 +390,23 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
                 )
             )
             if '-' in inline_query.query:
-                username, msg = inline_query.query.split('-', maxsplit=1)
+                _id, msg = inline_query.query.split('-', maxsplit=1)
                 if not msg:
                     return
                 if not msg.strip().endswith(':'):
                     return
                 try:
-                    user = await userge.get_user_dict(username.strip())
+                    user = await userge.get_users(_id.strip())
                 except Exception:  # pylint: disable=broad-except
                     return
-                PRVT_MSGS[inline_query.id] = (user['id'], user['flname'], msg.strip(': '))
+                PRVT_MSGS[inline_query.id] = (user.id, user.first_name, msg.strip(': '))
                 prvte_msg = [[InlineKeyboardButton(
                     "Show Message 🔐", callback_data=f"prvtmsg({inline_query.id})")]]
-                msg_c = f"🔒 A **private message** to {user['mention']}, Only he/she can open it."
+                msg_c = f"🔒 A **private message** to {user.mention}, Only he/she can open it."
                 results.append(
                     InlineQueryResultArticle(
                         id=uuid4(),
-                        title=f"A Private Msg to {user['flname']}",
+                        title=f"A Private Msg to {user.first_name}",
                         input_message_content=InputTextMessageContent(msg_c),
                         description="Only he/she can open it",
                         thumb_url="https://imgur.com/download/Inyeb1S",
