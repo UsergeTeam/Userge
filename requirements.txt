@@ -32,6 +32,7 @@ spamwatch
 speedtest-cli
 stagger
 telegraph
+testresources
 tgcrypto
 urbandict==0.5
 wget
