@@ -141,7 +141,7 @@ class Message(RawMessage):
             # if user id, convert it to integer
             if user.isdigit():
                 user_e = int(user)
-            else:
+            elif self.entities:
                 # Extracting text mention entity and skipping if it's @ mention.
                 for mention in self.entities:
                     # Catch first text mention
