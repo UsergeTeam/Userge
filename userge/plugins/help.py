@@ -402,7 +402,8 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
                 PRVT_MSGS[inline_query.id] = (user.id, user.first_name, msg.strip(': '))
                 prvte_msg = [[InlineKeyboardButton(
                     "Show Message 🔐", callback_data=f"prvtmsg({inline_query.id})")]]
-                msg_c = f"🔒 A **private message** to {user.mention}, Only he/she can open it."
+                msg_c = f"🔒 A **private message** to {'@' + user.username}, "
+                msg_c += "Only he/she can open it."
                 results.append(
                     InlineQueryResultArticle(
                         id=uuid4(),
