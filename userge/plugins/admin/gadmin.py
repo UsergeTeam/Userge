@@ -36,7 +36,7 @@ async def promote_usr(message: Message):
     custom_rank = ""
     chat_id = message.chat.id
     await message.edit("`Trying to Promote User.. Hang on!! ⏳`")
-    user_id, custom_rank = message.extract_user_and_reason
+    user_id, custom_rank = message.extract_user_and_text
     if not user_id:
         await message.edit(
             text="`no valid user_id or message specified,`"
@@ -84,7 +84,7 @@ async def demote_usr(message: Message):
     """ demote members in tg group """
     chat_id = message.chat.id
     await message.edit("`Trying to Demote User.. Hang on!! ⏳`")
-    user_id, _ = message.extract_user_and_reason
+    user_id, _ = message.extract_user_and_text
     if not user_id:
         await message.edit(
             text="`no valid user_id or message specified,`"
@@ -126,7 +126,7 @@ async def ban_usr(message: Message):
     reason = ""
     chat_id = message.chat.id
     await message.edit("`Trying to Ban User.. Hang on!! ⏳`")
-    user_id, reason = message.extract_user_and_reason
+    user_id, reason = message.extract_user_and_text
     if not user_id:
         await message.edit(
             text="`no valid user_id or message specified,`"
@@ -162,7 +162,7 @@ async def unban_usr(message: Message):
     """ unban user from tg group """
     chat_id = message.chat.id
     await message.edit("`Trying to Unban User.. Hang on!! ⏳`")
-    user_id, _ = message.extract_user_and_reason
+    user_id, _ = message.extract_user_and_text
     if not user_id:
         await message.edit(
             text="`no valid user_id or message specified,`"
@@ -197,7 +197,7 @@ async def kick_usr(message: Message):
     """ kick user from tg group """
     chat_id = message.chat.id
     await message.edit("`Trying to Kick User.. Hang on!! ⏳`")
-    user_id, _ = message.extract_user_and_reason
+    user_id, _ = message.extract_user_and_text
     if not user_id:
         await message.edit(
             text="`no valid user_id or message specified,`"
@@ -243,7 +243,7 @@ async def mute_usr(message: Message):
     hours = flags.get('-h', 0)
     days = flags.get('-d', 0)
     await message.edit("`Trying to Mute User.. Hang on!! ⏳`")
-    user_id, reason = message.extract_user_and_reason
+    user_id, reason = message.extract_user_and_text
     if not user_id:
         await message.edit(
             text="`no valid user_id or message specified,`"
@@ -314,7 +314,7 @@ async def unmute_usr(message: Message):
     """ unmute user from tg group """
     chat_id = message.chat.id
     await message.edit("`Trying to Unmute User.. Hang on!! ⏳`")
-    user_id, _ = message.extract_user_and_reason
+    user_id, _ = message.extract_user_and_text
     if not user_id:
         await message.edit(
             text="`no valid user_id or message specified,`"

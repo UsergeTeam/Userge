@@ -118,24 +118,24 @@ class Message(RawMessage):
         return self._process_canceled
 
     @property
-    def extract_user_and_reason(self) -> Tuple[Optional[Union[str, int]], Optional[str]]:
-        """ Extracts User and Reason
+    def extract_user_and_text(self) -> Tuple[Optional[Union[str, int]], Optional[str]]:
+        """ Extracts User and Text
         [NOTE]: This method checks for reply first.
         On Success:
-            user (```str | int | None```) and reason (```str | None```)
+            user (``str | int | None``) and text (``str | None``)
         """
         user_e: Optional[Union[str, int]] = None
-        reason: Optional[str] = None
+        text: Optional[str] = None
         if self.reply_to_message:
             if self.reply_to_message.from_user:
                 user_e = self.reply_to_message.from_user.id
-            reason = self.input_str
-            return user_e, reason
+            text = self.input_str
+            return user_e, text
         if self.input_str:
             data = self.input_str.split(maxsplit=1)
             # Grab First Word and Process it.
             if len(data) == 2:
-                user, reason = data
+                user, text = data
             elif len(data) == 1:
                 user = data[0]
             # if user id, convert it to integer
@@ -151,7 +151,7 @@ class Message(RawMessage):
             # User @ Mention.
             if user.startswith("@"):
                 user_e = user
-        return user_e, reason
+        return user_e, text
 
     def cancel_the_process(self) -> None:
         """ Set True to the self.process_is_canceled """

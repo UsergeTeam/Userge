@@ -57,7 +57,7 @@ async def antispam_(message: Message):
 async def gban_user(message: Message):
     """ ban a user globally """
     await message.edit("`GBanning...`")
-    user_id, reason = message.extract_user_and_reason
+    user_id, reason = message.extract_user_and_text
     if not user_id:
         await message.edit(
             "`no valid user_id or message specified,`"
@@ -125,7 +125,7 @@ async def gban_user(message: Message):
 async def ungban_user(message: Message):
     """ unban a user globally """
     await message.edit("`UnGBanning...`")
-    user_id, _ = message.extract_user_and_reason
+    user_id, _ = message.extract_user_and_text
     if not user_id:
         await message.err("user-id not found")
         return
@@ -180,7 +180,7 @@ async def list_gbanned(message: Message):
     allow_channels=False, allow_bots=False)
 async def whitelist(message: Message):
     """ add user to whitelist """
-    user_id, _ = message.extract_user_and_reason
+    user_id, _ = message.extract_user_and_text
     if not user_id:
         await message.err("user-id not found")
         return
@@ -215,7 +215,7 @@ async def whitelist(message: Message):
     allow_channels=False, allow_bots=False)
 async def rmwhitelist(message: Message):
     """ remove a user from whitelist """
-    user_id, _ = message.extract_user_and_reason
+    user_id, _ = message.extract_user_and_text
     if not user_id:
         await message.err("user-id not found")
         return

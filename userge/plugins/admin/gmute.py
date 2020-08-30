@@ -28,7 +28,7 @@ LOG = userge.getLogger(__name__)
 async def gmute_user(msg: Message):
     """ Mute a user globally """
     await msg.edit("`Globally Muting this User...`")
-    user_id, reason = msg.extract_user_and_reason
+    user_id, reason = msg.extract_user_and_text
     if not user_id:
         await msg.edit(
             "`no valid user_id or message specified,`"
@@ -97,7 +97,7 @@ async def gmute_user(msg: Message):
 async def ungmute_user(msg: Message):
     """ unmute a user globally """
     await msg.edit("`UnGMuting this User...`")
-    user_id, _ = msg.extract_user_and_reason
+    user_id, _ = msg.extract_user_and_text
     if not user_id:
         await msg.err("user-id not found")
         return
