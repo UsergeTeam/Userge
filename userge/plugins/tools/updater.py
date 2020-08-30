@@ -80,7 +80,7 @@ async def check_update(message: Message):
         await message.edit(
             '**Userge Successfully Updated!**\n'
             '`Now restarting... Wait for a while!`', del_in=3)
-        asyncio.get_event_loop().create_task(userge.restart(update_req=True))
+        asyncio.get_event_loop().create_task(userge.restart(True))
         return
     if not Config.HEROKU_GIT_URL:
         await message.err("please set heroku things...")

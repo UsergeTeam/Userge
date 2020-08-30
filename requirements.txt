@@ -15,7 +15,7 @@ html-telegraph-poster
 motor
 nest_asyncio
 oauth2client
-Pillow==6.2.2
+Pillow==7.1.0
 psutil
 pybase64
 pyrogram

@@ -8,7 +8,7 @@
 #
 # All rights reserved.
 
-__all__ = ['Config']
+__all__ = ['Config', 'get_version']
 
 import os
 from typing import Set
@@ -93,10 +93,13 @@ if Config.HEROKU_API_KEY:
     logbot.del_last_msg()
 
 
-for ref in _REPO.remote(Config.UPSTREAM_REMOTE).refs:
-    branch = str(ref).split('/')[-1]
-    if branch not in _REPO.branches:
-        _REPO.create_head(branch, ref)
+try:
+    for ref in _REPO.remote(Config.UPSTREAM_REMOTE).refs:
+        branch = str(ref).split('/')[-1]
+        if branch not in _REPO.branches:
+            _REPO.create_head(branch, ref)
+except ValueError as v_e:
+    _LOG.error(v_e)
 
 
 def get_version() -> str:
