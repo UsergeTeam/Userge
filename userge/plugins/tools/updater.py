@@ -34,16 +34,11 @@ async def check_update(message: Message):
     """ check or do updates """
     await message.edit("`Checking for updates, please wait....`")
     repo = Repo()
-    ups_rem = repo.remote(Config.UPSTREAM_REMOTE)
     try:
-        ups_rem.fetch()
+        repo.remote(Config.UPSTREAM_REMOTE).fetch()
     except GitCommandError as error:
         await message.err(error, del_in=5)
         return
-    for ref in ups_rem.refs:
-        branch = str(ref).split('/')[-1]
-        if branch not in repo.branches:
-            repo.create_head(branch, ref)
     flags = list(message.flags)
     pull_from_repo = False
     push_to_heroku = False

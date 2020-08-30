@@ -93,6 +93,12 @@ if Config.HEROKU_API_KEY:
     logbot.del_last_msg()
 
 
+for ref in _REPO.remote(Config.UPSTREAM_REMOTE).refs:
+    branch = str(ref).split('/')[-1]
+    if branch not in _REPO.branches:
+        _REPO.create_head(branch, ref)
+
+
 def get_version() -> str:
     """ get userge version """
     ver = f"{versions.__major__}.{versions.__minor__}.{versions.__micro__}"

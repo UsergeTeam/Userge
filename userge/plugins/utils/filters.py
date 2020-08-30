@@ -17,7 +17,7 @@ FILTERS_COLLECTION = get_collection("filters")
 CHANNEL = userge.getCLogger(__name__)
 
 FILTERS_DATA: Dict[int, Dict[str, int]] = {}
-FILTERS_CHATS = filters.create(lambda _, __, query: query.chat.id in FILTERS_DATA)
+FILTERS_CHATS = filters.create(lambda _, __, query: query.chat and query.chat.id in FILTERS_DATA)
 
 _SUPPORTED_TYPES = (":audio:", ":video:", ":photo:", ":document:",
                     ":sticker:", ":animation:", ":voice:", ":video_note:",
