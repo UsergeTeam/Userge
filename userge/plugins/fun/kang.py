@@ -111,6 +111,9 @@ async def kang_(message: Message):
                     pack += 1
                     packname = f"a{user.id}_by_userge_{pack}"
                     packnick = f"{custom_packnick} Vol.{pack}"
+                    if is_anim:
+                        packname += "_anim"
+                        packnick += " (Animated)"
                     await message.edit("`Switching to Pack " + str(pack) +
                                        " due to insufficient space`")
                     await conv.send_message(packname)
