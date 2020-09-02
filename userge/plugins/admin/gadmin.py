@@ -322,20 +322,7 @@ async def unmute_usr(message: Message):
         return
     try:
         get_mem = await message.client.get_chat_member(chat_id, user_id)
-        await message.client.restrict_chat_member(
-            chat_id, user_id,
-            ChatPermissions(
-                can_send_messages=message.chat.permissions.can_send_messages,
-                can_send_media_messages=message.chat.permissions.can_send_media_messages,
-                can_send_stickers=message.chat.permissions.can_send_stickers,
-                can_send_animations=message.chat.permissions.can_send_animations,
-                can_send_games=message.chat.permissions.can_send_games,
-                can_use_inline_bots=message.chat.permissions.can_use_inline_bots,
-                can_add_web_page_previews=message.chat.permissions.can_add_web_page_previews,
-                can_send_polls=message.chat.permissions.can_send_polls,
-                can_change_info=message.chat.permissions.can_change_info,
-                can_invite_users=message.chat.permissions.can_invite_users,
-                can_pin_messages=message.chat.permissions.can_pin_messages))
+        await message.client.unban_chat_member(chat_id, user_id)
         await message.edit("`🛡 Successfully Unmuted..`", del_in=5)
         await CHANNEL.log(
             f"#UNMUTE\n\n"
