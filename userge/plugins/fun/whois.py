@@ -60,7 +60,8 @@ async def who_is(message: Message):
 
         s_perm = True
         if hasattr(message.chat, 'permissions'):
-            s_perm = bool(message.chat.permissions.can_send_media_messages)
+            if message.chat.permissions is not None:
+                s_perm = bool(message.chat.permissions.can_send_media_messages)
         if from_user.photo and s_perm:
             local_user_photo = await message.client.download_media(
                 message=from_user.photo.big_file_id)
