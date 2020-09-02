@@ -10,9 +10,17 @@
 
 import os
 
-from userge import userge, Message, Config
+from userge import userge, Message, Config, get_collection
 from userge.utils import get_import_path
 from userge.plugins import ROOT
+
+SAVED_SETTINGS = get_collection("CONFIGS")
+
+
+async def _init() -> None:
+    data = await SAVED_SETTINGS.find_one({'_id': 'LOAD_UNOFFICIAL'})
+    if data:
+        Config.LOAD_UNOFFICIAL_PLUGINS = bool(data['is_load'])
 
 
 @userge.on_cmd("status", about={
@@ -293,7 +301,8 @@ async def disable(message: Message) -> None:
     'flags': {
         '-p': "plugin",
         '-c': "command",
-        '-f': "filter"},
+        '-f': "filter",
+        '-u': "Load-Unofficial-Plugins"},
     'usage': "{tr}load [reply to plugin] to load from file\n"
              "{tr}load [flags] [name | names]",
     'examples': [
@@ -301,6 +310,16 @@ async def disable(message: Message) -> None:
 async def load(message: Message) -> None:
     """ load plugins, commands, filters """
     if message.flags:
+        if '-u' in message.flags:
+            if Config.LOAD_UNOFFICIAL_PLUGINS is False:
+                Config.LOAD_UNOFFICIAL_PLUGINS = True
+            else:
+                await message.edit(("`Already Loaded Unofficial-Plugins`")
+            dict = {'is_load': Config.LOAD_UNOFFICIAL_PLUGINS}
+            await SAVED_SETTINGS.update_one({'_id': 'LOAD_UNOFFICIAL'},
+                                            {"$set": dict},
+                                            upsert=True)
+            return
         if not message.filtered_input_str:
             await message.err("name required!")
             return
@@ -383,7 +402,8 @@ async def load(message: Message) -> None:
     'flags': {
         '-p': "plugin",
         '-c': "command",
-        '-f': "filter"},
+        '-f': "filter",
+        '-u': "Unload-Unofficial-Plugins"},
     'usage': "{tr}unload [flags] [name | names]",
     'examples': [
         "{tr}unload -p gdrive", "{tr}unload -c gls gup"]}, del_pre=True, allow_channels=False)
@@ -391,6 +411,16 @@ async def unload(message: Message) -> None:
     """ unload plugins, commands, filters """
     if not message.flags:
         await message.err("flag required!")
+        return
+    if '-u' in message.flags:
+        if Config.LOAD_UNOFFICIAL_PLUGINS:
+            Config.LOAD_UNOFFICIAL_PLUGINS = False
+        else:
+            await message.edit(("`Already UnLoaded Unofficial-Plugins`")
+        dict = {'is_load': Config.LOAD_UNOFFICIAL_PLUGINS}
+        await SAVED_SETTINGS.update_one({'_id': 'LOAD_UNOFFICIAL'},
+                                        {"$set": dict},
+                                        upsert=True)
         return
     if not message.filtered_input_str:
         await message.err("name required!")
