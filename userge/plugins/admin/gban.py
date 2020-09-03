@@ -114,14 +114,10 @@ async def gban_user(message: Message):
             'chat_ids': CHATS
         }
     )
+    if message.reply_to_message:
+        await CHANNEL.fwd_msg(message.reply_to_message)
+        await CHANNEL.log(f'$GBAN #prid{user_id} ⬆️')
     LOG.info("G-Banned %s", str(user_id))
-    try:
-        if message.reply_to_message:
-            await CHANNEL.fwd_msg(message.reply_to_message)
-            await CHANNEL.log(f'$GBAN #prid{user_id} ⬆️')
-            await message.reply_to_message.delete()
-    except Exception:
-        await message.reply("`I dont have message nuking rights! But still he got gbanned!`")
 
 
 @userge.on_cmd("ungban", about={
@@ -272,6 +268,12 @@ async def gban_at_entry(message: Message):
             continue
         gbanned = await GBAN_USER_BASE.find_one({'user_id': user_id})
         if gbanned:
+            chat_ids = gbanned['chat_ids']
+            chat_ids.append(chat_id)
+
+            await GBAN_USER_BASE.update_one(
+                {'user_id': user_id, 'chat_ids': chat_ids}
+            )
             await asyncio.gather(
                 message.client.kick_chat_member(chat_id, user_id),
                 message.reply(
