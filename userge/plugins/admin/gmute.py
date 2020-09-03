@@ -117,20 +117,7 @@ async def ungmute_user(msg: Message):
     if not msg.client.is_bot:
         for chat in await msg.client.get_common_chats(user_id):
             try:
-                await chat.restrict_member(
-                    user_id,
-                    ChatPermissions(
-                        can_send_messages=chat.permissions.can_send_messages,
-                        can_send_media_messages=chat.permissions.can_send_media_messages,
-                        can_send_stickers=chat.permissions.can_send_stickers,
-                        can_send_animations=chat.permissions.can_send_animations,
-                        can_send_games=chat.permissions.can_send_games,
-                        can_use_inline_bots=chat.permissions.can_use_inline_bots,
-                        can_add_web_page_previews=chat.permissions.can_add_web_page_previews,
-                        can_send_polls=chat.permissions.can_send_polls,
-                        can_change_info=chat.permissions.can_change_info,
-                        can_invite_users=chat.permissions.can_invite_users,
-                        can_pin_messages=chat.permissions.can_pin_messages))
+                await chat.unban_member(user_id)
                 await CHANNEL.log(
                     r"\\**#Antispam_Log**//"
                     f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
