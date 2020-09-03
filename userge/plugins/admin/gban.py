@@ -87,10 +87,10 @@ async def gban_user(message: Message):
             "**#Already_GBanned**\n\nUser Already Exists in My Gban List.\n"
             f"**Reason For GBan:** `{found['reason']}`", del_in=5)
         return
-    await message.edit(
-        r"\\**#GBanned_User**//"
-        f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
-        f"**User ID:** `{user_id}`\n**Reason:** `{reason}`"))
+    text =  r"\\**#GBanned_User**//"
+    text += f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
+    text += f"**User ID:** `{user_id}`\n**Reason:** `{reason}`")
+    await message.edit(text)
     # TODO: can we add something like "GBanned by {any_sudo_user_fname}"
     if not message.client.is_bot:
         for chat in await message.client.get_common_chats(user_id):
@@ -151,6 +151,11 @@ async def ungban_user(message: Message):
                     f"$UNGBAN #id{user_id}")
             except (ChatAdminRequired, UserAdminInvalid):
                 pass
+    await message.edit(
+    text = r"\\**#UnGbanned_User**//"
+    text += f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
+    text += f"**User ID:** `{user_id}`")
+    await message.edit(text)
     await GBAN_USER_BASE.delete_one(
         {'firstname': firstname, 'user_id': user_id}
     )
