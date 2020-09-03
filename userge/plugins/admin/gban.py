@@ -57,6 +57,7 @@ async def antispam_(message: Message):
 async def gban_user(message: Message):
     """ ban a user globally """
     await message.edit("`GBanning...`")
+    CHATS = []
     user_id, reason = message.extract_user_and_text
     if not user_id:
         await message.edit(
@@ -86,16 +87,14 @@ async def gban_user(message: Message):
             "**#Already_GBanned**\n\nUser Already Exists in My Gban List.\n"
             f"**Reason For GBan:** `{found['reason']}`", del_in=5)
         return
-    await asyncio.gather(
-        GBAN_USER_BASE.insert_one(
-            {'firstname': firstname, 'user_id': user_id, 'reason': reason}),
-        message.edit(
-            r"\\**#GBanned_User**//"
-            f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
-            f"**User ID:** `{user_id}`\n**Reason:** `{reason}`"))
+    await message.edit(
+        r"\\**#GBanned_User**//"
+        f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
+        f"**User ID:** `{user_id}`\n**Reason:** `{reason}`"))
     # TODO: can we add something like "GBanned by {any_sudo_user_fname}"
     if not message.client.is_bot:
         for chat in await message.client.get_common_chats(user_id):
+            CHATS.append(chat.id)
             try:
                 await chat.kick_member(user_id)
                 await CHANNEL.log(
@@ -107,6 +106,14 @@ async def gban_user(message: Message):
                     f"**Reason:** `{reason}`\n\n$GBAN #id{user_id}")
             except (ChatAdminRequired, UserAdminInvalid):
                 pass
+    await GBAN_USER_BASE.insert_one(
+        {
+            'firstname': firstname,
+            'user_id': user_id,
+            'reason': reason,
+            'chat_ids': CHATS
+        }
+    )
     LOG.info("G-Banned %s", str(user_id))
     try:
         if message.reply_to_message:
@@ -136,24 +143,21 @@ async def ungban_user(message: Message):
     if not found:
         await message.err("User Not Found in My Gban List")
         return
-    await asyncio.gather(
-        GBAN_USER_BASE.delete_one({'firstname': firstname, 'user_id': user_id}),
-        message.edit(
-            r"\\**#UnGbanned_User**//"
-            f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
-            f"**User ID:** `{user_id}`"))
+    chat_id = found['chat_ids']
     if not message.client.is_bot:
-        for chat in await message.client.get_common_chats(user_id):
+        for i in range(len(chat_id)):
             try:
-                await chat.unban_member(user_id)
+                await userge.unban_chat_member(chat_id[i], user_id)
                 await CHANNEL.log(
                     r"\\**#Antispam_Log**//"
                     f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
-                    f"**User ID:** `{user_id}`\n"
-                    f"**Chat:** {chat.title}\n"
-                    f"**Chat ID:** `{chat.id}`\n\n$UNGBAN #id{user_id}")
+                    f"**User ID:** `{user_id}`\n\n"
+                    f"$UNGBAN #id{user_id}")
             except (ChatAdminRequired, UserAdminInvalid):
                 pass
+    await GBAN_USER_BASE.delete_one(
+        {'firstname': firstname, 'user_id': user_id}
+    )
     LOG.info("UnGbanned %s", str(user_id))
 
 
