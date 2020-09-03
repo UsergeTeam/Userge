@@ -272,7 +272,8 @@ async def gban_at_entry(message: Message):
             chat_ids.append(chat_id)
 
             await GBAN_USER_BASE.update_one(
-                {'user_id': user_id, 'chat_ids': chat_ids}
+                {'user_id': user_id, 'firstname': first_name},
+                {"$set": {'chat_ids': chat_ids}}, upsert=True)
             )
             await asyncio.gather(
                 message.client.kick_chat_member(chat_id, user_id),
