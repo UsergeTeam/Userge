@@ -79,6 +79,9 @@ async def gmute_user(msg: Message):
                     f"**Reason:** `{reason}`\n\n$GMUTE #id{user_id}")
             except (ChatAdminRequired, UserAdminInvalid):
                 pass
+    if msg.reply_to_message:
+        await CHANNEL.fwd_msg(msg.reply_to_message)
+        await CHANNEL.log(f'$GMUTE #prid{user_id} ⬆️')
     LOG.info("G-Muted %s", str(user_id))
 
 
