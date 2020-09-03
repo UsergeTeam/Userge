@@ -80,13 +80,6 @@ async def gmute_user(msg: Message):
             except (ChatAdminRequired, UserAdminInvalid):
                 pass
     LOG.info("G-Muted %s", str(user_id))
-    try:
-        if msg.reply_to_message:
-            await CHANNEL.fwd_msg(msg.reply_to_message)
-            await CHANNEL.log(f'$GMUTE #prid{user_id} ⬆️')
-            await msg.reply_to_message.delete()
-    except Exception:
-        await msg.reply("`I dont have message deletation rights! But still he got GMuted!`")
 
 
 @userge.on_cmd("ungmute", about={
