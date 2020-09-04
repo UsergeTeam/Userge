@@ -137,16 +137,17 @@ async def ungban_user(message: Message):
     if not found:
         await message.err("User Not Found in My Gban List")
         return
-    for chat_id in found['chat_ids']:
-        try:
-            await userge.unban_chat_member(chat_id, user_id)
-            await CHANNEL.log(
-                r"\\**#Antispam_Log**//"
-                f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
-                f"**User ID:** `{user_id}`\n\n"
-                f"$UNGBAN #id{user_id}")
-        except (ChatAdminRequired, UserAdminInvalid):
-            pass
+    if 'chat_ids' in found:
+        for chat_id in found['chat_ids']:
+            try:
+                await userge.unban_chat_member(chat_id, user_id)
+                await CHANNEL.log(
+                    r"\\**#Antispam_Log**//"
+                    f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
+                    f"**User ID:** `{user_id}`\n\n"
+                    f"$UNGBAN #id{user_id}")
+            except (ChatAdminRequired, UserAdminInvalid):
+                pass
     await message.edit(r"\\**#UnGbanned_User**//"
                        f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
                        f"**User ID:** `{user_id}`")
@@ -265,8 +266,11 @@ async def gban_at_entry(message: Message):
             continue
         gbanned = await GBAN_USER_BASE.find_one({'user_id': user_id})
         if gbanned:
-            chat_ids = gbanned['chat_ids']
-            chat_ids.append(chat_id)
+            if 'chat_ids' in gbanned:
+                chat_ids = gbanned['chat_ids']
+                chat_ids.append(chat_id)
+            else:
+                chat_ids = [chat_id]
             await GBAN_USER_BASE.update_one(
                 {'user_id': user_id, 'firstname': first_name},
                 {"$set": {'chat_ids': chat_ids}}, upsert=True)
