@@ -94,9 +94,11 @@ async def gban_user(message: Message):
         chats = [message.chat]
     else:
         chats = await message.client.get_common_chats(user_id)
+    gbanned_chats = []
     for chat in chats:
         try:
             await chat.kick_member(user_id)
+            gbanned_chats.append(chat.id)
             await CHANNEL.log(
                 r"\\**#Antispam_Log**//"
                 f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
@@ -109,7 +111,7 @@ async def gban_user(message: Message):
     await GBAN_USER_BASE.insert_one({'firstname': firstname,
                                      'user_id': user_id,
                                      'reason': reason,
-                                     'chat_ids': [chat.id for chat in chats]})
+                                     'chat_ids': gbanned_chats})
     if message.reply_to_message:
         await CHANNEL.fwd_msg(message.reply_to_message)
         await CHANNEL.log(f'$GBAN #prid{user_id} ⬆️')
