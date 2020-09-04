@@ -87,7 +87,10 @@ async def ytDown(message: Message):
                         ''.join((Config.UNFINISHED_PROGRESS_STR
                                  for _ in range(20 - floor(percentage / 5)))))
                 if message.text != out:
-                    asyncio.get_event_loop().create_task(message.edit(out))
+                    try:
+                        asyncio.get_event_loop().run_until_complete(message.edit(out))
+                    except TypeError:
+                        pass
 
     await message.edit("Hold on \u23f3 ..")
     startTime = time()

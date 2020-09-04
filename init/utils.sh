@@ -26,6 +26,13 @@ quit() {
     exit 1
 }
 
+stopBGProcesses() {
+    log "Exiting With SIGINT ..."
+    echo quit >> logs/logbot.stdin
+    log "Cleaning BG Processes ..."
+    sleep 3
+}
+
 runPythonCode() {
     python${pVer%.*} -c "$1"
 }

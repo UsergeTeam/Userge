@@ -27,8 +27,12 @@ startUserge() {
 
 stopUserge() {
     sendMessage "Exiting Userge ..."
+    stopBGProcesses
     exit 0
 }
+
+trap quit TERM
+trap stopUserge INT
 
 runUserge() {
     initUserge

@@ -46,7 +46,7 @@ _checkRequiredVars() {
 _checkDefaultVars() {
     replyLastMessage "Checking Default ENV Vars ..."
     declare -rA def_vals=(
-        [WORKERS]=4
+        [WORKERS]=0
         [PREFERRED_LANGUAGE]="en"
         [DOWN_PATH]="downloads"
         [UPSTREAM_REMOTE]="upstream"

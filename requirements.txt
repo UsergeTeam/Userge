@@ -13,7 +13,6 @@ hachoir
 heroku3
 html-telegraph-poster
 motor
-nest_asyncio
 oauth2client
 Pillow==7.1.0
 psutil
