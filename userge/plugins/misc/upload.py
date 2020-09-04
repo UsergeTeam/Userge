@@ -14,11 +14,11 @@ import re
 import math
 import time
 import asyncio
-import stagger
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import unquote_plus
 
+import stagger
 from PIL import Image
 from pySmartDL import SmartDL
 from hachoir.metadata import extractMetadata
@@ -204,15 +204,16 @@ async def upload(message: Message, path: Path, del_path: bool = False, extra: st
 
 
 async def doc_upload(message: Message, path, del_path: bool = False, extra: str = ''):
+    strpath = str(path)
     sent: Message = await message.client.send_message(
         message.chat.id, f"`Uploading {path.name} as a doc ... {extra}`")
     start_t = datetime.now()
-    thumb = await get_thumb()
+    thumb = await get_thumb(strpath)
     await message.client.send_chat_action(message.chat.id, "upload_document")
     try:
         msg = await message.client.send_document(
             chat_id=message.chat.id,
-            document=str(path),
+            document=strpath,
             thumb=thumb,
             caption=path.name,
             parse_mode="html",
@@ -227,8 +228,8 @@ async def doc_upload(message: Message, path, del_path: bool = False, extra: str 
         await sent.delete()
         await finalize(message, msg, start_t)
     finally:
-        if os.path.exists(str(path)) and del_path:
-            os.remove(str(path))
+        if os.path.exists(strpath) and del_path:
+            os.remove(strpath)
 
 
 async def vid_upload(message: Message, path, del_path: bool = False, extra: str = ''):
@@ -283,6 +284,8 @@ async def audio_upload(message: Message, path, del_path: bool = False, extra: st
             thumb = "album_cover.jpg"
     except stagger.errors.NoTagError:
         pass
+    if not thumb:
+        thumb = await get_thumb(strpath)
     metadata = extractMetadata(createParser(strpath))
     if metadata and metadata.has("title"):
         title = metadata.get("title")
@@ -352,6 +355,16 @@ async def get_thumb(path: str = ''):
     if os.path.exists(Config.THUMB_PATH):
         return Config.THUMB_PATH
     if path:
+        file_name = os.path.splitext(path)[0]
+        for type_ in (".jpg", ".webp", ".png"):
+            thumb_path = file_name + type_
+            if os.path.exists(thumb_path):
+                if type_ != ".jpg":
+                    new_thumb_path = f"{file_name}.jpg"
+                    Image.open(thumb_path).save(new_thumb_path, "JPEG")
+                    os.remove(thumb_path)
+                    thumb_path = new_thumb_path
+                return thumb_path
         metadata = extractMetadata(createParser(path))
         if metadata and metadata.has("duration"):
             return await take_screen_shot(

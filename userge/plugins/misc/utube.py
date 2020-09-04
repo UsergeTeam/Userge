@@ -119,7 +119,13 @@ async def ytDown(message: Message):
         retcode = await _tubeDl(
             [message.filtered_input_str], __progress, startTime, None)
     if retcode == 0:
-        _fpath = glob.glob(os.path.join(Config.DOWN_PATH, str(startTime), '*'))[0]
+        _fpath = ''
+        for _path in glob.glob(os.path.join(Config.DOWN_PATH, str(startTime), '*')):
+            if not _path.endswith((".jpg", ".png", ".webp")):
+                _fpath = _path
+        if not _fpath:
+            await message.err("nothing found to upload")
+            return
         await message.edit(f"**YTDL completed in {round(time() - startTime)} seconds**\n`{_fpath}`")
         if 't' in message.flags:
             await upload(message, Path(_fpath))
@@ -193,6 +199,7 @@ def _tubeDl(url: list, prog, starttime, uid=None):
     _opts = {'outtmpl': os.path.join(Config.DOWN_PATH, str(starttime),
                                      '%(title)s-%(format)s.%(ext)s'),
              'logger': LOGGER,
+             'writethumbnail': True,
              'postprocessors': [
                  {'key': 'FFmpegMetadata'}]}
     _quality = {'format': 'bestvideo+bestaudio/best' if not uid else str(uid)}
