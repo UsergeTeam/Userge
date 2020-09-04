@@ -64,29 +64,23 @@ async def gmute_user(msg: Message):
             r"\\**#GMuted_User**//"
             f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
             f"**User ID:** `{user_id}`\n**Reason:** `{reason}`"))
-    if not msg.client.is_bot:
-        for chat in await msg.client.get_common_chats(user_id):
-            try:
-                await chat.restrict_member(
-                    user_id,
-                    ChatPermissions())
-                await CHANNEL.log(
-                    r"\\**#Antispam_Log**//"
-                    f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
-                    f"**User ID:** `{user_id}`\n"
-                    f"**Chat:** {chat.title}\n"
-                    f"**Chat ID:** `{chat.id}`\n"
-                    f"**Reason:** `{reason}`\n\n$GMUTE #id{user_id}")
-            except (ChatAdminRequired, UserAdminInvalid):
-                pass
+    chats = [msg.chat] if msg.client.is_bot else await msg.client.get_common_chats(user_id)
+    for chat in chats:
+        try:
+            await chat.restrict_member(user_id, ChatPermissions())
+            await CHANNEL.log(
+                r"\\**#Antispam_Log**//"
+                f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
+                f"**User ID:** `{user_id}`\n"
+                f"**Chat:** {chat.title}\n"
+                f"**Chat ID:** `{chat.id}`\n"
+                f"**Reason:** `{reason}`\n\n$GMUTE #id{user_id}")
+        except (ChatAdminRequired, UserAdminInvalid):
+            pass
+    if msg.reply_to_message:
+        await CHANNEL.fwd_msg(msg.reply_to_message)
+        await CHANNEL.log(f'$GMUTE #prid{user_id} ⬆️')
     LOG.info("G-Muted %s", str(user_id))
-    try:
-        if msg.reply_to_message:
-            await CHANNEL.fwd_msg(msg.reply_to_message)
-            await CHANNEL.log(f'$GMUTE #prid{user_id} ⬆️')
-            await msg.reply_to_message.delete()
-    except Exception:
-        await msg.reply("`I dont have message deletation rights! But still he got GMuted!`")
 
 
 @userge.on_cmd("ungmute", about={
@@ -114,31 +108,18 @@ async def ungmute_user(msg: Message):
             r"\\**#UnGMuted_User**//"
             f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
             f"**User ID:** `{user_id}`"))
-    if not msg.client.is_bot:
-        for chat in await msg.client.get_common_chats(user_id):
-            try:
-                await chat.restrict_member(
-                    user_id,
-                    ChatPermissions(
-                        can_send_messages=chat.permissions.can_send_messages,
-                        can_send_media_messages=chat.permissions.can_send_media_messages,
-                        can_send_stickers=chat.permissions.can_send_stickers,
-                        can_send_animations=chat.permissions.can_send_animations,
-                        can_send_games=chat.permissions.can_send_games,
-                        can_use_inline_bots=chat.permissions.can_use_inline_bots,
-                        can_add_web_page_previews=chat.permissions.can_add_web_page_previews,
-                        can_send_polls=chat.permissions.can_send_polls,
-                        can_change_info=chat.permissions.can_change_info,
-                        can_invite_users=chat.permissions.can_invite_users,
-                        can_pin_messages=chat.permissions.can_pin_messages))
-                await CHANNEL.log(
-                    r"\\**#Antispam_Log**//"
-                    f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
-                    f"**User ID:** `{user_id}`\n"
-                    f"**Chat:** {chat.title}\n"
-                    f"**Chat ID:** `{chat.id}`\n\n$UNGMUTED #id{user_id}")
-            except (ChatAdminRequired, UserAdminInvalid):
-                pass
+    chats = [msg.chat] if msg.client.is_bot else await msg.client.get_common_chats(user_id)
+    for chat in chats:
+        try:
+            await chat.unban_member(user_id)
+            await CHANNEL.log(
+                r"\\**#Antispam_Log**//"
+                f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
+                f"**User ID:** `{user_id}`\n"
+                f"**Chat:** {chat.title}\n"
+                f"**Chat ID:** `{chat.id}`\n\n$UNGMUTED #id{user_id}")
+        except (ChatAdminRequired, UserAdminInvalid):
+            pass
     LOG.info("UnGMuted %s", str(user_id))
 
 
@@ -168,8 +149,7 @@ async def gmute_at_entry(msg: Message):
         gmuted = await GMUTE_USER_BASE.find_one({'user_id': user_id})
         if gmuted:
             await asyncio.gather(
-                msg.client.restrict_chat_member(
-                    chat_id, user_id, ChatPermissions()),
+                msg.client.restrict_chat_member(chat_id, user_id, ChatPermissions()),
                 msg.reply(
                     r"\\**#Userge_Antispam**//"
                     "\n\nGlobally Muted User Detected in this Chat.\n\n"
