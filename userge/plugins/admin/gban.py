@@ -8,6 +8,7 @@
 #
 # All rights reserved
 
+import json
 import asyncio
 from typing import Union
 
@@ -292,7 +293,7 @@ async def gban_at_entry(message: Message):
         elif Config.ANTISPAM_SENTRY:
             async with aiohttp.ClientSession() as ses:
                 async with ses.get(f'https://api.cas.chat/check?user_id={user_id}') as resp:
-                    res = await resp.json()
+                    res = json.loads(await resp.text())
             if res['ok']:
                 reason = ' | '.join(res['result']['messages']) if 'result' in res else None
                 await asyncio.gather(

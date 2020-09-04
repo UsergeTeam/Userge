@@ -124,7 +124,7 @@ async def ytDown(message: Message):
             if not _path.endswith((".jpg", ".png", ".webp")):
                 _fpath = _path
         if not _fpath:
-            await message.err("nothing found to upload")
+            await message.err("nothing found")
             return
         await message.edit(f"**YTDL completed in {round(time() - startTime)} seconds**\n`{_fpath}`")
         if 't' in message.flags:
