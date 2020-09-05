@@ -65,7 +65,7 @@ _checkDefaultVars() {
     done
     DOWN_PATH=${DOWN_PATH%/}/
     [[ -n $HEROKU_API_KEY && -n $HEROKU_APP_NAME ]] \
-        && declare -gx HEROKU_GIT_URL="https://api:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git"
+        && declare -g HEROKU_GIT_URL="https://api:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git"
     for var in G_DRIVE_IS_TD LOAD_UNOFFICIAL_PLUGINS; do
         eval $var=$(tr "[:upper:]" "[:lower:]" <<< ${!var})
     done
@@ -122,6 +122,8 @@ _checkGit() {
             gitClone $HEROKU_GIT_URL tmp_git || quit "Invalid HEROKU_API_KEY or HEROKU_APP_NAME var !"
             mv tmp_git/.git .
             rm -rf tmp_git
+            editLastMessage "\tChecking Heroku Remote ..."
+            remoteIsExist heroku || addHeroku
         else
             replyLastMessage "\tInitializing Empty Git ..."
             gitInit
@@ -132,7 +134,7 @@ _checkGit() {
 
 _checkUpstreamRepo() {
     editLastMessage "Checking UPSTREAM_REPO ..."
-    grep -q $UPSTREAM_REMOTE < <(git remote) || addUpstream
+    remoteIsExist $UPSTREAM_REMOTE || addUpstream
     replyLastMessage "\tFetching Data From UPSTREAM_REPO ..."
     fetchUpstream || updateUpstream && fetchUpstream || quit "Invalid UPSTREAM_REPO var !"
     deleteLastMessage
@@ -158,7 +160,6 @@ _checkUnoffPlugins() {
     else
         editLastMessage "\tUnOfficial Plugins Disabled !"
     fi
-    sleep 1
     deleteLastMessage
 }
 

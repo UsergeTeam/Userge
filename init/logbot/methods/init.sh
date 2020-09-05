@@ -8,4 +8,5 @@
 #
 # All rights reserved.
 
-. init/logbot/methods/methods.sh
+. init/logbot/methods/basic.sh
+. init/logbot/methods/polling.sh

@@ -8,36 +8,6 @@
 #
 # All rights reserved.
 
-sendMessage() {
-    test -z "$1" || rawsendMessage $LOG_CHANNEL_ID "$1"
-}
-
-replyLastMessage() {
-    test -z "$1" || getLastMessage reply "$1"
-}
-
-editLastMessage() {
-    test -z "$1" || getLastMessage edit "$1"
-}
-
-deleteLastMessage() {
-    getLastMessage delete
-}
-
-deleteMessages() {
-    getMessageCount
-    local count=$(($?))
-    for ((i=0; i<$count; i++)); do
-        deleteLastMessage
-    done
-}
-
-printMessages() {
-    for msg in $(getAllMessages); do
-        printf "{%s: %s}\n" $msg "$($msg.print)"
-    done
-}
-
 startLogBotPolling() {
     test -z $BOT_TOKEN || _polling &
 }

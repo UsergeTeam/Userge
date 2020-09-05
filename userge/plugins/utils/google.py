@@ -43,7 +43,7 @@ async def gsearch(message: Message):
             desc = gresults["descriptions"][i]
             output += f"[{title}]({link})\n"
             output += f"`{desc}`\n\n"
-        except IndexError:
+        except (IndexError, KeyError):
             break
     output = f"**Google Search:**\n`{query}`\n\n**Results:**\n{output}"
     await message.edit_or_send_as_file(text=output, caption=query,

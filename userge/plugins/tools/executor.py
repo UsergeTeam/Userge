@@ -60,14 +60,10 @@ async def eval_(message: Message):
     async def aexec(code):
         head = "async def __aexec(userge, message):\n "
         if '\n' in code:
-            lines = code.split('\n')
-            body = '\n '.join(line for line in lines[:-1])
-            tail = lines[-1]
+            rest_code = '\n '.join(line for line in code.split('\n'))
         else:
-            body = ""
-            tail = code
-        tail = f"\n {tail}" if "return " in tail else f"\n return {tail}"
-        exec(head + body + tail)  # nosec pylint: disable=W0122
+            rest_code = f"\n {code}" if "return " in code else f"\n return {code}"
+        exec(head + rest_code)  # nosec pylint: disable=W0122
         return await locals()['__aexec'](userge, message)
     try:
         ret_val = await aexec(cmd)
@@ -96,7 +92,7 @@ async def eval_(message: Message):
 
 
 @userge.on_cmd("exec", about={
-    'header': "rrun commands in exec",
+    'header': "run commands in exec",
     'usage': "{tr}exec [commands]",
     'examples': "{tr}exec echo \"Userge\""}, allow_channels=False)
 async def exec_(message: Message):
@@ -123,11 +119,11 @@ __Command:__\n`{cmd}`\n__PID:__\n`{pid}`\n__RETURN:__\n`{ret}`\n\n\
 
 
 @userge.on_cmd("term", about={
-    'header': "run commands in shell (terminl)",
+    'header': "run commands in shell (terminal)",
     'usage': "{tr}term [commands]",
     'examples': "{tr}term echo \"Userge\""}, allow_channels=False)
 async def term_(message: Message):
-    """ run commands in shell (terminl with live update) """
+    """ run commands in shell (terminal with live update) """
     cmd = await init_func(message)
     if cmd is None:
         return

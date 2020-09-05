@@ -36,10 +36,19 @@ runPythonModule() {
 
 gitInit() {
     git init &> /dev/null
+    git commit --allow-empty -m "empty commit" &> /dev/null
 }
 
 gitClone() {
     git clone "$@" &> /dev/null
+}
+
+remoteIsExist() {
+    grep -q $1 < <(git remote)
+}
+
+addHeroku() {
+    git remote add heroku $HEROKU_GIT_URL
 }
 
 addUpstream() {
