@@ -13,7 +13,7 @@ __all__ = ['EditMessageText']
 import asyncio
 from typing import Optional, Union
 
-from pyrogram import InlineKeyboardMarkup
+from pyrogram.types import InlineKeyboardMarkup
 
 from userge import Config
 from ...ext import RawClient

@@ -11,13 +11,21 @@
 import asyncio
 from typing import Dict
 
-from userge import userge, Message, Filters, get_collection
+from userge import userge, Message, filters, get_collection
 
 FILTERS_COLLECTION = get_collection("filters")
 CHANNEL = userge.getCLogger(__name__)
 
 FILTERS_DATA: Dict[int, Dict[str, int]] = {}
-FILTERS_CHATS = Filters.create(lambda _, query: query.chat.id in FILTERS_DATA)
+FILTERS_CHATS = filters.create(lambda _, __, query: query.chat and query.chat.id in FILTERS_DATA)
+
+_SUPPORTED_TYPES = (":audio:", ":video:", ":photo:", ":document:",
+                    ":sticker:", ":animation:", ":voice:", ":video_note:",
+                    ":media:", ":game:", ":contact:", ":location:",
+                    ":venue:", ":web_page:", ":poll:", ":via_bot:",
+                    ":forward_date:", ":mentioned:", ":service:",
+                    ":media_group_id:", ":game_high_score:", ":pinned_message:",
+                    ":new_chat_title:", ":new_chat_photo:", ":delete_chat_photo:")
 
 
 def _filter_updater(chat_id: int, name: str, message_id: int) -> None:
@@ -83,7 +91,7 @@ async def filters_active(message: Message) -> None:
         'flags': {
             '-all': "remove all filters in this chat",
             '-every': "remove all filters in every chats"},
-        'usage': "{tr}delfilter [filter name]\n{tr}delfilter -all"},
+        'usage': "{tr}delfilter [filter name | filter type]\n{tr}delfilter -all"},
     allow_channels=False, allow_bots=False)
 async def delete_filters(message: Message) -> None:
     """ delete filter in current chat """
@@ -125,7 +133,8 @@ async def delete_filters(message: Message) -> None:
             '{chat}': "chat name",
             '{count}': "chat members count",
             '{mention}': "mention user"},
-        'usage': "{tr}addfilter [filter name] | [content | reply to msg]",
+        'usage': "{tr}addfilter [filter name | filter type] | [content | reply to msg]",
+        'types': list(_SUPPORTED_TYPES),
         'buttons': "<code>[name][buttonurl:link]</code> - <b>add a url button</b>\n"
                    "<code>[name][buttonurl:link:same]</code> - "
                    "<b>add a url button to same row</b>"},
@@ -138,7 +147,11 @@ async def add_filter(message: Message) -> None:
     if replied and replied.text:
         content = replied.text.html
     if not (content or (replied and replied.media)):
-        await message.err(text="No Content Found!")
+        await message.err("No Content Found !")
+        return
+    if (filter_.startswith(':') and filter_.endswith(':')
+            and filter_ not in _SUPPORTED_TYPES):
+        await message.err(f"invalid media type [ {filter_} ] !")
         return
     await message.edit("`adding filter ...`")
     message_id = await CHANNEL.store(replied, content)
@@ -154,18 +167,26 @@ async def add_filter(message: Message) -> None:
     await message.edit(text=out, del_in=3, log=__name__)
 
 
-@userge.on_filters(~Filters.me & Filters.text & FILTERS_CHATS, group=1, check_client=True)
+@userge.on_filters(~filters.me & ~filters.edited & FILTERS_CHATS, group=1)
 async def chat_filter(message: Message) -> None:
     """ filter handler """
     if not message.from_user:
         return
-    input_text = message.text.strip()
     try:
         for name in FILTERS_DATA[message.chat.id]:
-            if (input_text == name
-                    or input_text.startswith(f"{name} ")
-                    or input_text.endswith(f" {name}")
-                    or f" {name} " in input_text):
+            reply = False
+            if name.startswith(':') and name.endswith(':'):
+                media_type = name.strip(':')
+                if getattr(message, media_type, None):
+                    reply = True
+            elif message.text:
+                input_text = message.text.strip()
+                if (input_text == name
+                        or input_text.startswith(f"{name} ")
+                        or input_text.endswith(f" {name}")
+                        or f" {name} " in input_text):
+                    reply = True
+            if reply:
                 await CHANNEL.forward_stored(client=message.client,
                                              message_id=FILTERS_DATA[message.chat.id][name],
                                              chat_id=message.chat.id,

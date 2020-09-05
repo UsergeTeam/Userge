@@ -27,13 +27,13 @@ class Plugin:
         self._client = client
         self.name = name
         self.parent = parent
-        self.about: Optional[str] = None
+        self.doc: Optional[str] = None
         self.commands: List['command.Command'] = []
         self.filters: List['_filter.Filter'] = []
         _LOG.debug(_LOG_STR, f"created plugin -> {self.name}")
 
     def __repr__(self) -> str:
-        return f"plugin {self.name} - {self.about} [{self.commands + self.filters}]"
+        return f"<plugin {self.name} {self.commands + self.filters}>"
 
     @property
     def is_enabled(self) -> bool:
@@ -90,6 +90,10 @@ class Plugin:
         """ returns all unloaded filters """
         return [flt for flt in self.filters if not flt.is_loaded]
 
+    async def init(self) -> None:
+        """ initialize the plugin """
+        await asyncio.gather(*[flt.init() for flt in self.commands + self.filters])
+
     def add(self, obj: Union['command.Command', '_filter.Filter']) -> None:
         """ add command or filter to plugin """
         obj.plugin_name = self.name
@@ -108,58 +112,37 @@ class Plugin:
         """ returns all sorted command names in the plugin """
         return sorted((cmd.name for cmd in self.enabled_commands))
 
-    async def init(self) -> None:
-        """ initialize the plugin """
-        await asyncio.gather(*[flt.init() for flt in self.commands + self.filters])
-
     async def enable(self) -> List[str]:
         """ enable all commands in the plugin """
         if self.is_enabled:
             return []
-        enabled: List[str] = []
-        for flt in self.commands + self.filters:
-            tmp = await flt.enable()
-            if tmp:
-                enabled.append(tmp)
-        if enabled:
-            _LOG.info(_LOG_STR, f"enabled plugin -> {self.name}")
-        return enabled
+        return await _do_it(self, 'enable')
 
     async def disable(self) -> List[str]:
         """ disable all commands in the plugin """
         if not self.is_enabled:
             return []
-        disabled: List[str] = []
-        for flt in self.commands + self.filters:
-            tmp = await flt.disable()
-            if tmp:
-                disabled.append(tmp)
-        if disabled:
-            _LOG.info(_LOG_STR, f"disabled plugin -> {self.name}")
-        return disabled
+        return await _do_it(self, 'disable')
 
     async def load(self) -> List[str]:
         """ load all commands in the plugin """
         if self.is_loaded:
             return []
-        loaded: List[str] = []
-        for flt in self.commands + self.filters:
-            tmp = await flt.load()
-            if tmp:
-                loaded.append(tmp)
-        if loaded:
-            _LOG.info(_LOG_STR, f"loaded plugin -> {self.name}")
-        return loaded
+        return await _do_it(self, 'load')
 
     async def unload(self) -> List[str]:
         """ unload all commands in the plugin """
         if not self.is_loaded:
             return []
-        unloaded: List[str] = []
-        for flt in self.commands + self.filters:
-            tmp = await flt.unload()
-            if tmp:
-                unloaded.append(tmp)
-        if unloaded:
-            _LOG.info(_LOG_STR, f"unloaded plugin -> {self.name}")
-        return unloaded
+        return await _do_it(self, 'unload')
+
+
+async def _do_it(plg: Plugin, work_type: str) -> List[str]:
+    done: List[str] = []
+    for flt in plg.commands + plg.filters:
+        tmp = await getattr(flt, work_type)()
+        if tmp:
+            done.append(tmp)
+    if done:
+        _LOG.info(_LOG_STR, f"{work_type.rstrip('e')}ed {plg}")
+    return done

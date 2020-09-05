@@ -43,6 +43,8 @@ REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob"
 G_DRIVE_DIR_MIME_TYPE = "application/vnd.google-apps.folder"
 G_DRIVE_FILE_LINK = "📄 <a href='https://drive.google.com/open?id={}'>{}</a> __({})__"
 G_DRIVE_FOLDER_LINK = "📁 <a href='https://drive.google.com/drive/folders/{}'>{}</a> __(folder)__"
+_GDRIVE_ID = re.compile(
+    r'https://drive.google.com/[\w\?\./&=]+([-\w]{33}|(?<=[/=])0(?:A[-\w]{17}|B[-\w]{26}))')
 
 _LOG = userge.getLogger(__name__)
 _SAVED_SETTINGS = get_collection("CONFIGS")
@@ -231,7 +233,7 @@ class _GDrive:
             c_time = time.time()
             response = None
             while response is None:
-                status, response = u_file_obj.next_chunk()
+                status, response = u_file_obj.next_chunk(num_retries=5)
                 if self._is_canceled:
                     raise ProcessCanceled
                 if status:
@@ -328,7 +330,7 @@ class _GDrive:
             c_time = time.time()
             done = False
             while done is False:
-                status, done = d_file_obj.next_chunk()
+                status, done = d_file_obj.next_chunk(num_retries=5)
                 if self._is_canceled:
                     raise ProcessCanceled
                 if status:
@@ -465,6 +467,7 @@ class _GDrive:
                 new_id = self._copy_dir(file_['id'], dir_id)
             else:
                 self._copy_file(file_['id'], parent_id)
+                time.sleep(0.5)  # due to user rate limits
                 new_id = parent_id
         return new_id
 
@@ -592,8 +595,7 @@ class Worker(_GDrive):
         link = self._message.input_str
         if filter_str:
             link = self._message.filtered_input_str
-        found = re.search(
-            r'https://drive.google.com/[\w\?\./&=]+([-\w]{33}|(?<=/)0A[-\w]{17})', link)
+        found = _GDRIVE_ID.search(link)
         if found and 'folder' in link:
             out = (found.group(1), "folder")
         elif found:
@@ -728,15 +730,12 @@ class Worker(_GDrive):
     @creds_dec
     async def upload(self) -> None:
         """ Upload from file/folder/link/tg file to GDrive """
-        if not os.path.isdir(Config.DOWN_PATH):
-            os.mkdir(Config.DOWN_PATH)
         replied = self._message.reply_to_message
         is_url = re.search(
             r"(?:https?|ftp)://[^\|\s]+\.[^\|\s]+", self._message.input_str)
         dl_loc = None
         if replied and replied.media:
             await self._message.edit("`Downloading From TG...`")
-            c_time = time.time()
             file_name = Config.DOWN_PATH
             if self._message.input_str:
                 file_name = os.path.join(Config.DOWN_PATH, self._message.input_str)
@@ -744,9 +743,7 @@ class Worker(_GDrive):
                 message=replied,
                 file_name=file_name,
                 progress=progress,
-                progress_args=(
-                    "trying to download", userge, self._message, c_time
-                )
+                progress_args=(self._message, "trying to download")
             )
             if self._message.process_is_canceled:
                 await self._message.edit("`Process Canceled!`", del_in=5)
@@ -796,7 +793,7 @@ class Worker(_GDrive):
                         speed,
                         estimated_total_time)
                     count += 1
-                    if count >= 5:
+                    if count >= Config.EDIT_SLEEP_TIMEOUT:
                         count = 0
                         await self._message.try_to_edit(
                             progress_str, disable_web_page_preview=True)
@@ -813,7 +810,7 @@ class Worker(_GDrive):
             new_path = os.path.join(os.path.dirname(file_path.strip()), file_name.strip())
             os.rename(file_path.strip(), new_path)
             file_path = new_path
-        await self._message.edit("`Loading GDrive Upload...`")
+        await self._message.try_to_edit("`Loading GDrive Upload...`")
         pool.submit_thread(self._upload, file_path)
         start_t = datetime.now()
         count = 0
@@ -821,7 +818,7 @@ class Worker(_GDrive):
             count += 1
             if self._message.process_is_canceled:
                 self._cancel()
-            if self._progress is not None and count >= 5:
+            if self._progress is not None and count >= Config.EDIT_SLEEP_TIMEOUT:
                 count = 0
                 await self._message.try_to_edit(self._progress)
             await asyncio.sleep(1)
@@ -842,9 +839,7 @@ class Worker(_GDrive):
     @creds_dec
     async def download(self) -> None:
         """ Download file/folder from GDrive """
-        await self._message.edit("`Loading GDrive Download...`")
-        if not os.path.isdir(Config.DOWN_PATH):
-            os.mkdir(Config.DOWN_PATH)
+        await self._message.try_to_edit("`Loading GDrive Download...`")
         file_id, _ = self._get_file_id()
         pool.submit_thread(self._download, file_id)
         start_t = datetime.now()
@@ -853,7 +848,7 @@ class Worker(_GDrive):
             count += 1
             if self._message.process_is_canceled:
                 self._cancel()
-            if self._progress is not None and count >= 5:
+            if self._progress is not None and count >= Config.EDIT_SLEEP_TIMEOUT:
                 count = 0
                 await self._message.try_to_edit(self._progress)
             await asyncio.sleep(1)
@@ -875,7 +870,7 @@ class Worker(_GDrive):
         if not self._parent_id:
             await self._message.edit("First set parent path by `.gset`", del_in=5)
             return
-        await self._message.edit("`Loading GDrive Copy...`")
+        await self._message.try_to_edit("`Loading GDrive Copy...`")
         file_id, _ = self._get_file_id()
         pool.submit_thread(self._copy, file_id)
         start_t = datetime.now()
@@ -884,7 +879,7 @@ class Worker(_GDrive):
             count += 1
             if self._message.process_is_canceled:
                 self._cancel()
-            if self._progress is not None and count >= 5:
+            if self._progress is not None and count >= Config.EDIT_SLEEP_TIMEOUT:
                 count = 0
                 await self._message.try_to_edit(self._progress)
             await asyncio.sleep(1)
@@ -1092,7 +1087,7 @@ async def gshare_(message: Message):
              "| [new name]",
     'examples': [
         "{tr}gup test.bin : reply to tg file", "{tr}gup downloads/100MB.bin | test.bin",
-        "{tr}gup https://speed.hetzner.de/100MB.bin | testing upload.bin"]})
+        "{tr}gup https://speed.hetzner.de/100MB.bin | testing upload.bin"]}, check_downpath=True)
 async def gup_(message: Message):
     """ upload to gdrive """
     await Worker(message).upload()
@@ -1100,7 +1095,7 @@ async def gup_(message: Message):
 
 @userge.on_cmd("gdown", about={
     'header': "Download files from GDrive",
-    'usage': "{tr}gdown [file_id | file/folder link]"})
+    'usage': "{tr}gdown [file_id | file/folder link]"}, check_downpath=True)
 async def gdown_(message: Message):
     """ download from gdrive """
     await Worker(message).download()

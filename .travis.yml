@@ -6,4 +6,4 @@ install:
 before_script:
   - mkdir -p logs
 script:
-  - python test.py
+  - python -m tests

@@ -8,12 +8,12 @@
 #
 # All rights reserved.
 
-declare -r pVer=$(sed -E 's/\w+ ([2-3])\.([0-9]+)\.([0-9]+)/\1.\2.\3/g' < <(python3 -V))
+declare -r pVer=$(sed -E 's/\w+ ([2-3])\.([0-9]+)\.([0-9]+)/\1.\2.\3/g' < <(python3.8 -V))
 
 log() {
     local text="$*"
     test ${#text} -gt 0 && test ${text::1} != '~' \
-        && echo -e "[$(date +'%d-%b-%y %H:%M:%S') - INIT] - ${text#\~}"
+        && echo -e "[$(date +'%d-%b-%y %H:%M:%S') - INFO] - init - ${text#\~}"
 }
 
 quit() {
@@ -24,6 +24,13 @@ quit() {
         log "$err"
     fi
     exit 1
+}
+
+stopBGProcesses() {
+    log "Exiting With SIGINT ..."
+    echo quit >> logs/logbot.stdin
+    log "Cleaning BG Processes ..."
+    sleep 3
 }
 
 runPythonCode() {

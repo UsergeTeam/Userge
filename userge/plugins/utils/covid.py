@@ -7,7 +7,7 @@
 # Author: Sumanjay (https://github.com/cyberboysumanjay) (@cyberboysumanjay)
 # All rights reserved.
 
-import requests
+import aiohttp
 from userge import userge, Message
 
 
@@ -45,7 +45,9 @@ async def covid(message: Message):
 
     if len(input_) == 0:
         try:
-            data = requests.get("https://sjprojectsapi.herokuapp.com/covid/").json()
+            async with aiohttp.ClientSession() as ses:
+                async with ses.get("https://sjprojectsapi.herokuapp.com/covid/") as res:
+                    data = await res.json()
             global_data = data['results'][0]
             nw_c = global_data['total_new_cases_today']
             nw_d = global_data['total_new_deaths_today']
@@ -61,8 +63,10 @@ async def covid(message: Message):
             await message.edit("Covid API is currently down!\nPlease Try Again Later")
     else:
         try:
-            data = requests.get(
-                "https://sjprojectsapi.herokuapp.com/covid/?country=" + input_).json()
+            async with aiohttp.ClientSession() as ses:
+                async with ses.get(
+                        "https://sjprojectsapi.herokuapp.com/covid/?country=" + input_) as res:
+                    data = await res.json()
             country_data = data['countrydata'][0]
             nw_c = country_data['total_new_cases_today']
             nw_d = country_data['total_new_deaths_today']

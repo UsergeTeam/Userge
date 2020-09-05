@@ -7,7 +7,6 @@
 # All rights reserved.
 
 import os
-import time
 
 from telegraph import upload_file
 
@@ -37,14 +36,11 @@ async def telegraph_(message: Message):
         await message.err("not supported!")
         return
     await message.edit("`processing...`")
-    c_time = time.time()
     dl_loc = await message.client.download_media(
         message=message.reply_to_message,
         file_name=Config.DOWN_PATH,
         progress=progress,
-        progress_args=(
-            "trying to download", userge, message, c_time
-        )
+        progress_args=(message, "trying to download")
     )
     await message.edit("`uploading to telegraph...`")
     try:

@@ -9,7 +9,7 @@
 import json
 from datetime import datetime
 
-import requests
+import aiohttp
 from pytz import country_timezones as c_tz, timezone as tz, country_names as c_n
 
 from userge import userge, Message, Config
@@ -80,10 +80,13 @@ async def weather_get(message: Message):
             CITY = newcity[0].strip() + "," + countrycode.strip()
 
     url = f'https://api.openweathermap.org/data/2.5/weather?q={CITY}&appid={APPID}'
-    request = requests.get(url)
-    result = json.loads(request.text)
+    async with aiohttp.ClientSession() as ses:
+        async with ses.get(url) as res:
+            req_status = res.status
+            res_text = await res.text()
+    result = json.loads(res_text)
 
-    if request.status_code != 200:
+    if req_status != 200:
         await message.edit(r"`Invalid country.. ¯\_(ツ)_/¯`", del_in=0)
         return
 

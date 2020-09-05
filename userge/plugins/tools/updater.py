@@ -34,16 +34,11 @@ async def check_update(message: Message):
     """ check or do updates """
     await message.edit("`Checking for updates, please wait....`")
     repo = Repo()
-    ups_rem = repo.remote(Config.UPSTREAM_REMOTE)
     try:
-        ups_rem.fetch()
+        repo.remote(Config.UPSTREAM_REMOTE).fetch()
     except GitCommandError as error:
         await message.err(error, del_in=5)
         return
-    for ref in ups_rem.refs:
-        branch = str(ref).split('/')[-1]
-        if branch not in repo.branches:
-            repo.create_head(branch, ref)
     flags = list(message.flags)
     pull_from_repo = False
     push_to_heroku = False
@@ -64,7 +59,7 @@ async def check_update(message: Message):
         for i in repo.iter_commits(f'HEAD..{Config.UPSTREAM_REMOTE}/{branch}'):
             out += (f"🔨 **#{i.count()}** : "
                     f"[{i.summary}]({Config.UPSTREAM_REPO.rstrip('/')}/commit/{i}) "
-                    f"👷 __{i.committer}__\n\n")
+                    f"👷 __{i.author}__\n\n")
     except GitCommandError as error:
         await message.err(error, del_in=5)
         return
@@ -73,7 +68,7 @@ async def check_update(message: Message):
             await message.edit(f'`New update found for [{branch}], Now pulling...`')
             await asyncio.sleep(1)
             repo.git.reset('--hard', 'FETCH_HEAD')
-            await CHANNEL.log(f"**UPDATED Userge from [{branch}]:\n\n📄 CHANGELOG 📄**\n\n{out}")
+            await CHANNEL.log(f"**PULLED update from [{branch}]:\n\n📄 CHANGELOG 📄**\n\n{out}")
         elif not push_to_heroku:
             changelog_str = f'**New UPDATE available for [{branch}]:\n\n📄 CHANGELOG 📄**\n\n'
             await message.edit_or_send_as_file(changelog_str + out, disable_web_page_preview=True)
@@ -85,15 +80,15 @@ async def check_update(message: Message):
         await message.edit(
             '**Userge Successfully Updated!**\n'
             '`Now restarting... Wait for a while!`', del_in=3)
-        asyncio.get_event_loop().create_task(userge.restart(update_req=True))
+        asyncio.get_event_loop().create_task(userge.restart(True))
         return
     if not Config.HEROKU_GIT_URL:
         await message.err("please set heroku things...")
         return
     await message.edit(
         f'`Now pushing updates from [{branch}] to heroku...\n'
-        'this will take upto 3 min`\n\n'
-        f'* **Restart** me after about 3 min using `{Config.CMD_TRIGGER}restart -h`\n\n'
+        'this will take upto 5 min`\n\n'
+        f'* **Restart** after 5 min using `{Config.CMD_TRIGGER}restart -h`\n\n'
         '* After restarted successfully, check updates again :)')
     if "heroku" in repo.remotes:
         remote = repo.remote("heroku")

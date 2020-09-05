@@ -26,7 +26,7 @@ async def genStrSession() -> None:  # pylint: disable=missing-function-docstring
     ) as userge:
         print("\nprocessing...")
         await userge.send_message(
-            "me", f"#USERGE #HU_STRING_SESSION\n\n```{userge.export_session_string()}```")
+            "me", f"#USERGE #HU_STRING_SESSION\n\n```{await userge.export_session_string()}```")
         print("Done !, session string has been sent to saved messages!")
 
 if __name__ == "__main__":

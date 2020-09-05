@@ -12,7 +12,8 @@ __all__ = ['Utils']
 
 from .get_logger import GetLogger
 from .get_channel_logger import GetCLogger
+from .restart import Restart
 
 
-class Utils(GetLogger, GetCLogger):
+class Utils(GetLogger, GetCLogger, Restart):
     """ methods.utils """

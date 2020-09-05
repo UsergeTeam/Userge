@@ -11,7 +11,7 @@
 import asyncio
 from typing import Dict
 
-from userge import userge, Filters, Message, Config, get_collection
+from userge import userge, filters, Message, Config, get_collection
 from userge.utils import SafeDict
 
 CHANNEL = userge.getCLogger(__name__)
@@ -19,7 +19,7 @@ SAVED_SETTINGS = get_collection("CONFIGS")
 ALLOWED_COLLECTION = get_collection("PM_PERMIT")
 
 pmCounter: Dict[int, int] = {}
-allowAllFilter = Filters.create(lambda _, __: Config.ALLOW_ALL_PMS)
+allowAllFilter = filters.create(lambda _, __, ___: Config.ALLOW_ALL_PMS)
 noPmMessage = ("Hello {fname} this is an automated message\n"
                "Please wait untill you get approved to direct message "
                "And please dont spam untill then ")
@@ -141,10 +141,7 @@ async def set_custom_nopm_message(message: Message):
     """ setup custom pm message """
     global noPmMessage  # pylint: disable=global-statement
     await message.edit('`Custom NOpm message saved`', del_in=3, log=__name__)
-    if message.reply_to_message:
-        string = message.reply_to_message.text
-    else:
-        string = message.input_str
+    string = message.input_or_reply_raw
     if string:
         noPmMessage = string
         await SAVED_SETTINGS.update_one(
@@ -166,10 +163,7 @@ async def set_custom_blockpm_message(message: Message):
     """ setup custom blockpm message """
     global blocked_message  # pylint: disable=global-statement
     await message.edit('`Custom BLOCKpm message saved`', del_in=3, log=__name__)
-    if message.reply_to_message:
-        string = message.reply_to_message.text
-    else:
-        string = message.input_str
+    string = message.input_or_reply_raw
     if string:
         blocked_message = string
         await SAVED_SETTINGS.update_one(
@@ -194,8 +188,8 @@ async def view_current_blockPM_msg(message: Message):
     await message.edit(f"--current blockPM message--\n\n{blocked_message}")
 
 
-@userge.on_filters(~allowAllFilter & Filters.incoming & Filters.private & ~Filters.bot
-                   & ~Filters.me & ~Filters.service & ~Config.ALLOWED_CHATS, allow_via_bot=False)
+@userge.on_filters(~allowAllFilter & filters.incoming & filters.private & ~filters.bot
+                   & ~filters.me & ~filters.service & ~Config.ALLOWED_CHATS, allow_via_bot=False)
 async def uninvitedPmHandler(message: Message):
     """ pm message handler """
     user_dict = await userge.get_user_dict(message.from_user.id)
@@ -223,8 +217,8 @@ async def uninvitedPmHandler(message: Message):
         await CHANNEL.log(f"#NEW_MESSAGE\n{user_dict['mention']} has messaged you")
 
 
-@userge.on_filters(~allowAllFilter & Filters.outgoing
-                   & Filters.private & ~Config.ALLOWED_CHATS, allow_via_bot=False)
+@userge.on_filters(~allowAllFilter & filters.outgoing
+                   & filters.private & ~Config.ALLOWED_CHATS, allow_via_bot=False)
 async def outgoing_auto_approve(message: Message):
     """ outgoing handler """
     userID = message.chat.id

@@ -14,15 +14,32 @@ from pyrogram.errors.exceptions.bad_request_400 import PeerIdInvalid
 
 from userge import userge, Message, Config, get_collection
 
+SAVED_SETTINGS = get_collection("CONFIGS")
 SUDO_USERS_COLLECTION = get_collection("sudo_users")
 SUDO_CMDS_COLLECTION = get_collection("sudo_cmds")
 
 
 async def _init() -> None:
+    s_o = await SAVED_SETTINGS.find_one({'_id': 'SUDO_ENABLED'})
+    if s_o:
+        Config.SUDO_ENABLED = s_o['data']
     async for i in SUDO_USERS_COLLECTION.find():
         Config.SUDO_USERS.add(i['_id'])
     async for i in SUDO_CMDS_COLLECTION.find():
         Config.ALLOWED_COMMANDS.add(i['_id'])
+
+
+@userge.on_cmd("sudo", about={'header': "enable / disable sudo access"}, allow_channels=False)
+async def sudo_(message: Message):
+    """ enable / disable sudo access """
+    if Config.SUDO_ENABLED:
+        Config.SUDO_ENABLED = False
+        await message.edit("`sudo disabled !`", del_in=3)
+    else:
+        Config.SUDO_ENABLED = True
+        await message.edit("`sudo enabled !`", del_in=3)
+    await SAVED_SETTINGS.update_one(
+        {'_id': 'SUDO_ENABLED'}, {"$set": {'data': Config.SUDO_ENABLED}}, upsert=True)
 
 
 @userge.on_cmd("addsudo", about={

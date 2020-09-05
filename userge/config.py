@@ -8,29 +8,28 @@
 #
 # All rights reserved.
 
-__all__ = ['Config']
+__all__ = ['Config', 'get_version']
 
 import os
 from typing import Set
 
 import heroku3
 from git import Repo
-from pyrogram import Filters
+from pyrogram import filters
 
-from userge.logbot import LogBot
-from userge import logging
+from userge import logging, logbot
 from . import versions
 
 _REPO = Repo()
 _LOG = logging.getLogger(__name__)
-LogBot.reply_last_msg("Setting Configs ...")
+logbot.reply_last_msg("Setting Configs ...")
 
 
 class Config:
     """ Configs to setup Userge """
     API_ID = int(os.environ.get("API_ID"))
     API_HASH = os.environ.get("API_HASH")
-    WORKERS = int(os.environ.get("WORKERS"))
+    WORKERS = min(32, int(os.environ.get("WORKERS")) or os.cpu_count() + 4)
     BOT_TOKEN = os.environ.get("BOT_TOKEN", None)
     HU_STRING_SESSION = os.environ.get("HU_STRING_SESSION", None)
     OWNER_ID = int(os.environ.get("OWNER_ID", 0))
@@ -42,6 +41,7 @@ class Config:
     SUDO_TRIGGER = os.environ.get("SUDO_TRIGGER")
     FINISHED_PROGRESS_STR = os.environ.get("FINISHED_PROGRESS_STR")
     UNFINISHED_PROGRESS_STR = os.environ.get("UNFINISHED_PROGRESS_STR")
+    CUSTOM_PACK_NAME = os.environ.get("CUSTOM_PACK_NAME")
     UPSTREAM_REPO = os.environ.get("UPSTREAM_REPO")
     UPSTREAM_REMOTE = os.environ.get("UPSTREAM_REMOTE")
     SCREENSHOT_API = os.environ.get("SCREENSHOT_API", None)
@@ -62,43 +62,54 @@ class Config:
     HEROKU_APP_NAME = os.environ.get("HEROKU_APP_NAME", None)
     HEROKU_GIT_URL = os.environ.get("HEROKU_GIT_URL", None)
     G_DRIVE_IS_TD = os.environ.get("G_DRIVE_IS_TD") == "true"
-    ANTISPAM_SENTRY = os.environ.get("ANTISPAM_SENTRY") == "true"
     LOAD_UNOFFICIAL_PLUGINS = os.environ.get(
         "LOAD_UNOFFICIAL_PLUGINS") == "true"
+    THUMB_PATH = DOWN_PATH + "thumb_image.jpg"
     TMP_PATH = "userge/plugins/temp/"
     MAX_MESSAGE_LENGTH = 4096
     MSG_DELETE_TIMEOUT = 120
     WELCOME_DELETE_TIMEOUT = 120
+    EDIT_SLEEP_TIMEOUT = 10
     AUTOPIC_TIMEOUT = 300
-    ALLOWED_CHATS = Filters.chat([])
+    ALLOWED_CHATS = filters.chat([])
     ALLOW_ALL_PMS = True
     USE_USER_FOR_CLIENT_CHECKS = False
+    SUDO_ENABLED = False
     SUDO_USERS: Set[int] = set()
     ALLOWED_COMMANDS: Set[str] = set()
+    ANTISPAM_SENTRY = False
+    RUN_DYNO_SAVER = False
     HEROKU_APP = None
+    STATUS = None
 
 
 if Config.HEROKU_API_KEY:
-    LogBot.reply_last_msg("Checking Heroku App...", _LOG.info)
+    logbot.reply_last_msg("Checking Heroku App...", _LOG.info)
     for heroku_app in heroku3.from_key(Config.HEROKU_API_KEY).apps():
         if (heroku_app and Config.HEROKU_APP_NAME
                 and heroku_app.name == Config.HEROKU_APP_NAME):
-            LogBot.edit_last_msg("Heroku App : %s Found..." %
-                                 heroku_app.name, _LOG.info)
+            _LOG.info("Heroku App : %s Found...", heroku_app.name)
             Config.HEROKU_APP = heroku_app
             break
-    LogBot.del_last_msg()
+    logbot.del_last_msg()
+
+
+try:
+    for ref in _REPO.remote(Config.UPSTREAM_REMOTE).refs:
+        branch = str(ref).split('/')[-1]
+        if branch not in _REPO.branches:
+            _REPO.create_head(branch, ref)
+except ValueError as v_e:
+    _LOG.error(v_e)
 
 
 def get_version() -> str:
     """ get userge version """
     ver = f"{versions.__major__}.{versions.__minor__}.{versions.__micro__}"
     if "/usergeteam/userge" in Config.UPSTREAM_REPO.lower():
-        stable = (getattr(versions, '__stable__', None)
-                  or f"{versions.__major__}.{versions.__minor__}.{versions.__micro__ - 1}")
-        diff = list(_REPO.iter_commits(f'v{stable}..HEAD'))
+        diff = list(_REPO.iter_commits(f'v{ver}..HEAD'))
         if diff:
-            return f"{ver}-staging.{len(diff)}"
+            return f"{ver}-patch.{len(diff)}"
     else:
         diff = list(_REPO.iter_commits(
             f'{Config.UPSTREAM_REMOTE}/master..HEAD'))

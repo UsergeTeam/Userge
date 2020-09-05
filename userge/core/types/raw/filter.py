@@ -11,9 +11,12 @@
 __all__ = ['Filter', 'clear_db']
 
 import asyncio
-from typing import List, Tuple, Callable, Any, Optional
+from typing import List, Tuple, Callable, Any, Optional, Union
 
-from pyrogram.client.handlers.handler import Handler
+from pyrogram import filters as rawfilters
+from pyrogram.filters import Filter as RawFilter
+from pyrogram.handlers import MessageHandler
+from pyrogram.handlers.handler import Handler
 
 from userge import logging, Config
 from ... import client as _client, get_collection  # pylint: disable=unused-import
@@ -88,32 +91,61 @@ asyncio.get_event_loop().run_until_complete(_main())
 class Filter:
     """ filter class """
     def __init__(self,
+                 filters: RawFilter,
                  client: '_client.Userge',
                  group: int,
-                 allow_via_bot: bool) -> None:
+                 allow_private: bool,
+                 allow_bots: bool,
+                 allow_groups: bool,
+                 allow_channels: bool,
+                 only_admins: bool,
+                 allow_via_bot: bool,
+                 check_client: bool,
+                 check_downpath: bool,
+                 check_change_info_perm: bool,
+                 check_edit_perm: bool,
+                 check_delete_perm: bool,
+                 check_restrict_perm: bool,
+                 check_promote_perm: bool,
+                 check_invite_perm: bool,
+                 check_pin_perm: bool,
+                 name: str = '') -> None:
+        self.filters = rawfilters.create(lambda _, __, ___: self.is_enabled) & filters
+        self.name = name
+        self.scope: List[str] = []
+        if allow_bots:
+            self.scope.append('bot')
+        if allow_private:
+            self.scope.append('private')
+        if allow_channels:
+            self.scope.append('channel')
+        if allow_groups:
+            self.scope += ['group', 'supergroup']
+        self.only_admins = only_admins
+        self.allow_via_bot = allow_via_bot
+        self.check_client = allow_via_bot and check_client
+        self.check_downpath = check_downpath
+        self.check_change_info_perm = check_change_info_perm
+        self.check_edit_perm = check_edit_perm
+        self.check_delete_perm = check_delete_perm
+        self.check_restrict_perm = check_restrict_perm
+        self.check_promote_perm = check_promote_perm
+        self.check_invite_perm = check_invite_perm
+        self.check_pin_perm = check_pin_perm
+        self.check_perm = check_change_info_perm or check_edit_perm \
+            or check_delete_perm or check_restrict_perm or check_promote_perm \
+            or check_invite_perm or check_pin_perm
+        self.doc: Optional[str]
+        self.plugin_name: str
         self._client = client
         self._group = group
-        self._allow_via_bot = allow_via_bot
         self._enabled = True
         self._loaded = False
-        self.name: str
-        self.about: Optional[str]
+        self._func: Callable[[Any], Any]
         self._handler: Handler
-        self.plugin_name: str
 
     def __repr__(self) -> str:
-        return f"<filter - {self.name}>"
-
-    async def init(self) -> None:
-        """ initialize the filter """
-        self._enabled, loaded = _init(self.name)
-        if loaded:
-            await self.load()
-
-    @property
-    def allow_via_bot(self) -> bool:
-        """ returns bot availability """
-        return self._allow_via_bot
+        return f"<filter {self.name}>"
 
     @property
     def is_enabled(self) -> bool:
@@ -130,12 +162,25 @@ class Filter:
         """ returns load status """
         return self._loaded
 
-    def update(self, func: Callable[[Any], Any], handler: Handler) -> None:
+    async def init(self) -> None:
+        """ initialize the filter """
+        self._enabled, loaded = _init(self.name)
+        if loaded:
+            await self.load()
+
+    @classmethod
+    def parse(cls, **kwargs: Union[RawFilter, '_client.Userge', int, bool]) -> 'Filter':
+        """ parse filter """
+        return cls(**kwargs)
+
+    def update(self, func: Callable[[Any], Any], template: Callable[[Any], Any]) -> None:
         """ update filter """
-        self.name = f"{func.__module__.split('.')[-1]}.{func.__name__}"
-        self.about = func.__doc__.strip() if func.__doc__ else None
-        self._handler = handler
-        _LOG.debug(_LOG_STR, f"created filter -> {self.name}")
+        if not self.name:
+            self.name = f"{func.__module__.split('.')[-1]}.{func.__name__}"
+        self.doc = func.__doc__.strip() if func.__doc__ else None
+        self._func = func
+        self._handler = MessageHandler(template, self.filters)
+        _LOG.debug(_LOG_STR, f"updated {self}")
 
     async def enable(self) -> str:
         """ enable the filter """
@@ -143,7 +188,7 @@ class Filter:
             return ''
         self._enabled = True
         await _enable(self.name)
-        _LOG.debug(_LOG_STR, f"enabled filter -> {self.name}")
+        _LOG.debug(_LOG_STR, f"enabled {self}")
         return self.name
 
     async def disable(self) -> str:
@@ -152,20 +197,20 @@ class Filter:
             return ''
         self._enabled = False
         await _disable(self.name)
-        _LOG.debug(_LOG_STR, f"disabled filter -> {self.name}")
+        _LOG.debug(_LOG_STR, f"disabled {self}")
         return self.name
 
     async def load(self) -> str:
         """ load the filter """
-        if self._loaded or (self._client.is_bot and not self._allow_via_bot):
+        if self._loaded or (self._client.is_bot and not self.allow_via_bot):
             return ''
         self._client.add_handler(self._handler, self._group)
         # pylint: disable=protected-access
-        if self._allow_via_bot and self._client._bot is not None:
+        if self.allow_via_bot and self._client._bot is not None:
             self._client._bot.add_handler(self._handler, self._group)
         self._loaded = True
         await _load(self.name)
-        _LOG.debug(_LOG_STR, f"loaded filter -> {self.name}")
+        _LOG.debug(_LOG_STR, f"loaded {self}")
         return self.name
 
     async def unload(self) -> str:
@@ -174,9 +219,9 @@ class Filter:
             return ''
         self._client.remove_handler(self._handler, self._group)
         # pylint: disable=protected-access
-        if self._allow_via_bot and self._client._bot is not None:
+        if self.allow_via_bot and self._client._bot is not None:
             self._client._bot.remove_handler(self._handler, self._group)
         self._loaded = False
         await _unload(self.name)
-        _LOG.debug(_LOG_STR, f"unloaded filter -> {self.name}")
+        _LOG.debug(_LOG_STR, f"unloaded {self}")
         return self.name

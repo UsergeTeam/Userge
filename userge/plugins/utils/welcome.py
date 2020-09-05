@@ -8,12 +8,12 @@
 #
 # All rights reserved.
 
-from userge import userge, Filters, Message, Config, get_collection
+from userge import userge, filters, Message, Config, get_collection
 
 WELCOME_COLLECTION = get_collection("welcome")
 LEFT_COLLECTION = get_collection("left")
-WELCOME_CHATS = Filters.chat([])
-LEFT_CHATS = Filters.chat([])
+WELCOME_CHATS = filters.chat([])
+LEFT_CHATS = filters.chat([])
 CHANNEL = userge.getCLogger(__name__)
 
 
@@ -150,13 +150,13 @@ async def viewleft(msg: Message):
     await raw_view(msg, 'Left', LEFT_COLLECTION)
 
 
-@userge.on_new_member(WELCOME_CHATS, check_client=True)
+@userge.on_new_member(WELCOME_CHATS)
 async def saywel(msg: Message):
     """ welcome message handler """
     await raw_say(msg, 'Welcome', WELCOME_COLLECTION)
 
 
-@userge.on_left_member(LEFT_CHATS, check_client=True)
+@userge.on_left_member(LEFT_CHATS)
 async def sayleft(msg: Message):
     """ left message handler """
     await raw_say(msg, 'Left', LEFT_COLLECTION)
@@ -164,7 +164,7 @@ async def sayleft(msg: Message):
 
 async def raw_set(message: Message, name, collection, chats):
     replied = message.reply_to_message
-    string = message.input_or_reply_str
+    string = message.input_or_reply_raw
     if not (string or (replied and replied.media)):
         out = f"**Wrong Syntax**\ncheck `.help .set{name.lower()}`"
     else:

@@ -16,23 +16,20 @@ from typing import List
 from motor.motor_asyncio import AsyncIOMotorClient
 from motor.core import AgnosticClient, AgnosticDatabase, AgnosticCollection
 
-from userge import logging, Config
-from userge.logbot import LogBot
+from userge import logging, Config, logbot
 
 _LOG = logging.getLogger(__name__)
 _LOG_STR = "$$$>>> %s <<<$$$"
 
-LogBot.edit_last_msg("Connecting to Database ...", _LOG.info, _LOG_STR)
+logbot.edit_last_msg("Connecting to Database ...", _LOG.info, _LOG_STR)
 
 _MGCLIENT: AgnosticClient = AsyncIOMotorClient(Config.DB_URI)
 _RUN = asyncio.get_event_loop().run_until_complete
 
 if "Userge" in _RUN(_MGCLIENT.list_database_names()):
-    LogBot.reply_last_msg(
-        "Userge Database Found :) => Now Logging to it...", _LOG.info, _LOG_STR)
+    _LOG.info(_LOG_STR, "Userge Database Found :) => Now Logging to it...")
 else:
-    LogBot.reply_last_msg(
-        "Userge Database Not Found :( => Creating New Database...", _LOG.info, _LOG_STR)
+    _LOG.info(_LOG_STR, "Userge Database Not Found :( => Creating New Database...")
 
 _DATABASE: AgnosticDatabase = _MGCLIENT["Userge"]
 _COL_LIST: List[str] = _RUN(_DATABASE.list_collection_names())
@@ -47,4 +44,4 @@ def get_collection(name: str) -> AgnosticCollection:
     return _DATABASE[name]
 
 
-LogBot.del_last_msg()
+logbot.del_last_msg()

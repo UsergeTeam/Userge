@@ -130,6 +130,10 @@ dmypy.json
 .pyre/
 
 # config files
+.apt/
+.heroku/
+.profile.d/
+vendor/
 config.ini
 config.env
 .vscode/

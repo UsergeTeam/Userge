@@ -3,7 +3,6 @@
 # All rights reserved.
 
 import os
-import time
 from datetime import datetime
 
 from removebg import RemoveBg
@@ -30,14 +29,12 @@ async def remove_background(message: Message):
             and (replied.photo
                  or (replied.document and "image" in replied.document.mime_type))):
         start_t = datetime.now()
-        c_time = time.time()
         if os.path.exists(IMG_PATH):
             os.remove(IMG_PATH)
         await message.client.download_media(message=replied,
                                             file_name=IMG_PATH,
                                             progress=progress,
-                                            progress_args=(
-                                                "Downloading Image", userge, message, c_time))
+                                            progress_args=(message, "Downloading Image"))
         end_t = datetime.now()
         m_s = (end_t - start_t).seconds
         await message.edit(f"Image saved in {m_s} seconds.\nRemoving Background Now...")
@@ -45,18 +42,14 @@ async def remove_background(message: Message):
         try:
             rmbg = RemoveBg(Config.REMOVE_BG_API_KEY, "removebg_error.log")
             rmbg.remove_background_from_img_file(IMG_PATH)
-            RBG_IMG_PATH = IMG_PATH + "_no_bg.png"
+            rbg_img_path = IMG_PATH + "_no_bg.png"
             start_t = datetime.now()
-            c_time = time.time()
             await message.client.send_document(
                 chat_id=message.chat.id,
-                document=RBG_IMG_PATH,
+                document=rbg_img_path,
                 disable_notification=True,
                 progress=progress,
-                progress_args=(
-                    "Uploading", userge, message, c_time, str(RBG_IMG_PATH)
-                )
-            )
+                progress_args=(message, "Uploading", rbg_img_path))
             await message.delete()
         except Exception:
             await message.edit("Something went wrong!\nCheck your usage quota!")

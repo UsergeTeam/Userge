@@ -11,9 +11,11 @@
 __all__ = ['Conversation']
 
 import asyncio
-from typing import Union, Dict, Optional
+from typing import Union, Dict, Tuple, Optional
 
-from pyrogram import Message as RawMessage, Filters, MessageHandler
+from pyrogram import filters
+from pyrogram.types import Message as RawMessage
+from pyrogram.handlers import MessageHandler
 
 from userge import logging
 from userge.utils.exceptions import StopConversation
@@ -22,7 +24,7 @@ from ... import client as _client  # pylint: disable=unused-import
 _LOG = logging.getLogger(__name__)
 _LOG_STR = "<<<!  :::::  %s  :::::  !>>>"
 
-_CONV_DICT: Dict[int, asyncio.Queue] = {}
+_CONV_DICT: Dict[int, Union[asyncio.Queue, Tuple[int, asyncio.Queue]]] = {}
 
 
 class _MsgLimitReached(Exception):
@@ -33,14 +35,17 @@ class Conversation:
     """ Conversation class for userge """
     def __init__(self,
                  client: '_client.Userge',
+                 chat: Union[str, int],
                  user: Union[str, int],
                  timeout: Union[int, float],
                  limit: int) -> None:
         self._client = client
+        self._chat = chat
         self._user = user
         self._timeout = timeout
         self._limit = limit
         self._chat_id: int
+        self._user_id: int
         self._count = 0
 
     @property
@@ -65,8 +70,10 @@ class Conversation:
         """
         if self._count >= self._limit:
             raise _MsgLimitReached
-        response_ = await asyncio.wait_for(_CONV_DICT[self._chat_id].get(),
-                                           timeout or self._timeout)
+        queue = _CONV_DICT[self._chat_id]
+        if isinstance(queue, tuple):
+            queue = queue[1]
+        response_ = await asyncio.wait_for(queue.get(), timeout or self._timeout)
         self._count += 1
         if mark_read:
             await self.mark_read(response_)
@@ -136,23 +143,39 @@ class Conversation:
     def init(client: '_client.Userge') -> None:
         """ initialize the conversation method """
         async def _on_conversation(_, msg: RawMessage) -> None:
-            _CONV_DICT[msg.from_user.id].put_nowait(msg)
+            data = _CONV_DICT[msg.chat.id]
+            if isinstance(data, asyncio.Queue):
+                data.put_nowait(msg)
+            elif msg.from_user and msg.from_user.id == data[0]:
+                data[1].put_nowait(msg)
             msg.continue_propagation()
         client.add_handler(
             MessageHandler(
                 _on_conversation,
-                Filters.create(
-                    lambda _, query: _CONV_DICT and query.from_user
-                    and query.from_user.id in _CONV_DICT)), 0)
+                filters.create(
+                    lambda _, __, query: _CONV_DICT and query.chat
+                    and query.chat.id in _CONV_DICT, 0)))
 
     async def __aenter__(self) -> 'Conversation':
-        self._chat_id = int(self._user) if isinstance(self._user, int) else \
-            (await self._client.get_users(self._user)).id
-        _CONV_DICT[self._chat_id] = asyncio.Queue(self._limit)
+        self._chat_id = int(self._chat) if isinstance(self._chat, int) else \
+            (await self._client.get_chat(self._chat)).id
+        if self._chat_id in _CONV_DICT:
+            error = f"already started conversation with {self._chat_id} !"
+            _LOG.error(_LOG_STR, error)
+            raise StopConversation(error)
+        if self._user:
+            self._user_id = int(self._user) if isinstance(self._user, int) else \
+                (await self._client.get_users(self._user)).id
+            _CONV_DICT[self._chat_id] = (self._user_id, asyncio.Queue(self._limit))
+        else:
+            _CONV_DICT[self._chat_id] = asyncio.Queue(self._limit)
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb) -> None:
-        _CONV_DICT[self._chat_id].put_nowait(None)
+        queue = _CONV_DICT[self._chat_id]
+        if isinstance(queue, tuple):
+            queue = queue[1]
+        queue.put_nowait(None)
         del _CONV_DICT[self._chat_id]
         error = ''
         if isinstance(exc_val, asyncio.exceptions.TimeoutError):

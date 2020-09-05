@@ -20,6 +20,7 @@ _getResponse() {
         test -n $params && params="?$params"
         local rawUpdate=$(curl -s ${_api_url}${BOT_TOKEN}/${reqType}${params})
         local ok=$(echo $rawUpdate | jq .ok)
+        test -z $ok && return 1
         if test $ok = true; then
             if test $parse = true; then
                 local msg="msg$_mid"
@@ -39,8 +40,8 @@ _getResponse() {
 }
 
 _urlEncode() {
-    echo $(echo "${1#\~}" | sed -E 's/(\\t)|(\\n)/ /g' |
-        curl -Gso /dev/null -w %{url_effective} --data-urlencode @- "" | cut -c 3-)
+    echo "<code>$(echo "${1#\~}" | sed -E 's/(\\t)|(\\n)/ /g' |
+        curl -Gso /dev/null -w %{url_effective} --data-urlencode @- "" | cut -c 3-)</code>"
 }
 
 getMessageCount() {
@@ -70,6 +71,7 @@ rawsendMessage() {
     local params=(
         chat_id=$1
         text=$(_urlEncode "$2")
+        parse_mode=HTML
     )
     test -n $3 && params+=(reply_to_message_id=$3)
     log "$2"
@@ -81,6 +83,7 @@ raweditMessageText() {
         chat_id=$1
         message_id=$2
         text=$(_urlEncode "$3")
+        parse_mode=HTML
     )
     log "$3"
     _getResponse ${FUNCNAME#raw} ${params[*]}

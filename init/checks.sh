@@ -15,8 +15,8 @@ _checkBashReq() {
 
 _checkPythonVersion() {
     log "Checking Python Version ..."
-    test $(sed 's/\.//g' <<< $pVer) -lt 370 \
-        && quit "You MUST have a python version of at least 3.7.0 !"
+    ( test -z $pVer || test $(sed 's/\.//g' <<< $pVer) -lt 380 ) \
+        && quit "You MUST have a python version of at least 3.8.0 !"
     log "\tFound PYTHON - v$pVer ..."
 }
 
@@ -46,8 +46,7 @@ _checkRequiredVars() {
 _checkDefaultVars() {
     replyLastMessage "Checking Default ENV Vars ..."
     declare -rA def_vals=(
-        [WORKERS]=4
-        [ANTISPAM_SENTRY]=false
+        [WORKERS]=0
         [PREFERRED_LANGUAGE]="en"
         [DOWN_PATH]="downloads"
         [UPSTREAM_REMOTE]="upstream"
@@ -67,7 +66,7 @@ _checkDefaultVars() {
     DOWN_PATH=${DOWN_PATH%/}/
     [[ -n $HEROKU_API_KEY && -n $HEROKU_APP_NAME ]] \
         && declare -gx HEROKU_GIT_URL="https://api:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git"
-    for var in ANTISPAM_SENTRY G_DRIVE_IS_TD LOAD_UNOFFICIAL_PLUGINS; do
+    for var in G_DRIVE_IS_TD LOAD_UNOFFICIAL_PLUGINS; do
         eval $var=$(tr "[:upper:]" "[:lower:]" <<< ${!var})
     done
     local nameAndUName=$(grep -oP "(?<=\/\/)(.+)(?=\@)" <<< $DATABASE_URL)
@@ -78,12 +77,10 @@ _checkDatabase() {
     editLastMessage "Checking DATABASE_URL ..."
     local err=$(runPythonCode '
 import pymongo
-
 try:
     pymongo.MongoClient("'$DATABASE_URL'").list_database_names()
 except Exception as e:
-    print(e)
-')
+    print(e)')
     [[ $err ]] && quit "pymongo response > $err" || log "\tpymongo response > {status : 200}"
 }
 
@@ -120,7 +117,7 @@ _checkBins() {
 _checkGit() {
     editLastMessage "Checking GIT ..."
     if test ! -d .git; then
-        if test -n $HEROKU_GIT_URL; then
+        if test ! -z $HEROKU_GIT_URL; then
             replyLastMessage "\tClonning Heroku Git ..."
             gitClone $HEROKU_GIT_URL tmp_git || quit "Invalid HEROKU_API_KEY or HEROKU_APP_NAME var !"
             mv tmp_git/.git .
