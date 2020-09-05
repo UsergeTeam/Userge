@@ -17,20 +17,13 @@ log() {
 }
 
 quit() {
-    local err="\t:: ERROR :: $1\nExiting With SIGTERM ..."
+    local err="\t:: ERROR :: $1\nExiting With SIGTERM (143) ..."
     if (( getMessageCount )); then
         replyLastMessage "$err"
     else
         log "$err"
     fi
-    exit 1
-}
-
-stopBGProcesses() {
-    log "Exiting With SIGINT ..."
-    echo quit >> logs/logbot.stdin
-    log "Cleaning BG Processes ..."
-    sleep 3
+    exit 143
 }
 
 runPythonCode() {

@@ -42,6 +42,10 @@ startLogBotPolling() {
     test -z $BOT_TOKEN || _polling &
 }
 
+endLogBotPolling() {
+    test -z $BOT_TOKEN || echo quit >> logs/logbot.stdin
+}
+
 _polling() {
     local cmd func args input=logs/logbot.stdin
     rm -f $input

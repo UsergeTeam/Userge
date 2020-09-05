@@ -1,4 +1,4 @@
-""" run shell or python command """
+""" run shell or python command(s) """
 
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
@@ -17,65 +17,97 @@ from os import geteuid
 
 from pyrogram.errors.exceptions.bad_request_400 import MessageNotModified
 
-from userge import userge, Message
+from userge import userge, Message, Config
 from userge.utils import runcmd
 
 
 @userge.on_cmd("eval", about={
     'header': "run python code line | lines",
-    'usage': "{tr}eval [code lines]",
-    'examples': "{tr}eval print('Userge')"}, allow_channels=False)
+    'flags': {
+        '-d': "debug mode (increase sensitivity)",
+        '-s': "silent mode (hide STDIN)"},
+    'usage': "{tr}eval [flag(s)] [code lines]",
+    'examples': [
+        "{tr}eval print('Userge')", "{tr}eval -s print('Userge')",
+        "{tr}eval -d 5 + 6", "{tr}eval -s -d 5 + 6"]}, allow_channels=False)
 async def eval_(message: Message):
     """ run python code """
     cmd = await init_func(message)
     if cmd is None:
         return
+    flags = []
+    for flag in ('-s', '-d', '-s'):
+        if cmd.startswith(flag):
+            flags.append(flag)
+            cmd = cmd[2:].strip()
+    if not cmd:
+        await message.err("Unable to Parse Input!")
+        return
+    silent_mode, debug_mode, mode = False, False, ""
+    if '-s' in flags:
+        silent_mode = True
+        mode += "<silent> "
+    if '-d' in flags:
+        debug_mode = True
+        mode += "<debug> "
+    await message.edit(f"`Executing eval in {mode or '<normal> '}mode ...`", parse_mode='md')
     old_stderr = sys.stderr
     old_stdout = sys.stdout
     redirected_output = sys.stdout = io.StringIO()
     redirected_error = sys.stderr = io.StringIO()
-    stdout, stderr, exc = None, None, None
+    ret_val, stdout, stderr, exc = None, None, None, None
 
     async def aexec(code):
-        exec("async def __aexec(userge, message):\n "  # nosec pylint: disable=W0122
-             + '\n '.join(line for line in code.split('\n')))
+        head = "async def __aexec(userge, message):\n "
+        if '\n' in code:
+            lines = code.split('\n')
+            body = '\n '.join(line for line in lines[:-1])
+            tail = lines[-1]
+        else:
+            body = ""
+            tail = code
+        tail = f"\n {tail}" if "return " in tail else f"\n return {tail}"
+        exec(head + body + tail)  # nosec pylint: disable=W0122
         return await locals()['__aexec'](userge, message)
     try:
-        await aexec(cmd)
-    except Exception:
-        exc = traceback.format_exc()
-    stdout = redirected_output.getvalue()
-    stderr = redirected_error.getvalue()
+        ret_val = await aexec(cmd)
+    except Exception:  # pylint: disable=broad-except
+        exc = traceback.format_exc().strip()
+    stdout = redirected_output.getvalue().strip()
+    stderr = redirected_error.getvalue().strip()
     sys.stdout = old_stdout
     sys.stderr = old_stderr
-    if exc:
-        evaluation = exc
-    elif stderr:
-        evaluation = stderr
-    elif stdout:
-        evaluation = stdout
+    evaluation = exc or stderr or stdout
+    output = ""
+    if debug_mode:
+        evaluation = ret_val or evaluation
+    if not silent_mode:
+        output += f"**>>>** ```{cmd}```\n\n"
+    if evaluation:
+        output += f"**>>>** ```{evaluation}```"
+    await asyncio.sleep(1)
+    if output:
+        await message.edit_or_send_as_file(text=output,
+                                           parse_mode='md',
+                                           filename="eval.txt",
+                                           caption=cmd)
     else:
-        evaluation = "Success"
-    output = "**EVAL**:\n```{}```\n\n\
-**OUTPUT**:\n```{}```".format(cmd, evaluation.strip())
-    await message.edit_or_send_as_file(text=output,
-                                       parse_mode='md',
-                                       filename="eval.txt",
-                                       caption=cmd)
+        await message.delete()
 
 
 @userge.on_cmd("exec", about={
-    'header': "run shell commands",
+    'header': "rrun commands in exec",
     'usage': "{tr}exec [commands]",
     'examples': "{tr}exec echo \"Userge\""}, allow_channels=False)
 async def exec_(message: Message):
-    """ run shell command """
+    """ run commands in exec """
     cmd = await init_func(message)
     if cmd is None:
         return
+    await message.edit("`Executing exec ...`")
     try:
         out, err, ret, pid = await runcmd(cmd)
-    except Exception as t_e:
+    except Exception as t_e:  # pylint: disable=broad-except
         await message.err(t_e)
         return
     out = out or "no output"
@@ -91,14 +123,15 @@ __Command:__\n`{cmd}`\n__PID:__\n`{pid}`\n__RETURN:__\n`{ret}`\n\n\
 
 
 @userge.on_cmd("term", about={
-    'header': "run terminal commands",
+    'header': "run commands in shell (terminl)",
     'usage': "{tr}term [commands]",
     'examples': "{tr}term echo \"Userge\""}, allow_channels=False)
 async def term_(message: Message):
-    """ run shell command (live update) """
+    """ run commands in shell (terminl with live update) """
     cmd = await init_func(message)
     if cmd is None:
         return
+    await message.edit("`Executing terminal ...`")
     try:
         t_obj = await Term.execute(cmd)  # type: Term
     except Exception as t_e:
@@ -121,7 +154,7 @@ async def term_(message: Message):
             await message.reply("`process canceled!`")
             return
         await asyncio.sleep(0.5)
-        if count >= 10:
+        if count >= Config.EDIT_SLEEP_TIMEOUT * 2:
             count = 0
             out_data = f"<pre>{output}{t_obj.read_line}</pre>"
             await message.try_to_edit(out_data, parse_mode='html')
@@ -134,7 +167,6 @@ async def term_(message: Message):
 
 
 async def init_func(message: Message):
-    await message.edit("`Processing ...`")
     cmd = message.input_str
     if not cmd:
         await message.err("No Command Found!")

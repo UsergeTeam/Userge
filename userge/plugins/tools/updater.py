@@ -7,11 +7,12 @@
 # All rights reserved.
 
 import asyncio
+from time import time
 
-from git import Repo
+from git import Repo, Remote
 from git.exc import GitCommandError
 
-from userge import userge, Message, Config
+from userge import userge, Message, Config, pool
 
 LOG = userge.getLogger(__name__)
 CHANNEL = userge.getCLogger(__name__)
@@ -85,7 +86,7 @@ async def check_update(message: Message):
     if not Config.HEROKU_GIT_URL:
         await message.err("please set heroku things...")
         return
-    await message.edit(
+    sent = await message.edit(
         f'`Now pushing updates from [{branch}] to heroku...\n'
         'this will take upto 5 min`\n\n'
         f'* **Restart** after 5 min using `{Config.CMD_TRIGGER}restart -h`\n\n'
@@ -95,5 +96,36 @@ async def check_update(message: Message):
         remote.set_url(Config.HEROKU_GIT_URL)
     else:
         remote = repo.create_remote("heroku", Config.HEROKU_GIT_URL)
-    remote.push(refspec=f'{branch}:master', force=True)
-    await message.edit(f"**HEROKU APP : {Config.HEROKU_APP.name} is up-to-date with [{branch}]**")
+    await _push_to_heroku(sent, remote, branch)
+    await sent.edit(f"**HEROKU APP : {Config.HEROKU_APP.name} is up-to-date with [{branch}]**")
+
+
+@pool.run_in_thread
+def _push_to_heroku(sent: Message, remote: Remote, branch: str) -> None:
+    start_time = time()
+
+    def progress(op_code, cur_count, max_count=100, message=''):
+        nonlocal start_time
+        cur_prog = round(cur_count * 100 / max_count, 2)
+        prog = f"**code** : `{op_code}` **prog** : `{cur_prog}`"
+        if message:
+            prog += f" || `{message}`"
+        LOG.debug(prog)
+        now = time()
+        if (now - start_time) > 3 or message:
+            start_time = now
+            try:
+                run(sent.try_to_edit(f"{cur_msg}\n\n{prog}"))
+            except TypeError:
+                pass
+    cur_msg = sent.text.html
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    run = loop.run_until_complete
+    try:
+        remote.push(refspec=f'{branch}:master', progress=progress, force=True)
+    except GitCommandError as g_e:
+        LOG.exception(g_e)
+        run(sent.err(f"{g_e}, {Config.CMD_TRIGGER}restart -h and try again!"))
+    finally:
+        loop.close()

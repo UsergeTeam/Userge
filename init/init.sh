@@ -12,6 +12,9 @@
 . init/utils.sh
 . init/checks.sh
 
+trap handleSigTerm TERM
+trap handleSigInt INT
+
 initUserge() {
     printLogo
     assertPrerequisites
@@ -27,12 +30,22 @@ startUserge() {
 
 stopUserge() {
     sendMessage "Exiting Userge ..."
-    stopBGProcesses
     exit 0
 }
 
-trap quit TERM
-trap stopUserge INT
+handleSigTerm() {
+    log "Exiting With SIGTERM (143) ..."
+    stopUserge
+    endLogBotPolling
+    exit 143
+}
+
+handleSigInt() {
+    log "Exiting With SIGINT (130) ..."
+    stopUserge
+    endLogBotPolling
+    exit 130
+}
 
 runUserge() {
     initUserge
