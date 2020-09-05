@@ -193,11 +193,25 @@ async def upload_path(message: Message, path: Path, del_path):
 
 
 async def upload(message: Message, path: Path, del_path: bool = False, extra: str = ''):
-    if path.name.endswith((".mkv", ".mp4", ".webm")) and ('d' not in message.flags):
+    if path.name.lower().endswith((
+        ".mkv",
+        ".mp4",
+        ".webm"
+    )) and ('d' not in message.flags):
         await vid_upload(message, path, del_path, extra)
-    elif path.name.endswith((".mp3", ".flac", ".wav", ".m4a")) and ('d' not in message.flags):
+    elif path.name.lower().endswith((
+        ".mp3",
+        ".flac",
+        ".wav",
+        ".m4a"
+    )) and ('d' not in message.flags):
         await audio_upload(message, path, del_path, extra)
-    elif path.name.endswith((".jpg", ".jpeg", ".png", ".bmp")) and ('d' not in message.flags):
+    elif path.name.lower().endswith((
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".bmp"
+    )) and ('d' not in message.flags):
         await photo_upload(message, path, del_path, extra)
     else:
         await doc_upload(message, path, del_path, extra)
