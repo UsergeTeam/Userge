@@ -23,34 +23,24 @@ from userge.utils import runcmd
 
 @userge.on_cmd("eval", about={
     'header': "run python code line | lines",
-    'flags': {
-        '-d': "debug mode (increase sensitivity)",
-        '-s': "silent mode (hide STDIN)"},
-    'usage': "{tr}eval [flag(s)] [code lines]",
+    'flags': {'-s': "silent mode (hide STDIN)"},
+    'usage': "{tr}eval [flag] [code lines]",
     'examples': [
         "{tr}eval print('Userge')", "{tr}eval -s print('Userge')",
-        "{tr}eval -d 5 + 6", "{tr}eval -s -d 5 + 6"]}, allow_channels=False)
+        "{tr}eval 5 + 6", "{tr}eval -s 5 + 6"]}, allow_channels=False)
 async def eval_(message: Message):
     """ run python code """
     cmd = await init_func(message)
     if cmd is None:
         return
-    flags = []
-    for flag in ('-s', '-d', '-s'):
-        if cmd.startswith(flag):
-            flags.append(flag)
-            cmd = cmd[2:].strip()
+    silent_mode = False
+    if cmd.startswith('-s'):
+        silent_mode = True
+        cmd = cmd[2:].strip()
     if not cmd:
         await message.err("Unable to Parse Input!")
         return
-    silent_mode, debug_mode, mode = False, False, ""
-    if '-s' in flags:
-        silent_mode = True
-        mode += "<silent> "
-    if '-d' in flags:
-        debug_mode = True
-        mode += "<debug> "
-    await message.edit(f"`Executing eval in {mode or '<normal> '}mode ...`", parse_mode='md')
+    await message.edit(f"`Executing eval ...`", parse_mode='md')
     old_stderr = sys.stderr
     old_stdout = sys.stdout
     redirected_output = sys.stdout = io.StringIO()
@@ -61,8 +51,10 @@ async def eval_(message: Message):
         head = "async def __aexec(userge, message):\n "
         if '\n' in code:
             rest_code = '\n '.join(line for line in code.split('\n'))
+        elif any(True for k_ in ('pass', 'break', 'continue', 'return', 'raise') if k_ in code):
+            rest_code = f"\n {code}"
         else:
-            rest_code = f"\n {code}" if "return " in code else f"\n return {code}"
+            rest_code = f"\n return {code}"
         exec(head + rest_code)  # nosec pylint: disable=W0122
         return await locals()['__aexec'](userge, message)
     try:
@@ -73,15 +65,12 @@ async def eval_(message: Message):
     stderr = redirected_error.getvalue().strip()
     sys.stdout = old_stdout
     sys.stderr = old_stderr
-    evaluation = exc or stderr or stdout
+    evaluation = exc or stderr or stdout or ret_val
     output = ""
-    if debug_mode:
-        evaluation = ret_val or evaluation
     if not silent_mode:
-        output += f"**>>>** ```{cmd}```\n\n"
+        output += f"**>** ```{cmd}```\n\n"
     if evaluation:
-        output += f"**>>>** ```{evaluation}```"
-    await asyncio.sleep(1)
+        output += f"**>** ```{evaluation}```"
     if output:
         await message.edit_or_send_as_file(text=output,
                                            parse_mode='md',

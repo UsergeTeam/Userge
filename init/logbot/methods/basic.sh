@@ -8,26 +8,20 @@
 #
 # All rights reserved.
 
-_delay=0.6
-
 sendMessage() {
     test -z "$1" || rawsendMessage $LOG_CHANNEL_ID "$1"
-    sleep $_delay
 }
 
 replyLastMessage() {
     test -z "$1" || getLastMessage reply "$1"
-    sleep $_delay
 }
 
 editLastMessage() {
     test -z "$1" || getLastMessage edit "$1"
-    sleep $_delay
 }
 
 deleteLastMessage() {
     getLastMessage delete
-    sleep $_delay
 }
 
 deleteMessages() {

@@ -68,14 +68,26 @@ async def check_update(message: Message):
         if pull_from_repo:
             await message.edit(f'`New update found for [{branch}], Now pulling...`')
             await asyncio.sleep(1)
-            repo.git.reset('--hard', f'origin/{branch}')
+            repo.git.checkout(branch, force=True)
+            repo.git.reset('--hard', branch)
             await CHANNEL.log(f"**PULLED update from [{branch}]:\n\n📄 CHANGELOG 📄**\n\n{out}")
         elif not push_to_heroku:
             changelog_str = f'**New UPDATE available for [{branch}]:\n\n📄 CHANGELOG 📄**\n\n'
             await message.edit_or_send_as_file(changelog_str + out, disable_web_page_preview=True)
             return
     elif not push_to_heroku:
-        await message.edit(f'**Userge is up-to-date with [{branch}]**', del_in=5)
+        if pull_from_repo:
+            active = repo.active_branch.name
+            await message.edit(
+                f'`Moving HEAD from [{active}] >>> [{branch}] ...`', parse_mode='md')
+            await asyncio.sleep(1)
+            repo.git.checkout(branch, force=True)
+            repo.git.reset('--hard', branch)
+            await CHANNEL.log(f"`Moved HEAD from [{active}] >>> [{branch}] !`")
+            await message.edit('`Now restarting... Wait for a while!`', del_in=3)
+            asyncio.get_event_loop().create_task(userge.restart())
+        else:
+            await message.edit(f'**Userge is up-to-date with [{branch}]**', del_in=5)
         return
     if not push_to_heroku:
         await message.edit(
