@@ -57,7 +57,7 @@ async def check_update(message: Message):
         return
     out = ''
     try:
-        for i in repo.iter_commits(f'{branch}..{Config.UPSTREAM_REMOTE}/{branch}'):
+        for i in repo.iter_commits(f'HEAD..{Config.UPSTREAM_REMOTE}/{branch}'):
             out += (f"🔨 **#{i.count()}** : "
                     f"[{i.summary}]({Config.UPSTREAM_REPO.rstrip('/')}/commit/{i}) "
                     f"👷 __{i.author}__\n\n")
@@ -70,6 +70,7 @@ async def check_update(message: Message):
             await asyncio.sleep(1)
             repo.git.checkout(branch, force=True)
             repo.git.reset('--hard', branch)
+            repo.git.pull(Config.UPSTREAM_REMOTE, branch, force=True)
             await CHANNEL.log(f"**PULLED update from [{branch}]:\n\n📄 CHANGELOG 📄**\n\n{out}")
         elif not push_to_heroku:
             changelog_str = f'**New UPDATE available for [{branch}]:\n\n📄 CHANGELOG 📄**\n\n'

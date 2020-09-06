@@ -40,7 +40,7 @@ async def eval_(message: Message):
     if not cmd:
         await message.err("Unable to Parse Input!")
         return
-    await message.edit(f"`Executing eval ...`", parse_mode='md')
+    await message.edit("`Executing eval ...`", parse_mode='md')
     old_stderr = sys.stderr
     old_stdout = sys.stdout
     redirected_output = sys.stdout = io.StringIO()
