@@ -8,20 +8,23 @@
 #
 # All rights reserved.
 
+declare -i _to=1
+declare -r _input=logs/logbot.stdin
+
 startLogBotPolling() {
     test -z $BOT_TOKEN || _polling &
 }
 
 endLogBotPolling() {
-    test -z $BOT_TOKEN || echo quit >> logs/logbot.stdin
+    test -z $BOT_TOKEN || echo quit >> $_input
 }
 
 _polling() {
-    local cmd func args input=logs/logbot.stdin
-    rm -f $input
+    local cmd func args
+    _resetConnection
     log "LogBot Polling Started !"
     while true; do
-        cmd="$(head -n 1 $input 2> /dev/null && sed -i '1d' $input)"
+        cmd="$(head -n 1 $_input 2> /dev/null && sed -i '1d' $_input)"
         test -z "$cmd" && _pollsleep && continue
         test $_to -gt 3 && let _to-=3
         case $cmd in
@@ -39,12 +42,14 @@ _polling() {
         esac
         sleep 1
     done
-    log "LogBot Polling Ended with SIGTERM !"
-    rm -f $input
+    log "LogBot Polling Ended !"
+    _resetConnection
     exit 0
 }
 
-declare -i _to=1
+_resetConnection() {
+    rm -f $_input
+}
 
 _pollsleep() {
     let _to+=1

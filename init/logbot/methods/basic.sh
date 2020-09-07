@@ -9,23 +9,23 @@
 # All rights reserved.
 
 sendMessage() {
-    test -z "$1" || rawsendMessage $LOG_CHANNEL_ID "$1"
+    test -z "$1" || api.sendMessage $LOG_CHANNEL_ID "$1"
 }
 
 replyLastMessage() {
-    test -z "$1" || getLastMessage reply "$1"
+    test -z "$1" || raw.getLastMessage reply "$1"
 }
 
 editLastMessage() {
-    test -z "$1" || getLastMessage edit "$1"
+    test -z "$1" || raw.getLastMessage edit "$1"
 }
 
 deleteLastMessage() {
-    getLastMessage delete
+    raw.getLastMessage delete
 }
 
 deleteMessages() {
-    getMessageCount
+    raw.getMessageCount
     local count=$(($?))
     for ((i=0; i<$count; i++)); do
         deleteLastMessage
@@ -33,7 +33,7 @@ deleteMessages() {
 }
 
 printMessages() {
-    for msg in $(getAllMessages); do
+    for msg in $(raw.getAllMessages); do
         printf "{%s: %s}\n" $msg "$($msg.print)"
     done
 }

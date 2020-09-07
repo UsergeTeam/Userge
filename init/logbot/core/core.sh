@@ -8,5 +8,7 @@
 #
 # All rights reserved.
 
-. init/logbot/core/core.sh
-. init/logbot/methods/methods.sh
+. init/logbot/core/types/types.sh
+. init/logbot/core/api.sh
+. init/logbot/core/rawMethods.sh
+. init/logbot/core/apiMethods.sh
