@@ -11,6 +11,7 @@
 import io
 import sys
 import asyncio
+import keyword
 import traceback
 from getpass import getuser
 from os import geteuid
@@ -51,7 +52,8 @@ async def eval_(message: Message):
         head = "async def __aexec(userge, message):\n "
         if '\n' in code:
             rest_code = '\n '.join(line for line in code.split('\n'))
-        elif any(True for k_ in ('pass', 'break', 'continue', 'return', 'raise') if k_ in code):
+        elif any(True for k_ in keyword.kwlist
+                 if k_ not in ('True', 'False', 'None') and code.startswith(k_)):
             rest_code = f"\n {code}"
         else:
             rest_code = f"\n return {code}"
@@ -70,7 +72,7 @@ async def eval_(message: Message):
     if not silent_mode:
         output += f"**>** ```{cmd}```\n\n"
     if evaluation:
-        output += f"**>** ```{evaluation}```"
+        output += f"**>>** ```{evaluation}```"
     if output:
         await message.edit_or_send_as_file(text=output,
                                            parse_mode='md',
@@ -119,7 +121,7 @@ async def term_(message: Message):
     await message.edit("`Executing terminal ...`")
     try:
         t_obj = await Term.execute(cmd)  # type: Term
-    except Exception as t_e:
+    except Exception as t_e:  # pylint: disable=broad-except
         await message.err(t_e)
         return
     curruser = getuser()
