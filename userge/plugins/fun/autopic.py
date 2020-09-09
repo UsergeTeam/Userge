@@ -26,7 +26,7 @@ LOG = userge.getLogger(__name__)
 
 
 async def _init() -> None:
-    global UPDATE_PIC
+    global UPDATE_PIC  # pylint: disable=global-statement
     data = await SAVED_SETTINGS.find_one({'_id': 'UPDATE_PIC'})
     if data:
         UPDATE_PIC = data['on']
@@ -35,22 +35,23 @@ async def _init() -> None:
                 media_file_.write(base64.b64decode(data['media']))
 
 
-@userge.on_cmd("autopic", about={
-    'header': "set profile picture",
-    'usage': "{tr}autopic\n{tr}autopic [image path]\nset timeout using {tr}sapicto"},
-    allow_channels=False)
+@userge.on_cmd(
+    "autopic", about={
+        'header': "set profile picture",
+        'usage': "{tr}autopic\n{tr}autopic [image path]\nset timeout using {tr}sapicto"},
+    allow_channels=False, allow_via_bot=False)
 async def autopic(message: Message):
-    global UPDATE_PIC
+    global UPDATE_PIC  # pylint: disable=global-statement
     await message.edit('`processing...`')
     if UPDATE_PIC:
         if isinstance(UPDATE_PIC, asyncio.Task):
             UPDATE_PIC.cancel()
         UPDATE_PIC = False
-        SAVED_SETTINGS.update_one({'_id': 'UPDATE_PIC'},
-                                  {"$set": {'on': False}}, upsert=True)
+        await SAVED_SETTINGS.update_one({'_id': 'UPDATE_PIC'},
+                                        {"$set": {'on': False}}, upsert=True)
         await asyncio.sleep(1)
         await message.edit('`setting old photo...`')
-        await userge.set_profile_photo(BASE_PIC)
+        await userge.set_profile_photo(photo=BASE_PIC)
         await message.edit('auto profile picture updation has been **stopped**',
                            del_in=5, log=__name__)
         return
@@ -78,8 +79,8 @@ async def autopic(message: Message):
         async with aiofiles.open(BASE_PIC, "rb") as media_file:
             media = base64.b64encode(await media_file.read())
         data_dict['media'] = media
-    SAVED_SETTINGS.update_one({'_id': 'UPDATE_PIC'},
-                              {"$set": data_dict}, upsert=True)
+    await SAVED_SETTINGS.update_one({'_id': 'UPDATE_PIC'},
+                                    {"$set": data_dict}, upsert=True)
     await message.edit(
         'auto profile picture updation has been **started**', del_in=3, log=__name__)
     UPDATE_PIC = asyncio.get_event_loop().create_task(apic_worker())
@@ -113,7 +114,7 @@ async def apic_worker():
                 xy=((i_width - d_width) / 2, i_height - d_height - int((20 / 640)*i_width)),
                 text=date_time, fill=(255, 255, 255), font=s_font, align="center")
             img.convert('RGB').save(MDFY_PIC)
-            await userge.set_profile_photo(MDFY_PIC)
+            await userge.set_profile_photo(photo=MDFY_PIC)
             os.remove(MDFY_PIC)
             LOG.info("profile photo has been updated!")
         await asyncio.sleep(1)

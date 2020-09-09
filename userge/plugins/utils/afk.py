@@ -12,7 +12,7 @@ import time
 import asyncio
 from random import choice, randint
 
-from userge import userge, Message, Filters, Config, get_collection
+from userge import userge, Message, filters, Config, get_collection
 from userge.utils import time_formatter
 
 CHANNEL = userge.getCLogger(__name__)
@@ -20,14 +20,14 @@ SAVED_SETTINGS = get_collection("CONFIGS")
 AFK_COLLECTION = get_collection("AFK")
 
 IS_AFK = False
-IS_AFK_FILTER = Filters.create(lambda _, __: bool(IS_AFK))
+IS_AFK_FILTER = filters.create(lambda _, __, ___: bool(IS_AFK))
 REASON = ''
 TIME = 0.0
 USERS = {}
 
 
 async def _init() -> None:
-    global IS_AFK, REASON, TIME
+    global IS_AFK, REASON, TIME  # pylint: disable=global-statement
     data = await SAVED_SETTINGS.find_one({'_id': 'AFK'})
     if data:
         IS_AFK = data['on']
@@ -44,7 +44,7 @@ async def _init() -> None:
     'usage': "{tr}afk or {tr}afk [reason]"}, allow_channels=False)
 async def active_afk(message: Message) -> None:
     """ turn on or off afk mode """
-    global REASON, IS_AFK, TIME
+    global REASON, IS_AFK, TIME  # pylint: disable=global-statement
     IS_AFK = True
     TIME = time.time()
     REASON = message.input_str
@@ -56,19 +56,22 @@ async def active_afk(message: Message) -> None:
             {'_id': 'AFK'}, {"$set": {'on': True, 'data': REASON, 'time': TIME}}, upsert=True))
 
 
-@userge.on_filters(IS_AFK_FILTER & ~Filters.me & ~Filters.bot & (
-    Filters.mentioned | (Filters.private & ~Filters.service & Config.ALLOWED_CHATS)))
+@userge.on_filters(IS_AFK_FILTER & ~filters.me & ~filters.bot & ~filters.edited & (
+    filters.mentioned | (filters.private & ~filters.service & (
+        filters.create(lambda _, __, ___: Config.ALLOW_ALL_PMS) | Config.ALLOWED_CHATS))),
+    allow_via_bot=False)
 async def handle_afk_incomming(message: Message) -> None:
     """ handle incomming messages when you afk """
     user_id = message.from_user.id
     chat = message.chat
-    user_dict = await userge.get_user_dict(user_id)
+    user_dict = await message.client.get_user_dict(user_id)
     afk_time = time_formatter(round(time.time() - TIME))
     coro_list = []
     if user_id in USERS:
         if not (USERS[user_id][0] + USERS[user_id][1]) % randint(2, 4):
             if REASON:
-                out_str = f"I'm still **AFK**.\nReason: `{REASON}`\nLast Seen: `{afk_time} ago`"
+                out_str = (f"I'm still **AFK**.\nReason: <code>{REASON}</code>\n"
+                           f"Last Seen: `{afk_time} ago`")
             else:
                 out_str = choice(AFK_REASONS)
             coro_list.append(message.reply(out_str))
@@ -78,7 +81,8 @@ async def handle_afk_incomming(message: Message) -> None:
             USERS[user_id][1] += 1
     else:
         if REASON:
-            out_str = f"I'm **AFK** right now.\nReason: `{REASON}`\nLast Seen: `{afk_time} ago`"
+            out_str = (f"I'm **AFK** right now.\nReason: <code>{REASON}</code>\n"
+                       f"Last Seen: `{afk_time} ago`")
         else:
             out_str = choice(AFK_REASONS)
         coro_list.append(message.reply(out_str))
@@ -105,10 +109,10 @@ async def handle_afk_incomming(message: Message) -> None:
     await asyncio.gather(*coro_list)
 
 
-@userge.on_filters(IS_AFK_FILTER & Filters.outgoing, group=-1)
+@userge.on_filters(IS_AFK_FILTER & filters.outgoing, group=-1, allow_via_bot=False)
 async def handle_afk_outgoing(message: Message) -> None:
     """ handle outgoing messages when you afk """
-    global IS_AFK
+    global IS_AFK  # pylint: disable=global-statement
     IS_AFK = False
     afk_time = time_formatter(round(time.time() - TIME))
     replied: Message = await message.reply("`I'm no longer AFK!`", log=__name__)

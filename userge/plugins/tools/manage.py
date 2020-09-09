@@ -57,7 +57,7 @@ async def status(message: Message) -> None:
                 out_str = f"""🗃 **--Plugin Status--** 🗃
 
 🔖 **Name** : `{plg.name}`
-📝 **About** : `{plg.about}`
+📝 **Doc** : `{plg.doc}`
 ✅ **Loaded** : `{plg.is_loaded}`
 ➕ **Enabled** : `{plg.is_enabled}`
 
@@ -69,6 +69,7 @@ async def status(message: Message) -> None:
         `{'`,    `'.join((cmd.name for cmd in plg.disabled_commands))}`
         ❎ **Unloaded** : `{len(plg.unloaded_commands)}`
         `{'`,    `'.join((cmd.name for cmd in plg.unloaded_commands))}`
+
 ⚖ **Filters** : `{len(plg.filters)}`
         ✅ **Loaded** : `{len(plg.loaded_filters)}`
         ➕ **Enabled** : `{len(plg.enabled_filters)}`
@@ -107,6 +108,7 @@ async def status(message: Message) -> None:
 
 🔖 **Name** : `{cmd.name}`
 📝 **Doc** : `{cmd.doc}`
+🤖 **Via Bot** : `{cmd.allow_via_bot}`
 ✅ **Loaded** : `{cmd.is_loaded}`
 ➕ **Enabled** : `{cmd.is_enabled}`
 """
@@ -128,7 +130,8 @@ async def status(message: Message) -> None:
                 out_str = f"""⚖ **--Filter Status--** ⚖
 
 🔖 **Name** : `{flt.name}`
-📝 **About** : `{flt.about}`
+📝 **Doc** : `{flt.doc}`
+🤖 **Via Bot** : `{flt.allow_via_bot}`
 ✅ **Loaded** : `{flt.is_loaded}`
 ➕ **Enabled** : `{flt.is_enabled}`
 """
@@ -150,7 +153,7 @@ async def status(message: Message) -> None:
     else:
         await message.err("invalid input flag!")
         return
-    await message.edit(out_str, del_in=0)
+    await message.edit(out_str.replace("        ``\n", ''), del_in=0)
 
 
 @userge.on_cmd("enable", about={
@@ -178,7 +181,7 @@ async def enable(message: Message) -> None:
         if found:
             out = await userge.manager.enable_plugins(list(found))
             if out:
-                out_str = "**--Enabled Plugins--**\n\n"
+                out_str = "**--Enabled Plugin(s)--**\n\n"
                 for plg_name, cmds in out.items():
                     out_str += f"**{plg_name}** : `{'`,    `'.join(cmds)}`\n"
             else:
@@ -194,7 +197,7 @@ async def enable(message: Message) -> None:
         if found:
             out = await userge.manager.enable_commands(list(found))
             if out:
-                out_str = "**--Enabled Commands--**\n\n"
+                out_str = "**--Enabled Command(s)--**\n\n"
                 out_str += f"`{'`,    `'.join(out)}`"
             else:
                 out_str = f"already enabled! : `{'`,    `'.join(names_)}`"
@@ -206,7 +209,7 @@ async def enable(message: Message) -> None:
         if found:
             out = await userge.manager.enable_filters(list(found))
             if out:
-                out_str = "**--Enabled Filters--**\n\n"
+                out_str = "**--Enabled Filter(s)--**\n\n"
                 out_str += f"`{'`,    `'.join(out)}`"
             else:
                 out_str = f"already enabled! : `{'`,    `'.join(names_)}`"
@@ -244,7 +247,7 @@ async def disable(message: Message) -> None:
         if found:
             out = await userge.manager.disable_plugins(list(found))
             if out:
-                out_str = "**--Disabled Plugins--**\n\n"
+                out_str = "**--Disabled Plugin(s)--**\n\n"
                 for plg_name, cmds in out.items():
                     out_str += f"**{plg_name}** : `{'`,    `'.join(cmds)}`\n"
             else:
@@ -260,7 +263,7 @@ async def disable(message: Message) -> None:
         if found:
             out = await userge.manager.disable_commands(list(found))
             if out:
-                out_str = "**--Disabled Commands--**\n\n"
+                out_str = "**--Disabled Command(s)--**\n\n"
                 out_str += f"`{'`,    `'.join(out)}`"
             else:
                 out_str = f"already disabled! : `{'`,    `'.join(names_)}`"
@@ -272,7 +275,7 @@ async def disable(message: Message) -> None:
         if found:
             out = await userge.manager.disable_filters(list(found))
             if out:
-                out_str = "**--Disabled Filters--**\n\n"
+                out_str = "**--Disabled Filter(s)--**\n\n"
                 out_str += f"`{'`,    `'.join(out)}`"
             else:
                 out_str = f"already disabled! : `{'`,    `'.join(names_)}`"
@@ -309,7 +312,7 @@ async def load(message: Message) -> None:
             if found:
                 out = await userge.manager.load_plugins(list(found))
                 if out:
-                    out_str = "**--Loaded Plugins--**\n\n"
+                    out_str = "**--Loaded Plugin(s)--**\n\n"
                     for plg_name, cmds in out.items():
                         out_str += f"**{plg_name}** : `{'`,    `'.join(cmds)}`\n"
                 else:
@@ -325,7 +328,7 @@ async def load(message: Message) -> None:
             if found:
                 out = await userge.manager.load_commands(list(found))
                 if out:
-                    out_str = "**--Loaded Commands--**\n\n"
+                    out_str = "**--Loaded Command(s)--**\n\n"
                     out_str += f"`{'`,    `'.join(out)}`"
                 else:
                     out_str = f"already loaded! : `{'`,    `'.join(names_)}`"
@@ -337,7 +340,7 @@ async def load(message: Message) -> None:
             if found:
                 out = await userge.manager.load_filters(list(found))
                 if out:
-                    out_str = "**--Loaded Filters--**\n\n"
+                    out_str = "**--Loaded Filter(s)--**\n\n"
                     out_str += f"`{'`,    `'.join(out)}`"
                 else:
                     out_str = f"already loaded! : `{'`,    `'.join(names_)}`"
@@ -400,7 +403,7 @@ async def unload(message: Message) -> None:
         if found:
             out = await userge.manager.unload_plugins(list(found))
             if out:
-                out_str = "**--Unloaded Plugins--**\n\n"
+                out_str = "**--Unloaded Plugin(s)--**\n\n"
                 for plg_name, cmds in out.items():
                     out_str += f"**{plg_name}** : `{'`,    `'.join(cmds)}`\n"
             else:
@@ -416,7 +419,7 @@ async def unload(message: Message) -> None:
         if found:
             out = await userge.manager.unload_commands(list(found))
             if out:
-                out_str = "**--Unloaded Commands--**\n\n"
+                out_str = "**--Unloaded Command(s)--**\n\n"
                 out_str += f"`{'`,    `'.join(out)}`"
             else:
                 out_str = f"already unloaded! : `{'`,    `'.join(names_)}`"
@@ -428,7 +431,7 @@ async def unload(message: Message) -> None:
         if found:
             out = await userge.manager.unload_filters(list(found))
             if out:
-                out_str = "**--Unloaded Filters--**\n\n"
+                out_str = "**--Unloaded Filter(s)--**\n\n"
                 out_str += f"`{'`,    `'.join(out)}`"
             else:
                 out_str = f"already unloaded! : `{'`,    `'.join(names_)}`"

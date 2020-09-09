@@ -6,11 +6,11 @@
 #
 # All rights reserved.
 
-import requests
+import aiohttp
+
 from userge import userge, Message
 
 LOG = userge.getLogger(__name__)  # logger object
-
 CHANNEL = userge.getCLogger(__name__)  # channel logger object
 
 
@@ -91,9 +91,9 @@ async def dictionary(message: Message):
         await message.edit("`❌Plz enter word to search‼️`", del_in=5)
     else:
         word = input_
-        r_req = requests.get(f"https://api.dictionaryapi.dev/api/v1/entries/en/{word}")
-        r_dec = r_req.json()
-
+        async with aiohttp.ClientSession() as ses:
+            async with ses.get(f"https://api.dictionaryapi.dev/api/v1/entries/en/{word}") as res:
+                r_dec = await res.json()
         v_word = input_
         if isinstance(r_dec, list):
             r_dec = r_dec[0]

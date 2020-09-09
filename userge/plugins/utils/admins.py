@@ -26,11 +26,11 @@ async def mentionadmins(message: Message):
     if not chat_id:
         chat_id = message.chat.id
     try:
-        async for x in userge.iter_chat_members(chat_id=chat_id, filter="administrators"):
+        async for x in message.client.iter_chat_members(chat_id=chat_id, filter="administrators"):
             status = x.status
             u_id = x.user.id
             username = x.user.username or None
-            full_name = (await userge.get_user_dict(u_id))['flname']
+            full_name = (await message.client.get_user_dict(u_id))['flname']
             if status == "creator":
                 if men_admins or men_creator:
                     mentions += f"\n 👑 [{full_name}](tg://user?id={u_id})"
@@ -52,5 +52,5 @@ async def mentionadmins(message: Message):
     except Exception as e:
         mentions += " " + str(e) + "\n"
     await message.delete()
-    await userge.send_message(
+    await message.client.send_message(
         chat_id=message.chat.id, text=mentions,  disable_web_page_preview=True)

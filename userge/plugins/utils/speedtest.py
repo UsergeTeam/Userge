@@ -50,9 +50,9 @@ Sent: `{humanbytes(result['bytes_sent'])}`
 Received: `{humanbytes(result['bytes_received'])}`
 Download: `{humanbytes(result['download'] / 8)}/s`
 Upload: `{humanbytes(result['upload'] / 8)}/s`**"""
-    msg = await userge.send_photo(chat_id=message.chat.id,
-                                  photo=path,
-                                  caption=output)
+    msg = await message.client.send_photo(chat_id=message.chat.id,
+                                          photo=path,
+                                          caption=output)
     await CHANNEL.fwd_msg(msg)
     os.remove(path)
     await message.delete()

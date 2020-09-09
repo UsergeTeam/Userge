@@ -23,17 +23,19 @@ from userge import userge, Message
 
 
 @userge.on_cmd(r"(?:Kek|:/)$",
-               about={'header': "Check yourself, hint: `:/`"}, name='Kek', trigger='')
+               about={'header': "Check yourself, hint: `:/`"}, name='Kek',
+               trigger='', allow_via_bot=False)
 async def kek_(message: Message):
     """kek"""
     kek = ["/", "\\"]
     for i in range(1, 9):
         time.sleep(0.3)
-        await message.edit(":" + kek[i % 2])
+        await message.try_to_edit(":" + kek[i % 2])
 
 
 @userge.on_cmd(r"(?:Lol|-_-)$",
-               about={'header': "Check yourself, hint: `-_-`"}, name='Lol', trigger='')
+               about={'header': "Check yourself, hint: `-_-`"}, name='Lol',
+               trigger='', allow_via_bot=False)
 async def lol_(message: Message):
     """lol"""
     lol = "-_ "
@@ -41,11 +43,12 @@ async def lol_(message: Message):
         if i % 3 == 0:
             lol = "-_ "
         lol = lol[:-1] + "_-"
-        await message.edit(lol, parse_mode="html")
+        await message.try_to_edit(lol, parse_mode="html")
 
 
 @userge.on_cmd(r"(?:Fun|;_;)$",
-               about={'header': "Check yourself, hint: `;_;`"}, name="Fun", trigger='')
+               about={'header': "Check yourself, hint: `;_;`"}, name="Fun",
+               trigger='', allow_via_bot=False)
 async def fun_(message: Message):
     """fun"""
     fun = ";_ "
@@ -53,25 +56,27 @@ async def fun_(message: Message):
         if i % 3 == 0:
             fun = ";_ "
         fun = fun[:-1] + "_;"
-        await message.edit(fun, parse_mode="html")
+        await message.try_to_edit(fun, parse_mode="html")
 
 
-@userge.on_cmd("Oof$", about={'header': "Ooooof"}, trigger='')
+@userge.on_cmd("Oof$", about={'header': "Ooooof"},
+               trigger='', allow_via_bot=False)
 async def Oof_(message: Message):
     """Oof"""
     Oof = "Oo "
     for _ in range(6):
         Oof = Oof[:-1] + "of"
-        await message.edit(Oof)
+        await message.try_to_edit(Oof)
 
 
-@userge.on_cmd("Hmm$", about={'header': "Hmmmmm"}, trigger='')
+@userge.on_cmd("Hmm$", about={'header': "Hmmmmm"},
+               trigger='', allow_via_bot=False)
 async def Hmm_(message: Message):
     """Hmm"""
     Hmm = "Hm "
     for _ in range(4):
         Hmm = Hmm[:-1] + "mm"
-        await message.edit(Hmm)
+        await message.try_to_edit(Hmm)
 
 
 async def check_and_send(message: Message, *args, **kwargs):
@@ -211,9 +216,9 @@ async def moon_(message: Message):
 @userge.on_cmd("clock$", about={'header': "kensar clock animation"})
 async def clock_(message: Message):
     """clock"""
-    deq = deque(list("🕙🕘🕗🕖🕕🕔🕓🕒🕑🕐🕛"))
+    deq = deque(list("🕚🕙🕘🕗🕖🕕🕔🕓🕒🕑🕐🕛"))
     try:
-        for _ in range(32):
+        for _ in range(36):
             await asyncio.sleep(0.1)
             await message.edit("".join(deq))
             deq.rotate(1)
@@ -319,7 +324,7 @@ async def slap_(message: Message):
     if not u_id:
         await message.err("no input found!")
         return
-    info_dict = await userge.get_user_dict(u_id)
+    info_dict = await message.client.get_user_dict(u_id)
     temp = choice(SLAP_TEMPLATES)
     item = choice(ITEMS)
     hit = choice(HIT)
@@ -352,10 +357,10 @@ async def decide_(message: Message):
     if message.reply_to_message:
         message_id = message.reply_to_message.message_id
     await message.delete()
-    await userge.send_photo(chat_id=chat_id,
-                            photo=path,
-                            caption=str(r["answer"]).upper(),
-                            reply_to_message_id=message_id)
+    await message.client.send_photo(chat_id=chat_id,
+                                    photo=path,
+                                    caption=str(r["answer"]).upper(),
+                                    reply_to_message_id=message_id)
     os.remove(path)
 
 
@@ -538,7 +543,7 @@ async def scam_(message: Message):
             await message.delete()
             count = 0
             while count <= scam_time:
-                await userge.send_chat_action(chat_id, scam_action)
+                await message.client.send_chat_action(chat_id, scam_action)
                 await asyncio.sleep(5)
                 count += 5
     except Exception:
@@ -551,7 +556,7 @@ async def scam_(message: Message):
 async def dice_gen(message: Message):
     """send dice"""
     random_emo = choice(DICE_EMO)
-    await userge.send_dice(message.chat.id, random_emo)
+    await message.client.send_dice(message.chat.id, random_emo)
     await message.delete()
 
 

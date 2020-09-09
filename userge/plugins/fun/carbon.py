@@ -86,7 +86,7 @@ async def carbon_(message: Message):
             message_id = replied.message_id
             if replied.document:
                 await message.edit("`Downloading File...`")
-                path_ = await userge.download_media(replied, file_name=Config.DOWN_PATH)
+                path_ = await message.client.download_media(replied, file_name=Config.DOWN_PATH)
                 async with aiofiles.open(path_) as file_:
                     code = await file_.read()
                 os.remove(path_)
@@ -138,7 +138,7 @@ async def carbon_(message: Message):
         driver = webdriver.Chrome(chrome_options=chrome_options)
         driver.get(url)
         await message.edit("`Processing... 40%`")
-        driver.command_executor._commands["send_command"] = (
+        driver.command_executor._commands["send_command"] = (  # pylint: disable=protected-access
             "POST", '/session/$sessionId/chromium/send_command')
         params = {
             'cmd': 'Page.setDownloadBehavior',
@@ -162,9 +162,9 @@ async def carbon_(message: Message):
         await message.edit("`Uploading Carbon...`")
         await asyncio.gather(
             message.delete(),
-            userge.send_photo(chat_id=message.chat.id,
-                              photo=carbon_path,
-                              reply_to_message_id=message_id)
+            message.client.send_photo(chat_id=message.chat.id,
+                                      photo=carbon_path,
+                                      reply_to_message_id=message_id)
         )
         os.remove(carbon_path)
         driver.quit()
