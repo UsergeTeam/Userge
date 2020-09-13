@@ -358,13 +358,16 @@ async def get_thumb(path: str = ''):
     if os.path.exists(Config.THUMB_PATH):
         return Config.THUMB_PATH
     if path:
+        types = (".jpg", ".webp", ".png")
+        if path.endswith(types):
+            return None
         file_name = os.path.splitext(path)[0]
-        for type_ in (".jpg", ".webp", ".png"):
+        for type_ in types:
             thumb_path = file_name + type_
             if os.path.exists(thumb_path):
                 if type_ != ".jpg":
                     new_thumb_path = f"{file_name}.jpg"
-                    Image.open(thumb_path).save(new_thumb_path, "JPEG")
+                    Image.open(thumb_path).convert('RGB').save(new_thumb_path, "JPEG")
                     os.remove(thumb_path)
                     thumb_path = new_thumb_path
                 return thumb_path

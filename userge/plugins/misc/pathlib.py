@@ -361,7 +361,7 @@ async def ls_dir(message: Message) -> None:
                     files += '📹'
                 elif str(p_s).endswith((".zip", ".tar", ".tar.gz", ".rar")):
                     files += '🗜'
-                elif str(p_s).endswith((".jpg", ".jpeg", ".png", ".gif", ".bmp", ".ico")):
+                elif str(p_s).endswith((".jpg", ".jpeg", ".png", ".gif", ".bmp", ".ico", ".webp")):
                     files += '🖼'
                 else:
                     files += '📄'

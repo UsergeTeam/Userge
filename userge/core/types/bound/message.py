@@ -360,6 +360,8 @@ class Message(RawMessage):
                 parse_mode=parse_mode,
                 disable_web_page_preview=disable_web_page_preview,
                 reply_markup=reply_markup)
+        except MessageNotModified:
+            return self
         except (MessageAuthorRequired, MessageIdInvalid) as m_er:
             if sudo:
                 msg = await self.reply(text=text,
@@ -373,7 +375,7 @@ class Message(RawMessage):
                 return msg
             raise m_er
 
-    edit_text = edit
+    edit_text = try_to_edit = edit
 
     async def force_edit(self,
                          text: str,
@@ -553,69 +555,6 @@ class Message(RawMessage):
                                      disable_web_page_preview=disable_web_page_preview,
                                      reply_markup=reply_markup,
                                      **kwargs)
-
-    async def try_to_edit(self,
-                          text: str,
-                          del_in: int = -1,
-                          log: Union[bool, str] = False,
-                          sudo: bool = True,
-                          parse_mode: Union[str, object] = object,
-                          disable_web_page_preview: Optional[bool] = None,
-                          reply_markup: InlineKeyboardMarkup = None) -> Union['Message', bool]:
-        """\nThis will first try to message.edit.
-        If it raise MessageNotModified error,
-        just pass it.
-
-        Example:
-                message.try_to_edit("hello")
-
-        Parameters:
-            text (``str``):
-                New text of the message.
-
-            del_in (``int``):
-                Time in Seconds for delete that message.
-
-            log (``bool`` | ``str``, *optional*):
-                If ``True``, the message will be forwarded
-                to the log channel.
-                If ``str``, the logger name will be updated.
-
-            sudo (``bool``, *optional*):
-                If ``True``, sudo users supported.
-
-            parse_mode (``str``, *optional*):
-                By default, texts are parsed using
-                both Markdown and HTML styles.
-                You can combine both syntaxes together.
-                Pass "markdown" or "md" to enable
-                Markdown-style parsing only.
-                Pass "html" to enable HTML-style parsing only.
-                Pass None to completely disable style parsing.
-
-            disable_web_page_preview (``bool``, *optional*):
-                Disables link previews for links in this message.
-
-            reply_markup (:obj:`InlineKeyboardMarkup`, *optional*):
-                An InlineKeyboardMarkup object.
-
-        Returns:
-            On success, the edited
-            :obj:`Message` or True is returned.
-
-        Raises:
-            RPCError: In case of a Telegram RPC error.
-        """
-        try:
-            return await self.edit(text=text,
-                                   del_in=del_in,
-                                   log=log,
-                                   sudo=sudo,
-                                   parse_mode=parse_mode,
-                                   disable_web_page_preview=disable_web_page_preview,
-                                   reply_markup=reply_markup)
-        except MessageNotModified:
-            return False
 
     async def edit_or_send_as_file(self,
                                    text: str,

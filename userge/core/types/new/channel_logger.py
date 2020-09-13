@@ -14,6 +14,7 @@ import asyncio
 from typing import Optional, Union
 
 from pyrogram.types import Message as RawMessage
+from pyrogram.errors.exceptions import MessageTooLong
 
 from userge import logging, Config
 from userge.utils import SafeDict, get_file_id_and_ref, parse_buttons
@@ -31,6 +32,7 @@ def _gen_string(name: str) -> str:
 class ChannelLogger:
     """ Channel logger for Userge """
     def __init__(self, client: Union['_client.Userge', '_client._UsergeBot'], name: str) -> None:
+        self._id = Config.LOG_CHANNEL_ID
         self._client = client
         self._string = _gen_string(name)
 
@@ -88,9 +90,15 @@ class ChannelLogger:
         string = self._string
         if name:
             string = _gen_string(name)
-        _LOG.debug(_LOG_STR, f"logging text : {text} to channel : {Config.LOG_CHANNEL_ID}")
-        msg = await self._client.send_message(chat_id=Config.LOG_CHANNEL_ID,
-                                              text=string.format(text.strip()))
+        _LOG.debug(_LOG_STR, f"logging text : {text} to channel : {self._id}")
+        try:
+            msg = await self._client.send_message(chat_id=self._id,
+                                                  text=string.format(text.strip()))
+        except MessageTooLong:
+            msg = await self._client.send_as_file(chat_id=self._id,
+                                                  text=string.format(text.strip()),
+                                                  filename="logs.log",
+                                                  caption=string)
         return msg.message_id
 
     async def fwd_msg(self,
@@ -123,15 +131,18 @@ class ChannelLogger:
             None
         """
         _LOG.debug(
-            _LOG_STR, f"forwarding msg : {message} to channel : {Config.LOG_CHANNEL_ID}")
+            _LOG_STR, f"forwarding msg : {message} to channel : {self._id}")
         if isinstance(message, RawMessage):
             if message.media:
                 asyncio.get_event_loop().create_task(self.log("**Forwarding Message...**", name))
-                await self._client.forward_messages(chat_id=Config.LOG_CHANNEL_ID,
-                                                    from_chat_id=message.chat.id,
-                                                    message_ids=message.message_id,
-                                                    as_copy=as_copy,
-                                                    remove_caption=remove_caption)
+                try:
+                    await self._client.forward_messages(chat_id=self._id,
+                                                        from_chat_id=message.chat.id,
+                                                        message_ids=message.message_id,
+                                                        as_copy=as_copy,
+                                                        remove_caption=remove_caption)
+                except ValueError:
+                    pass
             else:
                 await self.log(
                     message.text.html if hasattr(message.text, 'html') else message.text, name)
@@ -160,7 +171,7 @@ class ChannelLogger:
         if message and message.media and file_id and file_ref:
             if caption:
                 caption = self._string.format(caption.strip())
-            msg = await message.client.send_cached_media(chat_id=Config.LOG_CHANNEL_ID,
+            msg = await message.client.send_cached_media(chat_id=self._id,
                                                          file_id=file_id,
                                                          file_ref=file_ref,
                                                          caption=caption)
@@ -201,7 +212,7 @@ class ChannelLogger:
             None
         """
         if message_id and isinstance(message_id, int):
-            message = await client.get_messages(chat_id=Config.LOG_CHANNEL_ID,
+            message = await client.get_messages(chat_id=self._id,
                                                 message_ids=message_id)
             caption = ''
             file_id = file_ref = None
