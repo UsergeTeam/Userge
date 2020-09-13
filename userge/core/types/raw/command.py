@@ -61,11 +61,12 @@ class Command(Filter):
             incoming_flt = filters.create(
                 lambda _, __, m:
                 not m.outgoing
+                and trigger
                 and m.from_user and m.text
                 and ((m.from_user.id == Config.OWNER_ID)
                      or (Config.SUDO_ENABLED and (m.from_user.id in Config.SUDO_USERS)
                          and (cname.lstrip(trigger) in Config.ALLOWED_COMMANDS)))
-                and (m.text.startswith(Config.SUDO_TRIGGER) if trigger else True))
+                and m.text.startswith(Config.SUDO_TRIGGER))
             filters_ = filters_ & (outgoing_flt | incoming_flt)
         return cls(_format_about(about), trigger, pattern, filters=filters_, name=cname, **kwargs)
 

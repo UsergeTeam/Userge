@@ -21,12 +21,13 @@ LOGO_ID, LOGO_REF = None, None
 async def alive(message: Message):
     await message.delete()
     output = f"""
-**⌚ uptime** : `{userge.uptime}`
-**💥 version** : `{get_version()}`
+**⏱ uptime** : `{userge.uptime}`
+**💡 version** : `{get_version()}`
+**⚙️ mode** : `{_get_mode().upper()}`
 
 • **sudo**: `{_parse_arg(Config.SUDO_ENABLED)}`
-• **anti-spam**: `{_parse_arg(Config.ANTISPAM_SENTRY)}`
-• **dual-mode**: `{_parse_arg(RawClient.DUAL_MODE)}`"""
+• **pm-guard**: `{_parse_arg(not Config.ALLOW_ALL_PMS)}`
+• **anti-spam**: `{_parse_arg(Config.ANTISPAM_SENTRY)}`"""
     if Config.HEROKU_APP:
         output += f"\n• **dyno-saver**: `{_parse_arg(Config.RUN_DYNO_SAVER)}`"
     output += f"""
@@ -42,6 +43,14 @@ async def alive(message: Message):
     except (FileIdInvalid, FileReferenceEmpty, BadRequest):
         await _refresh_id()
         await _send_alive(message, output)
+
+
+def _get_mode() -> str:
+    if RawClient.DUAL_MODE:
+        return "dual"
+    if Config.BOT_TOKEN:
+        return "bot"
+    return "user"
 
 
 def _parse_arg(arg: bool) -> str:

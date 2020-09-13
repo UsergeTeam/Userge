@@ -103,7 +103,7 @@ def _get_updates(repo: Repo, branch: str) -> str:
 async def _pull_from_repo(repo: Repo, branch: str) -> None:
     repo.git.checkout(branch, force=True)
     repo.git.reset('--hard', branch)
-    repo.git.pull(Config.UPSTREAM_REMOTE, branch, force=True)
+    repo.remote(Config.UPSTREAM_REMOTE).pull(branch, force=True)
     await asyncio.sleep(1)
 
 
