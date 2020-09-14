@@ -29,7 +29,7 @@ _LOGO_ID, _LOGO_REF = None, None
     'header': "This command is just for fun"}, allow_channels=False)
 async def alive(message: Message):
 
-    if not (_CHAT, _MSG_ID):
+    if not (_CHAT and _MSG_ID):
         try:
             _set_data()
         except Exception as set_err:
