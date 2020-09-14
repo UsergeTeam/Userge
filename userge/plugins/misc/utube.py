@@ -156,7 +156,7 @@ def _yt_description(link):
     try:
         x = ytdl.YoutubeDL({'no-playlist': True, 'logger': LOGGER}).extract_info(
             link, download=False)
-    except ytdl.utils.YoutubeDLError as y_e:
+    except Exception as y_e:  # pylint: disable=broad-except
         LOGGER.exception(y_e)
         return y_e
     else:
@@ -176,7 +176,7 @@ def _yt_getInfo(link):
         for i in formats:
             out += (f"`{i.get('format_id', '')} | {i.get('format_note', None)}"
                     f" | {i.get('ext', None)}`\n")
-    except ytdl.utils.YoutubeDLError as y_e:
+    except Exception as y_e:  # pylint: disable=broad-except
         LOGGER.exception(y_e)
         return y_e
     else:
@@ -210,7 +210,7 @@ def _tubeDl(url: list, prog, starttime, uid=None):
         x = ytdl.YoutubeDL(_opts)
         x.add_progress_hook(prog)
         dloader = x.download(url)
-    except ytdl.utils.YoutubeDLError as y_e:
+    except Exception as y_e:  # pylint: disable=broad-except
         LOGGER.exception(y_e)
         return y_e
     else:
@@ -240,7 +240,7 @@ def _mp3Dl(url, prog, starttime):
         x = ytdl.YoutubeDL(_opts)
         x.add_progress_hook(prog)
         dloader = x.download(url)
-    except ytdl.utils.YoutubeDLError as y_e:
+    except Exception as y_e:  # pylint: disable=broad-except
         LOGGER.exception(y_e)
         return y_e
     else:

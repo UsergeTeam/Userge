@@ -78,7 +78,7 @@ class Config:
     ANTISPAM_SENTRY = False
     RUN_DYNO_SAVER = False
     HEROKU_APP = heroku3.from_key(HEROKU_API_KEY).apps()[HEROKU_APP_NAME] \
-        if HEROKU_API_KEY else None
+        if HEROKU_API_KEY and HEROKU_APP_NAME else None
     STATUS = None
 
 
