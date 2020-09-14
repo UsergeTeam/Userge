@@ -84,6 +84,10 @@ def _get_mode() -> str:
     return "user"
 
 
+def _parse_arg(arg: bool) -> str:
+    return "enabled" if arg else "disabled"
+
+
 async def _send_alive(message: Message, text: str, reply_markup: Optional[InlineKeyboardMarkup]) -> None:
     if not (_LOGO_ID and _LOGO_REF):
         await _refresh_id()
