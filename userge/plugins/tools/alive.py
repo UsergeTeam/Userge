@@ -37,6 +37,7 @@ async def alive(message: Message):
                            f"trying again... ERROR:: {set_err} ::")
             _set_data(True)
     markup = None
+    copy_ = "https://github.com/UsergeTeam/Userge/blob/master/LICENSE"
     output = f"""
 **⏱ uptime** : `{userge.uptime}`
 **💡 version** : `{get_version()}`
@@ -62,12 +63,11 @@ async def alive(message: Message):
                 InlineKeyboardButton(text="👥 UsergeTeam", url="https://github.com/UsergeTeam"),
                 InlineKeyboardButton(text="🧪 Repo", url=Config.UPSTREAM_REPO)
             ],
-            [InlineKeyboardButton(text="🎖 GNU GPL v3.0", url="https://github.com/UsergeTeam/Userge/blob/master/LICENSE")]
+            [InlineKeyboardButton(text="🎖 GNU GPL v3.0", url=copy_)]
         ])
     if _MSG_ID == "text_format":
         return await message.edit(output, reply_markup=markup, disable_web_page_preview=True)
-    else:
-        await message.delete()
+    await message.delete()
     try:
         await _send_alive(message, output, markup)
     except (FileIdInvalid, FileReferenceEmpty, BadRequest):
@@ -87,7 +87,9 @@ def _parse_arg(arg: bool) -> str:
     return "enabled" if arg else "disabled"
 
 
-async def _send_alive(message: Message, text: str, reply_markup: Optional[InlineKeyboardMarkup]) -> None:
+async def _send_alive(message: Message,
+                      text: str,
+                      reply_markup: Optional[InlineKeyboardMarkup]) -> None:
     if not (_LOGO_ID and _LOGO_REF):
         await _refresh_id()
     try:
