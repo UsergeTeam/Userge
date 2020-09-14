@@ -53,7 +53,7 @@ async def alive(message: Message):
     **__Python__**: `{versions.__python_version__}`
     **__Pyrogram__**: `{versions.__pyro_version__}`"""
     if not message.client.is_bot:
-        output += f"""
+        output += f"""\n
 🎖 **{versions.__license__}** | 👥 **{versions.__copyright__}** | 🧪 **[Repo]({Config.UPSTREAM_REPO})**
 """
     elif message.client.is_bot:
@@ -106,7 +106,6 @@ async def _send_alive(message: Message, text: str, reply_markup: Optional[Inline
 
 async def _refresh_id() -> None:
     global _LOGO_ID, _LOGO_REF, _IS_STICKER  # pylint: disable=global-statement
-    _LOG.info(f"MSG ID: {_MSG_ID}, CHAT ID: {_CHAT}")
     try:
         media = await userge.get_messages(_CHAT, _MSG_ID)
     except ChannelInvalid:
@@ -143,4 +142,3 @@ def _set_data(errored: bool = False) -> None:
         match = re.search(pattern, _DEFAULT)
         _CHAT = match.group(6)
         _MSG_ID = int(match.group(7))
-    _LOG.info(f"Setting: {_CHAT}//{_MSG_ID}")
