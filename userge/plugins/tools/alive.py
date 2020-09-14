@@ -16,6 +16,7 @@ from pyrogram.errors.exceptions.bad_request_400 import BadRequest, ChannelInvali
 
 from userge.core.ext import RawClient
 from userge import userge, Message, Config, versions, get_version, logging
+from userge.utils import get_file_id_and_ref
 
 _LOG = logging.getLogger(__name__)
 _IS_STICKER = False
