@@ -24,19 +24,18 @@ _DEFAULT = "https://t.me/theUserge/31"
 _CHAT, _MSG_ID = None, None
 _LOGO_ID, _LOGO_REF = None, None
 
-if not (_CHAT, _MSG_ID):
-    try:
-        _set_data()
-    except Exception as set_err:
-        _LOG.exception("There was some problem while setting Media Data. "
-                       f"trying again... ERROR:: {set_err} ::")
-        _set_data(True)
-
 
 @userge.on_cmd("alive", about={
     'header': "This command is just for fun"}, allow_channels=False)
 async def alive(message: Message):
 
+    if not (_CHAT, _MSG_ID):
+        try:
+            _set_data()
+        except Exception as set_err:
+            _LOG.exception("There was some problem while setting Media Data. "
+                           f"trying again... ERROR:: {set_err} ::")
+            _set_data(True)
     markup = None
     output = f"""
 **⏱ uptime** : `{userge.uptime}`
