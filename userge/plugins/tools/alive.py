@@ -130,7 +130,7 @@ def _set_data(errored: bool = False) -> None:
         media_link = Config.ALIVE_MEDIA
         match = re.search(pattern, media_link)
         if match:
-            _MSG_ID = match.group(7)
+            _MSG_ID = int(match.group(7))
             if match.group(5):
                 _CHAT = int("-100" + match.group(5))
             elif match.group(6):
@@ -138,8 +138,8 @@ def _set_data(errored: bool = False) -> None:
         elif "|" in Config.ALIVE_MEDIA:
             _CHAT, _MSG_ID = Config.ALIVE_MEDIA.split("|", maxsplit=1)
             _CHAT = _CHAT.strip()
-            _MSG_ID = _MSG_ID.strip()
+            _MSG_ID = int(_MSG_ID.strip())
     else:
         match = re.search(pattern, _DEFAULT)
         _CHAT = match.group(6)
-        _MSG_ID = match.group(7)
+        _MSG_ID = int(match.group(7))
