@@ -57,7 +57,7 @@ async def alive(message: Message):
         output += f"""\n
 🎖 **{versions.__license__}** | 👥 **{versions.__copyright__}** | 🧪 **[Repo]({Config.UPSTREAM_REPO})**
 """
-    elif message.client.is_bot:
+    else:
         markup = InlineKeyboardMarkup([
             [
                 InlineKeyboardButton(text="👥 UsergeTeam", url="https://github.com/UsergeTeam"),
@@ -103,6 +103,7 @@ async def _send_alive(message: Message,
     except (MediaEmpty, ChatSendMediaForbidden):
         await message.client.send_message(chat_id=message.chat.id,
                                           text=text,
+                                          reply_markup=reply_markup,
                                           disable_web_page_preview=True)
 
 
