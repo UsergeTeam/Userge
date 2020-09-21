@@ -92,15 +92,19 @@ async def _send_alive(message: Message,
                       reply_markup: Optional[InlineKeyboardMarkup]) -> None:
     if not (_LOGO_ID and _LOGO_REF):
         await _refresh_id(message)
+    should_mark = None if _IS_STICKER else reply_markup
     try:
         await message.client.send_cached_media(chat_id=message.chat.id,
                                                file_id=_LOGO_ID,
                                                file_ref=_LOGO_REF,
                                                caption=text,
-                                               reply_markup=reply_markup)
+                                               reply_markup=should_mark)
         if _IS_STICKER:
-            raise MediaEmpty
-    except (MediaEmpty, ChatSendMediaForbidden):
+            raise ChatSendMediaForbidden
+    except MediaEmpty:
+        await _refresh_id(message)
+        return await _send_alive(message, text, reply_markup)
+    except ChatSendMediaForbidden:
         await message.client.send_message(chat_id=message.chat.id,
                                           text=text,
                                           reply_markup=reply_markup,
