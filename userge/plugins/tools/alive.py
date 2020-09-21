@@ -89,7 +89,8 @@ def _parse_arg(arg: bool) -> str:
 
 async def _send_alive(message: Message,
                       text: str,
-                      reply_markup: Optional[InlineKeyboardMarkup]) -> None:
+                      reply_markup: Optional[InlineKeyboardMarkup]
+                      recurs_count: int = 0) -> None:
     if not (_LOGO_ID and _LOGO_REF):
         await _refresh_id(message)
     should_mark = None if _IS_STICKER else reply_markup
@@ -102,8 +103,10 @@ async def _send_alive(message: Message,
         if _IS_STICKER:
             raise ChatSendMediaForbidden
     except MediaEmpty:
+        if recurs_count >= 2:
+            raise ChatSendMediaForbidden
         await _refresh_id(message)
-        return await _send_alive(message, text, reply_markup)
+        return await _send_alive(message, text, reply_markup, recurs_count + 1)
     except ChatSendMediaForbidden:
         await message.client.send_message(chat_id=message.chat.id,
                                           text=text,
