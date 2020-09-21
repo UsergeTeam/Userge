@@ -224,6 +224,8 @@ async def doc_upload(message: Message, path, del_path: bool = False, extra: str 
             progress=progress,
             progress_args=(message, f"uploading {extra}", str(path.name))
         )
+    except ValueError as e_e:
+        await sent.edit(f"Skipping `{path}` due to {e_e}")
     except Exception as u_e:
         await sent.edit(u_e)
         raise u_e
@@ -258,6 +260,8 @@ async def vid_upload(message: Message, path, del_path: bool = False, extra: str 
             progress=progress,
             progress_args=(message, f"uploading {extra}", str(path.name))
         )
+    except ValueError as e_e:
+        await sent.edit(f"Skipping `{path}` due to {e_e}")
     except Exception as u_e:
         await sent.edit(u_e)
         raise u_e
@@ -314,6 +318,8 @@ async def audio_upload(message: Message, path, del_path: bool = False, extra: st
             progress=progress,
             progress_args=(message, f"uploading {extra}", str(path.name))
         )
+    except ValueError as e_e:
+        await sent.edit(f"Skipping `{path}` due to {e_e}")
     except Exception as u_e:
         await sent.edit(u_e)
         raise u_e
@@ -343,6 +349,8 @@ async def photo_upload(message: Message, path, del_path: bool = False, extra: st
             progress=progress,
             progress_args=(message, f"uploading {extra}", str(path.name))
         )
+    except ValueError as e_e:
+        await sent.edit(f"Skipping `{path}` due to {e_e}")
     except Exception as u_e:
         await sent.edit(u_e)
         raise u_e
