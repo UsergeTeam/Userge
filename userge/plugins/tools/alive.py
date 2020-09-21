@@ -89,7 +89,7 @@ def _parse_arg(arg: bool) -> str:
 
 async def _send_alive(message: Message,
                       text: str,
-                      reply_markup: Optional[InlineKeyboardMarkup]
+                      reply_markup: Optional[InlineKeyboardMarkup],
                       recurs_count: int = 0) -> None:
     if not (_LOGO_ID and _LOGO_REF):
         await _refresh_id(message)
