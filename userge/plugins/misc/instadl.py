@@ -13,17 +13,16 @@ import re
 import shutil
 import asyncio
 
+from natsort import natsorted
+from hachoir.parser import createParser
+from hachoir.metadata import extractMetadata
 from pyrogram.types import InputMediaPhoto, InputMediaVideo
 from pyrogram.errors import FloodWait
-from natsort import natsorted
 from instaloader import (
     Instaloader, Post, Profile, NodeIterator,
     TwoFactorAuthRequiredException, InvalidArgumentException, BadCredentialsException,
-    ConnectionException,
-    LoginRequiredException
+    ConnectionException, LoginRequiredException
 )
-from hachoir.metadata import extractMetadata
-from hachoir.parser import createParser
 
 from userge import userge, pool, Message, Config
 from userge.plugins.misc.upload import get_thumb, remove_thumb
@@ -118,7 +117,7 @@ async def upload_to_tg(message: Message, dirname: str, post: Post) -> None:  # p
             os.remove(del_p)
 
 
-# run some process in threads?🤔
+# run some process in threads?
 @pool.run_in_thread
 def download_post(client: Instaloader, post: Post) -> bool:
     ''' Downloads content and returns True '''
@@ -157,7 +156,7 @@ def get_profile_posts(profile: Profile) -> NodeIterator[Post]:
         "{tr}postdl -u [username]",
         "{tr}postdl -u instagram"]})
 async def _insta_post_downloader(message: Message):
-    ''' download a instagram post '''
+    ''' download instagram post '''
     await message.edit('`Setting up Configs. Please don\'t flood.`')
     dirname = 'instadl_{target}'
     filename = '{target}\'s_post'
@@ -200,12 +199,12 @@ async def _insta_post_downloader(message: Message):
                 while True:
                     # initial convo with the user who sent message in pm.
                     # if user is_self convo in saved messages
-                    # else in pm of sudo user🤔
+                    # else in pm of sudo user
                     async with userge.conversation(message.from_user.id) as asker:
                         asked = await asker.send_message('Please reply me with your 2FA code `int`')
                         response = await asker.get_response(mark_read=True)
                         if not (response.reply_to_message and response.reply_to_message.is_self):
-                            # I said reply me. 🙂
+                            # I said reply me.
                             continue
                         code = response.text
                         if not code.isdigit():
