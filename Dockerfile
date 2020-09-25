@@ -31,6 +31,8 @@ RUN mkdir -p /tmp/ && \
     # clean up the container "layer", after we are done
     rm /tmp/chromedriver.zip
 
+ENV GOOGLE_CHROME_DRIVER /usr/bin/chromedriver
+ENV GOOGLE_CHROME_BIN /usr/bin/google-chrome-stable
 
 # copy the dependencies file to the working directory
 COPY requirements.txt .

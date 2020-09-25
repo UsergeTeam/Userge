@@ -121,7 +121,20 @@ async def testing(message: Message):
 
 * **[More Detailed Guide](https://docs.google.com/document/d/15uoiOn2NkN518MMkx9h5UaMEWMp8aNZqJocXvS0uI6E)** 📝
 
-> TODO: add Docker Support.
+### Run on Docker 🐳 
+
+1. Install Docker ( [Guide](https://docs.docker.com/engine/install/ubuntu/) )
+2. Clone the repo
+    `git clone https://github.com/UsergeTeam/Userge.git`
+3. `cd Userge`
+4. Create the docker image
+    `docker build -t userge .`
+5. `cd ..`
+6. `wget https://raw.githubusercontent.com/UsergeTeam/Userge/alpha/config.env.sample -O config.env`
+7. Edit the file with your text editor
+    `vi config.env`
+8. Finally run the container
+    `docker run -dv "$(pwd)/config.env:/app/config.env" userge`
 
 ### Video Tutorial 🎥
 
