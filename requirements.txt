@@ -12,7 +12,9 @@ googletrans
 hachoir
 heroku3
 html-telegraph-poster
+instaloader
 motor
+natsort
 oauth2client
 Pillow==7.1.0
 psutil
