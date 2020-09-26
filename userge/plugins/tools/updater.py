@@ -24,9 +24,8 @@ CHANNEL = userge.getCLogger(__name__)
         '-pull': "pull updates",
         '-push': "push updates to heroku",
         '-master': "select master branch",
-        '-beta': "select beta branch",
-        '-alpha': "select alpha branch"},
-    'usage': "{tr}update : check updates from default branch\n"
+        '-beta': "select beta branch"},
+    'usage': "{tr}update : check updates from master branch\n"
              "{tr}update -[branch_name] : check updates from any branch\n"
              "add -pull if you want to pull updates\n"
              "add -push if you want to push updates to heroku",

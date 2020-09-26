@@ -136,11 +136,11 @@ class ChannelLogger:
             if message.media:
                 asyncio.get_event_loop().create_task(self.log("**Forwarding Message...**", name))
                 try:
-                    await self._client.forward_messages(chat_id=self._id,
-                                                        from_chat_id=message.chat.id,
-                                                        message_ids=message.message_id,
-                                                        as_copy=as_copy,
-                                                        remove_caption=remove_caption)
+                    await message.client.forward_messages(chat_id=self._id,
+                                                          from_chat_id=message.chat.id,
+                                                          message_ids=message.message_id,
+                                                          as_copy=as_copy,
+                                                          remove_caption=remove_caption)
                 except ValueError:
                     pass
             else:
