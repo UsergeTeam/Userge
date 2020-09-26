@@ -79,21 +79,44 @@ async def testing(message: Message):
 * Google Drive [API Keys](https://console.developers.google.com/)
 * MongoDB [Database URL](https://cloud.mongodb.com/)
 
+## UserGe MODES 🕹
+
+* **USER** mode `(using user account)`
+* **BOT** mode `(using bot account)`
+* **DUAL** mode `(using both user and bot account)`
+
+  > further **read** [config.env.sample](https://github.com/UsergeTeam/Userge/blob/alpha/config.env.sample)
+
 ## How To Deploy 👷
 
-* **[HEROKU](https://www.heroku.com/) Method** 🔧
+* **[HEROKU](https://www.heroku.com/) Method** 🚀
 
-  > First click the button below. 
+  > First click [**this**](https://heroku.com/deploy?template=https://github.com/UsergeTeam/Userge/tree/master)
 
-  > If you don't have HU_STRING_SESSION just ignore it.  
+  > Fill `API_ID`, `API_HASH`, `DATABASE_URL` and `LOG_CHANNEL_ID` (**required**)
 
-  > After Deployed to Heroku first turn off the app (resources -> turn off) and run `bash genStr` in console (more -> run console).  
+  > Choose your [**MODE**](https://github.com/UsergeTeam/Userge#userge-modes-)
 
-  > After that copy the string session and past it in Config Vars (settings -> reveal config vars). 
+  > Then fill other **non-required** vars as relevent to your **MODE**
 
-  > Finally turn on the app and check the logs (settings -> view logs) :)
+  > Finally **hit deploy** button
 
-  [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/UsergeTeam/Userge/tree/master)
+  > [**NOTE**] : your can fill other vars as your need and they are optional. (settings -> reveal config vars)
+
+* **Docker Method** 🐳 
+
+  1. Install Docker ( [Guide](https://docs.docker.com/engine/install/ubuntu/) )
+  2. Clone the repo
+      `git clone https://github.com/UsergeTeam/Userge.git`
+  3. `cd Userge`
+  4. Create the docker image
+      `docker build -t userge .`
+  5. `cd ..`
+  6. `wget https://raw.githubusercontent.com/UsergeTeam/Userge/alpha/config.env.sample -O config.env`
+  7. Edit the file with your text editor
+      `vi config.env`
+  8. Finally run the container
+      `docker run -dv "$(pwd)/config.env:/app/config.env" userge`
 
 * **Other Method** 🔧
 
@@ -120,21 +143,6 @@ async def testing(message: Message):
   ```
 
 * **[More Detailed Guide](https://docs.google.com/document/d/15uoiOn2NkN518MMkx9h5UaMEWMp8aNZqJocXvS0uI6E)** 📝
-
-### Run on Docker 🐳 
-
-1. Install Docker ( [Guide](https://docs.docker.com/engine/install/ubuntu/) )
-2. Clone the repo
-    `git clone https://github.com/UsergeTeam/Userge.git`
-3. `cd Userge`
-4. Create the docker image
-    `docker build -t userge .`
-5. `cd ..`
-6. `wget https://raw.githubusercontent.com/UsergeTeam/Userge/alpha/config.env.sample -O config.env`
-7. Edit the file with your text editor
-    `vi config.env`
-8. Finally run the container
-    `docker run -dv "$(pwd)/config.env:/app/config.env" userge`
 
 ### Video Tutorial 🎥
 
