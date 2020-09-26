@@ -63,7 +63,7 @@ async def shutdown_(message: Message) -> None:
     await message.edit("`shutting down ...`")
     if Config.HEROKU_APP:
         try:
-            Config.HEROKU_APP.scale_formation_process("worker", 0)
+            Config.HEROKU_APP.process_formation()['worker'].scale(0)
         except Exception as h_e:  # pylint: disable=broad-except
             await message.edit(f"**heroku error** : `{h_e}`")
             await asyncio.sleep(3)
@@ -225,7 +225,7 @@ async def _dyno_saver_worker() -> None:
                             warned = False
                         if current_idle_time >= MAX_IDLE_TIME:
                             try:
-                                Config.HEROKU_APP.scale_formation_process("worker", 0)
+                                Config.HEROKU_APP.process_formation()['worker'].scale(0)
                             except Exception as h_e:  # pylint: disable=broad-except
                                 LOG.err(f"heroku app error : {h_e}")
                                 offline_start_time += 20

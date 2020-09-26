@@ -12,12 +12,14 @@ googletrans
 hachoir
 heroku3
 html-telegraph-poster
+instaloader
 motor
+natsort
 oauth2client
 Pillow==7.1.0
 psutil
 pybase64
-pyrogram
+pyrogram>=1.0.7
 pySmartDL
 python-dotenv
 pytz
@@ -35,4 +37,4 @@ tgcrypto
 urbandict==0.5
 wget
 wikipedia
-youtube_dl
+youtube_dl>=2020.09.20

@@ -53,7 +53,7 @@ async def eval_(message: Message):
         if '\n' in code:
             rest_code = '\n '.join(line for line in code.split('\n'))
         elif any(True for k_ in keyword.kwlist
-                 if k_ not in ('True', 'False', 'None') and code.startswith(k_)):
+                 if k_ not in ('True', 'False', 'None') and code.startswith(f"{k_} ")):
             rest_code = f"\n {code}"
         else:
             rest_code = f"\n return {code}"

@@ -8,5 +8,6 @@
 #
 # All rights reserved.
 
-. init/logbot/core/api.sh
-. init/logbot/core/message.sh
+Message() {
+    . <(sed "s/_Message/$1/g" init/logbot/core/types/messageClass.sh)
+}

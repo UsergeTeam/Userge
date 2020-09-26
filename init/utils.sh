@@ -8,7 +8,7 @@
 #
 # All rights reserved.
 
-declare -r pVer=$(sed -E 's/\w+ ([2-3])\.([0-9]+)\.([0-9]+)/\1.\2.\3/g' < <(python3.8 -V))
+declare -r pVer=$(sed -E 's/\w+ 3\.8\.([0-9]+)/3.8.\1/g' < <(python3.8 -V 2> /dev/null))
 
 log() {
     local text="$*"
@@ -36,7 +36,6 @@ runPythonModule() {
 
 gitInit() {
     git init &> /dev/null
-    git commit --allow-empty -m "empty commit" &> /dev/null
 }
 
 gitClone() {
@@ -63,6 +62,15 @@ fetchUpstream() {
     git fetch $UPSTREAM_REMOTE &> /dev/null
 }
 
+fetchBranches() {
+    local r_bs l_bs
+    r_bs=$(grep -oP '(?<=refs/heads/)\w+' < <(git ls-remote --heads $UPSTREAM_REMOTE))
+    l_bs=$(grep -oP '\w+' < <(git branch))
+    for r_b in $r_bs; do
+        [[ $l_bs =~ $r_b ]] || git branch $r_b $UPSTREAM_REMOTE/$r_b &> /dev/null
+    done
+}
+
 upgradePip() {
     pip3 install -U pip &> /dev/null
 }
@@ -72,18 +80,18 @@ installReq() {
 }
 
 printLine() {
-    echo ========================================================
+    echo '->- ->- ->- ->- ->- ->- ->- --- -<- -<- -<- -<- -<- -<- -<-'
 }
 
 printLogo() {
     printLine
     echo '
- _   _ ____  _____ ____   ____ _____  ____  _   _ _____ 
-| | | / ___|| ____|  _ \ / ___| ____|/ __ \| | | |_   _|
-| | | \___ \|  _| | |_) | |  _|  _| / / _` | | | | | |  
-| |_| |___) | |___|  _ <| |_| | |__| | (_| | |_| | | |  
- \___/|____/|_____|_| \_\\____|_____\ \__,_|\___/  |_|  
-                                     \____/
+     ________            __  __               ______   
+    /_  __/ /_  ___     / / / /_______  _____/ ____/__ 
+     / / / __ \/ _ \   / / / / ___/ _ \/ ___/ / __/ _ \
+    / / / / / /  __/  / /_/ (__  )  __/ /  / /_/ /  __/
+   /_/ /_/ /_/\___/   \____/____/\___/_/   \____/\___/ 
+                                                     
 '
     printLine
 }
