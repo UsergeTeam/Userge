@@ -1,3 +1,4 @@
+
 """ a instagram post downloader plugin for @theUserge. """
 #
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
@@ -143,20 +144,12 @@ def get_profile_posts(profile: Profile) -> NodeIterator[Post]:
     return profile.get_posts()
 
 
-# pylint: disable=R0914, R0912, R0915, R0911
-@userge.on_cmd("postdl", about={
-    'header': "Instagram Post Downloader",
-    'description': "Download a post of a instagram user by passing post link or download all posts "
-                   "by passing username of instagram user (<code>requires flag</code>)",
-    'flags': {'-u': "use this to define a batch download of post"},
-    'usage': "{tr}postdl [flag] [link|username]",
-    'examples': [
-        "{tr}postdl https://www.instagram.com/××××××××××/",
-        "{tr}postdl https://www.instagram.com/×××××××××/igshid=×××××/",
-        "{tr}postdl -u [username]",
-        "{tr}postdl -u instagram"]})
-async def _insta_post_downloader(message: Message):
-    """ download instagram post """
+@userge.on_cmd("insta setup", about={
+    'header': "Login into Instagram.",
+    'description': "Login to download Private post or Download all post of Private Account.",
+    'usage': "{tr}insta setup"})
+async def _insta_login(message: Message):
+    """ Login into instagram """
     await message.edit('`Setting up Configs. Please don\'t flood.`')
     dirname = 'instadl_{target}'
     filename = '{target}\'s_post'
@@ -170,7 +163,6 @@ async def _insta_post_downloader(message: Message):
         compress_json=False
     )
     if Config.INSTA_ID and Config.INSTA_PASS:
-        # try login
         try:
             insta.load_session_from_file(Config.INSTA_ID)
             await message.edit('`Logged in with current Session`')
@@ -226,14 +218,38 @@ async def _insta_post_downloader(message: Message):
                     await message.err('Failed to save session file, probably due to invalid login.')
                     await asyncio.sleep(5)
     else:
-        await message.edit('Login Credentials not found. `[NOTE]`: '
-                           '**You may not be able to download private contents or so**')
-        await asyncio.sleep(2)
+        await message.edit('**Login Credentials not found.**\n`[NOTE]`: '
+                           '`You have to set two vars for login`\n\n'
+                           '`INSTA_ID` = __your Instagram Id__\n'
+                           '`INSTA_PASS`' = __your Instagram Password __')
 
-    url_patern = r'^https:\/\/www\.instagram\.com\/(p|tv|reel)\/([A-Za-z0-9\-]*)\/(\?igshid=[a-zA-Z0-9]*)?$'
-    # pylint: disable=C0301
-    match = re.search(url_patern, message.input_str)
 
+# pylint: disable=R0914, R0912, R0915, R0911
+@userge.on_cmd("postdl", about={
+    'header': "Instagram Post Downloader",
+    'description': "Download a post of a instagram user by passing post link or download all posts "
+                   "by passing username of instagram user (<code>requires flag</code>)",
+    'flags': {'-u': "use this to define a batch download of post"},
+    'usage': "{tr}postdl [flag] [link|username]",
+    'examples': [
+        "{tr}postdl https://www.instagram.com/××××××××××/",
+        "{tr}postdl https://www.instagram.com/×××××××××/igshid=×××××/",
+        "{tr}postdl -u [username]",
+        "{tr}postdl -u instagram"]})
+async def _insta_post_downloader(message: Message):
+    """ download instagram post """
+    await message.edit('`Processing...`')
+    dirname = 'instadl_{target}'
+    filename = '{target}\'s_post'
+    insta = Instaloader(
+        dirname_pattern=dirname,
+        filename_pattern=filename,
+        download_video_thumbnails=False,
+        download_geotags=False,
+        download_comments=False,
+        save_metadata=False,
+        compress_json=False
+    )
     if '-u' in message.flags:
         username = message.filtered_input_str
         sent = await message.edit(f'`Fetching all posts of {username}`')
@@ -246,12 +262,18 @@ async def _insta_post_downloader(message: Message):
                 await asyncio.sleep(f_w.x + 10)
                 await upload_to_tg(message, dirname.format(target=post.owner_username), post)
             except (KeyError, LoginRequiredException):
-                await message.err('Private Content Login Required')
+                await message.err(
+                    'Private Content, Login Required\n**Please check {tr}help insta setup**')
                 return
             finally:
                 shutil.rmtree(dirname.format(target=post.owner_username), ignore_errors=True)
         await sent.delete()
-    elif match:
+        return
+
+    p = r'^https:\/\/www\.instagram\.com\/(p|tv|reel)\/([A-Za-z0-9\-]*)\/(\?igshid=[a-zA-Z0-9]*)?$'
+    # pylint: disable=line-too-long
+    match = re.search(p, message.input_str)
+    if match:
         dtypes = {
             'p': 'POST',
             'tv': 'IGTV',
@@ -268,7 +290,8 @@ async def _insta_post_downloader(message: Message):
             await download_post(insta, post)
             await upload_to_tg(message, dirname.format(target=post.owner_username), post)
         except (KeyError, LoginRequiredException):
-            await message.err("Post is private. Login and try again")
+            await message.err(
+                'Post is private, Login Required\n**Please check {tr}help insta setup**')
             return
         except FloodWait as f_w:
             await asyncio.sleep(f_w.x + 5)
