@@ -250,9 +250,8 @@ async def _insta_post_downloader(message: Message):
         await asyncio.sleep(2)
         return
 
-    url_patern = r'^https:\/\/www\.instagram\.com\'  # pylint: disable=C0301
-    url_patern += r'/(p|tv|reel)\/([A-Za-z0-9\-]*)\/(\?igshid=[a-zA-Z0-9]*)?$'
-    # pylint: disable=C0301
+    url_patern = r'^https:\/\/www\.instagram\.com\/(p|tv|reel)\/([A-Za-z0-9\-]*)\/(\?igshid=[a-zA-Z0-9]*)?$'
+    # pylint: disable=line-too-long
     match = re.search(url_patern, message.input_str)
     if match:
         dtypes = {
