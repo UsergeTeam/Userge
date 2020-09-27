@@ -187,7 +187,6 @@ def _yt_getInfo(link):
 @pool.run_in_thread
 def _supported(url):
     ies = ytdl.extractor.gen_extractors()
-            # Site has dedicated extractor
     return any(ie.suitable(url) and ie.IE_NAME != 'generic' for ie in ies)
 
 
