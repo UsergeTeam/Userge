@@ -158,23 +158,25 @@ class Message(RawMessage):
         _CANCEL_LIST.append(self.message_id)
 
     def _filter(self) -> None:
-        if not self._filtered:
-            prefix = str(self._kwargs.get('prefix', '-'))
-            del_pre = bool(self._kwargs.get('del_pre', False))
-            input_str = self.input_str
-            for i in input_str.strip().split():
-                match = re.match(f"({prefix}[a-zA-Z]+)([0-9]*)$", i)
-                if match:
-                    items: Sequence[str] = match.groups()
-                    self._flags[items[0].lstrip(prefix).lower() if del_pre
-                                else items[0].lower()] = items[1] or ''
-                else:
-                    self._filtered_input_str += ' ' + i
-            self._filtered_input_str = self._filtered_input_str.strip()
-            _LOG.debug(
-                _LOG_STR,
-                f"Filtered Input String => [ {self._filtered_input_str}, {self._flags} ]")
-            self._filtered = True
+        if self._filtered:
+            return
+
+        prefix = str(self._kwargs.get('prefix', '-'))
+        del_pre = bool(self._kwargs.get('del_pre', False))
+        input_str = self.input_str
+        for i in input_str.strip().split():
+            match = re.match(f"({prefix}[a-zA-Z]+)([0-9]*)$", i)
+            if match:
+                items: Sequence[str] = match.groups()
+                self._flags[items[0].lstrip(prefix).lower() if del_pre
+                            else items[0].lower()] = items[1] or ''
+            else:
+                self._filtered_input_str += ' ' + i
+        self._filtered_input_str = self._filtered_input_str.strip()
+        _LOG.debug(
+            _LOG_STR,
+            f"Filtered Input String => [ {self._filtered_input_str}, {self._flags} ]")
+        self._filtered = True
 
     async def send_as_file(self,
                            text: str,
