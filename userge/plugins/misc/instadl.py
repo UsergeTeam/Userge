@@ -143,7 +143,7 @@ def get_profile_posts(profile: Profile) -> NodeIterator[Post]:
     return profile.get_posts()
 
 
-# pylint: disable=R0914, R0912, R0915, R0911, C0301
+# pylint: disable=R0914, R0912, R0915, R0911
 @userge.on_cmd("postdl", about={
     'header': "Instagram Post Downloader",
     'description': "Download a post of a instagram user by passing post link or download all posts "
@@ -250,7 +250,7 @@ async def _insta_post_downloader(message: Message):
         await asyncio.sleep(2)
         return
 
-    url_patern = r'^https:\/\/www\.instagram\.com\'
+    url_patern = r'^https:\/\/www\.instagram\.com\'  # pylint: disable=C0301
     url_patern += r'/(p|tv|reel)\/([A-Za-z0-9\-]*)\/(\?igshid=[a-zA-Z0-9]*)?$'
     # pylint: disable=C0301
     match = re.search(url_patern, message.input_str)
