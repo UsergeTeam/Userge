@@ -11,6 +11,7 @@
 __all__ = ['Userge']
 
 import time
+import signal
 import asyncio
 import importlib
 from types import ModuleType
@@ -31,6 +32,13 @@ _LOG_STR = "<<<!  #####  %s  #####  !>>>"
 _IMPORTED: List[ModuleType] = []
 _INIT_TASKS: List[asyncio.Task] = []
 _START_TIME = time.time()
+
+
+def _shutdown() -> None:
+    _LOG.info(_LOG_STR, 'received stop signal, cancelling tasks ...')
+    for task in asyncio.all_tasks():
+        task.cancel()
+    _LOG.info(_LOG_STR, 'all tasks cancelled !')
 
 
 async def _complete_init_tasks() -> None:
@@ -155,32 +163,39 @@ class Userge(_AbstractUserge):
 
     async def stop(self) -> None:  # pylint: disable=arguments-differ
         """ stop client and bot """
-        await pool._stop()  # pylint: disable=protected-access
         if self._bot is not None:
             _LOG.info(_LOG_STR, "Stopping UsergeBot")
             await self._bot.stop()
         _LOG.info(_LOG_STR, "Stopping Userge")
         await super().stop()
+        await pool._stop()  # pylint: disable=protected-access
 
     def begin(self, coro: Optional[Awaitable[Any]] = None) -> None:
         """ start userge """
         loop = asyncio.get_event_loop()
+        loop.add_signal_handler(signal.SIGHUP, _shutdown)
+        loop.add_signal_handler(signal.SIGTERM, _shutdown)
         run = loop.run_until_complete
-        run(self.start())
-        running_tasks: List[asyncio.Task] = []
-        for task in self._tasks:
-            running_tasks.append(loop.create_task(task()))
-        if coro:
-            _LOG.info(_LOG_STR, "Running Coroutine")
-            run(coro)
-        else:
-            _LOG.info(_LOG_STR, "Idling Userge")
-            logbot.edit_last_msg("Userge has Started Successfully !")
-            logbot.end()
-            idle()
-        _LOG.info(_LOG_STR, "Exiting Userge")
-        for task in running_tasks:
-            task.cancel()
-        run(self.stop())
-        run(loop.shutdown_asyncgens())
-        loop.close()
+        try:
+            run(self.start())
+            running_tasks: List[asyncio.Task] = []
+            for task in self._tasks:
+                running_tasks.append(loop.create_task(task()))
+            if coro:
+                _LOG.info(_LOG_STR, "Running Coroutine")
+                run(coro)
+            else:
+                _LOG.info(_LOG_STR, "Idling Userge")
+                logbot.edit_last_msg("Userge has Started Successfully !")
+                logbot.end()
+                idle()
+            _LOG.info(_LOG_STR, "Exiting Userge")
+            for task in running_tasks:
+                task.cancel()
+            run(self.stop())
+            run(loop.shutdown_asyncgens())
+        except asyncio.exceptions.CancelledError:
+            pass
+        finally:
+            if not loop.is_running():
+                loop.close()

@@ -64,24 +64,36 @@ _checkDefaultVars() {
         set +a
     done
     DOWN_PATH=${DOWN_PATH%/}/
-    [[ -n $HEROKU_API_KEY && -n $HEROKU_APP_NAME ]] \
-        && declare -gx HEROKU_GIT_URL="https://api:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git"
+    if [[ -n $HEROKU_API_KEY && -n $HEROKU_APP_NAME ]]; then
+        local herokuErr=$(runPythonCode '
+import heroku3
+try:
+    if "'$HEROKU_APP_NAME'" not in heroku3.from_key("'$HEROKU_API_KEY'").apps():
+        raise Exception("Invalid HEROKU_APP_NAME \"'$HEROKU_APP_NAME'\"")
+except Exception as e:
+    print(e)')
+        [[ $herokuErr ]] && quit "heroku response > $herokuErr"
+        declare -g HEROKU_GIT_URL="https://api:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git"
+    fi
     for var in G_DRIVE_IS_TD LOAD_UNOFFICIAL_PLUGINS; do
         eval $var=$(tr "[:upper:]" "[:lower:]" <<< ${!var})
     done
-    local nameAndUName=$(grep -oP "(?<=\/\/)(.+)(?=\@)" <<< $DATABASE_URL)
-    DATABASE_URL=$(sed 's/$nameAndUName/$(printf "%q\n" $nameAndUName)/' <<< $DATABASE_URL)
+    local uNameAndPass=$(grep -oP "(?<=\/\/)(.+)(?=\@cluster)" <<< $DATABASE_URL)
+    local parsedUNameAndPass=$(runPythonCode '
+from urllib.parse import quote_plus
+print(quote_plus("'$uNameAndPass'"))')
+    DATABASE_URL=$(sed 's/$uNameAndPass/$parsedUNameAndPass/' <<< $DATABASE_URL)
 }
 
 _checkDatabase() {
     editLastMessage "Checking DATABASE_URL ..."
-    local err=$(runPythonCode '
+    local mongoErr=$(runPythonCode '
 import pymongo
 try:
     pymongo.MongoClient("'$DATABASE_URL'").list_database_names()
 except Exception as e:
     print(e)')
-    [[ $err ]] && quit "pymongo response > $err" || log "\tpymongo response > {status : 200}"
+    [[ $mongoErr ]] && quit "pymongo response > $mongoErr" || log "\tpymongo response > {status : 200}"
 }
 
 _checkTriggers() {
@@ -122,6 +134,8 @@ _checkGit() {
             gitClone $HEROKU_GIT_URL tmp_git || quit "Invalid HEROKU_API_KEY or HEROKU_APP_NAME var !"
             mv tmp_git/.git .
             rm -rf tmp_git
+            editLastMessage "\tChecking Heroku Remote ..."
+            remoteIsExist heroku || addHeroku
         else
             replyLastMessage "\tInitializing Empty Git ..."
             gitInit
@@ -132,9 +146,10 @@ _checkGit() {
 
 _checkUpstreamRepo() {
     editLastMessage "Checking UPSTREAM_REPO ..."
-    grep -q $UPSTREAM_REMOTE < <(git remote) || addUpstream
+    remoteIsExist $UPSTREAM_REMOTE || addUpstream
     replyLastMessage "\tFetching Data From UPSTREAM_REPO ..."
     fetchUpstream || updateUpstream && fetchUpstream || quit "Invalid UPSTREAM_REPO var !"
+    fetchBranches
     deleteLastMessage
 }
 
@@ -158,7 +173,6 @@ _checkUnoffPlugins() {
     else
         editLastMessage "\tUnOfficial Plugins Disabled !"
     fi
-    sleep 1
     deleteLastMessage
 }
 

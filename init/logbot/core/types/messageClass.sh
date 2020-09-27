@@ -24,7 +24,7 @@ _Message.id() {
 }
 
 _Message.chat_id() {
-    test "$1" == "=" && _Message.property chat_id = $2 || _Message.property chat_id
+    test "$1" = "=" && _Message.property chat_id = $2 || _Message.property chat_id
 }
 
 _Message.message_id() {
@@ -48,14 +48,14 @@ $(_Message.id) $(_Message.chat_id) $(_Message.message_id) "$(_Message.text)"
 }
 
 _Message.edit() {
-    raweditMessageText $(_Message.chat_id) $(_Message.message_id) "$1"
+    api.editMessageText $(_Message.chat_id) $(_Message.message_id) "$1"
     _Message.text = "$1"
 }
 
 _Message.reply() {
-    rawsendMessage $(_Message.chat_id) "$1" $(_Message.message_id)
+    api.sendMessage $(_Message.chat_id) "$1" $(_Message.message_id)
 }
 
 _Message.delete() {
-    rawdeleteMessage $(_Message.chat_id) $(_Message.message_id) $(_Message.id)
+    api.deleteMessage $(_Message.chat_id) $(_Message.message_id) $(_Message.id)
 }

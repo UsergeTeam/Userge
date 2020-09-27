@@ -1,4 +1,4 @@
-# pylint: disable=missing-module-docstring
+#!/bin/bash
 #
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
@@ -8,13 +8,7 @@
 #
 # All rights reserved.
 
-__all__ = ['Utils']
-
-from .get_logger import GetLogger
-from .get_channel_logger import GetCLogger
-from .restart import Restart
-from .terminate import Terminate
-
-
-class Utils(GetLogger, GetCLogger, Restart, Terminate):
-    """ methods.utils """
+urlEncode() {
+    echo "<code>$(echo "${1#\~}" | sed -E 's/(\\t)|(\\n)/ /g' |
+        curl -Gso /dev/null -w %{url_effective} --data-urlencode @- "" | cut -c 3-)</code>"
+}

@@ -21,8 +21,8 @@ ALLOWED_COLLECTION = get_collection("PM_PERMIT")
 pmCounter: Dict[int, int] = {}
 allowAllFilter = filters.create(lambda _, __, ___: Config.ALLOW_ALL_PMS)
 noPmMessage = ("Hello {fname} this is an automated message\n"
-               "Please wait untill you get approved to direct message "
-               "And please dont spam untill then ")
+               "Please wait until you get approved to direct message "
+               "And please dont spam until then ")
 blocked_message = "**You were automatically blocked**"
 
 
@@ -208,7 +208,7 @@ async def uninvitedPmHandler(message: Message):
             pmCounter[message.from_user.id] += 1
             await message.reply(
                 f"You have {pmCounter[message.from_user.id]} out of 4 **Warnings**\n"
-                "Please wait untill you get aprroved to pm !", del_in=5)
+                "Please wait until you get approved to pm !", del_in=5)
     else:
         pmCounter.update({message.from_user.id: 1})
         await message.reply(

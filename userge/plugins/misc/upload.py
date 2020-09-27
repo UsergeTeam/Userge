@@ -152,7 +152,7 @@ async def uploadtotg(message: Message):
                     count = 0
                     await message.try_to_edit(progress_str, disable_web_page_preview=True)
                 await asyncio.sleep(1)
-        except Exception as d_e:
+        except Exception as d_e:  # pylint: disable=broad-except
             await message.err(d_e)
             return
     if "|" in path_:
@@ -193,25 +193,14 @@ async def upload_path(message: Message, path: Path, del_path):
 
 
 async def upload(message: Message, path: Path, del_path: bool = False, extra: str = ''):
-    if path.name.lower().endswith((
-        ".mkv",
-        ".mp4",
-        ".webm"
-    )) and ('d' not in message.flags):
+    if path.name.lower().endswith(
+            (".mkv", ".mp4", ".webm")) and ('d' not in message.flags):
         await vid_upload(message, path, del_path, extra)
-    elif path.name.lower().endswith((
-        ".mp3",
-        ".flac",
-        ".wav",
-        ".m4a"
-    )) and ('d' not in message.flags):
+    elif path.name.lower().endswith(
+            (".mp3", ".flac", ".wav", ".m4a")) and ('d' not in message.flags):
         await audio_upload(message, path, del_path, extra)
-    elif path.name.lower().endswith((
-        ".jpg",
-        ".jpeg",
-        ".png",
-        ".bmp"
-    )) and ('d' not in message.flags):
+    elif path.name.lower().endswith(
+            (".jpg", ".jpeg", ".png", ".bmp")) and ('d' not in message.flags):
         await photo_upload(message, path, del_path, extra)
     else:
         await doc_upload(message, path, del_path, extra)
@@ -235,6 +224,8 @@ async def doc_upload(message: Message, path, del_path: bool = False, extra: str 
             progress=progress,
             progress_args=(message, f"uploading {extra}", str(path.name))
         )
+    except ValueError as e_e:
+        await sent.edit(f"Skipping `{path}` due to {e_e}")
     except Exception as u_e:
         await sent.edit(u_e)
         raise u_e
@@ -269,6 +260,8 @@ async def vid_upload(message: Message, path, del_path: bool = False, extra: str 
             progress=progress,
             progress_args=(message, f"uploading {extra}", str(path.name))
         )
+    except ValueError as e_e:
+        await sent.edit(f"Skipping `{path}` due to {e_e}")
     except Exception as u_e:
         await sent.edit(u_e)
         raise u_e
@@ -325,6 +318,8 @@ async def audio_upload(message: Message, path, del_path: bool = False, extra: st
             progress=progress,
             progress_args=(message, f"uploading {extra}", str(path.name))
         )
+    except ValueError as e_e:
+        await sent.edit(f"Skipping `{path}` due to {e_e}")
     except Exception as u_e:
         await sent.edit(u_e)
         raise u_e
@@ -354,6 +349,8 @@ async def photo_upload(message: Message, path, del_path: bool = False, extra: st
             progress=progress,
             progress_args=(message, f"uploading {extra}", str(path.name))
         )
+    except ValueError as e_e:
+        await sent.edit(f"Skipping `{path}` due to {e_e}")
     except Exception as u_e:
         await sent.edit(u_e)
         raise u_e
@@ -369,13 +366,16 @@ async def get_thumb(path: str = ''):
     if os.path.exists(Config.THUMB_PATH):
         return Config.THUMB_PATH
     if path:
+        types = (".jpg", ".webp", ".png")
+        if path.endswith(types):
+            return None
         file_name = os.path.splitext(path)[0]
-        for type_ in (".jpg", ".webp", ".png"):
+        for type_ in types:
             thumb_path = file_name + type_
             if os.path.exists(thumb_path):
                 if type_ != ".jpg":
                     new_thumb_path = f"{file_name}.jpg"
-                    Image.open(thumb_path).save(new_thumb_path, "JPEG")
+                    Image.open(thumb_path).convert('RGB').save(new_thumb_path, "JPEG")
                     os.remove(thumb_path)
                     thumb_path = new_thumb_path
                 return thumb_path

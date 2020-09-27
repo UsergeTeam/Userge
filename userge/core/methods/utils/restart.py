@@ -32,9 +32,9 @@ class Restart(RawClient):  # pylint: disable=missing-class-docstring
             for handler in c_p.open_files() + c_p.connections():
                 os.close(handler.fd)
         except Exception as c_e:  # pylint: disable=broad-except
-            _LOG.error(_LOG_STR, c_e)
+            print(_LOG_STR % c_e)
         if update_req:
-            _LOG.info(_LOG_STR, "Installing Requirements...")
+            print(_LOG_STR % "Installing Requirements...")
             os.system("pip3 install -U pip && pip3 install -r requirements.txt")  # nosec
         os.execl(sys.executable, sys.executable, '-m', 'userge')  # nosec
         sys.exit()
