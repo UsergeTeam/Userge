@@ -102,7 +102,7 @@ class ChannelLogger:
         return msg.message_id
 
     async def fwd_msg(self,
-                      message: '_message.Message',
+                      message: Union['_message.Message', 'RawMessage'],
                       name: str = '',
                       as_copy: bool = True,
                       remove_caption: bool = False) -> None:
@@ -136,11 +136,11 @@ class ChannelLogger:
             if message.media:
                 asyncio.get_event_loop().create_task(self.log("**Forwarding Message...**", name))
                 try:
-                    await message.client.forward_messages(chat_id=self._id,
-                                                          from_chat_id=message.chat.id,
-                                                          message_ids=message.message_id,
-                                                          as_copy=as_copy,
-                                                          remove_caption=remove_caption)
+                    await message._client.forward_messages(chat_id=self._id,  # pylint: disable=protected-access
+                                                           from_chat_id=message.chat.id,
+                                                           message_ids=message.message_id,
+                                                           as_copy=as_copy,
+                                                           remove_caption=remove_caption)
                 except ValueError:
                     pass
             else:
