@@ -295,7 +295,8 @@ async def gban_at_entry(message: Message):
                 async with ses.get(f'https://api.cas.chat/check?user_id={user_id}') as resp:
                     res = json.loads(await resp.text())
             if res['ok']:
-                reason = ' | '.join(res['result']['messages']) if 'result' in res else None
+                reason = ' | '.join(
+                    res['result']['messages']) if 'result' in res else None
                 await asyncio.gather(
                     message.client.kick_chat_member(chat_id, user_id),
                     message.reply(
