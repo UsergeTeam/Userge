@@ -221,7 +221,7 @@ async def _insta_login(message: Message):
         await message.edit('**Login Credentials not found.**\n`[NOTE]`: '
                            '`You have to set two vars for login`\n\n'
                            '`INSTA_ID` = __your Instagram Id__\n'
-                           '`INSTA_PASS`' = __your Instagram Password __')
+                           '`INSTA_PASS` = __your Instagram Password__')
 
 
 # pylint: disable=R0914, R0912, R0915, R0911
