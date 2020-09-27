@@ -51,7 +51,7 @@ async def eval_(message: Message):
     async def aexec(code):
         head = "async def __aexec(userge, message):\n "
         if '\n' in code:
-            rest_code = '\n '.join(line for line in code.split('\n'))
+            rest_code = '\n '.join(iter(code.split('\n')))
         elif any(True for k_ in keyword.kwlist
                  if k_ not in ('True', 'False', 'None') and code.startswith(f"{k_} ")):
             rest_code = f"\n {code}"
@@ -129,10 +129,7 @@ async def term_(message: Message):
         uid = geteuid()
     except ImportError:
         uid = 1
-    if uid == 0:
-        output = f"{curruser}:~# {cmd}\n"
-    else:
-        output = f"{curruser}:~$ {cmd}\n"
+    output = f"{curruser}:~# {cmd}\n" if uid == 0 else f"{curruser}:~$ {cmd}\n"
     count = 0
     while not t_obj.finished:
         count += 1
