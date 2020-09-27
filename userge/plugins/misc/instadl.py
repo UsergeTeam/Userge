@@ -143,7 +143,7 @@ def get_profile_posts(profile: Profile) -> NodeIterator[Post]:
     return profile.get_posts()
 
 
-# pylint: disable=R0914, R0912, R0915, R0911
+# pylint: disable=R0914, R0912, R0915, R0911, C0301
 @userge.on_cmd("postdl", about={
     'header': "Instagram Post Downloader",
     'description': "Download a post of a instagram user by passing post link or download all posts "
@@ -158,6 +158,25 @@ def get_profile_posts(profile: Profile) -> NodeIterator[Post]:
 async def _insta_post_downloader(message: Message):
     """ download instagram post """
     await message.edit('`Setting up Configs. Please don\'t flood.`')
+    if '-u' in message.flags:
+        username = message.filtered_input_str
+        sent = await message.edit(f'`Fetching all posts of {username}`')
+        profile = await get_profile(insta, username)
+        for post in await get_profile_posts(profile):
+            try:
+                await download_post(insta, post)
+                await upload_to_tg(message, dirname.format(target=post.owner_username), post)
+            except FloodWait as f_w:
+                await asyncio.sleep(f_w.x + 10)
+                await upload_to_tg(message, dirname.format(target=post.owner_username), post)
+            except (KeyError, LoginRequiredException):
+                await message.err('Private Content Login Required')
+                return
+            finally:
+                shutil.rmtree(dirname.format(target=post.owner_username), ignore_errors=True)
+        await sent.delete()
+        return
+
     dirname = 'instadl_{target}'
     filename = '{target}\'s_post'
     insta = Instaloader(
@@ -226,32 +245,16 @@ async def _insta_post_downloader(message: Message):
                     await message.err('Failed to save session file, probably due to invalid login.')
                     await asyncio.sleep(5)
     else:
-        await message.edit('Login Credentials not found. `[NOTE]`: '
-                           '**You may not be able to download private contents or so**')
+        await message.edit('Login Credentials not found.\n`[NOTE]`: '
+                           '**You may not be able to download private contents or so.**')
         await asyncio.sleep(2)
+        return
 
-    url_patern = r'^https:\/\/www\.instagram\.com\/(p|tv|reel)\/([A-Za-z0-9\-]*)\/(\?igshid=[a-zA-Z0-9]*)?$'
+    url_patern = r'^https:\/\/www\.instagram\.com\'
+    url_patern += r'/(p|tv|reel)\/([A-Za-z0-9\-]*)\/(\?igshid=[a-zA-Z0-9]*)?$'
     # pylint: disable=C0301
     match = re.search(url_patern, message.input_str)
-
-    if '-u' in message.flags:
-        username = message.filtered_input_str
-        sent = await message.edit(f'`Fetching all posts of {username}`')
-        profile = await get_profile(insta, username)
-        for post in await get_profile_posts(profile):
-            try:
-                await download_post(insta, post)
-                await upload_to_tg(message, dirname.format(target=post.owner_username), post)
-            except FloodWait as f_w:
-                await asyncio.sleep(f_w.x + 10)
-                await upload_to_tg(message, dirname.format(target=post.owner_username), post)
-            except (KeyError, LoginRequiredException):
-                await message.err('Private Content Login Required')
-                return
-            finally:
-                shutil.rmtree(dirname.format(target=post.owner_username), ignore_errors=True)
-        await sent.delete()
-    elif match:
+    if match:
         dtypes = {
             'p': 'POST',
             'tv': 'IGTV',
