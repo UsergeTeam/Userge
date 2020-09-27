@@ -158,6 +158,17 @@ def get_profile_posts(profile: Profile) -> NodeIterator[Post]:
 async def _insta_post_downloader(message: Message):
     """ download instagram post """
     await message.edit('`Setting up Configs. Please don\'t flood.`')
+    dirname = 'instadl_{target}'
+    filename = '{target}\'s_post'
+    insta = Instaloader(
+        dirname_pattern=dirname,
+        filename_pattern=filename,
+        download_video_thumbnails=False,
+        download_geotags=False,
+        download_comments=False,
+        save_metadata=False,
+        compress_json=False
+    )
     if '-u' in message.flags:
         username = message.filtered_input_str
         sent = await message.edit(f'`Fetching all posts of {username}`')
@@ -177,17 +188,6 @@ async def _insta_post_downloader(message: Message):
         await sent.delete()
         return
 
-    dirname = 'instadl_{target}'
-    filename = '{target}\'s_post'
-    insta = Instaloader(
-        dirname_pattern=dirname,
-        filename_pattern=filename,
-        download_video_thumbnails=False,
-        download_geotags=False,
-        download_comments=False,
-        save_metadata=False,
-        compress_json=False
-    )
     if Config.INSTA_ID and Config.INSTA_PASS:
         # try login
         try:
