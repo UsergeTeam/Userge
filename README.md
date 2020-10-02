@@ -1,6 +1,6 @@
 <p align="center">
     <a href="https://github.com/UsergeTeam/Userge">
-        <img src="resources/userge.png" alt="Userge">
+        <img src="resources/Mahi bhai 7.png" alt="Userge">
     </a>
     <br>
     <b>Pluggable Telegram UserBot</b>
