@@ -13,12 +13,12 @@ from pyrogram.errors.exceptions.bad_request_400 import BotMethodInvalid
 from userge import userge, Message
 
 
-@userge.on_cmd("whois", about={
+@userge.on_cmd("kon", about={
     'header': "use this to get any user details",
     'usage': "just reply to any user message or add user_id or username",
-    'examples': "{tr}whois [user_id | username]"}, allow_channels=False)
+    'examples': "{tr}kon [user_id | username]"}, allow_channels=False)
 async def who_is(message: Message):
-    await message.edit("`Collecting Whois Info.. Hang on!`")
+    await message.edit("`wait Mahi... abhi iska kundali nikalta hu!!`")
     user_id = message.input_str
     if user_id:
         try:
@@ -36,7 +36,7 @@ async def who_is(message: Message):
         return
     if from_user or from_chat is not None:
         pp_c = await message.client.get_profile_photos_count(from_user.id)
-        message_out_str = "<b>USER INFO:</b>\n\n"
+        message_out_str = "<b>Kundali:</b>\n\n"
         message_out_str += f"<b>🗣 First Name:</b> <code>{from_user.first_name}</code>\n"
         message_out_str += f"<b>🗣 Last Name:</b> <code>{from_user.last_name}</code>\n"
         message_out_str += f"<b>👤 Username:</b> @{from_user.username}\n"
