@@ -38,6 +38,7 @@ async def alive(message: Message):
             _set_data(True)
     markup = None
     output = f"""
+**🖋️ status** : `Don't worry mahi... main abhi jinda hu🤓 `
 **⏱ uptime** : `{userge.uptime}`
 **💡 version** : `{get_version()}`
 **⚙️ mode** : `{_get_mode().upper()}`
