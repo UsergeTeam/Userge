@@ -74,7 +74,7 @@ async def Oof_(message: Message):
 async def Hmm_(message: Message):
     """Hmm"""
     Hmm = "Hm "
-    for _ in range(4):
+    for _ in range(10):
         Hmm = Hmm[:-1] + "mm"
         await message.try_to_edit(Hmm)
 
@@ -188,7 +188,7 @@ async def run_(message: Message):
     await check_and_send(message, choice(RUNS_STR), parse_mode="html")
 
 
-@userge.on_cmd("metoo$", about={'header': "Haha yes"})
+@userge.on_cmd("abuse$", about={'header': "Galli dena buri baat"})
 async def metoo_(message: Message):
     """metoo"""
     await check_and_send(message, choice(METOOSTR), parse_mode="html")
@@ -567,14 +567,36 @@ HIT = ("hits", "whacks", "slaps", "smacks", "bashes")
 WHERE = ("in the chest", "on the head", "on the butt", "on the crotch")
 
 METOOSTR = (
-    "Me too thanks", "Haha yes, me too", "Same lol", "Me irl", "Same here", "Haha yes", "Me rn")
+    "Chala ja Bose Led ke😟.",
+    "salle tu....😐😐"
+    "teri to main🤬🤬🤬.",
+    "nikal👉 pahli fursat mein nikal🤨 koi jarurat na iss group ko teri🤬 khata idhar ka gata udhar ka😏",
+    "la la ......la la...",
+    "are you out of your f🤬 mind???",
+    "you insane😐",
+    "galli bakenge🤬🤬🤬🤬🤬🤬🤬😐😐😐😐😐",
+    "you bloody fool😏.",
+    "uh crazy 🤬, get some treatment 😏",
+    "uh ediot🙁.",
+    "if you are bad, I'm your dad😎😎😎",
+    "Tu to gaya abb🗡️🔫.",
+    "🤬",
+    "Pahle apne mann mein koi sabsa ganda galli socho aur use khud ko de lo meri taraf se 🤬.",
+    "go to hell😏",
+    "abey salle🤨🤨 Maaf karna gusse mein kabhi kabhi idhar udhar nikal jata hu.",
+    "For Men like you 😏,Got created middle finger 🖕🖕🖕",
+    "chhiiii 😐 aa thuuuuuuu 😏",
+    "kutte🤬 kamine 🤬 harami🤬.",)
 
 HELLOSTR = (
-    "Hi !", "‘Ello, gov'nor!", "What’s crackin’?", "‘Sup, homeslice?", "Howdy, howdy ,howdy!",
-    "Hello, who's there, I'm talking.", "You know who this is.", "Yo!", "Whaddup.",
-    "Greetings and salutations!", "Hello, sunshine!", "Hey, howdy, hi!",
-    "What’s kickin’, little chicken?", "Peek-a-boo!", "Howdy-doody!",
-    "Hey there, freshman!", "I come in peace!", "Ahoy, matey!", "Hiya!")
+    "Swagat nahi karoge hamara😎", "Hi !", "‘Ello, gov'nor!", "Everyone please shut up🤫, Mahi iz landing here🙋‍♂️",
+    "May I come in😎!!!",
+    "Are aya aya,Dekho Mahi aaya😎🙋‍♂️.",
+    "kya main bhi andar aa jau😊🙋‍♂️,plox🌹.",
+    "No tear No fear,bcoz Mahi is landing here😎,",
+    "Hello,sur🙋‍♂️😐😐.",
+    "Hi everyone 🙋‍♂️. Can I join too?😟.", " Hello 👋 what is going on 🙋‍♂️",
+    "Jai Hind doston.")
 
 ITEMS = (
     "cast iron skillet", "large trout", "baseball bat", "cricket bat", "wooden cane", "nail",
