@@ -67,12 +67,12 @@ async def allow(message: Message):
             del_in=3)
 
 
-@userge.on_cmd("nopm", about={
+@userge.on_cmd("nikal", about={
     'header': "Activates guarding on inbox",
     'description': "Ones someone is allowed, "
                    "Userge will not interfere or handle such private chats",
-    'usage': "{tr}nopm [username | userID]\nreply {tr}nopm to a message, "
-             "do {tr}nopm in the private chat"}, allow_channels=False, allow_via_bot=False)
+    'usage': "{tr}nikal [username | userID]\nreply {tr}nikal to a message, "
+             "do {tr}nikal in the private chat"}, allow_channels=False, allow_via_bot=False)
 async def denyToPm(message: Message):
     """ disallows to pm """
     userid = await get_id(message)
@@ -81,9 +81,9 @@ async def denyToPm(message: Message):
             Config.ALLOWED_CHATS.remove(userid)
         a = await ALLOWED_COLLECTION.delete_one({'_id': userid})
         if a.deleted_count:
-            await message.edit("`Prohibitted to direct message`", del_in=3)
+            await message.edit("`nikal pahli fhursat mein nikal`", del_in=30)
         else:
-            await message.edit("`Nothing was changed`", del_in=3)
+            await message.edit("`ye to pahle se hi nikala hua hai`", del_in=30)
     else:
         await message.edit(
             "I need to reply to a user or provide the username/id or be in a private chat",
@@ -208,7 +208,7 @@ async def uninvitedPmHandler(message: Message):
             pmCounter[message.from_user.id] += 1
             await message.reply(
                 f"You have {pmCounter[message.from_user.id]} out of 4 **Warnings**\n"
-                "Please wait until you get approved to pm !", del_in=5)
+                "Please wait until you get approved to pm ! Mahi bhai is currently offline", del_in=50)
     else:
         pmCounter.update({message.from_user.id: 1})
         await message.reply(
