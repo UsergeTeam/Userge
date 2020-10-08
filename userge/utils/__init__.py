@@ -18,3 +18,11 @@ from .tools import (demojify,  # noqa
                     runcmd,
                     take_screen_shot,
                     parse_buttons)
+from .functions import (deEmojify, 
+                        media_to_image,
+                        mention_markdown,
+                        mention_html,
+                        escape_markdown,
+                        cleanhtml,
+                        thumb_from_audio,
+                        rand_array)
