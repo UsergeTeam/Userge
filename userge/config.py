@@ -64,8 +64,7 @@ class Config:
     HEROKU_API_KEY = os.environ.get("HEROKU_API_KEY", None)
     HEROKU_APP_NAME = os.environ.get("HEROKU_APP_NAME", None)
     G_DRIVE_IS_TD = os.environ.get("G_DRIVE_IS_TD") == "true"
-    LOAD_UNOFFICIAL_PLUGINS = os.environ.get(
-        "LOAD_UNOFFICIAL_PLUGINS") == "true"
+    LOAD_UNOFFICIAL_PLUGINS = os.environ.get("LOAD_UNOFFICIAL_PLUGINS") == "true"
     THUMB_PATH = DOWN_PATH + "thumb_image.jpg"
     TMP_PATH = "userge/plugins/temp/"
     MAX_MESSAGE_LENGTH = 4096
@@ -84,8 +83,9 @@ class Config:
     HEROKU_APP = heroku3.from_key(HEROKU_API_KEY).apps()[HEROKU_APP_NAME] \
         if HEROKU_API_KEY and HEROKU_APP_NAME else None
     STATUS = None
-        ### Spotify
-
+    BOT_FORWARDS = False
+    BOT_MEDIA = os.environ.get("BOT_MEDIA", None)
+    ### Spotify
     SPOTIFY_CLIENT_ID = os.environ.get('SPOTIFY_CLIENT_ID', None)
     SPOTIFY_CLIENT_SECRET = os.environ.get('SPOTIFY_CLIENT_SECRET', None)
     SPOTIFY_INITIAL_TOKEN = os.environ.get('SPOTIFY_INITIAL_TOKEN', None)
@@ -95,16 +95,20 @@ class Config:
     IMGFLIP_PASS = os.environ.get('IMGFLIP_PASS', None)
     ALLOW_NSFW = os.environ.get("ALLOW_NSFW", "False") 
 
+
 def get_version() -> str:
     """ get userge version """
     ver = f"{versions.__major__}.{versions.__minor__}.{versions.__micro__}"
-    if "/usergeteam/userge" in Config.UPSTREAM_REPO.lower():
-        diff = list(_REPO.iter_commits(f'v{ver}..HEAD'))
-        if diff:
-            return f"{ver}-patch.{len(diff)}"
-    else:
-        diff = list(_REPO.iter_commits(
-            f'{Config.UPSTREAM_REMOTE}/master..HEAD'))
-        if diff:
-            return f"{ver}-custom.{len(diff)}"
+    try:
+        if "/code-rgb/userge-x" in Config.UPSTREAM_REPO.lower():
+            diff = list(_REPO.iter_commits(f'v{ver}..HEAD'))
+            if diff:
+                return f"{ver}-STORM.{len(diff)}"
+        else:
+            diff = list(_REPO.iter_commits(f'{Config.UPSTREAM_REMOTE}/master..HEAD'))
+            if diff:
+                return f"{ver}-fork-[X].{len(diff)}"
+    except Exception as e:
+        _LOG.error(e)
+        return "For Fix See -> https://github.com/code-rgb/USERGE-X/issues/17"
     return ver
