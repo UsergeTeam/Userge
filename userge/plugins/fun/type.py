@@ -20,7 +20,7 @@ from userge import userge, Message
 async def type_(message: Message):
     text = message.input_str
     if not text:
-        await message.err("input not found")
+        await message.err("Kuchh to likh de be...")
         return
     s_time = 0.1
     typing_symbol = '|'
