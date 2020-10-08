@@ -19,7 +19,7 @@ from cowpy import cow
 from userge import userge, Message
 
 
-@userge.on_cmd("die$", about={'header': "doob maro"})
+@userge.on_cmd("mar$", about={'header': "doob maro"})
 
 async def doobmaro_(message: Message):
 
