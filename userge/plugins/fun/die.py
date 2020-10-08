@@ -25,4 +25,4 @@ async def doobmaro_(message: Message):
 
     """doobmaro_"""
 
-    await check_and_send(message, "Doob Maro,plox")
+    await message.edit('`Doob maro 🤦‍♂️,plox😐abb jikar bhi kya karoge`')
