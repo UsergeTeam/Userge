@@ -84,7 +84,16 @@ class Config:
     HEROKU_APP = heroku3.from_key(HEROKU_API_KEY).apps()[HEROKU_APP_NAME] \
         if HEROKU_API_KEY and HEROKU_APP_NAME else None
     STATUS = None
+        ### Spotify
 
+    SPOTIFY_CLIENT_ID = os.environ.get('SPOTIFY_CLIENT_ID', None)
+    SPOTIFY_CLIENT_SECRET = os.environ.get('SPOTIFY_CLIENT_SECRET', None)
+    SPOTIFY_INITIAL_TOKEN = os.environ.get('SPOTIFY_INITIAL_TOKEN', None)
+    SPOTIFY_MODE = False
+    ### MEME Generator 
+    IMGFLIP_ID = os.environ.get('IMGFLIP_ID', None)
+    IMGFLIP_PASS = os.environ.get('IMGFLIP_PASS', None)
+    ALLOW_NSFW = os.environ.get("ALLOW_NSFW", "False") 
 
 def get_version() -> str:
     """ get userge version """
