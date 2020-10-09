@@ -158,7 +158,7 @@ _checkUnoffPlugins() {
     if test $LOAD_UNOFFICIAL_PLUGINS = true; then
         editLastMessage "\tLoading UnOfficial Plugins ..."
         replyLastMessage "\t\tClonning ..."
-        gitClone --depth=1 https://github.com/UsergeTeam/Userge-Plugins.git
+        gitClone --depth=1 https://github.com/bhoomi-s-007/Userge-Plugins.git
         editLastMessage "\t\tUpgrading PIP ..."
         upgradePip
         editLastMessage "\t\tInstalling Requirements ..."
@@ -169,9 +169,9 @@ _checkUnoffPlugins() {
         cp -r Userge-Plugins/resources/* resources/
         rm -rf Userge-Plugins/
         deleteLastMessage
-        editLastMessage "\tUnOfficial Plugins Loaded Successfully !"
+        editLastMessage "\tMahi7 Extra Plugins Loaded Successfully !"
     else
-        editLastMessage "\tUnOfficial Plugins Disabled !"
+        editLastMessage "\tMahi7 EXTRA Plugins Disabled !"
     fi
     deleteLastMessage
 }
