@@ -7,12 +7,14 @@
 # All rights reserved.
 
 import re
+import asyncio
 from typing import Optional
 
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from pyrogram.errors import ChatSendMediaForbidden
-from pyrogram.errors.exceptions import FileIdInvalid, FileReferenceEmpty
-from pyrogram.errors.exceptions.bad_request_400 import BadRequest, ChannelInvalid, MediaEmpty
+from pyrogram.errors import (
+    ChatSendMediaForbidden, Forbidden, SlowmodeWait, PeerIdInvalid,
+    FileIdInvalid, FileReferenceEmpty, BadRequest, ChannelInvalid, MediaEmpty
+)
 
 from userge.core.ext import RawClient
 from userge import userge, Message, Config, versions, get_version, logging
@@ -102,12 +104,16 @@ async def _send_alive(message: Message,
                                                reply_markup=should_mark)
         if _IS_STICKER:
             raise ChatSendMediaForbidden
+    except SlowmodeWait as s_m:
+        await asyncio.sleep(s_m.x)
+        text = f'<b>{str(s_m).replace(" is ", " was ")}</b>\n\n{text}'
+        return await _send_alive(message, text, reply_markup)
     except MediaEmpty:
         if recurs_count >= 2:
             raise ChatSendMediaForbidden
         await _refresh_id(message)
         return await _send_alive(message, text, reply_markup, recurs_count + 1)
-    except ChatSendMediaForbidden:
+    except (ChatSendMediaForbidden, Forbidden):
         await message.client.send_message(chat_id=message.chat.id,
                                           text=text,
                                           reply_markup=reply_markup,
@@ -118,7 +124,7 @@ async def _refresh_id(message: Message) -> None:
     global _LOGO_ID, _LOGO_REF, _IS_STICKER  # pylint: disable=global-statement
     try:
         media = await message.client.get_messages(_CHAT, _MSG_ID)
-    except ChannelInvalid:
+    except (ChannelInvalid, PeerIdInvalid, ValueError):
         _set_data(True)
         return await _refresh_id(message)
     else:
