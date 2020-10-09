@@ -18,9 +18,9 @@ trap handleSigInt INT
 initUserge() {
     printLogo
     assertPrerequisites
-    sendMessage "Initializing Mahi7 ..."
+    sendMessage "Initializing USERGE ..."
     assertEnvironment
-    editLastMessage "Starting Mahi7 ..."
+    editLastMessage "Starting USERGE ..."
     printLine
 }
 
@@ -29,7 +29,7 @@ startUserge() {
 }
 
 stopUserge() {
-    sendMessage "Exiting Mahi7 ..."
+    sendMessage "Exiting USERGE ..."
     exit 0
 }
 
