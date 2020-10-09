@@ -197,10 +197,8 @@ async def _both_have_perm(flt: Union['types.raw.Command', 'types.raw.Filter'],
     if flt.check_invite_perm and not (
             (user.can_all or user.can_invite_users) and bot.can_invite_users):
         return False
-    if flt.check_pin_perm and not (
-            (user.can_all or user.can_pin_messages) and bot.can_pin_messages):
-        return False
-    return True
+    return bool(not flt.check_pin_perm or (
+            (user.can_all or user.can_pin_messages) and bot.can_pin_messages))
 
 
 class RawDecorator(RawClient):
