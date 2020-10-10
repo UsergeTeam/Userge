@@ -39,16 +39,14 @@ async def purge_(message: Message):
         await message.err("invalid start message!")
         return
     start_t = datetime.now()
-    message_ids = range(start_message, message.message_id)
+    # message_ids = range(start_message, message.message_id)
     list_of_messages = []
     purged_messages_count = 0
     async for a_message in message.client.iter_history(
-        chat_id=message.chat.id,
-        limit=None,
-        offset_id=start_message,
-        reverse=True
-    ):
-        if from_user_id and a_message and a_message.from_user and a_message.from_user.id == from_user_id:
+            chat_id=message.chat.id, limit=None,
+            offset_id=start_message, reverse=True):
+        if (from_user_id and a_message and a_message.from_user
+                and a_message.from_user.id == from_user_id):
             list_of_messages.append(a_message.message_id)
         if not from_user_id:
             list_of_messages.append(a_message.message_id)
@@ -59,11 +57,10 @@ async def purge_(message: Message):
             )
             purged_messages_count += len(list_of_messages)
             list_of_messages = []
-
-    if list_of_messages_to_delete:
+    if list_of_messages:
         await message.client.delete_messages(chat_id=message.chat.id,
-                                             message_ids=list_of_messages_to_delete)
-        purged_messages_count += len(list_of_messages_to_delete)
+                                             message_ids=list_of_messages)
+        purged_messages_count += len(list_of_messages)
     end_t = datetime.now()
     time_taken_s = (end_t - start_t).seconds
     out = f"<u>purged</u> {purged_messages_count} messages in {time_taken_s} seconds."
