@@ -127,7 +127,7 @@ async def test_filter(message: Message):
   . ./venv/bin/activate
 
   # install requirements
-  pip install -r requirements.txt
+  pip3 install -r requirements.txt
 
   # Create config.env as given config.env.sample and fill that
   cp config.env.sample config.env
