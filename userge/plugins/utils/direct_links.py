@@ -22,7 +22,7 @@ from userge.utils import humanbytes
 @userge.on_cmd("direct", about={
     'header': "Generate a direct download link",
     'supported links': [
-        'Google Drive', 'MEGA.nz', 'Cloud Mail', 'Yandex.Disk', 'AFH',
+        'Google Drive', 'Cloud Mail', 'Yandex.Disk', 'AFH',
         'ZippyShare', 'MediaFire', 'SourceForge', 'OSDN', 'GitHub'],
     'usage': "{tr}direct [link]",
     'others': "MEGA.nz and ZippyShare **DISABLED**"})
