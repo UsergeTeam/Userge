@@ -46,7 +46,7 @@
   * split / combine
   * gadmin
   * plugin manager
-  * etc...
+  * ...and more
 * Channel & Group log support
 * Database support
 * Build-in help support
@@ -98,25 +98,17 @@ async def test_filter(message: Message):
 
 ## How To Deploy 👷
 
-* **[HEROKU](https://www.heroku.com/) Method** 🚀
+* With Heroku:
+  > **NOTE** : your can fill other vars as your need and they are optional. (settings -> reveal config vars)
+  * First click [**this**](https://heroku.com/deploy?template=https://github.com/UsergeTeam/Userge/tree/master)
+  * Fill `API_ID`, `API_HASH`, `DATABASE_URL` and `LOG_CHANNEL_ID` (**required**)
+  * Choose your [**MODE**](https://github.com/UsergeTeam/Userge#userge-modes-)
+  * Then fill other **non-required** vars as relevent to your **MODE**
+  * Finally **hit deploy** button
 
-  > First click [**this**](https://heroku.com/deploy?template=https://github.com/UsergeTeam/Userge/tree/master)
-
-  > Fill `API_ID`, `API_HASH`, `DATABASE_URL` and `LOG_CHANNEL_ID` (**required**)
-
-  > Choose your [**MODE**](https://github.com/UsergeTeam/Userge#userge-modes-)
-
-  > Then fill other **non-required** vars as relevent to your **MODE**
-
-  > Finally **hit deploy** button
-
-  > [**NOTE**] : your can fill other vars as your need and they are optional. (settings -> reveal config vars)
-
-* **Docker Method** 🐳 
-
+* With Docker 🐳 
     - [**See Detailed Guide**](resources/radmeDocker.md)
-* **Other Method** 🔧
-
+* With Git, Python and pip 🔧
   ```bash
   # clone the repo
   git clone https://github.com/UsergeTeam/Userge.git
