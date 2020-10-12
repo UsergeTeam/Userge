@@ -10,3 +10,4 @@ tasks:
         bash run
       else
         echo "Please copy the config.env.sample file and edit it to continue."
+      fi

@@ -155,7 +155,7 @@ async def test_filter(message: Message):
 
 ### Support & Discussions 👥
 
-> Head over to the [Discussion Group](https://t.me/slbotsbugs) and [Update Channel](https://t.me/theUserge)
+> Head over to the [Discussion Group](https://t.me/usergeot) and [Update Channel](https://t.me/theUserge)
 
 ### Project Credits 💆‍♂️
 
