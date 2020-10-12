@@ -5,18 +5,15 @@ from userge import userge, Message
 
             
 
-@userge.on_cmd("Thanos$", about={'header': "just for fun"})
-               trigger='', allow_via_bot=False)
-async def Thanos_(message: Message):
+@userge.on_cmd("thanos$", about={'header': "just for fun"})
 
-    """Thanos"""
+async def thanos_(message: Message):
+
+    """thanos"""
 
     animation_interval = 0.8
-
-    animation_ttl = range(70)
-
+    animation_ttl = range(90)
     await message.edit("Thanos")
-
     animation_chars = [
             "wo",
             "abhi",    
