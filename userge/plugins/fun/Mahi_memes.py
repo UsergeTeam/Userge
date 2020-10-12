@@ -12,7 +12,7 @@ async def thanos_(message: Message):
     """thanos"""
 
     animation_interval = 0.8
-    animation_ttl = range(90)
+    animation_ttl = range(11)
     await message.edit("Thanos")
     animation_chars = [
             "wo",
