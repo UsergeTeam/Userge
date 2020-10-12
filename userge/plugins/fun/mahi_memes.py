@@ -7,17 +7,16 @@ from userge import userge, Message
 
             
 
-@userge.on_cmd("thanos$", about={'header': "just for fun"})
+@userge.on_cmd("thanos$", about={'header': "Thanos Ki pehli beggum😜"})
 
 async def thanos_(message: Message):
 
     """thanos"""
 
-    animation_interval = 0.8
-    animation_ttl = range(11)
-    await message.edit("Thanos")
+    animation_interval = 0.4
+    animation_ttl = range(0, 10)
+    await message.edit("Wo")
     animation_chars = [
-            "wo",
             "abhi",    
             "apni",
             "1st begam",
@@ -34,5 +33,5 @@ async def thanos_(message: Message):
 
             await asyncio.sleep(animation_interval)
 
-            await message.edit(animation_chars[i % 11])
+            await message.edit(animation_chars[i % 10])
 
