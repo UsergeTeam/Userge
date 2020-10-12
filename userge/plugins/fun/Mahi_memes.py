@@ -1,3 +1,5 @@
+#This plugin is created by Mahi , only for fun purpose, I'm not a coder😜
+
 import re, asyncio
 from asyncio import sleep
 from re import sub
