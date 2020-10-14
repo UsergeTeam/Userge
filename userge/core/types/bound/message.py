@@ -215,7 +215,7 @@ class Message(RawMessage):
             else self.message_id
         if delete_message:
             asyncio.get_event_loop().create_task(self.delete())
-        if isinstance(log, bool) and log:
+        if log and isinstance(log, bool):
             log = self._module
         return await self._client.send_as_file(chat_id=self.chat.id,
                                                text=text,
@@ -294,7 +294,7 @@ class Message(RawMessage):
             quote = self.chat.type != "private"
         if reply_to_message_id is None and quote:
             reply_to_message_id = self.message_id
-        if isinstance(log, bool) and log:
+        if log and isinstance(log, bool):
             log = self._module
         return await self._client.send_message(chat_id=self.chat.id,
                                                text=text,
@@ -356,7 +356,7 @@ class Message(RawMessage):
         Raises:
             RPCError: In case of a Telegram RPC error.
         """
-        if isinstance(log, bool) and log:
+        if log and isinstance(log, bool):
             log = self._module
         try:
             return await self._client.edit_message_text(

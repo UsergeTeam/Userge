@@ -38,13 +38,11 @@ async def purge_(message: Message):
     if not start_message:
         await message.err("invalid start message!")
         return
-    start_t = datetime.now()
-    # message_ids = range(start_message, message.message_id)
     list_of_messages = []
     purged_messages_count = 0
-    async for a_message in message.client.iter_history(
-            chat_id=message.chat.id, limit=None,
-            offset_id=start_message, reverse=True):
+
+    async def handle_msg(a_message):
+        nonlocal list_of_messages, purged_messages_count
         if (from_user_id and a_message and a_message.from_user
                 and a_message.from_user.id == from_user_id):
             list_of_messages.append(a_message.message_id)
@@ -57,6 +55,18 @@ async def purge_(message: Message):
             )
             purged_messages_count += len(list_of_messages)
             list_of_messages = []
+
+    start_t = datetime.now()
+    if message.client.is_bot:
+        for a_message in await message.client.get_messages(
+                chat_id=message.chat.id, replies=0,
+                message_ids=range(start_message, message.message_id)):
+            await handle_msg(a_message)
+    else:
+        async for a_message in message.client.iter_history(
+                chat_id=message.chat.id, limit=None,
+                offset_id=start_message, reverse=True):
+            await handle_msg(a_message)
     if list_of_messages:
         await message.client.delete_messages(chat_id=message.chat.id,
                                              message_ids=list_of_messages)
