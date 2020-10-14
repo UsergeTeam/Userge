@@ -28,10 +28,7 @@ class Command(Filter):
         self.about = about
         self.trigger = trigger
         self.pattern = pattern
-        super().__init__(**kwargs)
-
-    def __repr__(self) -> str:
-        return f"<command {self.name}>"
+        super().__init__(**Filter._parse(**kwargs))  # pylint: disable=protected-access
 
     @classmethod
     def parse(cls, command: str,  # pylint: disable=arguments-differ
@@ -71,6 +68,9 @@ class Command(Filter):
                 and m.text.startswith(Config.SUDO_TRIGGER))
             filters_ = filters_ & (outgoing_flt | incoming_flt)
         return cls(_format_about(about), trigger, pattern, filters=filters_, name=cname, **kwargs)
+
+    def __repr__(self) -> str:
+        return f"<command {self.name}>"
 
 
 def _format_about(about: Union[str, Dict[str, Union[str, List[str], Dict[str, str]]]]) -> str:

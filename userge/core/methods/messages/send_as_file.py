@@ -11,6 +11,7 @@
 __all__ = ['SendAsFile']
 
 import os
+import inspect
 from typing import Union, Optional
 
 import aiofiles
@@ -77,9 +78,11 @@ class SendAsFile(RawClient):  # pylint: disable=missing-class-docstring
                                        disable_notification=True,
                                        reply_to_message_id=reply_to_message_id)
         os.remove(filename)
+        module = inspect.getmodule(inspect.currentframe().f_back).__name__
         if log:
-            args = [msg]
-            if isinstance(log, str):
-                args.append(log)
+            if isinstance(log, bool):
+                args = (msg, module)
+            else:
+                args = (msg, log)
             await self._channel.fwd_msg(*args)
-        return types.bound.Message(self, msg)
+        return types.bound.Message.parse(self, msg, module=module)

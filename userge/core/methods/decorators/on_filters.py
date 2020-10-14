@@ -34,7 +34,7 @@ class OnFilters(RawDecorator):  # pylint: disable=missing-class-docstring
                    check_restrict_perm: bool = False,
                    check_promote_perm: bool = False,
                    check_invite_perm: bool = False,
-                   check_pin_perm: bool = False,) -> RawDecorator._PYRORETTYPE:
+                   check_pin_perm: bool = False) -> RawDecorator._PYRORETTYPE:
         """\nDecorator for handling filters
 
         Parameters:

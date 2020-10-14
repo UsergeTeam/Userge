@@ -30,32 +30,32 @@ _LOG = logging.getLogger(__name__)
 _LOG_STR = "<<<!  :::::  %s  :::::  !>>>"
 
 
-def _msg_to_dict(message: RawMessage) -> Dict[str, object]:
-    kwargs_ = vars(message)
-    del message
-    for key_ in ['_client', '_channel', '_filtered', '_process_canceled',
-                 'client', '_filtered_input_str', '_flags', '_kwargs']:
-        if key_ in kwargs_:
-            del kwargs_[key_]
-    return kwargs_
-
-
 class Message(RawMessage):
     """ Modded Message Class For Userge """
     def __init__(self,
                  client: Union['_client.Userge', '_client._UsergeBot'],
-                 message: RawMessage,
-                 **kwargs: Union[str, bool]) -> None:
-        super().__init__(client=client, **_msg_to_dict(message))
-        self.message_id: int
-        self.reply_to_message: Optional[RawMessage]
-        if self.reply_to_message:
-            self.reply_to_message = self.__class__(self._client, self.reply_to_message)
+                 mvars: Dict[str, object], module: str, **kwargs: Union[str, bool]) -> None:
         self._filtered = False
-        self._process_canceled = False
-        self._filtered_input_str: str = ''
+        self._filtered_input_str = ''
         self._flags: Dict[str, str] = {}
+        self._process_canceled = False
+        self._module = module
         self._kwargs = kwargs
+        super().__init__(client=client, **mvars)
+
+    @classmethod
+    def parse(cls, client: Union['_client.Userge', '_client._UsergeBot'],
+              message: RawMessage, **kwargs: Union[str, bool]) -> 'Message':
+        """ parse message """
+        mvars = vars(message)
+        del message
+        for key_ in ['_client', '_filtered', '_filtered_input_str',
+                     '_flags', '_process_canceled', '_module', '_kwargs']:
+            if key_ in mvars:
+                del mvars[key_]
+        if mvars['reply_to_message']:
+            mvars['reply_to_message'] = cls.parse(client, mvars['reply_to_message'], **kwargs)
+        return cls(client, mvars, **kwargs)
 
     @property
     def client(self) -> Union['_client.Userge', '_client._UsergeBot']:
@@ -215,6 +215,8 @@ class Message(RawMessage):
             else self.message_id
         if delete_message:
             asyncio.get_event_loop().create_task(self.delete())
+        if isinstance(log, bool) and log:
+            log = self._module
         return await self._client.send_as_file(chat_id=self.chat.id,
                                                text=text,
                                                filename=filename,
@@ -292,6 +294,8 @@ class Message(RawMessage):
             quote = self.chat.type != "private"
         if reply_to_message_id is None and quote:
             reply_to_message_id = self.message_id
+        if isinstance(log, bool) and log:
+            log = self._module
         return await self._client.send_message(chat_id=self.chat.id,
                                                text=text,
                                                del_in=del_in,
@@ -352,6 +356,8 @@ class Message(RawMessage):
         Raises:
             RPCError: In case of a Telegram RPC error.
         """
+        if isinstance(log, bool) and log:
+            log = self._module
         try:
             return await self._client.edit_message_text(
                 chat_id=self.chat.id,

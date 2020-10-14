@@ -125,6 +125,9 @@ class _UsergeBot(_AbstractUserge):
 
 class Userge(_AbstractUserge):
     """ Userge, the userbot """
+
+    has_bot = bool(Config.BOT_TOKEN)
+
     def __init__(self, **kwargs) -> None:
         _LOG.info(_LOG_STR, "Setting Userge Configs")
         kwargs = {

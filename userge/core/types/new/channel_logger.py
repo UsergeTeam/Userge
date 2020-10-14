@@ -50,30 +50,6 @@ class ChannelLogger:
         return "<b><a href='https://t.me/c/{}/{}'>Preview</a></b>".format(
             str(Config.LOG_CHANNEL_ID)[4:], message_id)
 
-    def bind(self, client: Union['_client.Userge', '_client._UsergeBot']) -> None:
-        """\nbind with new client
-
-        Parameters:
-            client (`Userge` | `usergeBot`):
-                Pass Userge or UsergeBot.
-
-        Returns:
-            None
-        """
-        self._client = client
-
-    def update(self, name: str) -> None:
-        """\nupdate current logger name.
-
-        Parameters:
-            name (``str``):
-                New name to logger.
-
-        Returns:
-            None
-        """
-        self._string = _gen_string(name)
-
     async def log(self, text: str, name: str = '') -> int:
         """\nsend text message to log channel.
 
@@ -136,7 +112,8 @@ class ChannelLogger:
             if message.media:
                 asyncio.get_event_loop().create_task(self.log("**Forwarding Message...**", name))
                 try:
-                    await message._client.forward_messages(chat_id=self._id,  # pylint: disable=protected-access
+                    # pylint: disable=protected-access
+                    await message._client.forward_messages(chat_id=self._id,
                                                            from_chat_id=message.chat.id,
                                                            message_ids=message.message_id,
                                                            as_copy=as_copy,

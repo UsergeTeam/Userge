@@ -81,12 +81,7 @@ async def helpme(message: Message) -> None:  # pylint: disable=missing-function-
                 out_str = f"<i>No Module or Command Found for</i>: <code>{message.input_str}</code>"
     await message.edit(out_str, del_in=0, parse_mode='html', disable_web_page_preview=True)
 
-if Config.BOT_TOKEN and Config.OWNER_ID:
-    if Config.HU_STRING_SESSION:
-        ubot = userge.bot
-    else:
-        ubot = userge
-
+if userge.has_bot:
     def check_owner(func):
         async def wrapper(_, c_q: CallbackQuery):
             if c_q.from_user and c_q.from_user.id == Config.OWNER_ID:
@@ -98,13 +93,13 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
                     await c_q.answer("Sorry, I Don't Have Permissions to edit this 😔",
                                      show_alert=True)
             else:
-                user_dict = await ubot.get_user_dict(Config.OWNER_ID)
+                user_dict = await userge.bot.get_user_dict(Config.OWNER_ID)
                 await c_q.answer(
                     f"Only {user_dict['flname']} Can Access this...! Build Your Own @TheUserge 🤘",
                     show_alert=True)
         return wrapper
 
-    @ubot.on_callback_query(filters=filters.regex(pattern=r"\((.+)\)(next|prev)\((\d+)\)"))
+    @userge.bot.on_callback_query(filters=filters.regex(pattern=r"\((.+)\)(next|prev)\((\d+)\)"))
     @check_owner
     async def callback_next_prev(callback_query: CallbackQuery):
         cur_pos = str(callback_query.matches[0].group(1))
@@ -125,7 +120,7 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
         await callback_query.edit_message_reply_markup(
             reply_markup=InlineKeyboardMarkup(buttons))
 
-    @ubot.on_callback_query(filters=filters.regex(pattern=r"back\((.+)\)"))
+    @userge.bot.on_callback_query(filters=filters.regex(pattern=r"back\((.+)\)"))
     @check_owner
     async def callback_back(callback_query: CallbackQuery):
         cur_pos = str(callback_query.matches[0].group(1))
@@ -143,7 +138,7 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
         await callback_query.edit_message_text(
             text, reply_markup=InlineKeyboardMarkup(buttons))
 
-    @ubot.on_callback_query(filters=filters.regex(pattern=r"enter\((.+)\)"))
+    @userge.bot.on_callback_query(filters=filters.regex(pattern=r"enter\((.+)\)"))
     @check_owner
     async def callback_enter(callback_query: CallbackQuery):
         cur_pos = str(callback_query.matches[0].group(1))
@@ -157,7 +152,7 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
         await callback_query.edit_message_text(
             text, reply_markup=InlineKeyboardMarkup(buttons))
 
-    @ubot.on_callback_query(filters=filters.regex(pattern=r"((?:un)?load|(?:en|dis)able)\((.+)\)"))
+    @userge.bot.on_callback_query(filters=filters.regex(pattern=r"((?:un)?load|(?:en|dis)able)\((.+)\)"))
     @check_owner
     async def callback_manage(callback_query: CallbackQuery):
         task = str(callback_query.matches[0].group(1))
@@ -177,13 +172,13 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
         await callback_query.edit_message_text(
             text, reply_markup=InlineKeyboardMarkup(buttons))
 
-    @ubot.on_callback_query(filters=filters.regex(pattern=r"^mm$"))
+    @userge.bot.on_callback_query(filters=filters.regex(pattern=r"^mm$"))
     @check_owner
     async def callback_mm(callback_query: CallbackQuery):
         await callback_query.edit_message_text(
             "🖥 **Userge Main Menu** 🖥", reply_markup=InlineKeyboardMarkup(main_menu_buttons()))
 
-    @ubot.on_callback_query(filters=filters.regex(pattern=r"^chgclnt$"))
+    @userge.bot.on_callback_query(filters=filters.regex(pattern=r"^chgclnt$"))
     @check_owner
     async def callback_chgclnt(callback_query: CallbackQuery):
         if Config.USE_USER_FOR_CLIENT_CHECKS:
@@ -196,7 +191,7 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
         await callback_query.edit_message_reply_markup(
             reply_markup=InlineKeyboardMarkup(main_menu_buttons()))
 
-    @ubot.on_callback_query(filters=filters.regex(pattern=r"refresh\((.+)\)"))
+    @userge.bot.on_callback_query(filters=filters.regex(pattern=r"refresh\((.+)\)"))
     @check_owner
     async def callback_exit(callback_query: CallbackQuery):
         cur_pos = str(callback_query.matches[0].group(1))
@@ -208,7 +203,7 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
         await callback_query.edit_message_text(
             text, reply_markup=InlineKeyboardMarkup(buttons))
 
-    @ubot.on_callback_query(filters=filters.regex(pattern=r"prvtmsg\((.+)\)"))
+    @userge.bot.on_callback_query(filters=filters.regex(pattern=r"prvtmsg\((.+)\)"))
     async def prvt_msg(_, c_q: CallbackQuery):
         msg_id = str(c_q.matches[0].group(1))
         if msg_id not in PRVT_MSGS:
@@ -348,7 +343,7 @@ if Config.BOT_TOKEN and Config.OWNER_ID:
         buttons = [tmp_btns] + buttons
         return text, buttons
 
-    @ubot.on_inline_query()
+    @userge.bot.on_inline_query()
     async def inline_answer(_, inline_query: InlineQuery):
         results = [
             InlineQueryResultArticle(

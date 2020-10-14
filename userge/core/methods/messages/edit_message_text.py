@@ -10,6 +10,7 @@
 
 __all__ = ['EditMessageText']
 
+import inspect
 import asyncio
 from typing import Optional, Union
 
@@ -87,13 +88,15 @@ class EditMessageText(RawClient):  # pylint: disable=missing-class-docstring
                                               parse_mode=parse_mode,
                                               disable_web_page_preview=disable_web_page_preview,
                                               reply_markup=reply_markup)
+        module = inspect.getmodule(inspect.currentframe().f_back).__name__
         if log:
-            args = [msg]
-            if isinstance(log, str):
-                args.append(log)
+            if isinstance(log, bool):
+                args = (msg, module)
+            else:
+                args = (msg, log)
             await self._channel.fwd_msg(*args)
         del_in = del_in or Config.MSG_DELETE_TIMEOUT
         if del_in > 0:
             await asyncio.sleep(del_in)
             return bool(await msg.delete())
-        return types.bound.Message(self, msg)
+        return types.bound.Message.parse(self, msg, module=module)
