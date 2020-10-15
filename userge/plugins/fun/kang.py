@@ -66,7 +66,7 @@ async def kang_(message: Message):
         await message.edit("`I can't kang that...`")
         return
     if photo:
-        args = message.input_str.split()
+        args = message.filtered_input_str.split()
         pack = 1
         if len(args) == 2:
             emoji_, pack = args
