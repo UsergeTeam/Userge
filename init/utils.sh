@@ -8,7 +8,19 @@
 #
 # All rights reserved.
 
-declare -r pVer=$(sed -E 's/\w+ 3\.8\.([0-9]+)/3.8.\1/g' < <(python3.8 -V 2> /dev/null))
+declare -r minPVer=8
+declare -r maxPVer=10
+
+getPythonVersion() {
+    local -i count=$minPVer
+    local tmp
+    while true; do
+        tmp=$(python3.$count -V 2> /dev/null)
+        [[ -n $tmp || $count -gt $maxPVer ]] && break
+        count+=1
+    done
+    declare -gr pVer=$(sed -E 's/Python (3\.[0-9]{1,2}\.[0-9]{1,2}).*/\1/g' <<< $tmp)
+}
 
 log() {
     local text="$*"

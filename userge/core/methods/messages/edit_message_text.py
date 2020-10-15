@@ -88,7 +88,7 @@ class EditMessageText(RawClient):  # pylint: disable=missing-class-docstring
                                               parse_mode=parse_mode,
                                               disable_web_page_preview=disable_web_page_preview,
                                               reply_markup=reply_markup)
-        module = inspect.getmodule(inspect.currentframe().f_back).__name__
+        module = inspect.currentframe().f_back.f_globals['__name__']
         if log:
             if isinstance(log, bool):
                 args = (msg, module)

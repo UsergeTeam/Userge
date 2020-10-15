@@ -25,9 +25,13 @@ from userge import userge, Message, Config
 @userge.on_cmd(
     "kang", about={
         'header': "kangs stickers or creates new ones",
+        'flags': {
+            '-s': "without link",
+            '-d': "without trace"},
         'usage': "Reply {tr}kang [emoji('s)] [pack number] to a sticker or "
                  "an image to kang it to your userbot pack.",
-        'examples': ["{tr}kang", "{tr}kang 🤔", "{tr}kang 2", "{tr}kang 🤔 2"]},
+        'examples': ["{tr}kang", "{tr}kang -s", "{tr}kang -d",
+                     "{tr}kang 🤔", "{tr}kang 2", "{tr}kang 🤔 2"]},
     allow_channels=False, allow_via_bot=False)
 async def kang_(message: Message):
     """ kang a sticker """
@@ -136,10 +140,12 @@ async def kang_(message: Message):
                         await conv.get_response(mark_read=True)
                         await conv.send_message(packname)
                         await conv.get_response(mark_read=True)
-                        await message.edit(
-                            f"`Sticker added in a Different Pack !\n"
-                            "This Pack is Newly created!\n"
-                            f"Your pack can be found [here](t.me/addstickers/{packname})")
+                        if '-d' in message.flags:
+                            await message.delete()
+                        else:
+                            out = "__kanged__" if '-s' in message.flags else \
+                                f"[kanged](t.me/addstickers/{packname})"
+                            await message.edit(f"**Sticker** {out} __in a Different Pack__**!**")
                         return
                 await conv.send_document(photo)
                 rsp = await conv.get_response(mark_read=True)
@@ -179,7 +185,12 @@ async def kang_(message: Message):
                 await conv.get_response(mark_read=True)
                 await conv.send_message(packname)
                 await conv.get_response(mark_read=True)
-        await message.edit(f"**Sticker** [kanged](t.me/addstickers/{packname})!")
+        if '-d' in message.flags:
+            await message.delete()
+        else:
+            out = "__kanged__" if '-s' in message.flags else \
+                f"[kanged](t.me/addstickers/{packname})"
+            await message.edit(f"**Sticker** {out}**!**")
         if os.path.exists(str(photo)):
             os.remove(photo)
 

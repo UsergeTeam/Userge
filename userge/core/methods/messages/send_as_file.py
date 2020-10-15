@@ -78,7 +78,7 @@ class SendAsFile(RawClient):  # pylint: disable=missing-class-docstring
                                        disable_notification=True,
                                        reply_to_message_id=reply_to_message_id)
         os.remove(filename)
-        module = inspect.getmodule(inspect.currentframe().f_back).__name__
+        module = inspect.currentframe().f_back.f_globals['__name__']
         if log:
             if isinstance(log, bool):
                 args = (msg, module)

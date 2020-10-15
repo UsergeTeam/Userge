@@ -142,7 +142,8 @@ class Filter:
                allow_bots: bool,
                allow_groups: bool,
                allow_channels: bool,
-               **kwargs: Union[RawFilter, '_client.Userge', int, bool]) -> Dict[str, object]:
+               **kwargs: Union[RawFilter, '_client.Userge', int, bool]
+               ) -> Dict[str, Union[RawFilter, '_client.Userge', int, bool]]:
         kwargs['check_client'] = kwargs['allow_via_bot'] and kwargs['check_client']
         kwargs['scope']: List[str] = []
         if allow_bots:

@@ -99,7 +99,7 @@ class SendMessage(RawClient):  # pylint: disable=missing-class-docstring
                                          reply_to_message_id=reply_to_message_id,
                                          schedule_date=schedule_date,
                                          reply_markup=reply_markup)
-        module = inspect.getmodule(inspect.currentframe().f_back).__name__
+        module = inspect.currentframe().f_back.f_globals['__name__']
         if log:
             if isinstance(log, bool):
                 args = (msg, module)

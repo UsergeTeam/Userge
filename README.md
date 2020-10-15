@@ -20,7 +20,7 @@
 
 # Userge 🔥
 
-[![Build Status](https://travis-ci.com/UsergeTeam/Userge.svg?branch=dev)](https://travis-ci.com/UsergeTeam/Userge)
+[![Build Status](https://travis-ci.com/UsergeTeam/Userge.svg?branch=alpha)](https://travis-ci.com/UsergeTeam/Userge)
 ![Python Version](https://img.shields.io/badge/python-3.8-lightgrey)
 ![Release](https://img.shields.io/github/v/release/UsergeTeam/Userge)
 ![Stars](https://img.shields.io/github/stars/UsergeTeam/Userge)
@@ -124,6 +124,7 @@ async def test_filter(message: Message):
 
 * With Docker 🐳 
     - [**See Detailed Guide**](resources/radmeDocker.md)
+
 * With Git, Python and pip 🔧
   ```bash
   # clone the repo
