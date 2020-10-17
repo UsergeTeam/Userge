@@ -17,6 +17,7 @@ from typing import Optional, Union
 from pyrogram.types import InlineKeyboardMarkup
 
 from userge import Config
+from userge.utils import secure_text
 from ...ext import RawClient
 from ... import types
 
@@ -84,7 +85,7 @@ class EditMessageText(RawClient):  # pylint: disable=missing-class-docstring
         """
         msg = await super().edit_message_text(chat_id=chat_id,
                                               message_id=message_id,
-                                              text=text,
+                                              text=secure_text(text),
                                               parse_mode=parse_mode,
                                               disable_web_page_preview=disable_web_page_preview,
                                               reply_markup=reply_markup)

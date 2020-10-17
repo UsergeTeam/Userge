@@ -77,8 +77,7 @@ class _AbstractUserge(Methods, RawClient):
         if hasattr(plg, '_init'):
             # pylint: disable=protected-access
             if asyncio.iscoroutinefunction(plg._init):
-                _INIT_TASKS.append(
-                    asyncio.get_event_loop().create_task(plg._init()))
+                _INIT_TASKS.append(self.loop.create_task(plg._init()))
         _LOG.debug(_LOG_STR, f"Imported {_IMPORTED[-1].__name__} Plugin Successfully")
 
     async def _load_plugins(self) -> None:
@@ -173,30 +172,28 @@ class Userge(_AbstractUserge):
 
     def begin(self, coro: Optional[Awaitable[Any]] = None) -> None:
         """ start userge """
-        loop = asyncio.get_event_loop()
-        loop.add_signal_handler(signal.SIGHUP, _shutdown)
-        loop.add_signal_handler(signal.SIGTERM, _shutdown)
-        run = loop.run_until_complete
+        self.loop.add_signal_handler(signal.SIGHUP, _shutdown)
+        self.loop.add_signal_handler(signal.SIGTERM, _shutdown)
+        run = self.loop.run_until_complete
+        run(self.start())
+        running_tasks: List[asyncio.Task] = []
+        for task in self._tasks:
+            running_tasks.append(self.loop.create_task(task()))
+        logbot.edit_last_msg("Userge has Started Successfully !")
+        logbot.end()
         try:
-            run(self.start())
-            running_tasks: List[asyncio.Task] = []
-            for task in self._tasks:
-                running_tasks.append(loop.create_task(task()))
             if coro:
                 _LOG.info(_LOG_STR, "Running Coroutine")
                 run(coro)
             else:
                 _LOG.info(_LOG_STR, "Idling Userge")
-                logbot.edit_last_msg("Userge has Started Successfully !")
-                logbot.end()
                 idle()
+        except asyncio.exceptions.CancelledError:
+            pass
+        finally:
             _LOG.info(_LOG_STR, "Exiting Userge")
             for task in running_tasks:
                 task.cancel()
             run(self.stop())
-            run(loop.shutdown_asyncgens())
-        except asyncio.exceptions.CancelledError:
-            pass
-        finally:
-            if not loop.is_running():
-                loop.close()
+            run(self.loop.shutdown_asyncgens())
+            self.loop.close()

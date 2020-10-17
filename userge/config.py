@@ -47,7 +47,6 @@ class Config:
     INSTA_PASS = os.environ.get("INSTA_PASS")
     UPSTREAM_REPO = os.environ.get("UPSTREAM_REPO")
     UPSTREAM_REMOTE = os.environ.get("UPSTREAM_REMOTE")
-    SCREENSHOT_API = os.environ.get("SCREENSHOT_API", None)
     SPAM_WATCH_API = os.environ.get("SPAM_WATCH_API", None)
     CURRENCY_API = os.environ.get("CURRENCY_API", None)
     OCR_SPACE_API_KEY = os.environ.get("OCR_SPACE_API_KEY", None)

@@ -19,6 +19,7 @@ from pyrogram.types import (
     ReplyKeyboardRemove, ForceReply)
 
 from userge import Config
+from userge.utils import secure_text
 from ...ext import RawClient
 from ... import types
 
@@ -92,7 +93,7 @@ class SendMessage(RawClient):  # pylint: disable=missing-class-docstring
             :obj:`Message`: On success, the sent text message or True is returned.
         """
         msg = await super().send_message(chat_id=chat_id,
-                                         text=text,
+                                         text=secure_text(text),
                                          parse_mode=parse_mode,
                                          disable_web_page_preview=disable_web_page_preview,
                                          disable_notification=disable_notification,

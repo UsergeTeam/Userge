@@ -9,8 +9,19 @@
 # All rights reserved.
 
 from glob import glob
+from os import environ
 from os.path import isfile, relpath
 from typing import Dict, List, Union
+
+_SECURE = [
+    # critical
+    'API_ID', 'API_HASH', 'BOT_TOKEN', 'HU_STRING_SESSION', 'DATABASE_URL', 'HEROKU_API_KEY',
+    # others
+    'INSTA_ID', 'INSTA_PASS', 'SPAM_WATCH_API', 'CURRENCY_API', 'OCR_SPACE_API_KEY',
+    'REMOVE_BG_API_KEY', 'G_DRIVE_CLIENT_ID', 'G_DRIVE_CLIENT_SECRET',
+    # unofficial
+    'ARL_TOKEN', 'GCS_API_KEY', 'GCS_IMAGE_E_ID', 'G_PHOTOS_CLIENT_ID',
+    'G_PHOTOS_CLIENT_SECRET', 'CH_LYDIA_API']
 
 
 class SafeDict(Dict[str, str]):
@@ -31,3 +42,12 @@ def get_import_path(root: str, path: str) -> Union[str, List[str]]:
             if not f.endswith("__init__.py")
         ]
     )
+
+
+def secure_text(text: str) -> str:
+    """ secure given text """
+    for var in _SECURE:
+        tvar = environ.get(var, None)
+        if tvar and tvar in text:
+            text = text.replace(tvar, "**SECURED!**")
+    return text
