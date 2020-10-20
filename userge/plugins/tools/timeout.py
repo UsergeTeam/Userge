@@ -23,6 +23,9 @@ async def _init() -> None:
     pp_t = await SAVED_SETTINGS.find_one({'_id': 'AUTOPIC_TIMEOUT'})
     if pp_t:
         Config.AUTOPIC_TIMEOUT = pp_t['data']
+    b_t = await SAVED_SETTINGS.find_one({'_id': 'AUTOBIO_TIMEOUT'})
+    if b_t:
+        Config.AUTOBIO_TIMEOUT = b_t['data']
     es_t = await SAVED_SETTINGS.find_one({'_id': 'EDIT_SLEEP_TIMEOUT'})
     if es_t:
         Config.EDIT_SLEEP_TIMEOUT = es_t['data']
@@ -110,6 +113,32 @@ async def view_app_timeout(message: Message):
     """ view profile picture timeout """
     await message.edit(
         f"`Profile picture will be updated after {Config.AUTOPIC_TIMEOUT} seconds!`",
+        del_in=5)
+
+
+@userge.on_cmd("sabto", about={
+    'header': "Set auto bio timeout",
+    'usage': "{tr}sabto [timeout in seconds]",
+    'examples': "{tr}sabto 500"})
+async def set_bio_timeout(message: Message):
+    """ set auto bio timeout """
+    t_o = int(message.input_str)
+    if t_o < 60:
+        await message.err("too short! (minimum 60 sec)")
+        return
+    await message.edit("`Setting auto bio timeout...`")
+    Config.AUTOBIO_TIMEOUT = t_o
+    await SAVED_SETTINGS.update_one(
+        {'_id': 'AUTOBIO_TIMEOUT'}, {"$set": {'data': t_o}}, upsert=True)
+    await message.edit(
+        f"`Set auto bio timeout as {t_o} seconds!`", del_in=5)
+
+
+@userge.on_cmd("vabto", about={'header': "View auto bio timeout"})
+async def view_bio_timeout(message: Message):
+    """ view bio timeout """
+    await message.edit(
+        f"`Profile picture will be updated after {Config.AUTOBIO_TIMEOUT} seconds!`",
         del_in=5)
 
 
