@@ -50,8 +50,9 @@ async def eval_(message: Message):
         head = "async def __aexec(userge, message):\n "
         if '\n' in code:
             rest_code = '\n '.join(iter(code.split('\n')))
-        elif any(True for k_ in keyword.kwlist
-                 if k_ not in ('True', 'False', 'None') and code.startswith(f"{k_} ")):
+        elif (any(True for k_ in keyword.kwlist
+                  if k_ not in ('True', 'False', 'None') and code.startswith(f"{k_} "))
+              or '=' in code):
             rest_code = f"\n {code}"
         else:
             rest_code = f"\n return {code}"

@@ -10,6 +10,7 @@
 
 __all__ = ['Userge']
 
+import os
 import time
 import signal
 import asyncio
@@ -32,13 +33,6 @@ _LOG_STR = "<<<!  #####  %s  #####  !>>>"
 _IMPORTED: List[ModuleType] = []
 _INIT_TASKS: List[asyncio.Task] = []
 _START_TIME = time.time()
-
-
-def _shutdown() -> None:
-    _LOG.info(_LOG_STR, 'received stop signal, cancelling tasks ...')
-    for task in asyncio.all_tasks():
-        task.cancel()
-    _LOG.info(_LOG_STR, 'all tasks cancelled !')
 
 
 async def _complete_init_tasks() -> None:
@@ -172,11 +166,28 @@ class Userge(_AbstractUserge):
 
     def begin(self, coro: Optional[Awaitable[Any]] = None) -> None:
         """ start userge """
-        self.loop.add_signal_handler(signal.SIGHUP, _shutdown)
-        self.loop.add_signal_handler(signal.SIGTERM, _shutdown)
-        run = self.loop.run_until_complete
-        run(self.start())
+        lock = asyncio.Lock()
         running_tasks: List[asyncio.Task] = []
+
+        async def _finalize() -> None:
+            async with lock:
+                for task in running_tasks:
+                    task.cancel()
+                if self.is_initialized:
+                    await self.stop()
+                # pylint: disable=expression-not-assigned
+                [t.cancel() for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+                await self.loop.shutdown_asyncgens()
+                self.loop.stop()
+                _LOG.info(_LOG_STR, "Loop Stopped !")
+
+        async def _shutdown(sig: signal.Signals) -> None:
+            _LOG.info(_LOG_STR, f"Received Stop Signal [{sig.name}], Exiting Userge ...")
+            await _finalize()
+
+        for sig in (signal.SIGHUP, signal.SIGTERM, signal.SIGINT):
+            self.loop.add_signal_handler(sig, lambda: self.loop.create_task(_shutdown(sig)))
+        self.loop.run_until_complete(self.start())
         for task in self._tasks:
             running_tasks.append(self.loop.create_task(task()))
         logbot.edit_last_msg("Userge has Started Successfully !")
@@ -184,16 +195,13 @@ class Userge(_AbstractUserge):
         try:
             if coro:
                 _LOG.info(_LOG_STR, "Running Coroutine")
-                run(coro)
+                self.loop.run_until_complete(coro)
             else:
                 _LOG.info(_LOG_STR, "Idling Userge")
                 idle()
-        except asyncio.exceptions.CancelledError:
+            self.loop.run_until_complete(_finalize())
+        except (asyncio.exceptions.CancelledError, RuntimeError):
             pass
         finally:
-            _LOG.info(_LOG_STR, "Exiting Userge")
-            for task in running_tasks:
-                task.cancel()
-            run(self.stop())
-            run(self.loop.shutdown_asyncgens())
             self.loop.close()
+            _LOG.info(_LOG_STR, "Loop Closed !")

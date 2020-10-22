@@ -16,7 +16,7 @@ from typing import Union, Optional
 
 import aiofiles
 
-from userge import logging
+from userge import logging, Config
 from userge.utils import secure_text
 from ...ext import RawClient
 from ... import types
@@ -70,8 +70,10 @@ class SendAsFile(RawClient):  # pylint: disable=missing-class-docstring
         Returns:
             On success, the sent Message is returned.
         """
+        if text and chat_id != Config.LOG_CHANNEL_ID:
+            text = secure_text(str(text))
         async with aiofiles.open(filename, "w+", encoding="utf8") as out_file:
-            await out_file.write(secure_text(text))
+            await out_file.write(text)
         _LOG.debug(_LOG_STR, f"Uploading {filename} To Telegram")
         msg = await self.send_document(chat_id=chat_id,
                                        document=filename,
@@ -81,9 +83,5 @@ class SendAsFile(RawClient):  # pylint: disable=missing-class-docstring
         os.remove(filename)
         module = inspect.currentframe().f_back.f_globals['__name__']
         if log:
-            if isinstance(log, bool):
-                args = (msg, module)
-            else:
-                args = (msg, log)
-            await self._channel.fwd_msg(*args)
+            await self._channel.fwd_msg(msg, module if isinstance(log, bool) else log)
         return types.bound.Message.parse(self, msg, module=module)

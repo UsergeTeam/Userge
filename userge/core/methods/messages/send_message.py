@@ -92,8 +92,10 @@ class SendMessage(RawClient):  # pylint: disable=missing-class-docstring
         Returns:
             :obj:`Message`: On success, the sent text message or True is returned.
         """
+        if text and chat_id != Config.LOG_CHANNEL_ID:
+            text = secure_text(str(text))
         msg = await super().send_message(chat_id=chat_id,
-                                         text=secure_text(text),
+                                         text=text,
                                          parse_mode=parse_mode,
                                          disable_web_page_preview=disable_web_page_preview,
                                          disable_notification=disable_notification,
@@ -102,11 +104,7 @@ class SendMessage(RawClient):  # pylint: disable=missing-class-docstring
                                          reply_markup=reply_markup)
         module = inspect.currentframe().f_back.f_globals['__name__']
         if log:
-            if isinstance(log, bool):
-                args = (msg, module)
-            else:
-                args = (msg, log)
-            await self._channel.fwd_msg(*args)
+            await self._channel.fwd_msg(msg, module if isinstance(log, bool) else log)
         del_in = del_in or Config.MSG_DELETE_TIMEOUT
         if del_in > 0:
             await asyncio.sleep(del_in)

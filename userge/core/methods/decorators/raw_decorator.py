@@ -209,7 +209,7 @@ class RawDecorator(RawClient):
 
     def __init__(self, **kwargs) -> None:
         self.manager = types.new.Manager(self)
-        self._tasks: List[Callable[[Any], Any]] = []
+        self._tasks: List[Callable[[], Any]] = []
         super().__init__(**kwargs)
 
     def on_filters(self, filters: RawFilter, group: int = 0,

@@ -9,7 +9,8 @@
 # All rights reserved.
 
 from glob import glob
-from os import environ
+from signal import SIGTERM
+from os import environ, getpid, kill
 from os.path import isfile, relpath
 from typing import Dict, List, Union
 
@@ -44,10 +45,17 @@ def get_import_path(root: str, path: str) -> Union[str, List[str]]:
     )
 
 
+def terminate() -> None:
+    """ terminate programme """
+    kill(getpid(), SIGTERM)
+
+
 def secure_text(text: str) -> str:
     """ secure given text """
+    if not text:
+        return ''
     for var in _SECURE:
         tvar = environ.get(var, None)
         if tvar and tvar in text:
-            text = text.replace(tvar, "**SECURED!**")
+            text = text.replace(tvar, "[SECURED!]")
     return text
