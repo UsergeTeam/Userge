@@ -24,6 +24,12 @@
             "required": false},
         "OWNER_ID": {
             "description": "[BOT MODE] - Your user_id",
+            "required": false},
+        "HEROKU_APP_NAME": {
+            "description": "given app name to the heroku app",
+            "required": false},
+        "HEROKU_API_KEY": {
+            "description": "get a Heroku API key from http://dashboard.heroku.com/account",
             "required": false}
     },
     "addons": [],

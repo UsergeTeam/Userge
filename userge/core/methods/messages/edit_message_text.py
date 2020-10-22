@@ -83,19 +83,17 @@ class EditMessageText(RawClient):  # pylint: disable=missing-class-docstring
         Raises:
             RPCError: In case of a Telegram RPC error.
         """
+        if text and chat_id != Config.LOG_CHANNEL_ID:
+            text = secure_text(str(text))
         msg = await super().edit_message_text(chat_id=chat_id,
                                               message_id=message_id,
-                                              text=secure_text(text),
+                                              text=text,
                                               parse_mode=parse_mode,
                                               disable_web_page_preview=disable_web_page_preview,
                                               reply_markup=reply_markup)
         module = inspect.currentframe().f_back.f_globals['__name__']
         if log:
-            if isinstance(log, bool):
-                args = (msg, module)
-            else:
-                args = (msg, log)
-            await self._channel.fwd_msg(*args)
+            await self._channel.fwd_msg(msg, module if isinstance(log, bool) else log)
         del_in = del_in or Config.MSG_DELETE_TIMEOUT
         if del_in > 0:
             await asyncio.sleep(del_in)
