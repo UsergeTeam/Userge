@@ -30,7 +30,7 @@ _checkConfigFile() {
         . $configPath
         set +a
         test ${_____REMOVE_____THIS_____LINE_____:-fasle} = true \
-            && quit "Please remove the line mentioned in the first hashtag from the config.sh file"
+            && quit "Please remove the line mentioned in the first hashtag from the config.env file"
     fi
 }
 
