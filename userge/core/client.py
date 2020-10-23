@@ -10,7 +10,6 @@
 
 __all__ = ['Userge']
 
-import os
 import time
 import signal
 import asyncio
@@ -186,7 +185,8 @@ class Userge(_AbstractUserge):
             await _finalize()
 
         for sig in (signal.SIGHUP, signal.SIGTERM, signal.SIGINT):
-            self.loop.add_signal_handler(sig, lambda: self.loop.create_task(_shutdown(sig)))
+            self.loop.add_signal_handler(
+                sig, lambda sig=sig: self.loop.create_task(_shutdown(sig)))
         self.loop.run_until_complete(self.start())
         for task in self._tasks:
             running_tasks.append(self.loop.create_task(task()))
