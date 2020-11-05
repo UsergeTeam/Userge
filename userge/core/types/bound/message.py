@@ -379,7 +379,7 @@ class Message(RawMessage):
                                        disable_web_page_preview=disable_web_page_preview,
                                        reply_markup=reply_markup)
                 if isinstance(msg, Message):
-                    self.message_id = msg.message_id
+                    self.message_id = msg.message_id  # pylint: disable=W0201
                 return msg
             raise m_er
 

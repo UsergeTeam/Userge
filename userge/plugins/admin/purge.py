@@ -27,9 +27,7 @@ async def purge_(message: Message):
         from_user_id = (await message.client.get_users(message.filtered_input_str)).id
     start_message = 0
     if 'l' in message.flags:
-        limit = int(message.flags['l'])
-        if limit > 100:
-            limit = 100
+        limit = min(100, int(message.flags['l']))
         start_message = message.message_id - limit
     if message.reply_to_message:
         start_message = message.reply_to_message.message_id
