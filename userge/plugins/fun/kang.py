@@ -96,11 +96,13 @@ async def kang_(message: Message):
             packname += "_anim"
             packnick += " (Animated)"
             cmd = '/newanimated'
-        async with aiohttp.ClientSession() as ses:
-            async with ses.get(f'http://t.me/addstickers/{packname}') as res:
-                htmlstr = (await res.text()).split('\n')
-        if ("  A <strong>Telegram</strong> user has created "
-                "the <strong>Sticker&nbsp;Set</strong>.") not in htmlstr:
+        exist = False
+        try:
+            exist = await message.client.send(
+                GetStickerSet(
+                    stickerset=InputStickerSetShortName(
+                        short_name=packname)))
+        if exist is not False:
             async with userge.conversation('Stickers', limit=30) as conv:
                 try:
                     await conv.send_message('/addsticker')
