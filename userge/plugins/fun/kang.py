@@ -17,7 +17,7 @@ import aiohttp
 from PIL import Image
 from pyrogram.raw.functions.messages import GetStickerSet
 from pyrogram.raw.types import InputStickerSetShortName
-from pyrogram.errors.exceptions.bad_request_400 import YouBlockedUser
+from pyrogram.errors import YouBlockedUser, StickersetInvalid
 
 from userge import userge, Message, Config
 
@@ -102,6 +102,8 @@ async def kang_(message: Message):
                 GetStickerSet(
                     stickerset=InputStickerSetShortName(
                         short_name=packname)))
+        except StickersetInvalid:
+            pass
         if exist is not False:
             async with userge.conversation('Stickers', limit=30) as conv:
                 try:
