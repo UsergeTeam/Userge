@@ -13,7 +13,6 @@ import os
 import random
 import emoji
 
-import aiohttp
 from PIL import Image
 from pyrogram.raw.functions.messages import GetStickerSet
 from pyrogram.raw.types import InputStickerSetShortName
