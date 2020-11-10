@@ -26,7 +26,7 @@ pytz
 rarfile
 removebg
 requests
-search-engine-parser==0.5.4
+search-engine-parser
 selenium==3.141.0
 setuptools>=40.3.0
 spamwatch

@@ -13,11 +13,10 @@ import os
 import random
 import emoji
 
-import aiohttp
 from PIL import Image
 from pyrogram.raw.functions.messages import GetStickerSet
 from pyrogram.raw.types import InputStickerSetShortName
-from pyrogram.errors.exceptions.bad_request_400 import YouBlockedUser
+from pyrogram.errors import YouBlockedUser, StickersetInvalid
 
 from userge import userge, Message, Config
 
@@ -96,11 +95,15 @@ async def kang_(message: Message):
             packname += "_anim"
             packnick += " (Animated)"
             cmd = '/newanimated'
-        async with aiohttp.ClientSession() as ses:
-            async with ses.get(f'http://t.me/addstickers/{packname}') as res:
-                htmlstr = (await res.text()).split('\n')
-        if ("  A <strong>Telegram</strong> user has created "
-                "the <strong>Sticker&nbsp;Set</strong>.") not in htmlstr:
+        exist = False
+        try:
+            exist = await message.client.send(
+                GetStickerSet(
+                    stickerset=InputStickerSetShortName(
+                        short_name=packname)))
+        except StickersetInvalid:
+            pass
+        if exist is not False:
             async with userge.conversation('Stickers', limit=30) as conv:
                 try:
                     await conv.send_message('/addsticker')
@@ -134,7 +137,7 @@ async def kang_(message: Message):
                         await conv.send_message("/publish")
                         if is_anim:
                             await conv.get_response(mark_read=True)
-                            await conv.send_message(f"<{packnick}>")
+                            await conv.send_message(f"<{packnick}>", parse_mode=None)
                         await conv.get_response(mark_read=True)
                         await conv.send_message("/skip")
                         await conv.get_response(mark_read=True)
@@ -179,7 +182,7 @@ async def kang_(message: Message):
                 await conv.send_message("/publish")
                 if is_anim:
                     await conv.get_response(mark_read=True)
-                    await conv.send_message(f"<{packnick}>")
+                    await conv.send_message(f"<{packnick}>", parse_mode=None)
                 await conv.get_response(mark_read=True)
                 await conv.send_message("/skip")
                 await conv.get_response(mark_read=True)
