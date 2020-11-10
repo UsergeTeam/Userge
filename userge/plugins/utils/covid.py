@@ -25,7 +25,7 @@ async def covid(message: Message):
     result = ""
     if '-l' in message.flags:
         result += "<u>Covid Supported Countries</u>\n\n`"
-        result += '` , `'.join(sorted((c for c in covid_.list_countries() if c)))
+        result += '` , `'.join(sorted(filter(lambda x: x, covid_.list_countries())))
         result += "`"
     elif country:
         try:
