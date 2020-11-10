@@ -121,7 +121,9 @@ async def _push_to_heroku(msg: Message, repo: Repo, branch: str) -> None:
         await _heroku_helper(sent, repo, branch)
     except GitCommandError as g_e:
         LOG.exception(g_e)
-        await sent.err(f"{g_e}, {Config.CMD_TRIGGER}restart -h and try again!")
+        if str(g_e.status).isdigit() and int(g_e.status) == -15:
+            return
+        await sent.err(f"{g_e}\n\n{Config.CMD_TRIGGER}restart -h and try again!")
     else:
         await sent.edit(f"**HEROKU APP : {Config.HEROKU_APP.name} is up-to-date with [{branch}]**")
 

@@ -23,7 +23,7 @@ class Terminate(RawClient):  # pylint: disable=missing-class-docstring
                 self.dispatcher.updates_queue.put_nowait(None)
             for task in self.dispatcher.handler_worker_tasks:
                 try:
-                    await asyncio.wait_for(task, timeout=1.0)
+                    await asyncio.wait_for(task, timeout=0.3)
                 except asyncio.TimeoutError:
                     task.cancel()
             self.dispatcher.handler_worker_tasks.clear()

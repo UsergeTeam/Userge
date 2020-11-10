@@ -1,6 +1,7 @@
 aiofiles
 aiohttp
 bs4
+covid
 cowpy
 dnspython
 emoji
