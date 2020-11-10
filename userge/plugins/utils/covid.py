@@ -47,7 +47,7 @@ async def covid(message: Message):
         result += f"**total deaths per million** : `{data['total_deaths_per_million']}`\n"
         result += f"**population** : `{data['population']}`\n"
     else:
-        result += f"<u>Covid Status in the world</u>\n\n"
+        result += "<u>Covid Status in the world</u>\n\n"
         result += f"**total active cases** : `{covid_.get_total_active_cases()}`\n"
         result += f"**total confirmed cases** : `{covid_.get_total_confirmed_cases()}`\n"
         result += f"**total deaths** : `{covid_.get_total_deaths()}`\n"
