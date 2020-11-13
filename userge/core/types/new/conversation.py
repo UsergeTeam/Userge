@@ -92,17 +92,22 @@ class Conversation:
         return bool(
             await self._client.send_read_acknowledge(chat_id=self._chat_id, message=message))
 
-    async def send_message(self, text: str) -> RawMessage:
+    async def send_message(self,
+                           text: str,
+                           parse_mode: Union[str, object] = object) -> RawMessage:
         """\nSend text messages to the conversation.
 
         Parameters:
             text (``str``):
                 Text of the message to be sent.
+            parse_mode (``str | object``):
+                parser to be used to parse text entities.
 
         Returns:
             :obj:`Message`: On success, the sent text message is returned.
         """
-        return await self._client.send_message(chat_id=self._chat_id, text=text)
+        return await self._client.send_message(chat_id=self._chat_id,
+                                               text=text, parse_mode=parse_mode)
 
     async def send_document(self, document: str) -> Optional[RawMessage]:
         """\nSend documents to the conversation.
