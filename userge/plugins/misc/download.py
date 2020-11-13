@@ -49,8 +49,7 @@ async def handle_download(message: Message, resource: Union[Message, str]) -> Tu
     """ download from resource """
     if isinstance(resource, Message):
         return await tg_download(message, resource)
-    else:
-        return await url_download(message, resource)
+    return await url_download(message, resource)
 
 
 async def url_download(message: Message, url: str) -> Tuple[str, int]:
