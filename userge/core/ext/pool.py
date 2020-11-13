@@ -65,6 +65,9 @@ async def _stop():
     for _ in range(_WORKERS):
         _ASYNC_QUEUE.put_nowait(None)
     for task in _TASKS:
-        await task
+        try:
+            await asyncio.wait_for(task, timeout=0.3)
+        except asyncio.TimeoutError:
+            task.cancel()
     _TASKS.clear()
     _LOG.info(_LOG_STR, f"Stopped Pool : {_WORKERS} Workers")

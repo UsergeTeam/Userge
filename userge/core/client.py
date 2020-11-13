@@ -192,12 +192,13 @@ class Userge(_AbstractUserge):
             running_tasks.append(self.loop.create_task(task()))
         logbot.edit_last_msg("Userge has Started Successfully !")
         logbot.end()
+        mode = "[DUAL]" if RawClient.DUAL_MODE else "[BOT]" if Config.BOT_TOKEN else "[USER]"
         try:
             if coro:
-                _LOG.info(_LOG_STR, "Running Coroutine")
+                _LOG.info(_LOG_STR, f"Running Coroutine - {mode}")
                 self.loop.run_until_complete(coro)
             else:
-                _LOG.info(_LOG_STR, "Idling Userge")
+                _LOG.info(_LOG_STR, f"Idling Userge - {mode}")
                 idle()
             self.loop.run_until_complete(_finalize())
         except (asyncio.exceptions.CancelledError, RuntimeError):
