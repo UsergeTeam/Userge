@@ -1,3 +1,5 @@
+""" downloader """
+
 # Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -28,6 +30,7 @@ LOGGER = userge.getLogger(__name__)
     'examples': "{tr}download https://speed.hetzner.de/100MB.bin | testing upload.bin"},
     check_downpath=True)
 async def down_load_media(message: Message):
+    """ download from tg and url """
     if message.reply_to_message and message.reply_to_message.media:
         resource = message.reply_to_message
     elif message.input_str:
