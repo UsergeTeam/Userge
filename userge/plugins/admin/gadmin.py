@@ -54,14 +54,15 @@ async def promote_usr(message: Message):
                                                  can_restrict_members=True,
                                                  can_invite_users=True,
                                                  can_pin_messages=True)
-        await asyncio.sleep(2)
-        await message.client.set_administrator_title(chat_id, user_id, custom_rank)
+        if custom_rank:
+            await asyncio.sleep(2)
+            await message.client.set_administrator_title(chat_id, user_id, custom_rank)
         await message.edit("`👑 Promoted Successfully..`", del_in=5)
         await CHANNEL.log(
             "#PROMOTE\n\n"
             f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
             f"(`{get_mem.user.id}`)\n"
-            f"CUSTOM TITLE: `{custom_rank}`\n"
+            f"CUSTOM TITLE: `{custom_rank or None}`\n"
             f"CHAT: `{message.chat.title}` (`{chat_id}`)")
     except UsernameInvalid:
         await message.edit("`invalid username, try again with valid info ⚠`", del_in=5)

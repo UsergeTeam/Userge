@@ -11,22 +11,20 @@
 import os
 import io
 import re
-import math
 import time
-import asyncio
 from datetime import datetime
 from pathlib import Path
-from urllib.parse import unquote_plus
 
 import stagger
 from PIL import Image
-from pySmartDL import SmartDL
 from hachoir.metadata import extractMetadata
 from hachoir.parser import createParser
 from pyrogram.errors.exceptions import FloodWait
 
 from userge import userge, Config, Message
 from userge.utils import progress, take_screen_shot, humanbytes
+from userge.utils.exceptions import ProcessCanceled
+from userge.plugins.misc.download import tg_download, url_download
 
 LOGGER = userge.getLogger(__name__)
 CHANNEL = userge.getCLogger(__name__)
@@ -46,17 +44,14 @@ async def rename_(message: Message):
         return
     await message.edit("`Trying to Rename ...`")
     if message.reply_to_message and message.reply_to_message.media:
-        dl_loc = await message.client.download_media(
-            message=message.reply_to_message,
-            file_name=Config.DOWN_PATH,
-            progress=progress,
-            progress_args=(message, "trying to download")
-        )
-        if message.process_is_canceled:
+        try:
+            dl_loc, _ = await tg_download(message, message.reply_to_message)
+        except ProcessCanceled:
             await message.edit("`Process Canceled!`", del_in=5)
+        except Exception as e_e:  # pylint: disable=broad-except
+            await message.err(e_e)
         else:
             await message.delete()
-            dl_loc = os.path.join(Config.DOWN_PATH, os.path.basename(dl_loc))
             new_loc = os.path.join(Config.DOWN_PATH, message.filtered_input_str)
             os.rename(dl_loc, new_loc)
             await upload(message, Path(new_loc), True)
@@ -71,17 +66,14 @@ async def convert_(message: Message):
     """ convert telegram files """
     await message.edit("`Trying to Convert ...`")
     if message.reply_to_message and message.reply_to_message.media:
-        dl_loc = await message.client.download_media(
-            message=message.reply_to_message,
-            file_name=Config.DOWN_PATH,
-            progress=progress,
-            progress_args=(message, "trying to download")
-        )
-        if message.process_is_canceled:
+        try:
+            dl_loc, _ = await tg_download(message, message.reply_to_message)
+        except ProcessCanceled:
             await message.edit("`Process Canceled!`", del_in=5)
+        except Exception as e_e:  # pylint: disable=broad-except
+            await message.err(e_e)
         else:
             await message.delete()
-            dl_loc = os.path.join(Config.DOWN_PATH, os.path.basename(dl_loc))
             message.text = '' if message.reply_to_message.document else ". -d"
             await upload(message, Path(dl_loc), True)
     else:
@@ -105,55 +97,13 @@ async def uploadtotg(message: Message):
     del_path = False
     if is_url:
         del_path = True
-        await message.edit("`Downloading From URL...`")
-        url = is_url[0]
-        file_name = unquote_plus(os.path.basename(url))
-        if "|" in path_:
-            file_name = path_.split("|")[1].strip()
-        path_ = os.path.join(Config.DOWN_PATH, file_name)
         try:
-            downloader = SmartDL(url, path_, progress_bar=False)
-            downloader.start(blocking=False)
-            count = 0
-            while not downloader.isFinished():
-                if message.process_is_canceled:
-                    downloader.stop()
-                    raise Exception('Process Canceled!')
-                total_length = downloader.filesize if downloader.filesize else 0
-                downloaded = downloader.get_dl_size()
-                percentage = downloader.get_progress() * 100
-                speed = downloader.get_speed(human=True)
-                estimated_total_time = downloader.get_eta(human=True)
-                progress_str = \
-                    "__{}__\n" + \
-                    "```[{}{}]```\n" + \
-                    "**Progress** : `{}%`\n" + \
-                    "**URL** : `{}`\n" + \
-                    "**FILENAME** : `{}`\n" + \
-                    "**Completed** : `{}`\n" + \
-                    "**Total** : `{}`\n" + \
-                    "**Speed** : `{}`\n" + \
-                    "**ETA** : `{}`"
-                progress_str = progress_str.format(
-                    "trying to download",
-                    ''.join((Config.FINISHED_PROGRESS_STR
-                             for i in range(math.floor(percentage / 5)))),
-                    ''.join((Config.UNFINISHED_PROGRESS_STR
-                             for i in range(20 - math.floor(percentage / 5)))),
-                    round(percentage, 2),
-                    url,
-                    file_name,
-                    humanbytes(downloaded),
-                    humanbytes(total_length),
-                    speed,
-                    estimated_total_time)
-                count += 1
-                if count >= Config.EDIT_SLEEP_TIMEOUT:
-                    count = 0
-                    await message.try_to_edit(progress_str, disable_web_page_preview=True)
-                await asyncio.sleep(1)
-        except Exception as d_e:  # pylint: disable=broad-except
-            await message.err(d_e)
+            path_, _ = await url_download(message, path_)
+        except ProcessCanceled:
+            await message.edit("`Process Canceled!`", del_in=5)
+            return
+        except Exception as e_e:  # pylint: disable=broad-except
+            await message.err(e_e)
             return
     if "|" in path_:
         path_, file_name = path_.split("|")
