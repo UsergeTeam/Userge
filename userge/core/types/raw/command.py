@@ -62,7 +62,7 @@ class Command(Filter):
                 and not m.outgoing
                 and trigger
                 and m.from_user and m.text
-                and ((m.from_user.id == Config.OWNER_ID)
+                and ((m.from_user.id in Config.OWNER_ID)
                      or (Config.SUDO_ENABLED and (m.from_user.id in Config.SUDO_USERS)
                          and (cname.lstrip(trigger) in Config.ALLOWED_COMMANDS)))
                 and m.text.startswith(Config.SUDO_TRIGGER))

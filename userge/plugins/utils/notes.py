@@ -171,7 +171,7 @@ async def get_note(message: Message) -> None:
         return
     can_access = message.from_user.is_self or message.from_user.id in Config.SUDO_USERS
     if Config.OWNER_ID:
-        can_access = can_access or message.from_user.id == Config.OWNER_ID
+        can_access = can_access or message.from_user.id in Config.OWNER_ID
     notename = message.matches[0].group(1).lower()
     mid, is_global = (0, False)
     for note in NOTES_DATA[message.chat.id]:
