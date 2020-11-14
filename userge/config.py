@@ -32,7 +32,7 @@ class Config:
     WORKERS = min(32, int(os.environ.get("WORKERS")) or os.cpu_count() + 4)
     BOT_TOKEN = os.environ.get("BOT_TOKEN", None)
     HU_STRING_SESSION = os.environ.get("HU_STRING_SESSION", None)
-    OWNER_ID = int(os.environ.get("OWNER_ID", 0))
+    OWNER_ID = tuple(filter(lambda x: x, map(int, os.environ.get("OWNER_ID", "0").split())))
     LOG_CHANNEL_ID = int(os.environ.get("LOG_CHANNEL_ID"))
     DB_URI = os.environ.get("DATABASE_URL")
     LANG = os.environ.get("PREFERRED_LANGUAGE")
