@@ -357,10 +357,10 @@ async def decide_(message: Message):
     message_id = message.reply_to_message.message_id or None
     await message.delete()
     if '-gif' in message.flags:
-        await message.client.send_photo(chat_id=chat_id,
-                                        animation=path,
-                                        caption=str(r["answer"]).upper(),
-                                        reply_to_message_id=message_id)
+        await message.client.send_animation(chat_id=chat_id,
+                                            animation=path,
+                                            caption=str(r["answer"]).upper(),
+                                            reply_to_message_id=message_id)
     else:
         await message.client.send_photo(chat_id=chat_id,
                                         photo=path,
