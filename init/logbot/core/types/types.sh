@@ -8,5 +8,4 @@
 #
 # All rights reserved.
 
-. init/logbot/core/api.sh
-. init/logbot/core/message.sh
+. init/logbot/core/types/message.sh

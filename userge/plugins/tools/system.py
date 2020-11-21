@@ -7,15 +7,15 @@
 #
 # All rights reserved.
 
-import sys
 import time
 import asyncio
 import shutil
 
 from pyrogram.types import User
 
-from userge import userge, Message, Config, get_collection
 from userge.core.ext import RawClient
+from userge import userge, Message, Config, get_collection
+from userge.utils import terminate
 
 SAVED_SETTINGS = get_collection("CONFIGS")
 MAX_IDLE_TIME = 300
@@ -63,14 +63,14 @@ async def shutdown_(message: Message) -> None:
     await message.edit("`shutting down ...`")
     if Config.HEROKU_APP:
         try:
-            Config.HEROKU_APP.scale_formation_process("worker", 0)
+            Config.HEROKU_APP.process_formation()['worker'].scale(0)
         except Exception as h_e:  # pylint: disable=broad-except
             await message.edit(f"**heroku error** : `{h_e}`")
             await asyncio.sleep(3)
     else:
         await asyncio.sleep(1)
     await message.delete()
-    sys.exit()
+    terminate()
 
 
 @userge.on_cmd("die", about={
@@ -207,46 +207,47 @@ async def _dyno_saver_worker() -> None:
     check_delay = 5
     offline_start_time = time.time()
     while Config.RUN_DYNO_SAVER:
-        if not count % check_delay:
-            if Config.STATUS is None or Config.STATUS != "online":
-                if Config.STATUS is None:
-                    LOG.info("< bot client found ! >")
-                else:
-                    LOG.info("< state changed to offline ! >")
-                    offline_start_time = time.time()
-                warned = False
-                while Config.RUN_DYNO_SAVER and (
-                        Config.STATUS is None or Config.STATUS != "online"):
-                    if not count % check_delay:
-                        if Config.STATUS is None:
-                            offline_start_time = RawClient.LAST_OUTGOING_TIME
-                        current_idle_time = int((time.time() - offline_start_time))
-                        if current_idle_time < 5:
-                            warned = False
-                        if current_idle_time >= MAX_IDLE_TIME:
-                            try:
-                                Config.HEROKU_APP.scale_formation_process("worker", 0)
-                            except Exception as h_e:  # pylint: disable=broad-except
-                                LOG.err(f"heroku app error : {h_e}")
-                                offline_start_time += 20
-                                await asyncio.sleep(10)
-                                continue
-                            LOG.info("< successfully killed heroku dyno ! >")
-                            await CHANNEL.log("heroku dyno killed !")
-                            sys.exit()
-                            return
-                        prog = round(current_idle_time * 100 / MAX_IDLE_TIME, 2)
-                        mins = int(MAX_IDLE_TIME / 60)
-                        if prog >= 75 and not warned:
-                            rem = int((100 - prog) * MAX_IDLE_TIME / 100)
-                            await CHANNEL.log(
-                                f"#WARNING\n\ndyno kill worker `{prog}%` completed !"
-                                f"\n`{rem}`s remaining !")
-                            warned = True
-                        LOG.info(f"< dyno kill worker ... ({prog}%)({mins}) >")
-                    await asyncio.sleep(1)
-                    count += 1
-                LOG.info("< state changed to online ! >")
+        if not count % check_delay and (
+            Config.STATUS is None or Config.STATUS != "online"
+        ):
+            if Config.STATUS is None:
+                LOG.info("< bot client found ! >")
+            else:
+                LOG.info("< state changed to offline ! >")
+                offline_start_time = time.time()
+            warned = False
+            while Config.RUN_DYNO_SAVER and (
+                    Config.STATUS is None or Config.STATUS != "online"):
+                if not count % check_delay:
+                    if Config.STATUS is None:
+                        offline_start_time = RawClient.LAST_OUTGOING_TIME
+                    current_idle_time = int((time.time() - offline_start_time))
+                    if current_idle_time < 5:
+                        warned = False
+                    if current_idle_time >= MAX_IDLE_TIME:
+                        try:
+                            Config.HEROKU_APP.process_formation()['worker'].scale(0)
+                        except Exception as h_e:  # pylint: disable=broad-except
+                            LOG.error(f"heroku app error : {h_e}")
+                            offline_start_time += 20
+                            await asyncio.sleep(10)
+                            continue
+                        LOG.info("< successfully killed heroku dyno ! >")
+                        await CHANNEL.log("heroku dyno killed !")
+                        terminate()
+                        return
+                    prog = round(current_idle_time * 100 / MAX_IDLE_TIME, 2)
+                    mins = int(MAX_IDLE_TIME / 60)
+                    if prog >= 75 and not warned:
+                        rem = int((100 - prog) * MAX_IDLE_TIME / 100)
+                        await CHANNEL.log(
+                            f"#WARNING\n\ndyno kill worker `{prog}%` completed !"
+                            f"\n`{rem}`s remaining !")
+                        warned = True
+                    LOG.info(f"< dyno kill worker ... ({prog}%)({mins}) >")
+                await asyncio.sleep(1)
+                count += 1
+            LOG.info("< state changed to online ! >")
         await asyncio.sleep(1)
         count += 1
     if count:

@@ -137,6 +137,7 @@ vendor/
 config.ini
 config.env
 .vscode/
+.idea/
 *.session
 log.txt
 unknown_errors.txt

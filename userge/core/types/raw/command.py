@@ -28,10 +28,7 @@ class Command(Filter):
         self.about = about
         self.trigger = trigger
         self.pattern = pattern
-        super().__init__(**kwargs)
-
-    def __repr__(self) -> str:
-        return f"<command {self.name}>"
+        super().__init__(**Filter._parse(**kwargs))  # pylint: disable=protected-access
 
     @classmethod
     def parse(cls, command: str,  # pylint: disable=arguments-differ
@@ -54,84 +51,90 @@ class Command(Filter):
         if filter_me:
             outgoing_flt = filters.create(
                 lambda _, __, m:
-                not (m.from_user and m.from_user.is_bot)
+                m.via_bot is None
+                and not (m.from_user and m.from_user.is_bot)
                 and (m.outgoing or (m.from_user and m.from_user.is_self))
                 and not (m.chat and m.chat.type == "channel" and m.edit_date)
                 and (m.text and m.text.startswith(trigger) if trigger else True))
             incoming_flt = filters.create(
                 lambda _, __, m:
-                not m.outgoing
+                m.via_bot is None
+                and not m.outgoing
+                and trigger
                 and m.from_user and m.text
-                and ((m.from_user.id == Config.OWNER_ID)
+                and ((m.from_user.id in Config.OWNER_ID)
                      or (Config.SUDO_ENABLED and (m.from_user.id in Config.SUDO_USERS)
                          and (cname.lstrip(trigger) in Config.ALLOWED_COMMANDS)))
-                and (m.text.startswith(Config.SUDO_TRIGGER) if trigger else True))
+                and m.text.startswith(Config.SUDO_TRIGGER))
             filters_ = filters_ & (outgoing_flt | incoming_flt)
         return cls(_format_about(about), trigger, pattern, filters=filters_, name=cname, **kwargs)
 
+    def __repr__(self) -> str:
+        return f"<command {self.name}>"
+
 
 def _format_about(about: Union[str, Dict[str, Union[str, List[str], Dict[str, str]]]]) -> str:
-    if isinstance(about, dict):
-        tmp_chelp = ''
-        if 'header' in about and isinstance(about['header'], str):
-            tmp_chelp += f"<i><b>{about['header'].title()}</b><i>"
-            del about['header']
-        if 'description' in about and isinstance(about['description'], str):
-            tmp_chelp += ("\n\n📝 <u><b>Description</b></u> :\n\n    "
-                          f"<i>{about['description'].capitalize()}</i>")
-            del about['description']
-        if 'flags' in about:
-            tmp_chelp += "\n\n⛓ <u><b>Available Flags</b></u> :\n"
-            if isinstance(about['flags'], dict):
-                for f_n, f_d in about['flags'].items():
-                    tmp_chelp += f"\n    ▫ <code>{f_n}</code> : <i>{f_d.lower()}</i>"
-            else:
-                tmp_chelp += f"\n    {about['flags']}"
-            del about['flags']
-        if 'options' in about:
-            tmp_chelp += "\n\n🕶 <u><b>Available Options</b></u> :\n"
-            if isinstance(about['options'], dict):
-                for o_n, o_d in about['options'].items():
+    if not isinstance(about, dict):
+        return about
+    tmp_chelp = ''
+    if 'header' in about and isinstance(about['header'], str):
+        tmp_chelp += f"<i><b>{about['header'].title()}</b><i>"
+        del about['header']
+    if 'description' in about and isinstance(about['description'], str):
+        tmp_chelp += ("\n\n📝 <u><b>Description</b></u> :\n\n    "
+                      f"<i>{about['description'].capitalize()}</i>")
+        del about['description']
+    if 'flags' in about:
+        tmp_chelp += "\n\n⛓ <u><b>Available Flags</b></u> :\n"
+        if isinstance(about['flags'], dict):
+            for f_n, f_d in about['flags'].items():
+                tmp_chelp += f"\n    ▫ <code>{f_n}</code> : <i>{f_d.lower()}</i>"
+        else:
+            tmp_chelp += f"\n    {about['flags']}"
+        del about['flags']
+    if 'options' in about:
+        tmp_chelp += "\n\n🕶 <u><b>Available Options</b></u> :\n"
+        if isinstance(about['options'], dict):
+            for o_n, o_d in about['options'].items():
+                tmp_chelp += f"\n    ▫ <code>{o_n}</code> : <i>{o_d.lower()}</i>"
+        else:
+            tmp_chelp += f"\n    {about['options']}"
+        del about['options']
+    if 'types' in about:
+        tmp_chelp += "\n\n🎨 <u><b>Supported Types</b></u> :\n\n"
+        if isinstance(about['types'], list):
+            for _opt in about['types']:
+                tmp_chelp += f"    <code>{_opt}</code> ,"
+        else:
+            tmp_chelp += f"    {about['types']}"
+        del about['types']
+    if 'usage' in about:
+        tmp_chelp += f"\n\n✒ <u><b>Usage</b></u> :\n\n<code>{about['usage']}</code>"
+        del about['usage']
+    if 'examples' in about:
+        tmp_chelp += "\n\n✏ <u><b>Examples</b></u> :"
+        if isinstance(about['examples'], list):
+            for ex_ in about['examples']:
+                tmp_chelp += f"\n\n    <code>{ex_}</code>"
+        else:
+            tmp_chelp += f"\n\n    <code>{about['examples']}</code>"
+        del about['examples']
+    if 'others' in about:
+        tmp_chelp += f"\n\n📎 <u><b>Others</b></u> :\n\n{about['others']}"
+        del about['others']
+    if about:
+        for t_n, t_d in about.items():
+            tmp_chelp += f"\n\n⚙ <u><b>{t_n.title()}</b></u> :\n"
+            if isinstance(t_d, dict):
+                for o_n, o_d in t_d.items():
                     tmp_chelp += f"\n    ▫ <code>{o_n}</code> : <i>{o_d.lower()}</i>"
-            else:
-                tmp_chelp += f"\n    {about['options']}"
-            del about['options']
-        if 'types' in about:
-            tmp_chelp += "\n\n🎨 <u><b>Supported Types</b></u> :\n\n"
-            if isinstance(about['types'], list):
-                for _opt in about['types']:
+            elif isinstance(t_d, list):
+                tmp_chelp += '\n'
+                for _opt in t_d:
                     tmp_chelp += f"    <code>{_opt}</code> ,"
             else:
-                tmp_chelp += f"    {about['types']}"
-            del about['types']
-        if 'usage' in about:
-            tmp_chelp += f"\n\n✒ <u><b>Usage</b></u> :\n\n<code>{about['usage']}</code>"
-            del about['usage']
-        if 'examples' in about:
-            tmp_chelp += "\n\n✏ <u><b>Examples</b></u> :"
-            if isinstance(about['examples'], list):
-                for ex_ in about['examples']:
-                    tmp_chelp += f"\n\n    <code>{ex_}</code>"
-            else:
-                tmp_chelp += f"\n\n    <code>{about['examples']}</code>"
-            del about['examples']
-        if 'others' in about:
-            tmp_chelp += f"\n\n📎 <u><b>Others</b></u> :\n\n{about['others']}"
-            del about['others']
-        if about:
-            for t_n, t_d in about.items():
-                tmp_chelp += f"\n\n⚙ <u><b>{t_n.title()}</b></u> :\n"
-                if isinstance(t_d, dict):
-                    for o_n, o_d in t_d.items():
-                        tmp_chelp += f"\n    ▫ <code>{o_n}</code> : <i>{o_d.lower()}</i>"
-                elif isinstance(t_d, list):
-                    tmp_chelp += '\n'
-                    for _opt in t_d:
-                        tmp_chelp += f"    <code>{_opt}</code> ,"
-                else:
-                    tmp_chelp += '\n'
-                    tmp_chelp += t_d
-        chelp = tmp_chelp.replace('{tr}', Config.CMD_TRIGGER)
-        del tmp_chelp
-        return chelp
-    return about
+                tmp_chelp += '\n'
+                tmp_chelp += t_d
+    chelp = tmp_chelp.replace('{tr}', Config.CMD_TRIGGER)
+    del tmp_chelp
+    return chelp

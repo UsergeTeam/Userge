@@ -209,7 +209,7 @@ class RawDecorator(RawClient):
 
     def __init__(self, **kwargs) -> None:
         self.manager = types.new.Manager(self)
-        self._tasks: List[Callable[[Any], Any]] = []
+        self._tasks: List[Callable[[], Any]] = []
         super().__init__(**kwargs)
 
     def on_filters(self, filters: RawFilter, group: int = 0,
@@ -293,13 +293,15 @@ class RawDecorator(RawClient):
                 if flt.check_downpath and not os.path.isdir(Config.DOWN_PATH):
                     os.makedirs(Config.DOWN_PATH)
                 try:
-                    await func(types.bound.Message(r_c, r_m, **kwargs))
+                    await func(types.bound.Message.parse(
+                        r_c, r_m, module=func.__module__, **kwargs))
                 except (StopPropagation, ContinuePropagation):  # pylint: disable=W0706
                     raise
                 except Exception as f_e:  # pylint: disable=broad-except
                     _LOG.exception(_LOG_STR, f_e)
                     await self._channel.log(f"**PLUGIN** : `{func.__module__}`\n"
                                             f"**FUNCTION** : `{func.__name__}`\n"
+                                            f"**ERROR** : `{f_e or None}`\n"
                                             f"\n```{format_exc().strip()}```",
                                             "TRACEBACK")
                     await _raise(f"`{f_e}`\n__see logs for more info__")

@@ -14,12 +14,13 @@ declare -a _allMessages=()
 
 _getResponse() {
     if [[ -n $BOT_TOKEN && -n $LOG_CHANNEL_ID ]]; then
-        local reqType=$1 parse=false; shift
+        local reqType=${1#api.} parse=false; shift
         test ${reqType::4} = "send" && parse=true
         local params=$(sed 's/ /\&/g' <<< $*)
         test -n $params && params="?$params"
         local rawUpdate=$(curl -s ${_api_url}${BOT_TOKEN}/${reqType}${params})
         local ok=$(echo $rawUpdate | jq .ok)
+        test -z $ok && return 1
         if test $ok = true; then
             if test $parse = true; then
                 local msg="msg$_mid"
@@ -35,62 +36,6 @@ _getResponse() {
 \terror_code : [$errcode]
 \tdescription : $desc"
         fi
+        sleep 0.6
     fi
-}
-
-_urlEncode() {
-    echo $(echo "${1#\~}" | sed -E 's/(\\t)|(\\n)/ /g' |
-        curl -Gso /dev/null -w %{url_effective} --data-urlencode @- "" | cut -c 3-)
-}
-
-getMessageCount() {
-    return ${#_allMessages[@]}
-}
-
-getAllMessages() {
-    echo ${_allMessages[@]}
-}
-
-getLastMessage() {
-    if test ${#_allMessages[@]} -gt 0; then
-        ${_allMessages[-1]}.$1 "$2"
-    elif [[ -n $BOT_TOKEN && -n $LOG_CHANNEL_ID ]]; then
-        log "first sendMessage ! (caused by \"core.api.$FUNCNAME\")\n"$2""
-    else
-        log "$2"
-    fi
-}
-
-getUpdates() {
-    local params=($*)
-    _getResponse $FUNCNAME ${params[*]}
-}
-
-rawsendMessage() {
-    local params=(
-        chat_id=$1
-        text=$(_urlEncode "$2")
-    )
-    test -n $3 && params+=(reply_to_message_id=$3)
-    log "$2"
-    _getResponse ${FUNCNAME#raw} ${params[*]}
-}
-
-raweditMessageText() {
-    local params=(
-        chat_id=$1
-        message_id=$2
-        text=$(_urlEncode "$3")
-    )
-    log "$3"
-    _getResponse ${FUNCNAME#raw} ${params[*]}
-}
-
-rawdeleteMessage() {
-    local params=(
-        chat_id=$1
-        message_id=$2
-    )
-    unset _allMessages[$3]
-    _getResponse ${FUNCNAME#raw} ${params[*]}
 }

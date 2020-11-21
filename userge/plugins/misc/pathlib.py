@@ -60,12 +60,11 @@ class _BaseLib:
     def progress(self) -> str:
         """ Returns progress """
         percentage = self.percentage
-        progress_str = "[{}{}]".format(
+        return "[{}{}]".format(
             ''.join((Config.FINISHED_PROGRESS_STR
                      for i in range(floor(percentage / 5)))),
             ''.join((Config.UNFINISHED_PROGRESS_STR
                      for i in range(20 - floor(percentage / 5)))))
-        return progress_str
 
     @property
     def canceled(self) -> bool:
@@ -244,12 +243,11 @@ class SCLib(_BaseLib):
     def progress(self) -> str:
         """ Returns progress """
         percentage = self.percentage
-        progress_str = "[{}{}]".format(
+        return "[{}{}]".format(
             ''.join((Config.FINISHED_PROGRESS_STR
                      for i in range(floor(percentage / 5)))),
             ''.join((Config.UNFINISHED_PROGRESS_STR
                      for i in range(20 - floor(percentage / 5)))))
-        return progress_str
 
     @property
     def speed(self) -> float:
@@ -341,10 +339,7 @@ class SCLib(_BaseLib):
     'usage': "{tr}ls [path]\n{tr}ls -d : default path"}, allow_channels=False)
 async def ls_dir(message: Message) -> None:
     """ list dir """
-    if '-d' in message.flags:
-        path = Config.DOWN_PATH
-    else:
-        path = message.input_str or '.'
+    path = Config.DOWN_PATH if '-d' in message.flags else message.input_str or '.'
     if not exists(path):
         await message.err("path not exists!")
         return
@@ -361,7 +356,7 @@ async def ls_dir(message: Message) -> None:
                     files += '📹'
                 elif str(p_s).endswith((".zip", ".tar", ".tar.gz", ".rar")):
                     files += '🗜'
-                elif str(p_s).endswith((".jpg", ".jpeg", ".png", ".gif", ".bmp", ".ico")):
+                elif str(p_s).endswith((".jpg", ".jpeg", ".png", ".gif", ".bmp", ".ico", ".webp")):
                     files += '🖼'
                 else:
                     files += '📄'

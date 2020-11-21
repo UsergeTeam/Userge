@@ -16,7 +16,7 @@ from . import RawDecorator
 
 
 class AddTask(RawDecorator):  # pylint: disable=missing-class-docstring
-    def add_task(self, func: Callable[[Any], Any]) -> Callable[[Any], Any]:
+    def add_task(self, func: Callable[[], Any]) -> Callable[[], Any]:
         """ add tasks """
         self._tasks.append(func)
         return func

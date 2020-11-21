@@ -19,8 +19,8 @@ from userge import userge, Message
     'usage': "{tr}google [flags] [query | reply to msg]",
     'examples': "{tr}google -p4 -l10 github-userge"})
 async def gsearch(message: Message):
-    await message.edit("Processing ...")
     query = message.filtered_input_str
+    await message.edit(f"**Googling** for `{query}` ...")
     flags = message.flags
     page = int(flags.get('-p', 1))
     limit = int(flags.get('-l', 5))
@@ -38,12 +38,12 @@ async def gsearch(message: Message):
     output = ""
     for i in range(limit):
         try:
-            title = gresults["titles"][i]
+            title = gresults["titles"][i].replace("\n", " ")
             link = gresults["links"][i]
             desc = gresults["descriptions"][i]
             output += f"[{title}]({link})\n"
             output += f"`{desc}`\n\n"
-        except IndexError:
+        except (IndexError, KeyError):
             break
     output = f"**Google Search:**\n`{query}`\n\n**Results:**\n{output}"
     await message.edit_or_send_as_file(text=output, caption=query,

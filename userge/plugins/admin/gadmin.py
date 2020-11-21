@@ -54,14 +54,15 @@ async def promote_usr(message: Message):
                                                  can_restrict_members=True,
                                                  can_invite_users=True,
                                                  can_pin_messages=True)
-        await asyncio.sleep(2)
-        await message.client.set_administrator_title(chat_id, user_id, custom_rank)
+        if custom_rank:
+            await asyncio.sleep(2)
+            await message.client.set_administrator_title(chat_id, user_id, custom_rank)
         await message.edit("`👑 Promoted Successfully..`", del_in=5)
         await CHANNEL.log(
-            f"#PROMOTE\n\n"
+            "#PROMOTE\n\n"
             f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
             f"(`{get_mem.user.id}`)\n"
-            f"CUSTOM TITLE: `{custom_rank}`\n"
+            f"CUSTOM TITLE: `{custom_rank or None}`\n"
             f"CHAT: `{message.chat.title}` (`{chat_id}`)")
     except UsernameInvalid:
         await message.edit("`invalid username, try again with valid info ⚠`", del_in=5)
@@ -100,7 +101,7 @@ async def demote_usr(message: Message):
                                                  can_pin_messages=False)
         await message.edit("`🛡 Demoted Successfully..`", del_in=5)
         await CHANNEL.log(
-            f"#DEMOTE\n\n"
+            "#DEMOTE\n\n"
             f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
             f"(`{get_mem.user.id}`)\n"
             f"CHAT: `{message.chat.title}` (`{chat_id}`)")
@@ -136,7 +137,7 @@ async def ban_usr(message: Message):
         get_mem = await message.client.get_chat_member(chat_id, user_id)
         await message.client.kick_chat_member(chat_id, user_id)
         await message.edit(
-            f"#BAN\n\n"
+            "#BAN\n\n"
             f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
             f"(`{get_mem.user.id}`)\n"
             f"CHAT: `{message.chat.title}` (`{chat_id}`)\n"
@@ -173,7 +174,7 @@ async def unban_usr(message: Message):
         await message.client.unban_chat_member(chat_id, user_id)
         await message.edit("`🛡 Successfully Unbanned..`", del_in=5)
         await CHANNEL.log(
-            f"#UNBAN\n\n"
+            "#UNBAN\n\n"
             f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
             f"(`{get_mem.user.id}`)\n"
             f"CHAT: `{message.chat.title}` (`{chat_id}`)")
@@ -207,7 +208,7 @@ async def kick_usr(message: Message):
         get_mem = await message.client.get_chat_member(chat_id, user_id)
         await message.client.kick_chat_member(chat_id, user_id, int(time.time() + 60))
         await message.edit(
-            f"#KICK\n\n"
+            "#KICK\n\n"
             f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
             f"(`{get_mem.user.id}`)\n"
             f"CHAT: `{message.chat.title}` (`{chat_id}`)", log=__name__)
@@ -263,7 +264,7 @@ async def mute_usr(message: Message):
                 ChatPermissions(),
                 int(time.time() + mute_period))
             await message.edit(
-                f"#MUTE\n\n"
+                "#MUTE\n\n"
                 f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
                 f"(`{get_mem.user.id}`)\n"
                 f"CHAT: `{message.chat.title}` (`{chat_id}`)\n"
@@ -285,7 +286,7 @@ async def mute_usr(message: Message):
             get_mem = await message.client.get_chat_member(chat_id, user_id)
             await message.client.restrict_chat_member(chat_id, user_id, ChatPermissions())
             await message.edit(
-                f"#MUTE\n\n"
+                "#MUTE\n\n"
                 f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
                 f"(`{get_mem.user.id}`)\n"
                 f"CHAT: `{message.chat.title}` (`{chat_id}`)\n"
@@ -322,23 +323,10 @@ async def unmute_usr(message: Message):
         return
     try:
         get_mem = await message.client.get_chat_member(chat_id, user_id)
-        await message.client.restrict_chat_member(
-            chat_id, user_id,
-            ChatPermissions(
-                can_send_messages=message.chat.permissions.can_send_messages,
-                can_send_media_messages=message.chat.permissions.can_send_media_messages,
-                can_send_stickers=message.chat.permissions.can_send_stickers,
-                can_send_animations=message.chat.permissions.can_send_animations,
-                can_send_games=message.chat.permissions.can_send_games,
-                can_use_inline_bots=message.chat.permissions.can_use_inline_bots,
-                can_add_web_page_previews=message.chat.permissions.can_add_web_page_previews,
-                can_send_polls=message.chat.permissions.can_send_polls,
-                can_change_info=message.chat.permissions.can_change_info,
-                can_invite_users=message.chat.permissions.can_invite_users,
-                can_pin_messages=message.chat.permissions.can_pin_messages))
+        await message.client.unban_chat_member(chat_id, user_id)
         await message.edit("`🛡 Successfully Unmuted..`", del_in=5)
         await CHANNEL.log(
-            f"#UNMUTE\n\n"
+            "#UNMUTE\n\n"
             f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
             f"(`{get_mem.user.id}`)\n"
             f"CHAT: `{message.chat.title}` (`{chat_id}`)")
@@ -397,7 +385,7 @@ async def zombie_clean(message: Message):
                 \n`🗑 Cleaned` **{del_users}** `zombie (deleted) accounts from this chat..`"
             await message.edit(f"{del_stats}", del_in=5)
             await CHANNEL.log(
-                f"#ZOMBIE_CLEAN\n\n"
+                "#ZOMBIE_CLEAN\n\n"
                 f"CHAT: `{message.chat.title}` (`{chat_id}`)\n"
                 f"TOTAL ZOMBIE COUNT: `{del_total}`\n"
                 f"CLEANED ZOMBIE COUNT: `{del_users}`\n"
@@ -416,13 +404,13 @@ async def zombie_clean(message: Message):
             await message.edit(
                 f"🕵️‍♂️ {del_stats} `you can clean them using .zombies -c`", del_in=5)
             await CHANNEL.log(
-                f"#ZOMBIE_CHECK\n\n"
+                "#ZOMBIE_CHECK\n\n"
                 f"CHAT: `{message.chat.title}` (`{chat_id}`)\n"
                 f"ZOMBIE COUNT: `{del_users}`")
         else:
             await message.edit(f"{del_stats}", del_in=5)
             await CHANNEL.log(
-                f"#ZOMBIE_CHECK\n\n"
+                "#ZOMBIE_CHECK\n\n"
                 f"CHAT: `{message.chat.title}` (`{chat_id}`)\n"
                 r"ZOMBIE COUNT: `WOOHOO group is clean.. \^o^/`")
 

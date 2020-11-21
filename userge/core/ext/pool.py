@@ -10,15 +10,14 @@
 
 __all__ = ['submit_task', 'submit_thread', 'run_in_thread']
 
-import os
 import asyncio
 from typing import Any, Callable, List
 from concurrent.futures import ThreadPoolExecutor, Future
 from functools import wraps, partial
 
-from userge import logging
+from userge import logging, Config
 
-_WORKERS = min(32, os.cpu_count() + 4)
+_WORKERS = Config.WORKERS
 _THREAD_POOL: ThreadPoolExecutor
 _ASYNC_QUEUE = asyncio.Queue()
 _TASKS: List[asyncio.Task] = []
@@ -66,6 +65,9 @@ async def _stop():
     for _ in range(_WORKERS):
         _ASYNC_QUEUE.put_nowait(None)
     for task in _TASKS:
-        await task
+        try:
+            await asyncio.wait_for(task, timeout=0.3)
+        except asyncio.TimeoutError:
+            task.cancel()
     _TASKS.clear()
     _LOG.info(_LOG_STR, f"Stopped Pool : {_WORKERS} Workers")

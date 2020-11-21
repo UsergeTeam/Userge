@@ -20,10 +20,10 @@ ALLOWED_COLLECTION = get_collection("PM_PERMIT")
 
 pmCounter: Dict[int, int] = {}
 allowAllFilter = filters.create(lambda _, __, ___: Config.ALLOW_ALL_PMS)
-noPmMessage = ("Hello {fname} this is an automated message\n"
-               "Please wait untill you get approved to direct message "
-               "And please dont spam untill then ")
-blocked_message = "**You were automatically blocked**"
+noPmMessage = bk_noPmMessage = ("Hello {fname} this is an automated message\n"
+                                "Please wait until you get approved to direct message "
+                                "And please dont spam until then ")
+blocked_message = bk_blocked_message = "**You were automatically blocked**"
 
 
 async def _init() -> None:
@@ -130,6 +130,7 @@ async def pmguard(message: Message):
 @userge.on_cmd("setpmmsg", about={
     'header': "Sets the reply message",
     'description': "You can change the default message which userge gives on un-invited PMs",
+    'flags': {'-r': "reset to default"},
     'options': {
         '{fname}': "add first name",
         '{lname}': "add last name",
@@ -140,18 +141,26 @@ async def pmguard(message: Message):
 async def set_custom_nopm_message(message: Message):
     """ setup custom pm message """
     global noPmMessage  # pylint: disable=global-statement
-    await message.edit('`Custom NOpm message saved`', del_in=3, log=__name__)
-    string = message.input_or_reply_raw
-    if string:
-        noPmMessage = string
-        await SAVED_SETTINGS.update_one(
-            {'_id': 'CUSTOM NOPM MESSAGE'}, {"$set": {'data': string}}, upsert=True)
+    if '-r' in message.flags:
+        await message.edit('`Custom NOpm message reset`', del_in=3, log=True)
+        noPmMessage = bk_noPmMessage
+        await SAVED_SETTINGS.find_one_and_delete({'_id': 'CUSTOM NOPM MESSAGE'})
+    else:
+        string = message.input_or_reply_raw
+        if string:
+            await message.edit('`Custom NOpm message saved`', del_in=3, log=True)
+            noPmMessage = string
+            await SAVED_SETTINGS.update_one(
+                {'_id': 'CUSTOM NOPM MESSAGE'}, {"$set": {'data': string}}, upsert=True)
+        else:
+            await message.err("invalid input!")
 
 
 @userge.on_cmd("setbpmmsg", about={
     'header': "Sets the block message",
     'description': "You can change the default blockPm message "
                    "which userge gives on un-invited PMs",
+    'flags': {'-r': "reset to default"},
     'options': {
         '{fname}': "add first name",
         '{lname}': "add last name",
@@ -162,12 +171,19 @@ async def set_custom_nopm_message(message: Message):
 async def set_custom_blockpm_message(message: Message):
     """ setup custom blockpm message """
     global blocked_message  # pylint: disable=global-statement
-    await message.edit('`Custom BLOCKpm message saved`', del_in=3, log=__name__)
-    string = message.input_or_reply_raw
-    if string:
-        blocked_message = string
-        await SAVED_SETTINGS.update_one(
-            {'_id': 'CUSTOM BLOCKPM MESSAGE'}, {"$set": {'data': string}}, upsert=True)
+    if '-r' in message.flags:
+        await message.edit('`Custom BLOCKpm message reset`', del_in=3, log=True)
+        blocked_message = bk_blocked_message
+        await SAVED_SETTINGS.find_one_and_delete({'_id': 'CUSTOM BLOCKPM MESSAGE'})
+    else:
+        string = message.input_or_reply_raw
+        if string:
+            await message.edit('`Custom BLOCKpm message saved`', del_in=3, log=True)
+            blocked_message = string
+            await SAVED_SETTINGS.update_one(
+                {'_id': 'CUSTOM BLOCKPM MESSAGE'}, {"$set": {'data': string}}, upsert=True)
+        else:
+            await message.err("invalid input!")
 
 
 @userge.on_cmd(
@@ -208,7 +224,7 @@ async def uninvitedPmHandler(message: Message):
             pmCounter[message.from_user.id] += 1
             await message.reply(
                 f"You have {pmCounter[message.from_user.id]} out of 4 **Warnings**\n"
-                "Please wait untill you get aprroved to pm !", del_in=5)
+                "Please wait until you get approved to pm !", del_in=5)
     else:
         pmCounter.update({message.from_user.id: 1})
         await message.reply(

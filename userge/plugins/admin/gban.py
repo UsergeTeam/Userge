@@ -8,6 +8,7 @@
 #
 # All rights reserved
 
+import json
 import asyncio
 from typing import Union
 
@@ -15,7 +16,7 @@ import aiohttp
 import spamwatch
 from spamwatch.types import Ban
 from pyrogram.errors.exceptions.bad_request_400 import (
-    ChatAdminRequired, UserAdminInvalid)
+    ChatAdminRequired, UserAdminInvalid, ChannelInvalid)
 
 from userge import userge, Message, Config, get_collection, filters, pool
 
@@ -86,35 +87,36 @@ async def gban_user(message: Message):
             "**#Already_GBanned**\n\nUser Already Exists in My Gban List.\n"
             f"**Reason For GBan:** `{found['reason']}`", del_in=5)
         return
-    await asyncio.gather(
-        GBAN_USER_BASE.insert_one(
-            {'firstname': firstname, 'user_id': user_id, 'reason': reason}),
-        message.edit(
-            r"\\**#GBanned_User**//"
-            f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
-            f"**User ID:** `{user_id}`\n**Reason:** `{reason}`"))
+    await message.edit(r"\\**#GBanned_User**//"
+                       f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
+                       f"**User ID:** `{user_id}`\n**Reason:** `{reason}`")
     # TODO: can we add something like "GBanned by {any_sudo_user_fname}"
-    if not message.client.is_bot:
-        for chat in await message.client.get_common_chats(user_id):
-            try:
-                await chat.kick_member(user_id)
-                await CHANNEL.log(
-                    r"\\**#Antispam_Log**//"
-                    f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
-                    f"**User ID:** `{user_id}`\n"
-                    f"**Chat:** {chat.title}\n"
-                    f"**Chat ID:** `{chat.id}`\n"
-                    f"**Reason:** `{reason}`\n\n$GBAN #id{user_id}")
-            except (ChatAdminRequired, UserAdminInvalid):
-                pass
+    if message.client.is_bot:
+        chats = [message.chat]
+    else:
+        chats = await message.client.get_common_chats(user_id)
+    gbanned_chats = []
+    for chat in chats:
+        try:
+            await chat.kick_member(user_id)
+            gbanned_chats.append(chat.id)
+            await CHANNEL.log(
+                r"\\**#Antispam_Log**//"
+                f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
+                f"**User ID:** `{user_id}`\n"
+                f"**Chat:** {chat.title}\n"
+                f"**Chat ID:** `{chat.id}`\n"
+                f"**Reason:** `{reason}`\n\n$GBAN #id{user_id}")
+        except (ChatAdminRequired, UserAdminInvalid, ChannelInvalid):
+            pass
+    await GBAN_USER_BASE.insert_one({'firstname': firstname,
+                                     'user_id': user_id,
+                                     'reason': reason,
+                                     'chat_ids': gbanned_chats})
+    if message.reply_to_message:
+        await CHANNEL.fwd_msg(message.reply_to_message)
+        await CHANNEL.log(f'$GBAN #prid{user_id} ⬆️')
     LOG.info("G-Banned %s", str(user_id))
-    try:
-        if message.reply_to_message:
-            await CHANNEL.fwd_msg(message.reply_to_message)
-            await CHANNEL.log(f'$GBAN #prid{user_id} ⬆️')
-            await message.reply_to_message.delete()
-    except Exception:
-        await message.reply("`I dont have message nuking rights! But still he got gbanned!`")
 
 
 @userge.on_cmd("ungban", about={
@@ -136,24 +138,21 @@ async def ungban_user(message: Message):
     if not found:
         await message.err("User Not Found in My Gban List")
         return
-    await asyncio.gather(
-        GBAN_USER_BASE.delete_one({'firstname': firstname, 'user_id': user_id}),
-        message.edit(
-            r"\\**#UnGbanned_User**//"
-            f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
-            f"**User ID:** `{user_id}`"))
-    if not message.client.is_bot:
-        for chat in await message.client.get_common_chats(user_id):
+    if 'chat_ids' in found:
+        for chat_id in found['chat_ids']:
             try:
-                await chat.unban_member(user_id)
+                await userge.unban_chat_member(chat_id, user_id)
                 await CHANNEL.log(
                     r"\\**#Antispam_Log**//"
                     f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
-                    f"**User ID:** `{user_id}`\n"
-                    f"**Chat:** {chat.title}\n"
-                    f"**Chat ID:** `{chat.id}`\n\n$UNGBAN #id{user_id}")
-            except (ChatAdminRequired, UserAdminInvalid):
+                    f"**User ID:** `{user_id}`\n\n"
+                    f"$UNGBAN #id{user_id}")
+            except (ChatAdminRequired, UserAdminInvalid, ChannelInvalid):
                 pass
+    await message.edit(r"\\**#UnGbanned_User**//"
+                       f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
+                       f"**User ID:** `{user_id}`")
+    await GBAN_USER_BASE.delete_one({'firstname': firstname, 'user_id': user_id})
     LOG.info("UnGbanned %s", str(user_id))
 
 
@@ -268,6 +267,11 @@ async def gban_at_entry(message: Message):
             continue
         gbanned = await GBAN_USER_BASE.find_one({'user_id': user_id})
         if gbanned:
+            if 'chat_ids' in gbanned:
+                chat_ids = gbanned['chat_ids']
+                chat_ids.append(chat_id)
+            else:
+                chat_ids = [chat_id]
             await asyncio.gather(
                 message.client.kick_chat_member(chat_id, user_id),
                 message.reply(
@@ -281,14 +285,18 @@ async def gban_at_entry(message: Message):
                     "\n\n**GBanned User $SPOTTED**\n"
                     f"**User:** [{first_name}](tg://user?id={user_id})\n"
                     f"**ID:** `{user_id}`\n**Reason:** {gbanned['reason']}\n**Quick Action:** "
-                    f"Banned in {message.chat.title}")
+                    f"Banned in {message.chat.title}"),
+                GBAN_USER_BASE.update_one(
+                    {'user_id': user_id, 'firstname': first_name},
+                    {"$set": {'chat_ids': chat_ids}}, upsert=True)
             )
         elif Config.ANTISPAM_SENTRY:
             async with aiohttp.ClientSession() as ses:
                 async with ses.get(f'https://api.cas.chat/check?user_id={user_id}') as resp:
-                    res = await resp.json()
+                    res = json.loads(await resp.text())
             if res['ok']:
-                reason = ' | '.join(res['result']['messages']) if 'result' in res else None
+                reason = ' | '.join(
+                    res['result']['messages']) if 'result' in res else None
                 await asyncio.gather(
                     message.client.kick_chat_member(chat_id, user_id),
                     message.reply(

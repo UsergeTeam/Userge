@@ -11,11 +11,13 @@
 __all__ = ['SendAsFile']
 
 import os
+import inspect
 from typing import Union, Optional
 
 import aiofiles
 
-from userge import logging
+from userge import logging, Config
+from userge.utils import secure_text
 from ...ext import RawClient
 from ... import types
 
@@ -68,18 +70,18 @@ class SendAsFile(RawClient):  # pylint: disable=missing-class-docstring
         Returns:
             On success, the sent Message is returned.
         """
+        if text and chat_id != Config.LOG_CHANNEL_ID:
+            text = secure_text(str(text))
         async with aiofiles.open(filename, "w+", encoding="utf8") as out_file:
             await out_file.write(text)
         _LOG.debug(_LOG_STR, f"Uploading {filename} To Telegram")
         msg = await self.send_document(chat_id=chat_id,
                                        document=filename,
-                                       caption=caption,
+                                       caption=caption[:1024],
                                        disable_notification=True,
                                        reply_to_message_id=reply_to_message_id)
         os.remove(filename)
+        module = inspect.currentframe().f_back.f_globals['__name__']
         if log:
-            args = [msg]
-            if isinstance(log, str):
-                args.append(log)
-            await self._channel.fwd_msg(*args)
-        return types.bound.Message(self, msg)
+            await self._channel.fwd_msg(msg, module if isinstance(log, bool) else log)
+        return types.bound.Message.parse(self, msg, module=module)

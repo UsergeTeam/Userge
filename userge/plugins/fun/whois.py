@@ -58,7 +58,9 @@ async def who_is(message: Message):
         message_out_str += "<b>🔗 Permanent Link To Profile:</b> "
         message_out_str += f"<a href='tg://user?id={from_user.id}'>{from_user.first_name}</a>"
 
-        s_perm = message.chat.permissions.can_send_media_messages
+        s_perm = True
+        if message.chat.permissions:
+            s_perm = bool(message.chat.permissions.can_send_media_messages)
         if from_user.photo and s_perm:
             local_user_photo = await message.client.download_media(
                 message=from_user.photo.big_file_id)

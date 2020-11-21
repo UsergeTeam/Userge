@@ -11,7 +11,7 @@
 __all__ = ['Filter', 'clear_db']
 
 import asyncio
-from typing import List, Tuple, Callable, Any, Optional, Union
+from typing import List, Tuple, Dict, Callable, Any, Optional, Union
 
 from pyrogram import filters as rawfilters
 from pyrogram.filters import Filter as RawFilter
@@ -94,14 +94,12 @@ class Filter:
                  filters: RawFilter,
                  client: '_client.Userge',
                  group: int,
-                 allow_private: bool,
-                 allow_bots: bool,
-                 allow_groups: bool,
-                 allow_channels: bool,
+                 scope: List[str],
                  only_admins: bool,
                  allow_via_bot: bool,
                  check_client: bool,
                  check_downpath: bool,
+                 check_perm: bool,
                  check_change_info_perm: bool,
                  check_edit_perm: bool,
                  check_delete_perm: bool,
@@ -112,19 +110,12 @@ class Filter:
                  name: str = '') -> None:
         self.filters = rawfilters.create(lambda _, __, ___: self.is_enabled) & filters
         self.name = name
-        self.scope: List[str] = []
-        if allow_bots:
-            self.scope.append('bot')
-        if allow_private:
-            self.scope.append('private')
-        if allow_channels:
-            self.scope.append('channel')
-        if allow_groups:
-            self.scope += ['group', 'supergroup']
+        self.scope = scope
         self.only_admins = only_admins
         self.allow_via_bot = allow_via_bot
-        self.check_client = allow_via_bot and check_client
+        self.check_client = check_client
         self.check_downpath = check_downpath
+        self.check_perm = check_perm
         self.check_change_info_perm = check_change_info_perm
         self.check_edit_perm = check_edit_perm
         self.check_delete_perm = check_delete_perm
@@ -132,9 +123,6 @@ class Filter:
         self.check_promote_perm = check_promote_perm
         self.check_invite_perm = check_invite_perm
         self.check_pin_perm = check_pin_perm
-        self.check_perm = check_change_info_perm or check_edit_perm \
-            or check_delete_perm or check_restrict_perm or check_promote_perm \
-            or check_invite_perm or check_pin_perm
         self.doc: Optional[str]
         self.plugin_name: str
         self._client = client
@@ -143,6 +131,34 @@ class Filter:
         self._loaded = False
         self._func: Callable[[Any], Any]
         self._handler: Handler
+
+    @classmethod
+    def parse(cls, **kwargs: Union[RawFilter, '_client.Userge', int, bool]) -> 'Filter':
+        """ parse filter """
+        return cls(**Filter._parse(**kwargs))  # pylint: disable=protected-access
+
+    @staticmethod
+    def _parse(allow_private: bool,
+               allow_bots: bool,
+               allow_groups: bool,
+               allow_channels: bool,
+               **kwargs: Union[RawFilter, '_client.Userge', int, bool]
+               ) -> Dict[str, Union[RawFilter, '_client.Userge', int, bool]]:
+        kwargs['check_client'] = kwargs['allow_via_bot'] and kwargs['check_client']
+        kwargs['scope']: List[str] = []
+        if allow_bots:
+            kwargs['scope'].append('bot')
+        if allow_private:
+            kwargs['scope'].append('private')
+        if allow_channels:
+            kwargs['scope'].append('channel')
+        if allow_groups:
+            kwargs['scope'] += ['group', 'supergroup']
+        kwargs['check_perm'] = kwargs['check_change_info_perm'] \
+            or kwargs['check_edit_perm'] or kwargs['check_delete_perm'] \
+            or kwargs['check_restrict_perm'] or kwargs['check_promote_perm'] \
+            or kwargs['check_invite_perm'] or kwargs['check_pin_perm']
+        return kwargs
 
     def __repr__(self) -> str:
         return f"<filter {self.name}>"
@@ -167,11 +183,6 @@ class Filter:
         self._enabled, loaded = _init(self.name)
         if loaded:
             await self.load()
-
-    @classmethod
-    def parse(cls, **kwargs: Union[RawFilter, '_client.Userge', int, bool]) -> 'Filter':
-        """ parse filter """
-        return cls(**kwargs)
 
     def update(self, func: Callable[[Any], Any], template: Callable[[Any], Any]) -> None:
         """ update filter """

@@ -11,6 +11,7 @@
 __all__ = ['Userge']
 
 import time
+import signal
 import asyncio
 import importlib
 from types import ModuleType
@@ -46,9 +47,7 @@ class _AbstractUserge(Methods, RawClient):
         """ returns client is bot or not """
         if self._bot is not None:
             return hasattr(self, 'ubot')
-        if Config.BOT_TOKEN:
-            return True
-        return False
+        return bool(Config.BOT_TOKEN)
 
     @property
     def uptime(self) -> str:
@@ -71,8 +70,7 @@ class _AbstractUserge(Methods, RawClient):
         if hasattr(plg, '_init'):
             # pylint: disable=protected-access
             if asyncio.iscoroutinefunction(plg._init):
-                _INIT_TASKS.append(
-                    asyncio.get_event_loop().create_task(plg._init()))
+                _INIT_TASKS.append(self.loop.create_task(plg._init()))
         _LOG.debug(_LOG_STR, f"Imported {_IMPORTED[-1].__name__} Plugin Successfully")
 
     async def _load_plugins(self) -> None:
@@ -119,6 +117,9 @@ class _UsergeBot(_AbstractUserge):
 
 class Userge(_AbstractUserge):
     """ Userge, the userbot """
+
+    has_bot = bool(Config.BOT_TOKEN)
+
     def __init__(self, **kwargs) -> None:
         _LOG.info(_LOG_STR, "Setting Userge Configs")
         kwargs = {
@@ -155,32 +156,53 @@ class Userge(_AbstractUserge):
 
     async def stop(self) -> None:  # pylint: disable=arguments-differ
         """ stop client and bot """
-        await pool._stop()  # pylint: disable=protected-access
         if self._bot is not None:
             _LOG.info(_LOG_STR, "Stopping UsergeBot")
             await self._bot.stop()
         _LOG.info(_LOG_STR, "Stopping Userge")
         await super().stop()
+        await pool._stop()  # pylint: disable=protected-access
 
     def begin(self, coro: Optional[Awaitable[Any]] = None) -> None:
         """ start userge """
-        loop = asyncio.get_event_loop()
-        run = loop.run_until_complete
-        run(self.start())
+        lock = asyncio.Lock()
         running_tasks: List[asyncio.Task] = []
+
+        async def _finalize() -> None:
+            async with lock:
+                for task in running_tasks:
+                    task.cancel()
+                if self.is_initialized:
+                    await self.stop()
+                # pylint: disable=expression-not-assigned
+                [t.cancel() for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+                await self.loop.shutdown_asyncgens()
+                self.loop.stop()
+                _LOG.info(_LOG_STR, "Loop Stopped !")
+
+        async def _shutdown(sig: signal.Signals) -> None:
+            _LOG.info(_LOG_STR, f"Received Stop Signal [{sig.name}], Exiting Userge ...")
+            await _finalize()
+
+        for sig in (signal.SIGHUP, signal.SIGTERM, signal.SIGINT):
+            self.loop.add_signal_handler(
+                sig, lambda sig=sig: self.loop.create_task(_shutdown(sig)))
+        self.loop.run_until_complete(self.start())
         for task in self._tasks:
-            running_tasks.append(loop.create_task(task()))
-        if coro:
-            _LOG.info(_LOG_STR, "Running Coroutine")
-            run(coro)
-        else:
-            _LOG.info(_LOG_STR, "Idling Userge")
-            logbot.edit_last_msg("Userge has Started Successfully !")
-            logbot.end()
-            idle()
-        _LOG.info(_LOG_STR, "Exiting Userge")
-        for task in running_tasks:
-            task.cancel()
-        run(self.stop())
-        run(loop.shutdown_asyncgens())
-        loop.close()
+            running_tasks.append(self.loop.create_task(task()))
+        logbot.edit_last_msg("Userge has Started Successfully !")
+        logbot.end()
+        mode = "[DUAL]" if RawClient.DUAL_MODE else "[BOT]" if Config.BOT_TOKEN else "[USER]"
+        try:
+            if coro:
+                _LOG.info(_LOG_STR, f"Running Coroutine - {mode}")
+                self.loop.run_until_complete(coro)
+            else:
+                _LOG.info(_LOG_STR, f"Idling Userge - {mode}")
+                idle()
+            self.loop.run_until_complete(_finalize())
+        except (asyncio.exceptions.CancelledError, RuntimeError):
+            pass
+        finally:
+            self.loop.close()
+            _LOG.info(_LOG_STR, "Loop Closed !")

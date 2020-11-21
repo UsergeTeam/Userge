@@ -19,10 +19,9 @@ from json import dumps
 from functools import wraps
 from datetime import datetime
 from mimetypes import guess_type
-from urllib.parse import unquote_plus, quote
+from urllib.parse import quote
 
 from httplib2 import Http
-from pySmartDL import SmartDL
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
@@ -30,8 +29,9 @@ from oauth2client.client import (
     OAuth2WebServerFlow, HttpAccessTokenRefreshError, FlowExchangeError)
 
 from userge import userge, Message, Config, get_collection, pool
-from userge.utils import progress, humanbytes, time_formatter
+from userge.utils import humanbytes, time_formatter
 from userge.utils.exceptions import ProcessCanceled
+from userge.plugins.misc.download import url_download, tg_download
 
 _CREDS: object = None
 _AUTH_FLOW: object = None
@@ -43,6 +43,8 @@ REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob"
 G_DRIVE_DIR_MIME_TYPE = "application/vnd.google-apps.folder"
 G_DRIVE_FILE_LINK = "📄 <a href='https://drive.google.com/open?id={}'>{}</a> __({})__"
 G_DRIVE_FOLDER_LINK = "📁 <a href='https://drive.google.com/drive/folders/{}'>{}</a> __(folder)__"
+_GDRIVE_ID = re.compile(
+    r'https://drive.google.com/[\w\?\./&=]+([-\w]{33}|(?<=[/=])0(?:A[-\w]{17}|B[-\w]{26}))')
 
 _LOG = userge.getLogger(__name__)
 _SAVED_SETTINGS = get_collection("CONFIGS")
@@ -593,8 +595,7 @@ class Worker(_GDrive):
         link = self._message.input_str
         if filter_str:
             link = self._message.filtered_input_str
-        found = re.search(
-            r'https://drive.google.com/[\w\?\./&=]+([-\w]{33}|(?<=/)0A[-\w]{17})', link)
+        found = _GDRIVE_ID.search(link)
         if found and 'folder' in link:
             out = (found.group(1), "folder")
         elif found:
@@ -732,73 +733,24 @@ class Worker(_GDrive):
         replied = self._message.reply_to_message
         is_url = re.search(
             r"(?:https?|ftp)://[^\|\s]+\.[^\|\s]+", self._message.input_str)
-        dl_loc = None
+        dl_loc = ""
         if replied and replied.media:
-            await self._message.edit("`Downloading From TG...`")
-            file_name = Config.DOWN_PATH
-            if self._message.input_str:
-                file_name = os.path.join(Config.DOWN_PATH, self._message.input_str)
-            dl_loc = await self._message.client.download_media(
-                message=replied,
-                file_name=file_name,
-                progress=progress,
-                progress_args=(self._message, "trying to download")
-            )
-            if self._message.process_is_canceled:
+            try:
+                dl_loc, _ = await tg_download(self._message, replied)
+            except ProcessCanceled:
                 await self._message.edit("`Process Canceled!`", del_in=5)
                 return
-            dl_loc = os.path.join(Config.DOWN_PATH, os.path.basename(dl_loc))
+            except Exception as e_e:
+                await self._message.err(e_e)
+                return
         elif is_url:
-            await self._message.edit("`Downloading From URL...`")
-            url = is_url[0]
-            file_name = unquote_plus(os.path.basename(url))
-            if "|" in self._message.input_str:
-                file_name = self._message.input_str.split("|")[1].strip()
-            dl_loc = os.path.join(Config.DOWN_PATH, file_name)
             try:
-                downloader = SmartDL(url, dl_loc, progress_bar=False)
-                downloader.start(blocking=False)
-                count = 0
-                while not downloader.isFinished():
-                    if self._message.process_is_canceled:
-                        downloader.stop()
-                        raise Exception('Process Canceled!')
-                    total_length = downloader.filesize if downloader.filesize else 0
-                    downloaded = downloader.get_dl_size()
-                    percentage = downloader.get_progress() * 100
-                    speed = downloader.get_speed(human=True)
-                    estimated_total_time = downloader.get_eta(human=True)
-                    progress_str = \
-                        "__{}__\n" + \
-                        "```[{}{}]```\n" + \
-                        "**Progress** : `{}%`\n" + \
-                        "**URL** : `{}`\n" + \
-                        "**FILENAME** : `{}`\n" + \
-                        "**Completed** : `{}`\n" + \
-                        "**Total** : `{}`\n" + \
-                        "**Speed** : `{}`\n" + \
-                        "**ETA** : `{}`"
-                    progress_str = progress_str.format(
-                        "trying to download",
-                        ''.join((Config.FINISHED_PROGRESS_STR
-                                 for i in range(math.floor(percentage / 5)))),
-                        ''.join((Config.UNFINISHED_PROGRESS_STR
-                                 for i in range(20 - math.floor(percentage / 5)))),
-                        round(percentage, 2),
-                        url,
-                        file_name,
-                        humanbytes(downloaded),
-                        humanbytes(total_length),
-                        speed,
-                        estimated_total_time)
-                    count += 1
-                    if count >= Config.EDIT_SLEEP_TIMEOUT:
-                        count = 0
-                        await self._message.try_to_edit(
-                            progress_str, disable_web_page_preview=True)
-                    await asyncio.sleep(1)
-            except Exception as d_e:
-                await self._message.err(d_e)
+                dl_loc, _ = await url_download(self._message, self._message.input_str)
+            except ProcessCanceled:
+                await self._message.edit("`Process Canceled!`", del_in=5)
+                return
+            except Exception as e_e:
+                await self._message.err(e_e)
                 return
         file_path = dl_loc if dl_loc else self._message.input_str
         if not os.path.exists(file_path):
@@ -809,7 +761,7 @@ class Worker(_GDrive):
             new_path = os.path.join(os.path.dirname(file_path.strip()), file_name.strip())
             os.rename(file_path.strip(), new_path)
             file_path = new_path
-        await self._message.edit("`Loading GDrive Upload...`")
+        await self._message.try_to_edit("`Loading GDrive Upload...`")
         pool.submit_thread(self._upload, file_path)
         start_t = datetime.now()
         count = 0
@@ -838,7 +790,7 @@ class Worker(_GDrive):
     @creds_dec
     async def download(self) -> None:
         """ Download file/folder from GDrive """
-        await self._message.edit("`Loading GDrive Download...`")
+        await self._message.try_to_edit("`Loading GDrive Download...`")
         file_id, _ = self._get_file_id()
         pool.submit_thread(self._download, file_id)
         start_t = datetime.now()
@@ -869,7 +821,7 @@ class Worker(_GDrive):
         if not self._parent_id:
             await self._message.edit("First set parent path by `.gset`", del_in=5)
             return
-        await self._message.edit("`Loading GDrive Copy...`")
+        await self._message.try_to_edit("`Loading GDrive Copy...`")
         file_id, _ = self._get_file_id()
         pool.submit_thread(self._copy, file_id)
         start_t = datetime.now()
