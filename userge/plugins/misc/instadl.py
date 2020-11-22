@@ -242,7 +242,7 @@ async def _insta_post_downloader(message: Message):
         count = 0
         for post in await get_profile_posts(profile):
             count += 1
-            if message.process_is_cancelled:
+            if message.process_is_canceled:
                 await sent.edit("Post Download Interrupted...")
                 await asyncio.sleep(5)
                 break
