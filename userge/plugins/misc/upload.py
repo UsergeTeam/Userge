@@ -52,9 +52,7 @@ async def rename_(message: Message):
             await message.err(e_e)
         else:
             await message.delete()
-            new_loc = os.path.join(Config.DOWN_PATH, message.filtered_input_str)
-            os.rename(dl_loc, new_loc)
-            await upload(message, Path(new_loc), True)
+            await upload(message, Path(dl_loc), True)
     else:
         await message.edit("Please read `.help rename`", del_in=5)
 
@@ -66,6 +64,7 @@ async def convert_(message: Message):
     """ convert telegram files """
     await message.edit("`Trying to Convert ...`")
     if message.reply_to_message and message.reply_to_message.media:
+        message.text = '' if message.reply_to_message.document else ". -d"
         try:
             dl_loc, _ = await tg_download(message, message.reply_to_message)
         except ProcessCanceled:
@@ -74,7 +73,6 @@ async def convert_(message: Message):
             await message.err(e_e)
         else:
             await message.delete()
-            message.text = '' if message.reply_to_message.document else ". -d"
             await upload(message, Path(dl_loc), True)
     else:
         await message.edit("Please read `.help convert`", del_in=5)
@@ -182,7 +180,6 @@ async def doc_upload(message: Message, path, del_path: bool = False, extra: str 
     else:
         await sent.delete()
         await finalize(message, msg, start_t)
-    finally:
         if os.path.exists(strpath) and del_path:
             os.remove(strpath)
 
@@ -219,7 +216,6 @@ async def vid_upload(message: Message, path, del_path: bool = False, extra: str 
         await sent.delete()
         await remove_thumb(thumb)
         await finalize(message, msg, start_t)
-    finally:
         if os.path.exists(str(path)) and del_path:
             os.remove(str(path))
 
@@ -276,11 +272,11 @@ async def audio_upload(message: Message, path, del_path: bool = False, extra: st
     else:
         await sent.delete()
         await finalize(message, msg, start_t)
+        if os.path.exists(str(path)) and del_path:
+            os.remove(str(path))
     finally:
         if os.path.lexists("album_cover.jpg"):
             os.remove("album_cover.jpg")
-        if os.path.exists(str(path)) and del_path:
-            os.remove(str(path))
 
 
 async def photo_upload(message: Message, path, del_path: bool = False, extra: str = ''):
@@ -307,7 +303,6 @@ async def photo_upload(message: Message, path, del_path: bool = False, extra: st
     else:
         await sent.delete()
         await finalize(message, msg, start_t)
-    finally:
         if os.path.exists(strpath) and del_path:
             os.remove(strpath)
 
