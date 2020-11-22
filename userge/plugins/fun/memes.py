@@ -354,7 +354,7 @@ async def decide_(message: Message):
         r = requests.get("https://yesno.wtf/api").json()
     path = wget.download(r["image"])
     chat_id = message.chat.id
-    message_id = message.reply_to_message.message_id or None
+    message_id = message.reply_to_message.message_id if message.reply_to_message else None
     await message.delete()
     if '-gif' in message.flags:
         await message.client.send_animation(chat_id=chat_id,
