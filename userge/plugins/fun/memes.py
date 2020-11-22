@@ -342,6 +342,7 @@ async def slap_(message: Message):
 
 @userge.on_cmd("(yes|no|maybe|decide)$", about={
     'header': "Make a quick decision",
+    'flags': {'-gif': "for gif"},
     'examples': ['{tr}decide', '{tr}yes', '{tr}no', '{tr}maybe']}, name="decide")
 async def decide_(message: Message):
     """decide"""
@@ -353,14 +354,18 @@ async def decide_(message: Message):
         r = requests.get("https://yesno.wtf/api").json()
     path = wget.download(r["image"])
     chat_id = message.chat.id
-    message_id = None
-    if message.reply_to_message:
-        message_id = message.reply_to_message.message_id
+    message_id = message.reply_to_message.message_id if message.reply_to_message else None
     await message.delete()
-    await message.client.send_photo(chat_id=chat_id,
-                                    photo=path,
-                                    caption=str(r["answer"]).upper(),
-                                    reply_to_message_id=message_id)
+    if '-gif' in message.flags:
+        await message.client.send_animation(chat_id=chat_id,
+                                            animation=path,
+                                            caption=str(r["answer"]).upper(),
+                                            reply_to_message_id=message_id)
+    else:
+        await message.client.send_photo(chat_id=chat_id,
+                                        photo=path,
+                                        caption=str(r["answer"]).upper(),
+                                        reply_to_message_id=message_id)
     os.remove(path)
 
 
