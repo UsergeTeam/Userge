@@ -148,7 +148,8 @@ def get_profile_posts(profile: Profile) -> NodeIterator[Post]:
     'header': "Instagram Post Downloader",
     'description': "Download a post of a instagram user by passing post link or download all posts "
                    "by passing username of instagram user (<code>requires flag</code>)",
-    'flags': {'-u': "use this to define a batch download of post"},
+    'flags': {'-u': "use this to define a batch download of post",
+              '-l': "limit the number of posts to be downloaded"},
     'usage': "{tr}postdl [flag] [link|username]",
     'examples': [
         "{tr}postdl https://www.instagram.com/××××××××××/",
@@ -230,14 +231,21 @@ async def _insta_post_downloader(message: Message):
                            '**You may not be able to download private contents or so**')
         await asyncio.sleep(2)
 
-    p = r'^https:\/\/www\.instagram\.com\/(p|tv|reel)\/([A-Za-z0-9\-]*)\/(\?igshid=[a-zA-Z0-9]*)?$'
+    p = r'^https:\/\/www\.instagram\.com\/(p|tv|reel)\/([A-Za-z0-9\-_]*)\/(\?igshid=[a-zA-Z0-9]*)?$'
     match = re.search(p, message.input_str)
 
     if '-u' in message.flags:
         username = message.filtered_input_str
         sent = await message.edit(f'`Fetching all posts of {username}`')
         profile = await get_profile(insta, username)
+        limit = int(message.flags.get("-l", 0))
+        count = 0
         for post in await get_profile_posts(profile):
+            count += 1
+            if message.process_is_canceled:
+                await sent.edit("Post Download Interrupted...")
+                await asyncio.sleep(5)
+                break
             try:
                 await download_post(insta, post)
                 await upload_to_tg(message, dirname.format(target=post.owner_username), post)
@@ -249,6 +257,8 @@ async def _insta_post_downloader(message: Message):
                 return
             finally:
                 shutil.rmtree(dirname.format(target=post.owner_username), ignore_errors=True)
+            if limit > 0 and count == limit:
+                break
         await sent.delete()
     elif match:
         dtypes = {
