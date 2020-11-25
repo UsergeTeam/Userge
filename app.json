@@ -17,7 +17,7 @@
         "DATABASE_URL": {"description": "Mongodb url from https://cloud.mongodb.com/"},
         "LOG_CHANNEL_ID": {"description": "Telegram Log Channel ID"},
         "HU_STRING_SESSION": {
-            "description": "[USER MODE] - Get this using 'https://GenUserGeString.usergeuserbot.repl.run' or `bash genStr`",
+            "description": "[USER MODE] - Get this using '@genStr_Bot' or `bash genStr`",
             "required": false},
         "BOT_TOKEN": {
             "description": "[BOT MODE] - Get this from https://t.me/botfather",
