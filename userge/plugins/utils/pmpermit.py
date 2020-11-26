@@ -10,6 +10,7 @@
 
 import asyncio
 from typing import Dict
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 
 from userge import userge, filters, Message, Config, get_collection
 from userge.utils import SafeDict
@@ -215,7 +216,9 @@ async def uninvitedPmHandler(message: Message):
     if message.from_user.id in pmCounter:
         if pmCounter[message.from_user.id] > 3:
             del pmCounter[message.from_user.id]
-            await message.reply(blocked_message)
+            await message.reply(
+                blocked_message.format_map(SafeDict(**user_dict)) + '\n`- Protected by userge`'
+            )
             await message.from_user.block()
             await asyncio.sleep(1)
             await CHANNEL.log(
@@ -226,9 +229,17 @@ async def uninvitedPmHandler(message: Message):
                 f"You have {pmCounter[message.from_user.id]} out of 4 **Warnings**\n"
                 "Please wait until you get approved to pm !", del_in=5)
     else:
+        if userge.has_bot:
+            BOT = (await userge.bot.get_me()).username
+            k = await userge.get_inline_bot_results(BOT, "pmpermit")
+            await userge.send_inline_bot_result(
+                message.chat.id, query_id=k.query_id,
+                result_id=k.results[0].id, hide_via=True
+            )
+        else:
+            await message.reply(
+                noPmMessage.format_map(SafeDict(**user_dict)) + '\n`- Protected by userge`')
         pmCounter.update({message.from_user.id: 1})
-        await message.reply(
-            noPmMessage.format_map(SafeDict(**user_dict)) + '\n`- Protected by userge`')
         await asyncio.sleep(1)
         await CHANNEL.log(f"#NEW_MESSAGE\n{user_dict['mention']} has messaged you")
 
@@ -245,3 +256,95 @@ async def outgoing_auto_approve(message: Message):
         {'_id': userID}, {"$set": {'status': 'allowed'}}, upsert=True)
     user_dict = await userge.get_user_dict(userID)
     await CHANNEL.log(f"**#AUTO_APPROVED**\n{user_dict['mention']}")
+
+
+@userge.bot.on_callback_query(filters.regex(pattern=r"pm_allow\((.+?)\)"))
+async def pm_callback_allow(_, c_q: CallbackQuery):
+    owner = await userge.get_me()
+    if c_q.from_user.id == owner.id:
+        userID = int(c_q.matches[0].group(1))
+        user = await userge.get_users(userID)
+        await userge.unblock_user(userID)
+        if userID in Config.ALLOWED_CHATS:
+            await c_q.edit_message_text(
+                f"{user.mention} already allowed to Direct Messages.")
+        else:
+            await c_q.edit_message_text(
+                f"{user.mention} allowed to Direct Messages.")
+            await userge.send_message(
+                userID, f"`{owner.mention} approved you to Direct Messages.`")
+            if userID in pmCounter:
+                del pmCounter[userID]
+            Config.ALLOWED_CHATS.add(userID)
+            await ALLOWED_COLLECTION.update_one(
+                {'_id': userID}, {"$set": {'status': 'allowed'}}, upsert=True)
+    else:
+        await c_q.answer(f"Only {owner.first_name} have access to Allow.")
+
+
+@userge.bot.on_callback_query(filters.regex(pattern=r"pm_block\((.+?)\)"))
+async def pm_callback_block(_, c_q: CallbackQuery):
+    owner = await userge.get_me()
+    if c_q.from_user.id == owner.id:
+        userID = int(c_q.matches[0].group(1))
+        user = await userge.get_users(userID)
+        await userge.send_message(
+            userID, f"{owner.mention} `decided you to block, Sorry.`")
+        await userge.block_user(userID)
+        if userID in pmCounter:
+            del pmCounter[userID]
+        if userid in Config.ALLOWED_CHATS:
+            Config.ALLOWED_CHATS.remove(userid)
+        k = await ALLOWED_COLLECTION.delete_one({'_id': userid})
+        if k.deleted_count:
+            await c_q.edit_message_text(
+                f"{user.mention} `Prohibitted to direct message`")
+        else:
+            await c_q.edit_message_text(
+                f"{user.mention} `already Prohibitted to direct messages.`")
+    else:
+        await c_q.answer(f"Only {owner.first_name} have access to Block.")
+
+
+@userge.bot.on_callback_query(filters.regex(pattern=r"^pm_spam$"))
+async def pm_spam_callback(_, c_q: CallbackQuery):
+    owner = await userge.get_me()
+    if c_q.from_user.id = owner.id:
+        await c_q.answer("Sorry, you can't click by yourself")
+    else:
+        user_dict = await userge.get_user_dict(c_q.from_user.id)
+        user_dict.update(
+            {'chat': c_q.message.chat.title if c_q.message.chat.title else "this group"}
+        )
+        await c_q.edit_message_text(
+            blocked_message.format_map(SafeDict(**user_dict)) + '\n`- Protected by userge`')
+        del pmCounter[userID]
+        await c_q.from_user.block()
+        await asyncio.sleep(1)
+        await CHANNEL.log(
+            f"#BLOCKED\n{c_q.from_user.mention} has been blocked due to spamming in pm !! ")
+
+
+@userge.bot.on_callback_query(filters.regex(pattern=r"^pm_contact$"))
+async def pm_contact_callback(_, c_q: CallbackQuery):
+    owner = await userge.get_me()
+    if c_q.from_user.id = owner.id:
+        await c_q.answer("Sorry, you can't click by yourself")
+    else:
+        user_dict = await userge.get_user_dict(c_q.from_user.id)
+        user_dict.update(
+            {'chat': c_q.message.chat.title if c_q.message.chat.title else "this group"}
+        )
+        await c_q.edit_message_text(
+            noPmMessage.format_map(SafeDict(**user_dict)) + '\n`- Protected by userge`')
+        buttons = InlineKeyboardMarkup(
+            [[InlineKeyboardButton(
+                  text="Allow", callback_data=f"pm_allow({c_q.from_user.id})"),
+              InlineKeyboardButton(
+                  text="Block", callback_data=f"pm_block({c_q.from_user.id})")]]
+        )
+        await userge.bot.send_message(
+            Config.LOG_CHANNEL_ID,
+            f"{c_q.from_user.mention} wanna contact to you.",
+            reply_markup=buttons
+        )
