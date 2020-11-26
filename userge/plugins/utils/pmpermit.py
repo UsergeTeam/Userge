@@ -297,7 +297,7 @@ if userge.has_bot:
             k = await ALLOWED_COLLECTION.delete_one({'_id': userID})
             if k.deleted_count:
                 await c_q.edit_message_text(
-                f"{user.mention} `Prohibitted to direct message`")
+                    f"{user.mention} `Prohibitted to direct message`")
             else:
                 await c_q.edit_message_text(
                     f"{user.mention} `already Prohibitted to direct messages.`")
