@@ -90,9 +90,10 @@ def _clear_cht() -> None:
 async def _init(r_c: Union['_client.Userge', '_client._UsergeBot'],
                 r_m: RawMessage) -> None:
     global _U_ID, _B_ID  # pylint: disable=global-statement
-    if r_m.from_user and (r_m.from_user.is_self
-                          or (r_m.from_user.id in Config.SUDO_USERS)
-                          or (r_m.from_user.id in Config.OWNER_ID)):
+    if r_m.from_user and (
+        r_m.from_user.is_self or (
+            r_m.from_user.id in Config.SUDO_USERS) or (
+                r_m.from_user.id in Config.OWNER_ID)):
         RawClient.LAST_OUTGOING_TIME = time.time()
     async with _INIT_LK:
         if _U_ID and _B_ID:
