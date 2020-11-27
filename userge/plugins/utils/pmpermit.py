@@ -339,7 +339,7 @@ if userge.has_bot:
                 ]
             )
             await userge.bot.send_message(
-                (await userge.bot.get_me()).id,
+                owner.id,
                 f"{c_q.from_user.mention} wanna contact to you.",
                 reply_markup=buttons
             )
