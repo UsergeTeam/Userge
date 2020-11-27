@@ -339,7 +339,7 @@ if userge.has_bot:
                 ]
             )
             await userge.bot.send_message(
-                Config.LOG_CHANNEL_ID,
+                (await userge.bot.get_me()).id,
                 f"{c_q.from_user.mention} wanna contact to you.",
                 reply_markup=buttons
             )
