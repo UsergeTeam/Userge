@@ -70,7 +70,7 @@ class SendAsFile(RawClient):  # pylint: disable=missing-class-docstring
         Returns:
             On success, the sent Message is returned.
         """
-        if text and chat_id != Config.LOG_CHANNEL_ID:
+        if text and chat_id not in Config.AUTH_CHATS:
             text = secure_text(str(text))
         async with aiofiles.open(filename, "w+", encoding="utf8") as out_file:
             await out_file.write(text)

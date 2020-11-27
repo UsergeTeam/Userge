@@ -92,7 +92,7 @@ class SendMessage(RawClient):  # pylint: disable=missing-class-docstring
         Returns:
             :obj:`Message`: On success, the sent text message or True is returned.
         """
-        if text and chat_id != Config.LOG_CHANNEL_ID:
+        if text and chat_id not in Config.AUTH_CHATS:
             text = secure_text(str(text))
         msg = await super().send_message(chat_id=chat_id,
                                          text=text,

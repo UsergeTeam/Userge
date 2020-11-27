@@ -954,8 +954,7 @@ class Worker(_GDrive):
 
 
 @userge.on_cmd("gsetup", about={
-    'header': "Setup GDrive Creds"},
-    allow_groups=False, allow_private=False, allow_bots=False)
+    'header': "Setup GDrive Creds"})
 async def gsetup_(message: Message):
     """ setup creds """
     await Worker(message).setup()
