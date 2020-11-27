@@ -288,7 +288,7 @@ if userge.has_bot:
             userID = int(c_q.matches[0].group(1))
             await userge.send_message(
                 userID, f"{owner.mention} `decided you to block, Sorry.`")
-                await userge.block_user(userID)
+            await userge.block_user(userID)
             if userID in pmCounter:
                 del pmCounter[userID]
             if userID in Config.ALLOWED_CHATS:
