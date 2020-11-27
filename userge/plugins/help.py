@@ -412,7 +412,7 @@ if userge.has_bot:
                 )
             elif "pmpermit" in inline_query.query:
                 owner = await userge.get_me()
-                text = f"Hello, welcome to {owner.mention} Dm.\n\nWhat you want to do ?"
+                text = f"Hello, welcome to **{owner.first_name}** Dm.\n\nWhat you want to do ?"
                 buttons = [[
                     InlineKeyboardButton(
                         "Contact Me", callback_data="pm_contact"),

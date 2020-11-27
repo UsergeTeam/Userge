@@ -229,22 +229,22 @@ async def uninvitedPmHandler(message: Message):
                 f"You have {pmCounter[message.from_user.id]} out of 4 **Warnings**\n"
                 "Please wait until you get approved to pm !", del_in=5)
     else:
+        pmCounter.update({message.from_user.id: 1})
         if userge.has_bot:
             bot_username = (await userge.bot.get_me()).username
             k = await userge.get_inline_bot_results(bot_username, "pmpermit")
             await userge.send_inline_bot_result(
                 message.chat.id, query_id=k.query_id,
-                result_id=k.results[0].id, hide_via=True
+                result_id=k.results[2].id, hide_via=True
             )
         else:
             await message.reply(
                 noPmMessage.format_map(SafeDict(**user_dict)) + '\n`- Protected by userge`')
-        pmCounter.update({message.from_user.id: 1})
         await asyncio.sleep(1)
         await CHANNEL.log(f"#NEW_MESSAGE\n{user_dict['mention']} has messaged you")
 
 
-@userge.on_filters(~allowAllFilter & filters.outgoing
+@userge.on_filters(~allowAllFilter & filters.outgoing & ~filters.edited
                    & filters.private & ~Config.ALLOWED_CHATS, allow_via_bot=False)
 async def outgoing_auto_approve(message: Message):
     """ outgoing handler """
@@ -263,8 +263,8 @@ if userge.has_bot:
         owner = await userge.get_me()
         if c_q.from_user.id == owner.id:
             userID = int(c_q.matches[0].group(1))
-            user = await userge.get_users(userID)
             await userge.unblock_user(userID)
+            user = await userge.get_users(userID)
             if userID in Config.ALLOWED_CHATS:
                 await c_q.edit_message_text(
                     f"{user.mention} already allowed to Direct Messages.")
@@ -286,15 +286,15 @@ if userge.has_bot:
         owner = await userge.get_me()
         if c_q.from_user.id == owner.id:
             userID = int(c_q.matches[0].group(1))
-            user = await userge.get_users(userID)
+            await userge.block_user(userID)
             await userge.send_message(
                 userID, f"{owner.mention} `decided you to block, Sorry.`")
-            await userge.block_user(userID)
             if userID in pmCounter:
                 del pmCounter[userID]
             if userID in Config.ALLOWED_CHATS:
                 Config.ALLOWED_CHATS.remove(userID)
             k = await ALLOWED_COLLECTION.delete_one({'_id': userID})
+            user = await userge.get_users(userID)
             if k.deleted_count:
                 await c_q.edit_message_text(
                     f"{user.mention} `Prohibitted to direct message`")
@@ -310,14 +310,11 @@ if userge.has_bot:
         if c_q.from_user.id == owner.id:
             await c_q.answer("Sorry, you can't click by yourself")
         else:
+            await userge.block_user(c_q.from_user.id)
+            del pmCounter[c_q.from_user.id]
             user_dict = await userge.get_user_dict(c_q.from_user.id)
-            user_dict.update(
-                {'chat': c_q.message.chat.title if c_q.message.chat.title else "this group"}
-            )
             await c_q.edit_message_text(
                 blocked_message.format_map(SafeDict(**user_dict)))
-            del pmCounter[c_q.from_user.id]
-            await c_q.from_user.block()
             await asyncio.sleep(1)
             await CHANNEL.log(
                 f"#BLOCKED\n{c_q.from_user.mention} has been blocked due to spamming in pm !! ")
@@ -329,9 +326,6 @@ if userge.has_bot:
             await c_q.answer("Sorry, you can't click by yourself")
         else:
             user_dict = await userge.get_user_dict(c_q.from_user.id)
-            user_dict.update(
-                {'chat': c_q.message.chat.title if c_q.message.chat.title else "this group"}
-            )
             await c_q.edit_message_text(
                 noPmMessage.format_map(SafeDict(**user_dict)) + '\n`- Protected by userge`')
             buttons = InlineKeyboardMarkup(
