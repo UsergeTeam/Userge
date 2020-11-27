@@ -272,7 +272,7 @@ if userge.has_bot:
                 await c_q.edit_message_text(
                     f"{user.mention} allowed to Direct Messages.")
                 await userge.send_message(
-                    userID, f"`{owner.mention} approved you to Direct Messages.`")
+                    userID, f"{owner.mention} `approved you to Direct Messages.`")
                 if userID in pmCounter:
                     del pmCounter[userID]
                 Config.ALLOWED_CHATS.add(userID)
@@ -286,9 +286,9 @@ if userge.has_bot:
         owner = await userge.get_me()
         if c_q.from_user.id == owner.id:
             userID = int(c_q.matches[0].group(1))
-            await userge.block_user(userID)
             await userge.send_message(
                 userID, f"{owner.mention} `decided you to block, Sorry.`")
+            await userge.block_user(userID)
             if userID in pmCounter:
                 del pmCounter[userID]
             if userID in Config.ALLOWED_CHATS:
@@ -310,11 +310,11 @@ if userge.has_bot:
         if c_q.from_user.id == owner.id:
             await c_q.answer("Sorry, you can't click by yourself")
         else:
-            await userge.block_user(c_q.from_user.id)
             del pmCounter[c_q.from_user.id]
             user_dict = await userge.get_user_dict(c_q.from_user.id)
             await c_q.edit_message_text(
                 blocked_message.format_map(SafeDict(**user_dict)))
+            await userge.block_user(c_q.from_user.id)
             await asyncio.sleep(1)
             await CHANNEL.log(
                 f"#BLOCKED\n{c_q.from_user.mention} has been blocked due to spamming in pm !! ")
@@ -339,7 +339,7 @@ if userge.has_bot:
                 ]
             )
             await userge.bot.send_message(
-                Config.LOG_CHANNEL_ID,
+                owner.id,
                 f"{c_q.from_user.mention} wanna contact to you.",
                 reply_markup=buttons
             )
