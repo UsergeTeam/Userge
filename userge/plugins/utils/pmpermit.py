@@ -312,7 +312,8 @@ if userge.has_bot:
         else:
             del pmCounter[c_q.from_user.id]
             user_dict = await userge.get_user_dict(c_q.from_user.id)
-            user_dict.update({'chat': message.chat.title if message.chat.title else "this group"})
+            user_dict.update(
+                {'chat': c_q.message.chat.title if c_q.message.chat.title else "this group"})
             await c_q.edit_message_text(
                 blocked_message.format_map(SafeDict(**user_dict)))
             await userge.block_user(c_q.from_user.id)
@@ -327,7 +328,8 @@ if userge.has_bot:
             await c_q.answer("Sorry, you can't click by yourself")
         else:
             user_dict = await userge.get_user_dict(c_q.from_user.id)
-            user_dict.update({'chat': message.chat.title if message.chat.title else "this group"})
+            user_dict.update(
+                {'chat': c_q.message.chat.title if c_q.message.chat.title else "this group"})
             await c_q.edit_message_text(
                 noPmMessage.format_map(SafeDict(**user_dict)) + '\n`- Protected by userge`')
             buttons = InlineKeyboardMarkup(
