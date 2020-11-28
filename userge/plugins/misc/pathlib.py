@@ -43,17 +43,17 @@ class _BaseLib:
 
     @property
     def completed_files(self) -> int:
-        """ Returns completed files """
+        """ Returns Completed Files """
         return self._current
 
     @property
     def total_files(self) -> int:
-        """ Returns total files """
+        """ Returns Total Files """
         return self._total
 
     @property
     def percentage(self) -> int:
-        """ Returns percentage """
+        """ Returns Percentage """
         return int(round((self._current / self._total) * 100, 2))
 
     @property
@@ -69,16 +69,16 @@ class _BaseLib:
 
     @property
     def canceled(self) -> bool:
-        """ Returns True if canceled """
+        """ Returns True if Canceled """
         return self._is_canceled
 
     @property
     def finished(self) -> bool:
-        """ Returns True if finished """
+        """ Returns True if Finished """
         return self._current == self._total or self._is_finished
 
     def cancel(self) -> None:
-        """ Cancel running thread """
+        """ Cancel Running Thread """
         self._is_canceled = True
 
     def _finish(self) -> None:
@@ -91,12 +91,12 @@ class _BaseLib:
 
     @property
     def final_file_path(self) -> str:
-        """ Returns final file path """
+        """ Returns Final File Path """
         return self._final_file_path
 
 
 class PackLib(_BaseLib):
-    """ Class for PACK / UNPACK / LISTPACK (files / folders) """
+    """ Class For PACK / UNPACK / LISTPACK (Files / Folders) """
     def __init__(self, file_path: str) -> None:
         self._file_path = file_path
         super().__init__()
@@ -175,7 +175,7 @@ class PackLib(_BaseLib):
         pool.submit_thread(self._zip, p_type, file_paths, self._final_file_path)
 
     def unpack_path(self) -> None:
-        """ UNPACK file path """
+        """ Unpack File Path """
         chunked_file_names = []
         temp_file_names = []
         temp_size = 0
@@ -337,19 +337,19 @@ class SCLib(_BaseLib):
 
 
 @userge.on_cmd('ls', about={
-    'header': "list directory",
+    'header': "List Directory",
     'usage': "{tr}ls [path]\n{tr}ls -d : default path"}, allow_channels=False)
 async def ls_dir(message: Message) -> None:
-    """ list dir """
+    """ list Directory """
     if '-d' in message.flags:
         path = Config.DOWN_PATH
     else:
         path = message.input_str or '.'
     if not exists(path):
-        await message.err("path not exists!")
+        await message.err("Path Not Exists!")
         return
     path_ = Path(path)
-    out = f"<b>PATH</b> : <code>{path}</code>\n\n"
+    out = f"<b>Path</b> : <code>{path}</code>\n\n"
     if path_.is_dir():
         folders = ''
         files = ''
@@ -377,83 +377,83 @@ async def ls_dir(message: Message) -> None:
 
 
 @userge.on_cmd('dset', about={
-    'header': "set temporary working directory",
+    'header': "Set Temporary Working Directory",
     'usage': "{tr}dset [path / name]"}, allow_channels=False)
 async def dset_(message: Message) -> None:
-    """ set dir """
+    """ Set Directory """
     path = message.input_str
     if not path:
-        await message.err("missing file path!")
+        await message.err("Missing File Path!")
         return
     try:
         if not isdir(path):
             os.makedirs(path)
         Config.DOWN_PATH = path.rstrip('/') + '/'
-        await message.edit(f"set `{path}` as **working directory** successfully!", del_in=5)
+        await message.edit(f"set `{path}` as **Working Directory** Successfully!!", del_in=5)
     except Exception as p_e:
         await message.err(p_e)
 
 
 @userge.on_cmd('dreset', about={
-    'header': "reset to default working directory",
+    'header': "Reset to Default Working Directory",
     'usage': "{tr}dreset"}, allow_channels=False)
 async def dreset_(message: Message) -> None:
-    """ reset dir """
+    """ Reset Directory """
     path = os.environ.get("DOWN_PATH", "downloads").rstrip('/') + '/'
     Config.DOWN_PATH = path
-    await message.edit(f"reset **working directory** to `{path}` successfully!", del_in=5)
+    await message.edit(f"Reset **Working Directory** to `{path}` Successfully!", del_in=5)
 
 
 @userge.on_cmd("dclear", about={
-    'header': "Clear the current working directory"}, allow_channels=False)
+    'header': "Clear the Current Working Directory"}, allow_channels=False)
 async def dclear_(message: Message):
-    """ clear dir """
+    """ Clear Directory """
     if not isdir(Config.DOWN_PATH):
         await message.edit(
-            f'path : `{Config.DOWN_PATH}` not found and just created!', del_in=5)
+            f'path : `{Config.DOWN_PATH}` Not Found and Just Created!', del_in=5)
     else:
         rmtree(Config.DOWN_PATH, True)
         await message.edit(
-            f'path : `{Config.DOWN_PATH}` **cleared** successfully!', del_in=5)
+            f'path : `{Config.DOWN_PATH}` **Cleared** Successfully!', del_in=5)
     os.makedirs(Config.DOWN_PATH)
 
 
 @userge.on_cmd('dremove', about={
-    'header': "remove a directory or file",
+    'header': "Remove a Directory or File",
     'usage': "{tr}dremove [path / name]"}, allow_channels=False)
 async def dremove_(message: Message) -> None:
-    """ remove dir """
+    """ Remove Directory """
     path = message.input_str
     if not path:
-        await message.err("missing file path!")
+        await message.err("Missing File Path!")
         return
     if not exists(path):
-        await message.err("file path not exists!")
+        await message.err("File Path Not Exists!")
         return
     if isfile(path):
         os.remove(path)
     else:
         rmtree(path)
-    await message.edit(f"path : `{path}` **removed** successfully!", del_in=5)
+    await message.edit(f"path : `{path}` **Removed** Successfully!", del_in=5)
 
 
 @userge.on_cmd('drename ([^|]+)\|([^|]+)', about={  # noqa
     'header': "rename a directory or file",
     'usage': "{tr}drename [path / name] | [new name]"}, allow_channels=False)
 async def drename_(message: Message) -> None:
-    """ rename dir """
+    """ Rename Directory """
     path = str(message.matches[0].group(1)).strip()
     new_name = str(message.matches[0].group(2)).strip()
     if not exists(path):
-        await message.err(f"file path : {path} not exists!")
+        await message.err(f"File Path : {path} Not Exists!")
         return
     new_path = join(dirname(path), new_name)
     os.rename(path, new_path)
-    await message.edit(f"path : `{path}` **renamed** to `{new_path}` successfully!", del_in=5)
+    await message.edit(f"path : `{path}` **Renamed** to `{new_path}` Successfully!", del_in=5)
 
 
 @userge.on_cmd(r'split (\d+) ([\s\S]+)', about={
-    'header': "Split files",
+    'header': "Split Files",
     'usage': "{tr}split [split size (MB)] [file path]",
     'examples': "{tr}split 5 downloads/test.zip"})
 async def split_(message: Message) -> None:
@@ -461,20 +461,20 @@ async def split_(message: Message) -> None:
     split_size = int(message.matches[0].group(1))
     file_path = str(message.matches[0].group(2))
     if not file_path:
-        await message.err("missing file path!")
+        await message.err("Missing File Path!")
         return
     if not isfile(file_path):
-        await message.err("file path not exists!")
+        await message.err("File Path Not Exists!")
         return
-    await message.edit("`processing...`")
+    await message.edit("`Processing...`")
     start_t = datetime.now()
     s_obj = SCLib(file_path)
     s_obj.split(split_size)
     tmp = \
-        "__Splitting file path...__\n" + \
+        "__Splitting File Path...__\n" + \
         "```{}({}%)```\n" + \
         "**File Path** : `{}`\n" + \
-        "**Dest** : `{}`\n" + \
+        "**Destination** : `{}`\n" + \
         "**Completed** : `{}`\n" + \
         "**Total** : `{}`\n" + \
         "**Speed** : `{}/s`\n" + \
@@ -509,28 +509,28 @@ async def split_(message: Message) -> None:
 
 
 @userge.on_cmd('combine', about={
-    'header': "Combine split files",
+    'header': "Combine Split Files",
     'usage': "{tr}combine [file path]",
     'examples': "{tr}combine downloads/test.tar.00000"})
 async def combine_(message: Message) -> None:
-    """ combine split files """
+    """ Combine Split Files """
     file_path = message.input_str
     if not file_path:
-        await message.err("missing file path!")
+        await message.err("Missing File Path!")
         return
     if not isfile(file_path):
-        await message.err("file path not exists!")
+        await message.err("File Path Not Exists!")
         return
     _, ext = splitext(basename(file_path))
     if not ext.lstrip('.').isdigit():
-        await message.err("unsupported file!")
+        await message.err("Unsupported File!")
         return
-    await message.edit("`processing...`")
+    await message.edit("`Processing...`")
     start_t = datetime.now()
     c_obj = SCLib(file_path)
     c_obj.combine()
     tmp = \
-        "__Combining file path...__\n" + \
+        "__Combining File Path...__\n" + \
         "```{}({}%)```\n" + \
         "**File Path** : `{}`\n" + \
         "**Dest** : `{}`\n" + \
@@ -568,38 +568,38 @@ async def combine_(message: Message) -> None:
 
 
 @userge.on_cmd('zip', about={
-    'header': "Zip file / folder",
+    'header': "Zip File / Folder",
     'usage': "{tr}zip [file path | folder path]"})
 async def zip_(message: Message) -> None:
-    """ zip files """
+    """ Zip Files """
     await _pack_helper(message)
 
 
 @userge.on_cmd('tar', about={
-    'header': "Tar file / folder",
+    'header': "Tar File / Folder",
     'usage': "{tr}tar [file path | folder path]"})
 async def tar_(message: Message) -> None:
-    """ tar fils """
+    """ Tar Files """
     await _pack_helper(message, True)
 
 
 async def _pack_helper(message: Message, tar: bool = False) -> None:
     file_path = message.input_str
     if not file_path:
-        await message.err("missing file path!")
+        await message.err("Missing File Path!")
         return
     if not exists(file_path):
-        await message.err("file path not exists!")
+        await message.err("File Path Not Exists!")
         return
-    await message.edit("`processing...`")
+    await message.edit("`Processing...`")
     start_t = datetime.now()
     p_obj = PackLib(file_path)
     p_obj.pack_path(tar)
     tmp = \
-        "__Packing file path...__\n" + \
+        "__Packing File Path...__\n" + \
         "```{}({}%)```\n" + \
         "**File Path** : `{}`\n" + \
-        "**Dest** : `{}`\n" + \
+        "**Destination** : `{}`\n" + \
         "**Completed** : `{}/{}`"
     count = 0
     while not p_obj.finished:
@@ -626,30 +626,30 @@ async def _pack_helper(message: Message, tar: bool = False) -> None:
 
 
 @userge.on_cmd('unpack', about={
-    'header': "unpack packed file",
+    'header': "Unpack Packed File",
     'usage': "{tr}unpack [file path]",
     'types': ['zip', 'tar', 'rar']})
 async def unpack_(message: Message) -> None:
-    """ unpack packed file """
+    """ Unpack Packed File """
     file_path = message.input_str
     if not file_path:
-        await message.err("missing file path!")
+        await message.err("Missing File Path!")
         return
     if not exists(file_path):
-        await message.err("file path not exists!")
+        await message.err("File Path Not Exists!")
         return
     if not PackLib.is_supported(file_path):
-        await message.err("unsupported file type!")
+        await message.err("Unsupported File Type!")
         return
-    await message.edit("`processing...`")
+    await message.edit("`Processing...`")
     start_t = datetime.now()
     p_obj = PackLib(file_path)
     p_obj.unpack_path()
     tmp = \
-        "__UnPacking file path...__\n" + \
+        "__UnPacking File Path...__\n" + \
         "```{}({}%)```\n" + \
         "**File Path** : `{}`\n" + \
-        "**Dest** : `{}`\n" + \
+        "**Destination** : `{}`\n" + \
         "**Completed** : `{}/{}`"
     count = 0
     while not p_obj.finished:
@@ -676,22 +676,22 @@ async def unpack_(message: Message) -> None:
 
 
 @userge.on_cmd('packinfo', about={
-    'header': "File content of the pack",
+    'header': "File Content of The Pack",
     'usage': "{tr}packinfo [file path]",
     'types': ['zip', 'tar', 'rar']})
 async def packinfo_(message: Message) -> None:
-    """ view packed file info """
+    """ View Packed File Info """
     file_path = message.input_str
     if not file_path:
-        await message.err("missing file path!")
+        await message.err("Missing File Path!")
         return
     if not exists(file_path):
-        await message.err("file path not exists!")
+        await message.err("File Path Not Exists!")
         return
     if not PackLib.is_supported(file_path):
-        await message.err("unsupported file type!")
+        await message.err("Unsupported File Type!")
         return
-    await message.edit("`processing...`")
+    await message.edit("`Processing...`")
     p_obj = PackLib(file_path)
     infos = p_obj.get_info()
     output = f"**File Path** : `{file_path}`\n**Total Files** : `{len(infos)}`\n\n"
