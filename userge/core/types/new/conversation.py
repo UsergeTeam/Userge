@@ -71,7 +71,7 @@ class Conversation:
                 marks response as read.
 
             filters (``pyrogram.filters.Filter``, *optional*):
-                filter specific response. 
+                filter specific response.
 
         Returns:
             On success, the recieved Message is returned.
