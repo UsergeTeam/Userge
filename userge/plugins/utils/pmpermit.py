@@ -11,6 +11,7 @@
 import asyncio
 from typing import Dict
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from pyrogram.errors import BOT_INLINE_DISABLED
 
 from userge import userge, filters, Message, Config, get_collection
 from userge.utils import SafeDict
@@ -231,12 +232,16 @@ async def uninvitedPmHandler(message: Message):
     else:
         pmCounter.update({message.from_user.id: 1})
         if userge.has_bot:
-            bot_username = (await userge.bot.get_me()).username
-            k = await userge.get_inline_bot_results(bot_username, "pmpermit")
-            await userge.send_inline_bot_result(
-                message.chat.id, query_id=k.query_id,
-                result_id=k.results[2].id, hide_via=True
-            )
+            try:
+                bot_username = (await userge.bot.get_me()).username
+                k = await userge.get_inline_bot_results(bot_username, "pmpermit")
+                await userge.send_inline_bot_result(
+                    message.chat.id, query_id=k.query_id,
+                    result_id=k.results[2].id, hide_via=True
+                )
+            except BOT_INLINE_DISABLED:
+                await message.reply(
+                    noPmMessage.format_map(SafeDict(**user_dict)) + '\n`- Protected by userge`')
         else:
             await message.reply(
                 noPmMessage.format_map(SafeDict(**user_dict)) + '\n`- Protected by userge`')
