@@ -115,13 +115,13 @@ async def test_filter(message: Message):
 ## How To Deploy 👷
 
 * With Heroku:
-  [**Check Detailed Guide**](https://theuserge.github.io/deployment#deploying-with-heroku)
+     [**Check Detailed Guide**](https://theuserge.github.io/deployment#deploying-with-heroku)
 
 * With Docker 🐳 
     - [**See Detailed Guide**](https://theuserge.github.io/deployment#deploying-with-docker-)
 
 * With Git, Python and pip 🔧
-   [**Here's the Detailed Guide**](https://theuserge.github.io/deployment#deploying-with-legacy-method)
+      [**Here's the Detailed Guide**](https://theuserge.github.io/deployment#deploying-with-legacy-method)
   
 
 
