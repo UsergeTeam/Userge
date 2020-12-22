@@ -41,7 +41,7 @@ async def alive(message: Message):
             _LOG.exception("There was some problem while setting Media Data. "
                            f"trying again... ERROR:: {set_err} ::")
             _set_data(True)
-    
+
     alive_text, markup = _get_alive_text_and_markup(message)
     if _MSG_ID == "text_format":
         return await message.edit(alive_text, disable_web_page_preview=True, reply_markup=markup)
@@ -108,7 +108,7 @@ async def _send_alive(message: Message,
     if _IS_TELEGRAPH:
         try:
             await message.client.send_document(chat_id=message.chat.id,
-                                               Config.ALIVE_MEDIA,
+                                               document=Config.ALIVE_MEDIA,
                                                caption=text,
                                                reply_markup=should_mark)
         except SlowmodeWait as s_m:
