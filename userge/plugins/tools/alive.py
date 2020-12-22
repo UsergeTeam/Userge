@@ -7,7 +7,6 @@
 # All rights reserved.
 
 import re
-import os
 import asyncio
 from typing import Tuple, Optional
 
@@ -182,6 +181,6 @@ def _set_data(errored: bool = False) -> None:
             _CHAT = _CHAT.strip()
             _MSG_ID = int(_MSG_ID.strip())
     else:
-        match = re.search(pattern, _DEFAULT)
+        match = re.search(pattern_1, _DEFAULT)
         _CHAT = match.group(6)
         _MSG_ID = int(match.group(7))
