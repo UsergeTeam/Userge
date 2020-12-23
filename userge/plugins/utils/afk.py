@@ -37,14 +37,6 @@ async def _init() -> None:
         USERS.update({_user['_id']:  [_user['pcount'], _user['gcount'], _user['men']]})
 
 
-async def check_admin(chat_id: int, user_id: int) -> bool:
-    check_user = (await userge.get_chat_member(chat_id, user_id)).status
-    strings = ["administrator", "creator"]
-    if check_user in strings:
-        return True
-    return False
-
-
 @userge.on_cmd("afk", about={
     'header': "Set to AFK mode",
     'description': "Sets your status as AFK. Responds to anyone who tags/PM's.\n"
@@ -72,10 +64,6 @@ async def handle_afk_incomming(message: Message) -> None:
     """ handle incomming messages when you afk """
     user_id = message.from_user.id
     chat = message.chat
-    can_msg = False
-    if chat.type != 'private':
-        if await check_admin(chat.id, (await userge.get_me()).id):
-            can_msg = True
     user_dict = await message.client.get_user_dict(user_id)
     afk_time = time_formatter(round(time.time() - TIME))
     coro_list = []
@@ -86,11 +74,7 @@ async def handle_afk_incomming(message: Message) -> None:
                            f"Last Seen: `{afk_time} ago`")
             else:
                 out_str = choice(AFK_REASONS)
-            if chat.type != 'private':
-                if can_msg:
-                    coro_list.append(message.reply(out_str))
-            else:
-                coro_list.append(message.reply(out_str))
+            coro_list.append(message.reply(out_str))
         if chat.type == 'private':
             USERS[user_id][0] += 1
         else:
@@ -101,11 +85,7 @@ async def handle_afk_incomming(message: Message) -> None:
                        f"Last Seen: `{afk_time} ago`")
         else:
             out_str = choice(AFK_REASONS)
-        if chat.type != 'private':
-            if can_msg:
-                coro_list.append(message.reply(out_str))
-        else:
-            coro_list.append(message.reply(out_str))
+        coro_list.append(message.reply(out_str))
         if chat.type == 'private':
             USERS[user_id] = [1, 0, user_dict['mention']]
         else:
