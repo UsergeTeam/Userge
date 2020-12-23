@@ -136,7 +136,7 @@ async def test_filter(message: Message):
 ### Project Credits 💆‍♂️
 
 * [Specially to these projects](https://github.com/UsergeTeam/Userge#inspiration-) 🥰
-* [@uaudIth](https://t.me/uaudIth)p
+* [@uaudIth](https://t.me/uaudIth)
 * [@K_E_N_W_A_Y](https://t.me/K_E_N_W_A_Y)
 * [@nawwasl](https://t.me/nawwasl)
 * [@TharukaN97](https://t.me/TharukaN97)
