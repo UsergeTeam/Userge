@@ -963,7 +963,7 @@ async def gsetup_(message: Message):
     else:
         await message.edit(
             "`G_DRIVE_CLIENT_ID` and `G_DRIVE_CLIENT_SECRET` not found!\n"
-            "[Read this]({link}) to know more.", disable_web_page_preview=True)
+            f"[Read this]({link}) to know more.", disable_web_page_preview=True)
 
 
 @userge.on_cmd("gconf", about={
