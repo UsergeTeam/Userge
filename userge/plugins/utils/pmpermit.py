@@ -137,7 +137,7 @@ async def pmguard(message: Message):
     "ipmguard", about={
         'header': "Switchs the Inline pm permiting module on",
         'description': "This is switched off in default.",
-        'usage': "{tr}ipmguard"}
+        'usage': "{tr}ipmguard"},
     allow_channels=False)
 async def ipmguard(message: Message):
     """ enable or disable inline pmpermit """
