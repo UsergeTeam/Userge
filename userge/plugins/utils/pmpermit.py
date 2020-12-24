@@ -11,6 +11,7 @@
 import asyncio
 from typing import Dict
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+from pyrogram.errors import BotInlineDisabled
 
 from userge import userge, filters, Message, Config, get_collection
 from userge.utils import SafeDict
@@ -157,6 +158,20 @@ async def set_custom_nopm_message(message: Message):
             await message.err("invalid input!")
 
 
+@userge.on_cmd("ipmmsg", about={
+    'header': "Set inline pm msg for Inline pmpermit",
+    'usage': "{tr}ipmmsg [text | reply to text msg]"}, allow_channels=False)
+async def change_inline_message(message: Message):
+    """ set inline pm message """
+    string = message.input_or_reply_raw
+    if string:
+        await message.edit('`Custom inline pm message saved`', del_in=3, log=True)
+        await SAVED_SETTINGS.update_one(
+            {'_id': 'CUSTOM_INLINE_PM_MESSAGE'}, {"$set": {'data': string}}, upsert=True)
+    else:
+        await message.err("invalid input!")
+
+
 @userge.on_cmd("setbpmmsg", about={
     'header': "Sets the block message",
     'description': "You can change the default blockPm message "
@@ -231,12 +246,16 @@ async def uninvitedPmHandler(message: Message):
     else:
         pmCounter.update({message.from_user.id: 1})
         if userge.has_bot:
-            bot_username = (await userge.bot.get_me()).username
-            k = await userge.get_inline_bot_results(bot_username, "pmpermit")
-            await userge.send_inline_bot_result(
-                message.chat.id, query_id=k.query_id,
-                result_id=k.results[2].id, hide_via=True
-            )
+            try:
+                bot_username = (await userge.bot.get_me()).username
+                k = await userge.get_inline_bot_results(bot_username, "pmpermit")
+                await userge.send_inline_bot_result(
+                    message.chat.id, query_id=k.query_id,
+                    result_id=k.results[2].id, hide_via=True
+                )
+            except BotInlineDisabled:
+                await message.reply(
+                    noPmMessage.format_map(SafeDict(**user_dict)) + '\n`- Protected by userge`')
         else:
             await message.reply(
                 noPmMessage.format_map(SafeDict(**user_dict)) + '\n`- Protected by userge`')
