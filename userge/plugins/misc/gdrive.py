@@ -957,7 +957,13 @@ class Worker(_GDrive):
     'header': "Setup GDrive Creds"})
 async def gsetup_(message: Message):
     """ setup creds """
-    await Worker(message).setup()
+    link = "https://theuserge.github.io/deployment.html#3-g_drive_client_id--g_drive_client_secret"
+    if Config.G_DRIVE_CLIENT_ID and Config.G_DRIVE_CLIENT_SECRET:
+        await Worker(message).setup()
+    else:
+        await message.edit(
+            "`G_DRIVE_CLIENT_ID` and `G_DRIVE_CLIENT_SECRET` not found!\n"
+            f"[Read this]({link}) to know more.", disable_web_page_preview=True)
 
 
 @userge.on_cmd("gconf", about={
