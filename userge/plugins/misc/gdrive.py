@@ -957,7 +957,7 @@ class Worker(_GDrive):
     'header': "Setup GDrive Creds"})
 async def gsetup_(message: Message):
     """ setup creds """
-    link = https://theuserge.github.io/deployment.html#3-g_drive_client_id--g_drive_client_secret
+    link = "https://theuserge.github.io/deployment.html#3-g_drive_client_id--g_drive_client_secret"
     if Config.G_DRIVE_CLIENT_ID and Config.G_DRIVE_CLIENT_SECRET:
         await Worker(message).setup()
     else:
