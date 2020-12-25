@@ -190,7 +190,7 @@ async def _send_telegraph(msg: Message, text: str, reply_markup: Optional[Inline
                 caption=text,
                 reply_markup=reply_markup
             )
-        elif dls_loc.name.lower().endswith((".mp3", ".flac", ".wav", ".m4a")):
+        elif dls_loc.name.lower().endswith((".mkv", ".mp4", ".webm")):
             await msg.client.send_video(
                 chat_id=msg.chat.id,
                 video=dls_loc,
