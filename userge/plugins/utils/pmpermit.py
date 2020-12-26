@@ -21,6 +21,7 @@ SAVED_SETTINGS = get_collection("CONFIGS")
 ALLOWED_COLLECTION = get_collection("PM_PERMIT")
 
 pmCounter: Dict[int, int] = {}
+_IS_INLINE = True
 allowAllFilter = filters.create(lambda _, __, ___: Config.ALLOW_ALL_PMS)
 noPmMessage = bk_noPmMessage = ("Hello {fname} this is an automated message\n"
                                 "Please wait until you get approved to direct message "
@@ -29,12 +30,15 @@ blocked_message = bk_blocked_message = "**You were automatically blocked**"
 
 
 async def _init() -> None:
-    global noPmMessage, blocked_message  # pylint: disable=global-statement
+    global noPmMessage, blocked_message, _IS_INLINE  # pylint: disable=global-statement
     async for chat in ALLOWED_COLLECTION.find({"status": 'allowed'}):
         Config.ALLOWED_CHATS.add(chat.get("_id"))
     _pm = await SAVED_SETTINGS.find_one({'_id': 'PM GUARD STATUS'})
     if _pm:
         Config.ALLOW_ALL_PMS = bool(_pm.get('data'))
+    i_pm = await SAVED_SETTINGS.find_one({'_id': 'INLINE_PM_PERMIT'})
+    if i_pm:
+        _IS_INLINE = bool(i_pm.get('data'))
     _pmMsg = await SAVED_SETTINGS.find_one({'_id': 'CUSTOM NOPM MESSAGE'})
     if _pmMsg:
         noPmMessage = _pmMsg.get('data')
@@ -127,6 +131,25 @@ async def pmguard(message: Message):
         pmCounter.clear()
     await SAVED_SETTINGS.update_one(
         {'_id': 'PM GUARD STATUS'}, {"$set": {'data': Config.ALLOW_ALL_PMS}}, upsert=True)
+
+
+@userge.on_cmd(
+    "ipmguard", about={
+        'header': "Switchs the Inline pm permiting module on",
+        'description': "This is switched off in default.",
+        'usage': "{tr}ipmguard"},
+    allow_channels=False)
+async def ipmguard(message: Message):
+    """ enable or disable inline pmpermit """
+    global _IS_INLINE  # pylint: disable=global-statement
+    if _IS_INLINE:
+        _IS_INLINE = False
+        await message.edit("`Inline PM_guard activated`", del_in=3, log=__name__)
+    else:
+        _IS_INLINE = True
+        await message.edit("`Inline PM_guard deactivated`", del_in=3, log=__name__)
+    await SAVED_SETTINGS.update_one(
+        {'_id': 'INLINE_PM_PERMIT'}, {"$set": {'data': _IS_INLINE}}, upsert=True)
 
 
 @userge.on_cmd("setpmmsg", about={
@@ -245,7 +268,7 @@ async def uninvitedPmHandler(message: Message):
                 "Please wait until you get approved to pm !", del_in=5)
     else:
         pmCounter.update({message.from_user.id: 1})
-        if userge.has_bot:
+        if userge.has_bot and _IS_INLINE:
             try:
                 bot_username = (await userge.bot.get_me()).username
                 k = await userge.get_inline_bot_results(bot_username, "pmpermit")
