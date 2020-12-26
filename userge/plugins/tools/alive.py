@@ -11,6 +11,7 @@ import os
 import asyncio
 from typing import Tuple, Optional
 
+import wget
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.errors import (
     ChatSendMediaForbidden, Forbidden, SlowmodeWait, PeerIdInvalid,
@@ -177,33 +178,27 @@ def _set_data(errored: bool = False) -> None:
 
 
 async def _send_telegraph(msg: Message, text: str, reply_markup: Optional[InlineKeyboardMarkup]):
-    link = Config.ALIVE_MEDIA
-    try:
-        dls_loc = os.path.join(
-            Config.DOWN_PATH,
-            os.path.basename(await msg.client.download_media(link, Config.DOWN_PATH))
+    path = os.path.join(Config.DOWN_PATH, os.path.split(Config.ALIVE_MEDIA)[1])
+    if not os.path.exists(path):
+        wget.download(Config.ALIVE_MEDIA, path)
+    if path.lower().endswith((".jpg", ".jpeg", ".png", ".bmp")):
+        await msg.client.send_photo(
+            chat_id=msg.chat.id,
+            photo=path,
+            caption=text,
+            reply_markup=reply_markup
         )
-        if dls_loc.name.lower().endswith((".jpg", ".jpeg", ".png", ".bmp")):
-            await msg.client.send_photo(
-                chat_id=msg.chat.id,
-                photo=dls_loc,
-                caption=text,
-                reply_markup=reply_markup
-            )
-        elif dls_loc.name.lower().endswith((".mkv", ".mp4", ".webm")):
-            await msg.client.send_video(
-                chat_id=msg.chat.id,
-                video=dls_loc,
-                caption=text,
-                reply_markup=reply_markup
-            )
-        else:
-            await msg.client.send_document(
-                chat_id=msg.chat.id,
-                document=dls_loc,
-                caption=text,
-                reply_markup=reply_markup
-            )
-        os.remove(dls_loc)
-    except Exception as err:
-        await msg.err(str(err), log=True)
+    elif path.lower().endswith((".mkv", ".mp4", ".webm")):
+        await msg.client.send_video(
+            chat_id=msg.chat.id,
+            video=path,
+            caption=text,
+            reply_markup=reply_markup
+        )
+    else:
+        await msg.client.send_document(
+            chat_id=msg.chat.id,
+            document=path,
+            caption=text,
+            reply_markup=reply_markup
+        )
