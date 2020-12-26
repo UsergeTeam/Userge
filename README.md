@@ -118,11 +118,11 @@ async def test_filter(message: Message):
     - **Click this button👉👉** [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Usergeteam/Userge/tree/beta)
     > For more instructions, [**Check Detailed Guide**](https://theuserge.github.io/deployment#deploying-with-heroku)
 
-* With Docker 🐳 
-    - [**See Detailed Guide**](https://theuserge.github.io/deployment#deploying-with-docker-)
+* [**With Docker 🐳**](https://theuserge.github.io/deployment#deploying-with-docker-)
+    
 
-* With Git, Python and pip 🔧
-    -  [**Here's the Detailed Guide**](https://theuserge.github.io/deployment#deploying-with-legacy-method)
+* [**With Git, Python and pip 🔧**](https://theuserge.github.io/deployment#deploying-with-legacy-method)
+    
   
 
 
