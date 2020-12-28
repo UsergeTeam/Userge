@@ -39,9 +39,11 @@ class ChannelLogger:
     @staticmethod
     def get_link(message_id: int) -> str:
         """\nreturns link for a specific message.
+
         Parameters:
             message_id (`int`):
                 Message id of stored message.
+
         Returns:
             str
         """
@@ -50,11 +52,14 @@ class ChannelLogger:
 
     async def log(self, text: str, name: str = '') -> int:
         """\nsend text message to log channel.
+
         Parameters:
             text (``str``):
                 Text of the message to be sent.
+
             name (``str``, *optional*):
                 New Name for logger.
+
         Returns:
             message_id on success or None
         """
@@ -75,19 +80,22 @@ class ChannelLogger:
     async def fwd_msg(self,
                       message: Union['_message.Message', 'RawMessage'],
                       name: str = '',
-                      as_copy: bool = True,
-                      remove_caption: bool = False) -> None:
+                      as_copy: bool = True) -> None:
         """\nforward message to log channel.
+
         Parameters:
             message (`pyrogram.Message`):
                 pass pyrogram.Message object which want to forward.
+
             name (``str``, *optional*):
                 New Name for logger.
+
             as_copy (`bool`, *optional*):
                 Pass True to forward messages without the forward header
                 (i.e.: send a copy of the message content so
                 that it appears as originally sent by you).
                 Defaults to True.
+
         Returns:
             None
         """
@@ -116,11 +124,14 @@ class ChannelLogger:
                     message: Optional['_message.Message'],
                     caption: Optional[str] = '') -> int:
         """\nstore message to log channel.
+
         Parameters:
             message (`pyrogram.Message` | `None`):
                 pass pyrogram.Message object which want to forward.
+
             caption (`str`, *optional*):
                 Text or Caption of the message to be sent.
+
         Returns:
             message_id on success or None
         """
@@ -149,19 +160,26 @@ class ChannelLogger:
                              reply_to_message_id: int,
                              del_in: int = 0) -> None:
         """\nforward stored message from log channel.
+
         Parameters:
             client (`Userge` | `UsergeBot`):
                 Pass Userge or UsergeBot.
+
             message_id (`int`):
                 Message id of stored message.
+
             chat_id (`int`):
                 ID of chat (dest) you want to farward.
+
             user_id (`int`):
                 ID of user you want to reply.
+
             reply_to_message_id (`int`):
                 If the message is a reply, ID of the original message.
+
             del_in (`int`):
                 Time in Seconds for delete that message.
+
         Returns:
             None
         """
