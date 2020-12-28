@@ -177,8 +177,12 @@ class Conversation:
             MessageHandler(
                 _on_conversation,
                 _filters.create(
-                    lambda _, __, query: _CONV_DICT and query.chat
-                    and (query.chat.id, client) in _CONV_DICT, 0)))
+                    lambda _, __, query: _CONV_DICT and query.chat and (
+                        query.chat.id, client
+                    ) in _CONV_DICT, 0
+                )
+            )
+        )
 
     async def __aenter__(self) -> 'Conversation':
         self._chat_id = int(self._chat) if isinstance(self._chat, int) else \

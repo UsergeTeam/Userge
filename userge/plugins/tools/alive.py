@@ -19,7 +19,7 @@ from pyrogram.errors import (
 )
 
 from userge.core.ext import RawClient
-from userge.utils import get_file_id_and_ref
+from userge.utils import get_file_id_of_media
 from userge import userge, Message, Config, versions, get_version, logging
 
 _LOG = logging.getLogger(__name__)
@@ -29,7 +29,7 @@ _IS_STICKER = False
 
 _DEFAULT = "https://t.me/theUserge/31"
 _CHAT, _MSG_ID = None, None
-_LOGO_ID, _LOGO_REF = None, None
+_LOGO_ID = None
 
 
 @userge.on_cmd("alive", about={
@@ -103,7 +103,7 @@ async def _send_alive(message: Message,
                       text: str,
                       reply_markup: Optional[InlineKeyboardMarkup],
                       recurs_count: int = 0) -> None:
-    if not (_LOGO_ID and _LOGO_REF):
+    if not _LOGO_ID:
         await _refresh_id(message)
     should_mark = None if _IS_STICKER else reply_markup
     if _IS_TELEGRAPH:
@@ -112,7 +112,6 @@ async def _send_alive(message: Message,
         try:
             await message.client.send_cached_media(chat_id=message.chat.id,
                                                    file_id=_LOGO_ID,
-                                                   file_ref=_LOGO_REF,
                                                    caption=text,
                                                    reply_markup=should_mark)
             if _IS_STICKER:
@@ -134,7 +133,7 @@ async def _send_alive(message: Message,
 
 
 async def _refresh_id(message: Message) -> None:
-    global _LOGO_ID, _LOGO_REF, _IS_STICKER  # pylint: disable=global-statement
+    global _LOGO_ID, _IS_STICKER  # pylint: disable=global-statement
     try:
         media = await message.client.get_messages(_CHAT, _MSG_ID)
     except (ChannelInvalid, PeerIdInvalid, ValueError):
@@ -143,7 +142,7 @@ async def _refresh_id(message: Message) -> None:
     else:
         if media.sticker:
             _IS_STICKER = True
-        _LOGO_ID, _LOGO_REF = get_file_id_and_ref(media)
+        _LOGO_ID = get_file_id_of_media(media)
 
 
 def _set_data(errored: bool = False) -> None:

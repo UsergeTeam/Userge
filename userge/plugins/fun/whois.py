@@ -53,7 +53,7 @@ async def who_is(message: Message):
             pass
         else:
             message_out_str += f"<b>👥 Common Chats:</b> <code>{cc_no}</code>\n"
-        message_out_str += f"<b>📝 Bio:</b> <code>{from_chat.description}</code>\n\n"
+        message_out_str += f"<b>📝 Bio:</b> <code>{from_chat.bio}</code>\n\n"
         message_out_str += f"<b>👁 Last Seen:</b> <code>{from_user.status}</code>\n"
         message_out_str += "<b>🔗 Permanent Link To Profile:</b> "
         message_out_str += f"<a href='tg://user?id={from_user.id}'>{from_user.first_name}</a>"
