@@ -39,10 +39,10 @@ async def _init() -> None:
     i_pm = await SAVED_SETTINGS.find_one({'_id': 'INLINE_PM_PERMIT'})
     if i_pm:
         _IS_INLINE = bool(i_pm.get('data'))
-    _pmMsg = await SAVED_SETTINGS.find_one({'_id': 'CUSTOM NOPM MESSAGE'})
+    _pmMsg = await SAVED_SETTINGS.find_one({'_id': 'CUSTOM NOPM PESAN'})
     if _pmMsg:
         noPmMessage = _pmMsg.get('data')
-    _blockPmMsg = await SAVED_SETTINGS.find_one({'_id': 'CUSTOM BLOCKPM MESSAGE'})
+    _blockPmMsg = await SAVED_SETTINGS.find_one({'_id': 'CUSTOM PESAN BLOKIR'})
     if _blockPmMsg:
         blocked_message = _blockPmMsg.get('data')
 
@@ -87,9 +87,9 @@ async def denyToPm(message: Message):
             Config.ALLOWED_CHATS.remove(userid)
         a = await ALLOWED_COLLECTION.delete_one({'_id': userid})
         if a.deleted_count:
-            await message.edit("`Prohibitted to direct message`", del_in=3)
+            await message.edit("`dilarang mengirim pesan`", del_in=3)
         else:
-            await message.edit("`Nothing was changed`", del_in=3)
+            await message.edit("`tidak ada yg berubah`", del_in=3)
     else:
         await message.edit(
             "I need to reply to a user or provide the username/id or be in a private chat",
@@ -312,7 +312,7 @@ if userge.has_bot:
                     f"{user.mention} sudah di izinkan mengirim pesan.")
             else:
                 await c_q.edit_message_text(
-                    f"{user.mention} di izinkan mengirim pesan.")
+                    f"{user.mention} `di izinkan mengirim pesan.`")
                 await userge.send_message(
                     userID, f"{owner.mention} `lu di izinkan mengirim pesan.`")
                 if userID in pmCounter:
@@ -382,6 +382,6 @@ if userge.has_bot:
             )
             await userge.bot.send_message(
                 owner.id,
-                f"{c_q.from_user.mention} mau kontak lu.",
+                f"{c_q.from_user.mention} mau nge pm lu.",
                 reply_markup=buttons
             )
