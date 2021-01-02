@@ -155,4 +155,4 @@ AFK_REASONS = (
     "gua sibuk sekarang. kalau lu perlu, tinggal pesan aja ngab",
     "lu kangen gua ? ga salah ? mimpi lu ?",
     "gua tidur ngab.",
-    "gua sibuk, chat nya nanti gua balas pas on",
+    "gua sibuk, chat nya nanti gua balas pas on",)
