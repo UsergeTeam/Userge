@@ -24,8 +24,8 @@ pmCounter: Dict[int, int] = {}
 _IS_INLINE = True
 allowAllFilter = filters.create(lambda _, __, ___: Config.ALLOW_ALL_PMS)
 noPmMessage = bk_noPmMessage = ("Hai Ngab {flname} ({uname}) Ini adalah pesan otomatis gua\n"
-                                "Tunggu sampai lu di Approve atau gua balas "
-                                "Jadi jangan **SPAM** gua ngab ")
+                                "Tunggu sampai lu di Approve atau gua balas\n "
+                                "Jadi jangan **SPAM** gua ngab\n ")
 blocked_message = bk_blocked_message = "**Lu bakal otomatis ke blok**"
 
 
