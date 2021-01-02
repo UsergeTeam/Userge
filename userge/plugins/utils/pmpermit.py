@@ -328,8 +328,9 @@ if userge.has_bot:
         owner = await userge.get_me()
         if c_q.from_user.id == owner.id:
             userID = int(c_q.matches[0].group(1))
+            user_dict = await userge.get_user_dict(userID)
             await userge.send_message(
-                userID, f"{owner.mention} `decided you to block, Sorry.`")
+                userID, blocked_message.format_map(SafeDict(**user_dict)))
             await userge.block_user(userID)
             if userID in pmCounter:
                 del pmCounter[userID]
