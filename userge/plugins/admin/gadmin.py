@@ -124,79 +124,58 @@ async def demote_usr(message: Message):
         '-m': "minutes",
         '-h': "hours",
         '-d': "days"},
-    'examples': "{tr}ban -flag [username | userid] or [reply to user] :reason (optional)"},
+    'examples': "{tr}ban [flag] [username | userid] or [reply to user] :reason (optional)"},
     allow_channels=False, check_restrict_perm=True)
 async def ban_user(message: Message):
     """ ban user from tg group """
     reason = ""
-    chat_id = message.chat.id
-    flags = message.flags
-    minutes = flags.get('-m', 0)
-    hours = flags.get('-h', 0)
-    days = flags.get('-d', 0)
-    await message.edit("`Trying to Ban User.. Hang on!! ⏳`")
     user_id, reason = message.extract_user_and_text
     if not user_id:
         await message.edit(
             text="`no valid user_id or message specified,`"
             "`do .help ban for more info`", del_in=5)
         return
-    if minutes:
-        ban_period = int(minutes) * 60
-        _time = f"{int(minutes)}m"
-    elif hours:
-        ban_period = int(hours) * 3600
-        _time = f"{int(hours)}h"
-    elif days:
-        ban_period = int(days) * 86400
-        _time = f"{int(days)}d"
-    if flags:
-        try:
-            get_mem = await message.client.get_chat_member(chat_id, user_id)
-            await message.client.kick_chat_member(
-                chat_id, user_id,
-                int(time.time() + ban_period))
-            await message.edit(
-                "#BAN\n\n"
-                f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
-                f"(`{get_mem.user.id}`)\n"
-                f"CHAT: `{message.chat.title}` (`{chat_id}`)\n"
-                f"TIME: `{_time}`\n"
-                f"REASON: `{reason}`", log=__name__)
-        except UsernameInvalid:
-            await message.edit("`invalid username, try again with valid info ⚠`", del_in=5)
-        except PeerIdInvalid:
-            await message.edit(
-                "`invalid username or userid, try again with valid info ⚠`", del_in=5)
-        except UserIdInvalid:
-            await message.edit("`invalid userid, try again with valid info ⚠`", del_in=5)
-        except Exception as e_f:
-            await message.edit(
-                "`something went wrong 🤔, do .help ban for more info`\n\n"
-                f"**ERROR**: `{e_f}`", del_in=5)
-    else:
-        try:
-            get_mem = await message.client.get_chat_member(chat_id, user_id)
 
-            await message.client.kick_chat_member(chat_id, user_id)
-            await message.edit(
-                "#BAN\n\n"
-                f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
-                f"(`{get_mem.user.id}`)\n"
-                f"CHAT: `{message.chat.title}` (`{chat_id}`)\n"
-                f"TIME: `forever`\n"
-                f"REASON: `{reason}`", log=__name__)
-        except UsernameInvalid:
-            await message.edit("`invalid username, try again with valid info ⚠`", del_in=5)
-        except PeerIdInvalid:
-            await message.edit(
-                "`invalid username or userid, try again with valid info ⚠`", del_in=5)
-        except UserIdInvalid:
-            await message.edit("`invalid userid, try again with valid info ⚠`", del_in=5)
-        except Exception as e_f:
-            await message.edit(
-                "`something went wrong 🤔, do .help ban for more info`\n\n"
-                f"**ERROR**: {e_f}", del_in=5)
+    chat_id = message.chat.id
+    flags = message.flags
+    minutes = int(flags.get('-m', 0))
+    hours = int(flags.get('-h', 0))
+    days = int(flags.get('-d', 0))
+    await message.edit("`Trying to Ban User.. Hang on!! ⏳`")
+
+    ban_period = 0
+    _time = "forever"
+    if minutes:
+        ban_period = time.time() + minutes * 60
+        _time = f"{minutes}m"
+    elif hours:
+        ban_period = time.time() + hours * 3600
+        _time = f"{hours}h"
+    elif days:
+        ban_period = time.time() + days * 86400
+        _time = f"{days}d"
+
+    try:
+        get_mem = await message.client.get_chat_member(chat_id, user_id)
+        await message.client.kick_chat_member(chat_id, user_id, int(ban_period))
+        await message.edit(
+            "#BAN\n\n"
+            f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
+            f"(`{get_mem.user.id}`)\n"
+            f"CHAT: `{message.chat.title}` (`{chat_id}`)\n"
+            f"TIME: `{_time}`\n"
+            f"REASON: `{reason}`", log=__name__)
+    except UsernameInvalid:
+        await message.edit("`invalid username, try again with valid info ⚠`", del_in=5)
+    except PeerIdInvalid:
+        await message.edit(
+            "`invalid username or userid, try again with valid info ⚠`", del_in=5)
+    except UserIdInvalid:
+        await message.edit("`invalid userid, try again with valid info ⚠`", del_in=5)
+    except Exception as e_f:
+        await message.edit(
+            "`something went wrong 🤔, do .help ban for more info`\n\n"
+            f"**ERROR**: `{e_f}`", del_in=5)
 
 
 @userge.on_cmd("unban", about={
