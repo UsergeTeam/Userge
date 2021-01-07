@@ -161,7 +161,7 @@ async def delvar_(message: Message) -> None:
 @userge.on_cmd("getvar", about={
     'header': "get var in heroku",
     'usage': "{tr}getvar [var_name]",
-    'examples': "{tr}getvar WORKERS 4"})
+    'examples': "{tr}getvar WORKERS"})
 async def getvar_(message: Message) -> None:
     """ get var (heroku) """
     if not Config.HEROKU_APP:
