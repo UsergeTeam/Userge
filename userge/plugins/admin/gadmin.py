@@ -128,6 +128,7 @@ async def demote_usr(message: Message):
     allow_channels=False, check_restrict_perm=True)
 async def ban_user(message: Message):
     """ ban user from tg group """
+    await message.edit("`Trying to Ban User.. Hang on!! ⏳`")
     reason = ""
     user_id, reason = message.extract_user_and_text
     if not user_id:
@@ -141,7 +142,6 @@ async def ban_user(message: Message):
     minutes = int(flags.get('-m', 0))
     hours = int(flags.get('-h', 0))
     days = int(flags.get('-d', 0))
-    await message.edit("`Trying to Ban User.. Hang on!! ⏳`")
 
     ban_period = 0
     _time = "forever"
