@@ -129,10 +129,10 @@ class Message(RawMessage):
         if self.reply_to_message:
             if self.reply_to_message.from_user:
                 user_e = self.reply_to_message.from_user.id
-            text = self.input_str
+            text = self.filtered_input_str
             return user_e, text
-        if self.input_str:
-            data = self.input_str.split(maxsplit=1)
+        if self.filtered_input_str:
+            data = self.filtered_input_str.split(maxsplit=1)
             # Grab First Word and Process it.
             if len(data) == 2:
                 user, text = data
