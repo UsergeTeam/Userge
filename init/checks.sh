@@ -53,6 +53,7 @@ _checkDefaultVars() {
         [UPSTREAM_REMOTE]="upstream"
         [UPSTREAM_REPO]="https://github.com/UsergeTeam/Userge"
         [LOAD_UNOFFICIAL_PLUGINS]=false
+        [USER_PLUGINS_REPO]=""
         [G_DRIVE_IS_TD]=true
         [CMD_TRIGGER]="."
         [SUDO_TRIGGER]="!"
@@ -178,6 +179,32 @@ _checkUnoffPlugins() {
     deleteLastMessage
 }
 
+_checkUserPlugins() {
+    editLastMessage "Checking User Plugins ..."
+    if [[ $USER_PLUGINS_REPO != "" ]]; then
+        editLastMessage "\tLoading User Plugins ..."
+        replyLastMessage "\t\tClonning ..."
+        gitClone --depth=1 $USER_PLUGINS_REPO
+        IFS="/" read -r -a repo_details <<< $USER_PLUGINS_REPO
+        # echo "${repo_details[3]}"
+        # echo "${repo_details[4]}"
+        editLastMessage "\t\tUpgrading PIP ..."
+        upgradePip
+        editLastMessage "\t\tInstalling Requirements ..."
+        installReq ${repo_details[4]}
+        editLastMessage "\t\tCleaning ..."
+        rm -rf userge/plugins/user/
+        mv ${repo_details[4]}/plugins/ userge/plugins/user/
+        cp -r ${repo_details[4]}/resources/* resources/
+        rm -rf ${repo_details[4]}/
+        deleteLastMessage
+        editLastMessage "\tUser Plugins Loaded Successfully !"
+    else
+        editLastMessage "\tUser Plugins Disabled !"
+    fi
+    deleteLastMessage
+}
+
 assertPrerequisites() {
     _checkBashReq
     _checkPythonVersion
@@ -194,4 +221,5 @@ assertEnvironment() {
     _checkGit
     _checkUpstreamRepo
     _checkUnoffPlugins
+    _checkUserPlugins
 }
