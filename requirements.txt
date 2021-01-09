@@ -17,10 +17,10 @@ instaloader
 motor
 natsort
 oauth2client
-Pillow==7.1.0
+Pillow==8.0
 psutil
 pybase64
-pyrogram==1.1.6
+pyrogram==1.1.9
 pySmartDL
 python-dotenv
 pytz
@@ -38,4 +38,4 @@ tgcrypto
 urbandict==0.5
 wget
 wikipedia
-youtube_dl>=2020.09.20
+youtube_dl>=2021.1.8
