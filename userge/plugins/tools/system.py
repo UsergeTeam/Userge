@@ -33,7 +33,7 @@ async def _init() -> None:
         MAX_IDLE_TIME = int(d_s['timeout'])
     disabled_all = await SAVED_SETTINGS.find_one({'_id': 'DISABLED_CHATS'})
     if disabled_all:
-        Config.DISABLED_ALL =  bool(disabled_all['on'])
+        Config.DISABLED_ALL = bool(disabled_all['on'])
     else:
         async for i in DISABLED_CHATS.find():
             if i['_id'] == Config.LOG_CHANNEL_ID:
@@ -223,7 +223,9 @@ async def enable_userbot(message: Message):
                     {'_id': chat.id}
                 ),
                 message.edit(
-                    f"CHAT : `{chat.title}` removed from **DISABLED_CHATS**!", del_in=5, log=__name__
+                    f"CHAT : `{chat.title}` removed from **DISABLED_CHATS**!",
+                    del_in=5,
+                    log=__name__
                 )
             )
 
@@ -256,7 +258,7 @@ async def disable_userbot(message: Message):
         else:
             Config.DISABLED_CHATS.add(chat.id)
             await asyncio.gather(
-                    DISABLED_CHATS.insert_one({'_id': chat.id, 'title': chat.title}),
+                DISABLED_CHATS.insert_one({'_id': chat.id, 'title': chat.title}),
             message.edit(
                 f"CHAT : `{chat.title}` added to **DISABLED_CHATS**!", del_in=5, log=__name__))
 
