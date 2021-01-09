@@ -259,8 +259,10 @@ async def disable_userbot(message: Message):
             Config.DISABLED_CHATS.add(chat.id)
             await asyncio.gather(
                 DISABLED_CHATS.insert_one({'_id': chat.id, 'title': chat.title}),
-            message.edit(
-                f"CHAT : `{chat.title}` added to **DISABLED_CHATS**!", del_in=5, log=__name__))
+                message.edit(
+                    f"CHAT : `{chat.title}` added to **DISABLED_CHATS**!", del_in=5, log=__name__
+                )
+            )
 
 
 @userge.on_cmd("listdisabled", about={'header': "List all disabled chats."})
