@@ -44,14 +44,14 @@ def demojify(string: str) -> str:
     return re.sub(_EMOJI_PATTERN, '', string)
 
 
-def get_file_id_and_ref(message: 'userge.Message') -> Tuple[Optional[str], Optional[str]]:
-    """ get file_id and file_ref """
+def get_file_id_of_media(message: 'userge.Message') -> Optional[str]:
+    """ get file_id """
     file_ = message.audio or message.animation or message.photo \
         or message.sticker or message.voice or message.video_note \
         or message.video or message.document
     if file_:
-        return file_.file_id, file_.file_ref
-    return None, None
+        return file_.file_id
+    return None
 
 
 def humanbytes(size: float) -> str:

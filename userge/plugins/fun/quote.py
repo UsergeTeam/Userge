@@ -40,5 +40,4 @@ async def quotecmd(message: Message):
             message_id = replied.message_id if replied else None
             await userge.send_sticker(chat_id=message.chat.id,
                                       sticker=quote.sticker.file_id,
-                                      file_ref=quote.sticker.file_ref,
                                       reply_to_message_id=message_id)

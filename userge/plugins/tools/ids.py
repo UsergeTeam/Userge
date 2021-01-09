@@ -44,5 +44,6 @@ async def getids(message: Message):
         type_ = "video"
         file_id = msg.video.file_id
     if file_id is not None:
-        out_str += f"📄 **File ID** (`{type_}`): `{file_id}`"
+        out_str += f"📄 **Media Type:** `{type_}`\n"
+        out_str += f"📄 **File ID:** `{file_id}`"
     await message.edit(out_str)
