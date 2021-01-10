@@ -12,7 +12,7 @@ __all__ = ['SendMessage']
 
 import inspect
 import asyncio
-from typing import Optional, Union
+from typing import Optional, Union, List
 
 from pyrogram.types import (
     InlineKeyboardMarkup, ReplyKeyboardMarkup,
