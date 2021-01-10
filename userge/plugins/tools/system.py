@@ -227,7 +227,7 @@ async def enable_userbot(message: Message):
                 )
             )
     else:
-        await msg.err("chat_id not found!")
+        await message.err("chat_id not found!")
 
 
 @userge.on_cmd("dishere", about={
@@ -256,7 +256,7 @@ async def disable_userbot(message: Message):
         if chat.id in Config.DISABLED_CHATS:
             await message.edit("this chat is already disabled!")
         elif chat.id == Config.LOG_CHANNEL_ID:
-            await msg.err("can't disabled log channel")
+            await message.err("can't disabled log channel")
         else:
             Config.DISABLED_CHATS.add(chat.id)
             await asyncio.gather(
