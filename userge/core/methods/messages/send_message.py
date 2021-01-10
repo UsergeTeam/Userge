@@ -12,11 +12,11 @@ __all__ = ['SendMessage']
 
 import inspect
 import asyncio
-from typing import Optional, Union
+from typing import Optional, Union, List
 
 from pyrogram.types import (
     InlineKeyboardMarkup, ReplyKeyboardMarkup,
-    ReplyKeyboardRemove, ForceReply)
+    ReplyKeyboardRemove, ForceReply, MessageEntity)
 
 from userge import Config
 from userge.utils import secure_text
@@ -31,6 +31,7 @@ class SendMessage(RawClient):  # pylint: disable=missing-class-docstring
                            del_in: int = -1,
                            log: Union[bool, str] = False,
                            parse_mode: Union[str, object] = object,
+                           entities: List[MessageEntity] = None,
                            disable_web_page_preview: Optional[bool] = None,
                            disable_notification: Optional[bool] = None,
                            reply_to_message_id: Optional[int] = None,
@@ -70,6 +71,10 @@ class SendMessage(RawClient):  # pylint: disable=missing-class-docstring
                 Pass "html" to enable HTML-style parsing only.
                 Pass None to completely disable style parsing.
 
+            entities (List of :obj:`~pyrogram.types.MessageEntity`):
+                List of special entities that appear in message text,
+                which can be specified instead of *parse_mode*.
+
             disable_web_page_preview (``bool``, *optional*):
                 Disables link previews for links in this message.
 
@@ -97,6 +102,7 @@ class SendMessage(RawClient):  # pylint: disable=missing-class-docstring
         msg = await super().send_message(chat_id=chat_id,
                                          text=text,
                                          parse_mode=parse_mode,
+                                         entities=entities,
                                          disable_web_page_preview=disable_web_page_preview,
                                          disable_notification=disable_notification,
                                          reply_to_message_id=reply_to_message_id,

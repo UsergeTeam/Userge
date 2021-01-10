@@ -12,9 +12,9 @@ __all__ = ['EditMessageText']
 
 import inspect
 import asyncio
-from typing import Optional, Union
+from typing import Optional, Union, List
 
-from pyrogram.types import InlineKeyboardMarkup
+from pyrogram.types import InlineKeyboardMarkup, MessageEntity
 
 from userge import Config
 from userge.utils import secure_text
@@ -30,6 +30,7 @@ class EditMessageText(RawClient):  # pylint: disable=missing-class-docstring
                                 del_in: int = -1,
                                 log: Union[bool, str] = False,
                                 parse_mode: Union[str, object] = object,
+                                entities: List[MessageEntity] = None,
                                 disable_web_page_preview: Optional[bool] = None,
                                 reply_markup: InlineKeyboardMarkup = None
                                 ) -> Union['types.bound.Message', bool]:
@@ -58,9 +59,6 @@ class EditMessageText(RawClient):  # pylint: disable=missing-class-docstring
                 to the log channel.
                 If ``str``, the logger name will be updated.
 
-            sudo (``bool``, *optional*):
-                If ``True``, sudo users supported.
-
             parse_mode (``str``, *optional*):
                 By default, texts are parsed using
                 both Markdown and HTML styles.
@@ -69,6 +67,10 @@ class EditMessageText(RawClient):  # pylint: disable=missing-class-docstring
                 Markdown-style parsing only.
                 Pass "html" to enable HTML-style parsing only.
                 Pass None to completely disable style parsing.
+
+            entities (List of :obj:`~pyrogram.types.MessageEntity`):
+                List of special entities that appear in message text,
+                which can be specified instead of *parse_mode*.
 
             disable_web_page_preview (``bool``, *optional*):
                 Disables link previews for links in this message.
@@ -89,6 +91,7 @@ class EditMessageText(RawClient):  # pylint: disable=missing-class-docstring
                                               message_id=message_id,
                                               text=text,
                                               parse_mode=parse_mode,
+                                              entities=entities,
                                               disable_web_page_preview=disable_web_page_preview,
                                               reply_markup=reply_markup)
         module = inspect.currentframe().f_back.f_globals['__name__']
