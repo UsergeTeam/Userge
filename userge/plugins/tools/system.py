@@ -206,15 +206,12 @@ async def enable_userbot(message: Message):
                 message.edit("**Enabled** all chats!", del_in=5))
         else:
             await message.err("invalid flag!")
-    else:
-        if message.input_str:
-            try:
-                chat = await message.client.get_chat(message.input_str)
-            except Exception as err:
-                await message.err(str(err))
-                return
-        if not chat:
-            return await msg.err("chat_id not found!")
+    elif message.input_str:
+        try:
+            chat = await message.client.get_chat(message.input_str)
+        except Exception as err:
+            await message.err(str(err))
+            return
         if chat.id not in Config.DISABLED_CHATS:
             await message.edit("this chat is already enabled!")
         else:
@@ -229,6 +226,8 @@ async def enable_userbot(message: Message):
                     log=__name__
                 )
             )
+    else:
+        await msg.err("chat_id not found!")
 
 
 @userge.on_cmd("dishere", about={
