@@ -107,9 +107,9 @@ class ChannelLogger:
                 try:
                     # pylint: disable=protected-access
                     if as_copy:
-                        await message._client.copy_message(chat_id=self._id,
-                                                           from_chat_id=message.chat.id,
-                                                           message_id=message.message_id)
+                        await message._client.copy_messages(chat_id=self._id,
+                                                            from_chat_id=message.chat.id,
+                                                            message_id=message.message_id)
                     else:
                         await message._client.forward_messages(chat_id=self._id,
                                                                from_chat_id=message.chat.id,
