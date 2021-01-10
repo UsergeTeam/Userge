@@ -269,11 +269,11 @@ async def disable_userbot(message: Message):
 
 @userge.on_cmd("listdisabled", about={'header': "List all disabled chats."})
 async def view_disabled_chats_(message: Message):
-    if not Config.DISABLED_CHATS:
-        await message.edit("**DISABLED_CHATS** not found!", del_in=5)
-    elif Config.DISABLED_ALL:
+    if Config.DISABLED_ALL:
         # bot will not print this, but dont worry except log channel
         await message.edit("All chats are disabled!", del_in=5)
+    elif not Config.DISABLED_CHATS:
+        await message.edit("**DISABLED_CHATS** not found!", del_in=5)
     else:
         out_str = '🚷 **DISABLED_CHATS** 🚷\n\n'
         async for chat in DISABLED_CHATS.find():
