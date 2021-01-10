@@ -235,6 +235,10 @@ class RawDecorator(RawClient):
         def decorator(func: _PYROFUNC) -> _PYROFUNC:
             async def template(r_c: Union['_client.Userge', '_client._UsergeBot'],
                                r_m: RawMessage) -> None:
+                if Config.DISABLED_ALL and r_m.chat.id != Config.LOG_CHANNEL_ID:
+                    return
+                if r_m.chat and r_m.chat.id in Config.DISABLED_CHATS:
+                    return
                 await _init(r_c, r_m)
                 _raise = partial(_raise_func, r_c, r_m.chat.id, r_m.message_id)
                 if r_m.chat and r_m.chat.type not in flt.scope:

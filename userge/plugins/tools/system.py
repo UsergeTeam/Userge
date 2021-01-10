@@ -18,6 +18,8 @@ from userge import userge, Message, Config, get_collection
 from userge.utils import terminate
 
 SAVED_SETTINGS = get_collection("CONFIGS")
+DISABLED_CHATS = get_collection("DISABLED_CHATS")
+
 MAX_IDLE_TIME = 300
 LOG = userge.getLogger(__name__)
 CHANNEL = userge.getCLogger(__name__)
@@ -29,6 +31,14 @@ async def _init() -> None:
     if d_s:
         Config.RUN_DYNO_SAVER = bool(d_s['on'])
         MAX_IDLE_TIME = int(d_s['timeout'])
+    disabled_all = await SAVED_SETTINGS.find_one({'_id': 'DISABLE_ALL_CHATS'})
+    if disabled_all:
+        Config.DISABLED_ALL = bool(disabled_all['on'])
+    else:
+        async for i in DISABLED_CHATS.find():
+            if i['_id'] == Config.LOG_CHANNEL_ID:
+                continue
+            Config.DISABLED_CHATS.add(i['_id'])
 
 
 @userge.on_cmd('restart', about={
@@ -177,6 +187,98 @@ async def getvar_(message: Message) -> None:
         return
     await CHANNEL.log(f"#HEROKU_VAR #GET\n\n`{var_name}` = `{heroku_vars[var_name]}`")
     await message.edit(f"`var {var_name} forwarded to log channel !`", del_in=3)
+
+
+@userge.on_cmd("enhere", about={
+    'header': "enable userbot in disabled chat.",
+    'flags': {'-all': "Enable Userbot in all chats."},
+    'usage': "{tr}enhere [chat_id | username]\n{tr}enhere -all"})
+async def enable_userbot(message: Message):
+    if message.flags:
+        if '-all' in message.flags:
+            Config.DISABLED_ALL = False
+            Config.DISABLED_CHATS.clear()
+            await asyncio.gather(
+                DISABLED_CHATS.drop(),
+                SAVED_SETTINGS.update_one(
+                    {'_id': 'DISABLE_ALL_CHATS'}, {"$set": {'on': False}}, upsert=True
+                ),
+                message.edit("**Enabled** all chats!", del_in=5))
+        else:
+            await message.err("invalid flag!")
+    elif message.input_str:
+        try:
+            chat = await message.client.get_chat(message.input_str)
+        except Exception as err:
+            await message.err(str(err))
+            return
+        if chat.id not in Config.DISABLED_CHATS:
+            await message.edit("this chat is already enabled!")
+        else:
+            Config.DISABLED_CHATS.remove(chat.id)
+            await asyncio.gather(
+                DISABLED_CHATS.delete_one(
+                    {'_id': chat.id}
+                ),
+                message.edit(
+                    f"CHAT : `{chat.title}` removed from **DISABLED_CHATS**!",
+                    del_in=5,
+                    log=__name__
+                )
+            )
+    else:
+        await message.err("chat_id not found!")
+
+
+@userge.on_cmd("dishere", about={
+    'header': "enable userbot in current chat.",
+    'flags': {'-all': "disable Userbot in all chats."},
+    'usage': "{tr}dishere\n{tr}dishere [chat_id | username]\n{tr}dishere -all"})
+async def disable_userbot(message: Message):
+    if message.flags:
+        if '-all' in message.flags:
+            Config.DISABLED_ALL = True
+            await asyncio.gather(
+                SAVED_SETTINGS.update_one(
+                    {'_id': 'DISABLE_ALL_CHATS'}, {"$set": {'on': True}}, upsert=True
+                ),
+                message.edit("**Disabled** all chats!", del_in=5))
+        else:
+            await message.err("invalid flag!")
+    else:
+        chat = message.chat
+        if message.input_str:
+            try:
+                chat = await message.client.get_chat(message.input_str)
+            except Exception as err:
+                await message.err(str(err))
+                return
+        if chat.id in Config.DISABLED_CHATS:
+            await message.edit("this chat is already disabled!")
+        elif chat.id == Config.LOG_CHANNEL_ID:
+            await message.err("can't disabled log channel")
+        else:
+            Config.DISABLED_CHATS.add(chat.id)
+            await asyncio.gather(
+                DISABLED_CHATS.insert_one({'_id': chat.id, 'title': chat.title}),
+                message.edit(
+                    f"CHAT : `{chat.title}` added to **DISABLED_CHATS**!", del_in=5, log=__name__
+                )
+            )
+
+
+@userge.on_cmd("listdisabled", about={'header': "List all disabled chats."})
+async def view_disabled_chats_(message: Message):
+    if not Config.DISABLED_CHATS:
+        await message.edit("**DISABLED_CHATS** not found!", del_in=5)
+    elif Config.DISABLED_ALL:
+        # bot will not print this, but dont worry except log channel
+        await message.edit("All chats are disabled!", del_in=5)
+    else:
+        out_str = '🚷 **DISABLED_CHATS** 🚷\n\n'
+        async for chat in DISABLED_CHATS.find():
+            out_str += f" 👥 {chat['title']} 🆔 `{chat['_id']}`\n"
+        await message.edit(out_str, del_in=0)
 
 
 @userge.on_cmd("sleep (\\d+)", about={
