@@ -31,7 +31,7 @@ async def _init() -> None:
     if d_s:
         Config.RUN_DYNO_SAVER = bool(d_s['on'])
         MAX_IDLE_TIME = int(d_s['timeout'])
-    disabled_all = await SAVED_SETTINGS.find_one({'_id': 'DISABLED_CHATS'})
+    disabled_all = await SAVED_SETTINGS.find_one({'_id': 'DISABLE_ALL_CHATS'})
     if disabled_all:
         Config.DISABLED_ALL = bool(disabled_all['on'])
     else:
@@ -190,9 +190,9 @@ async def getvar_(message: Message) -> None:
 
 
 @userge.on_cmd("enhere", about={
-    'header': "enable userbot in current chat.",
+    'header': "enable userbot in disabled chat.",
     'flags': {'-all': "Enable Userbot in all chats."},
-    'usage': "{tr}enhere\n{tr}enhere [chat_id | username]\n{tr}enhere -all"})
+    'usage': "{tr}enhere [chat_id | username]\n{tr}enhere -all"})
 async def enable_userbot(message: Message):
     if message.flags:
         if '-all' in message.flags:
@@ -201,19 +201,20 @@ async def enable_userbot(message: Message):
             await asyncio.gather(
                 DISABLED_CHATS.drop(),
                 SAVED_SETTINGS.update_one(
-                    {'_id': 'DISABLED_CHATS'}, {"$set": {'on': False}}, upsert=True
+                    {'_id': 'DISABLE_ALL_CHATS'}, {"$set": {'on': False}}, upsert=True
                 ),
                 message.edit("**Enabled** all chats!", del_in=5))
         else:
             await message.err("invalid flag!")
     else:
-        chat = message.chat
         if message.input_str:
             try:
                 chat = await message.client.get_chat(message.input_str)
             except Exception as err:
                 await message.err(str(err))
                 return
+        if not chat:
+            return await msg.err("chat_id not found!")
         if chat.id not in Config.DISABLED_CHATS:
             await message.edit("this chat is already enabled!")
         else:
@@ -240,7 +241,7 @@ async def disable_userbot(message: Message):
             Config.DISABLED_ALL = True
             await asyncio.gather(
                 SAVED_SETTINGS.update_one(
-                    {'_id': 'DISABLED_CHATS'}, {"$set": {'on': True}}, upsert=True
+                    {'_id': 'DISABLE_ALL_CHATS'}, {"$set": {'on': True}}, upsert=True
                 ),
                 message.edit("**Disabled** all chats!", del_in=5))
         else:
@@ -255,6 +256,8 @@ async def disable_userbot(message: Message):
                 return
         if chat.id in Config.DISABLED_CHATS:
             await message.edit("this chat is already disabled!")
+        elif chat.id == Config.LOG_CHANNEL_ID:
+            await msg.err("can't disabled log channel")
         else:
             Config.DISABLED_CHATS.add(chat.id)
             await asyncio.gather(
