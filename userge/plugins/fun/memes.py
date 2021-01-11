@@ -466,11 +466,11 @@ async def owo_(message: Message):
     if not input_str:
         await message.edit("` UwU no text given! `")
         return
-    reply_text = sub(r"(r|l)", "w", input_str)
-    reply_text = sub(r"(R|L)", "W", reply_text)
+    reply_text = sub(r"([rl])", "w", input_str)
+    reply_text = sub(r"([RL])", "W", reply_text)
     reply_text = sub(r"n([aeiou])", r"ny\1", reply_text)
     reply_text = sub(r"N([aeiouAEIOU])", r"Ny\1", reply_text)
-    reply_text = sub(r"\!+", " " + choice(UWUS), reply_text)
+    reply_text = sub(r"!", " " + choice(UWUS), reply_text)
     reply_text = reply_text.replace("ove", "uv")
     reply_text += " " + choice(UWUS)
     await message.edit(reply_text)

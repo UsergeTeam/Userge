@@ -9,7 +9,7 @@
 # All rights reserved.
 
 import os
-from typing import Tuple
+from typing import Sequence
 
 from pyrogram.types import ChatPermissions
 
@@ -23,7 +23,7 @@ _types = [
 ]
 
 
-def _get_chat_lock(message: Message, lock_type: str, should_lock: bool) -> Tuple[str]:
+def _get_chat_lock(message: Message, lock_type: str, should_lock: bool) -> Sequence[str]:
     if should_lock is True:
         lock = False
     else:
@@ -116,7 +116,7 @@ async def lock_perm(message: Message):
          webprev, polls, info, invite,
          pin, perm) = _get_chat_lock(message, lock_type, True)
     else:
-        await msg.err(r"Invalid lock type! ¯\_(ツ)_/¯")
+        await message.err(r"Invalid lock type! ¯\_(ツ)_/¯")
         return
     try:
         await message.client.set_chat_permissions(

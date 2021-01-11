@@ -44,7 +44,7 @@ G_DRIVE_DIR_MIME_TYPE = "application/vnd.google-apps.folder"
 G_DRIVE_FILE_LINK = "📄 <a href='https://drive.google.com/open?id={}'>{}</a> __({})__"
 G_DRIVE_FOLDER_LINK = "📁 <a href='https://drive.google.com/drive/folders/{}'>{}</a> __(folder)__"
 _GDRIVE_ID = re.compile(
-    r'https://drive.google.com/[\w\?\./&=]+([-\w]{33}|(?<=[/=])0(?:A[-\w]{17}|B[-\w]{26}))')
+    r'https://drive.google.com/[\w?.&=]+([-\w]{33}|(?<=[/=])0(?:A[-\w]{17}|B[-\w]{26}))')
 
 _LOG = userge.getLogger(__name__)
 _SAVED_SETTINGS = get_collection("CONFIGS")
@@ -732,7 +732,7 @@ class Worker(_GDrive):
         """ Upload from file/folder/link/tg file to GDrive """
         replied = self._message.reply_to_message
         is_url = re.search(
-            r"(?:https?|ftp)://[^\|\s]+\.[^\|\s]+", self._message.input_str)
+            r"(?:https?|ftp)://[^|\s]+\.[^|\s]+", self._message.input_str)
         dl_loc = ""
         if replied and replied.media:
             try:
