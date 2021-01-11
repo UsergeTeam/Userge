@@ -105,15 +105,10 @@ class ChannelLogger:
             if message.media:
                 asyncio.get_event_loop().create_task(self.log("**Forwarding Message...**", name))
                 try:
-                    # pylint: disable=protected-access
                     if as_copy:
-                        await message._client.copy_messages(chat_id=self._id,
-                                                            from_chat_id=message.chat.id,
-                                                            message_id=message.message_id)
+                        await message.copy(chat_id=self._id)
                     else:
-                        await message._client.forward_messages(chat_id=self._id,
-                                                               from_chat_id=message.chat.id,
-                                                               message_ids=message.message_id)
+                        await message.forward(chat_id=self._id)
                 except ValueError:
                     pass
             else:
