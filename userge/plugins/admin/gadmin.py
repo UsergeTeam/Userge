@@ -458,11 +458,17 @@ async def pin_msgs(message: Message):
     """ pin & unpin message in groups """
     chat_id = message.chat.id
     flags = message.flags
-    silent_pin = '-s' in flags
+    disable_notification = False
+    if '-s' in flags:
+        disable_notification = True
     unpin_pinned = '-u' in flags
     if unpin_pinned:
         try:
-            await message.client.unpin_chat_message(chat_id)
+            if message.reply_to_message:
+                await message.client.unpin_chat_message(
+                    chat_id, message.reply_to_message.message_id)
+            else:
+                await message.client.unpin_all_chat_messages(chat_id)
             await message.delete()
             await CHANNEL.log(
                 f"#UNPIN\n\nCHAT: `{message.chat.title}` (`{chat_id}`)")
@@ -471,23 +477,11 @@ async def pin_msgs(message: Message):
                 r"`something went wrong! (⊙_⊙;)`"
                 "\n`do .help pin for more info..`\n\n"
                 f"**ERROR:** `{e_f}`")
-    elif silent_pin:
-        try:
-            message_id = message.reply_to_message.message_id
-            await message.client.pin_chat_message(
-                chat_id, message_id, disable_notification=True)
-            await message.delete()
-            await CHANNEL.log(
-                f"#PIN-SILENT\n\n{message.chat.title}` (`{chat_id}`)")
-        except Exception as e_f:
-            await message.edit(
-                r"`something went wrong! (⊙_⊙;)`"
-                "\n`do .help pin for more info..`\n\n"
-                f"**ERROR:** `{e_f}`")
     else:
         try:
             message_id = message.reply_to_message.message_id
-            await message.client.pin_chat_message(chat_id, message_id)
+            await message.client.pin_chat_message(
+                chat_id, message_id, disable_notification=disable_notification)
             await message.delete()
             await CHANNEL.log(
                 f"#PIN\n\nCHAT: `{message.chat.title}` (`{chat_id}`)")
@@ -518,9 +512,8 @@ async def chatpic_func(message: Message):
         if message.reply_to_message.photo:
             try:
                 img_id = message.reply_to_message.photo.file_id
-                img_ref = message.reply_to_message.photo.file_ref
                 await message.client.set_chat_photo(
-                    chat_id=chat_id, photo=img_id, file_ref=img_ref)
+                    chat_id=chat_id, photo=img_id)
                 await message.delete()
                 await CHANNEL.log(
                     f"#GPIC-SET\n\nCHAT: `{message.chat.title}` (`{chat_id}`)")
