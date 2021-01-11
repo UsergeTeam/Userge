@@ -189,7 +189,6 @@ class PackLib(_BaseLib):
                 temp_file_names = []
         if temp_file_names:
             chunked_file_names.append(temp_file_names)
-        del temp_file_names, temp_size, min_chunk_size
         dir_name = splitext(basename(self._file_path))[0]
         self._final_file_path = join(
             Config.DOWN_PATH, dir_name.replace('.tar', '').replace('.', '_'))

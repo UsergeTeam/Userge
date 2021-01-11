@@ -44,7 +44,7 @@ G_DRIVE_DIR_MIME_TYPE = "application/vnd.google-apps.folder"
 G_DRIVE_FILE_LINK = "📄 <a href='https://drive.google.com/open?id={}'>{}</a> __({})__"
 G_DRIVE_FOLDER_LINK = "📁 <a href='https://drive.google.com/drive/folders/{}'>{}</a> __(folder)__"
 _GDRIVE_ID = re.compile(
-    r'https://drive.google.com/[\w?.&=]+([-\w]{33}|(?<=[/=])0(?:A[-\w]{17}|B[-\w]{26}))')
+    r'https://drive.google.com/[\w?.&=/]+([-\w]{33}|(?<=[/=])0(?:A[-\w]{17}|B[-\w]{26}))')
 
 _LOG = userge.getLogger(__name__)
 _SAVED_SETTINGS = get_collection("CONFIGS")
@@ -161,7 +161,6 @@ class _GDrive:
             page_token = response.get('nextPageToken', None)
             if page_token is None:
                 break
-        del results
         if not msg:
             return "`Not Found!`"
         if parent_id and not force:

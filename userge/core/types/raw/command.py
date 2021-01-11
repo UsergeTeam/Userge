@@ -135,6 +135,4 @@ def _format_about(about: Union[str, Dict[str, Union[str, List[str], Dict[str, st
             else:
                 tmp_chelp += '\n'
                 tmp_chelp += t_d
-    chelp = tmp_chelp.replace('{tr}', Config.CMD_TRIGGER)
-    del tmp_chelp
-    return chelp
+    return tmp_chelp.replace('{tr}', Config.CMD_TRIGGER)
