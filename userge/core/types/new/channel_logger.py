@@ -31,7 +31,7 @@ def _gen_string(name: str) -> str:
 
 class ChannelLogger:
     """ Channel logger for Userge """
-    def __init__(self, client: Union['_client.Userge', '_client._UsergeBot'], name: str) -> None:
+    def __init__(self, client: Union['_client.Userge', '_client.UsergeBot'], name: str) -> None:
         self._id = Config.LOG_CHANNEL_ID
         self._client = client
         self._string = _gen_string(name)
@@ -148,7 +148,7 @@ class ChannelLogger:
         return message_id
 
     async def forward_stored(self,
-                             client: Union['_client.Userge', '_client._UsergeBot'],
+                             client: Union['_client.Userge', '_client.UsergeBot'],
                              message_id: int,
                              chat_id: int,
                              user_id: int,

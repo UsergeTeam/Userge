@@ -121,14 +121,19 @@ async def _handle_message(message: Message) -> None:
 
 async def upload_path(message: Message, path: Path, del_path: bool):
     file_paths = []
-
-    def explorer(_path: Path) -> None:
-        if _path.is_file() and _path.stat().st_size:
-            file_paths.append(_path)
-        elif _path.is_dir():
-            for i in sorted(_path.iterdir()):
-                explorer(i)
-    explorer(path)
+    if path.exists():
+        def explorer(_path: Path) -> None:
+            if _path.is_file() and _path.stat().st_size:
+                file_paths.append(_path)
+            elif _path.is_dir():
+                for i in sorted(_path.iterdir()):
+                    explorer(i)
+        explorer(path)
+    else:
+        path = path.expanduser()
+        str_path = os.path.join(*(path.parts[1:] if path.is_absolute() else path.parts))
+        for p in Path(path.root).glob(str_path):
+            file_paths.append(p)
     current = 0
     for p_t in file_paths:
         current += 1
@@ -172,7 +177,7 @@ async def doc_upload(message: Message, path, del_path: bool = False,
             chat_id=message.chat.id,
             document=str_path,
             thumb=thumb,
-            caption=str_path,
+            caption=path.name,
             parse_mode="html",
             disable_notification=True,
             progress=progress,
@@ -220,7 +225,7 @@ async def vid_upload(message: Message, path, del_path: bool = False,
             thumb=thumb,
             width=width,
             height=height,
-            caption=str_path,
+            caption=path.name,
             parse_mode="html",
             disable_notification=True,
             progress=progress,
@@ -276,7 +281,7 @@ async def audio_upload(message: Message, path, del_path: bool = False,
             chat_id=message.chat.id,
             audio=str_path,
             thumb=thumb,
-            caption=f"{str_path} [ {file_size} ]",
+            caption=f"{path.name} [ {file_size} ]",
             title=title,
             performer=artist,
             duration=duration,
@@ -317,7 +322,7 @@ async def photo_upload(message: Message, path, del_path: bool = False, extra: st
             progress_args=(message, f"uploading {extra}", str_path)
         )
     except ValueError as e_e:
-        await sent.edit(f"Skipping `{path}` due to {e_e}")
+        await sent.edit(f"Skipping `{str_path}` due to {e_e}")
     except Exception as u_e:
         await sent.edit(str(u_e))
         raise u_e
