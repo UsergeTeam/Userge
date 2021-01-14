@@ -20,6 +20,7 @@ from pyrogram.types import (
 from pyrogram.errors.exceptions.bad_request_400 import MessageNotModified, MessageIdInvalid
 
 from userge import userge, Message, Config, get_collection
+from userge.core.ext import RawClient
 
 _CATEGORY = {
     'admin': '👨‍✈️',
@@ -182,6 +183,9 @@ if userge.has_bot:
     @userge.bot.on_callback_query(filters=filters.regex(pattern=r"^chgclnt$"))
     @check_owner
     async def callback_chgclnt(callback_query: CallbackQuery):
+        if not RawClient.DUAL_MODE:
+            return await callback_query.answer(
+                "you using [BOT MODE], can't change client.", show_alert=True)
         if Config.USE_USER_FOR_CLIENT_CHECKS:
             Config.USE_USER_FOR_CLIENT_CHECKS = False
         else:
@@ -241,7 +245,8 @@ if userge.has_bot:
                     InlineKeyboardButton(
                         "⏩ Next", callback_data=f"({cur_pos})next({current_page})".encode())],
             ]
-        pairs += default_buttons(cur_pos)
+        if RawClient.DUAL_MODE:
+            pairs += default_buttons(cur_pos)
         return pairs
 
     def main_menu_buttons():
@@ -260,6 +265,8 @@ if userge.has_bot:
                 tmp_btns.append(InlineKeyboardButton(
                     "🔄 Refresh", callback_data=f"refresh({cur_pos})".encode()))
         else:
+            if not RawClient.DUAL_MODE:
+                return None
             cur_clnt = "👲 USER" if Config.USE_USER_FOR_CLIENT_CHECKS else "🤖 BOT"
             tmp_btns.append(InlineKeyboardButton(
                 f"🔩 Client for Checks and Sudos : {cur_clnt}", callback_data="chgclnt".encode()))
