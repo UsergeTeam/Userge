@@ -136,6 +136,7 @@ class Userge(_AbstractUserge):
         kwargs['session_name'] = Config.HU_STRING_SESSION or ":memory:"
         super().__init__(**kwargs)
         self.executor.shutdown()
+        self.executor = pool._get()  # pylint: disable=protected-access
 
     @property
     def bot(self) -> Union['UsergeBot', 'Userge']:
@@ -148,7 +149,6 @@ class Userge(_AbstractUserge):
 
     async def start(self) -> None:
         """ start client and bot """
-        self.executor = pool._get()  # pylint: disable=protected-access
         _LOG.info(_LOG_STR, "Starting Userge")
         await super().start()
         if self._bot is not None:
