@@ -35,7 +35,7 @@ _EMOJI_PATTERN = re.compile(
     "\U0001FA70-\U0001FAFF"  # Symbols and Pictographs Extended-A
     "\U00002702-\U000027B0"  # Dingbats
     "]+")
-_BTN_URL_REGEX = re.compile(r"(\[([^\[]+?)\]\[buttonurl:(?:/{0,2})(.+?)(:same)?\])")
+_BTN_URL_REGEX = re.compile(r"(\[([^\[]+?)]\[buttonurl:(?:/{0,2})(.+?)(:same)?])")
 
 
 # https://github.com/UsergeTeam/Userge-Plugins/blob/master/plugins/tweet.py

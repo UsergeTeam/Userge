@@ -44,4 +44,8 @@ def get_collection(name: str) -> AgnosticCollection:
     return _DATABASE[name]
 
 
+def _close_db() -> None:
+    _MGCLIENT.close()
+
+
 logbot.del_last_msg()

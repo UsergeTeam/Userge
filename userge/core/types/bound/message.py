@@ -33,7 +33,7 @@ _LOG_STR = "<<<!  :::::  %s  :::::  !>>>"
 class Message(RawMessage):
     """ Modded Message Class For Userge """
     def __init__(self,
-                 client: Union['_client.Userge', '_client._UsergeBot'],
+                 client: Union['_client.Userge', '_client.UsergeBot'],
                  mvars: Dict[str, object], module: str, **kwargs: Union[str, bool]) -> None:
         self._filtered = False
         self._filtered_input_str = ''
@@ -44,11 +44,10 @@ class Message(RawMessage):
         super().__init__(client=client, **mvars)
 
     @classmethod
-    def parse(cls, client: Union['_client.Userge', '_client._UsergeBot'],
+    def parse(cls, client: Union['_client.Userge', '_client.UsergeBot'],
               message: RawMessage, **kwargs: Union[str, bool]) -> 'Message':
         """ parse message """
         mvars = vars(message)
-        del message
         for key_ in ['_client', '_filtered', '_filtered_input_str',
                      '_flags', '_process_canceled', '_module', '_kwargs']:
             if key_ in mvars:
@@ -58,7 +57,7 @@ class Message(RawMessage):
         return cls(client, mvars, **kwargs)
 
     @property
-    def client(self) -> Union['_client.Userge', '_client._UsergeBot']:
+    def client(self) -> Union['_client.Userge', '_client.UsergeBot']:
         """ returns client """
         return self._client
 
