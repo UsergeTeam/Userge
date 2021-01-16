@@ -12,17 +12,16 @@ declare -r minPVer=8
 declare -r maxPVer=9
 
 getPythonVersion() {
-    local -i count
-    local tmp found
-    [[ $DYNO ]] && count=$maxPVer || count=$minPVer
+    local -i count=$minPVer
+    local found
     while true; do
-        tmp=$(python3.$count -V 2> /dev/null)
-        found=$(grep "^Python 3." <<< "$tmp")
-        [[ -n $found ]] && break
+        found=$(python3.$count -c "print('hi')" 2> /dev/null)
+        test "$found" && break
         count+=1
         [[ $count -gt $maxPVer ]] && break
     done
-    declare -gr pVer=$(sed -E 's/Python (3\.[0-9]{1,2}\.[0-9]{1,2}).*/\1/g' <<< "$tmp")
+    declare -gr pVer=$(sed -E 's/Python (3\.[0-9]{1,2}\.[0-9]{1,2}).*/\1/g' <<< \
+        "$(python3.$count -V 2> /dev/null)")
 }
 
 log() {

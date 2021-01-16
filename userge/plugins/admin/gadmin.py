@@ -33,7 +33,6 @@ CHANNEL = userge.getCLogger(__name__)
     allow_channels=False, check_promote_perm=True)
 async def promote_usr(message: Message):
     """ promote members in tg group """
-    custom_rank = ""
     chat_id = message.chat.id
     await message.edit("`Trying to Promote User.. Hang on!! ⏳`")
     user_id, custom_rank = message.extract_user_and_text
@@ -129,7 +128,6 @@ async def demote_usr(message: Message):
 async def ban_user(message: Message):
     """ ban user from tg group """
     await message.edit("`Trying to Ban User.. Hang on!! ⏳`")
-    reason = ""
     user_id, reason = message.extract_user_and_text
     if not user_id:
         await message.edit(
@@ -262,7 +260,6 @@ async def kick_usr(message: Message):
     allow_channels=False, check_restrict_perm=True)
 async def mute_usr(message: Message):
     """ mute user from tg group """
-    reason = ""
     chat_id = message.chat.id
     flags = message.flags
     minutes = flags.get('-m', 0)

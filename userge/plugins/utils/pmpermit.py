@@ -276,7 +276,7 @@ async def uninvitedPmHandler(message: Message):
                     message.chat.id, query_id=k.query_id,
                     result_id=k.results[2].id, hide_via=True
                 )
-            except BotInlineDisabled:
+            except (IndexError, BotInlineDisabled):
                 await message.reply(
                     noPmMessage.format_map(SafeDict(**user_dict)) + '\n`- Protected by userge`')
         else:
