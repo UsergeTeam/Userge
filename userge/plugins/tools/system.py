@@ -231,7 +231,7 @@ async def enable_userbot(message: Message):
 
 
 @userge.on_cmd("dishere", about={
-    'header': "enable userbot in current chat.",
+    'header': "disable userbot in current chat.",
     'flags': {'-all': "disable Userbot in all chats."},
     'usage': "{tr}dishere\n{tr}dishere [chat_id | username]\n{tr}dishere -all"})
 async def disable_userbot(message: Message):
