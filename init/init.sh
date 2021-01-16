@@ -25,31 +25,30 @@ initUserge() {
 }
 
 startUserge() {
+    startLogBotPolling
     runPythonModule userge "$@"
 }
 
 stopUserge() {
     sendMessage "Exiting Userge ..."
+    endLogBotPolling
     exit 0
 }
 
 handleSigTerm() {
     log "Exiting With SIGTERM (143) ..."
     stopUserge
-    endLogBotPolling
     exit 143
 }
 
 handleSigInt() {
     log "Exiting With SIGINT (130) ..."
     stopUserge
-    endLogBotPolling
     exit 130
 }
 
 runUserge() {
     initUserge
-    startLogBotPolling
     startUserge "$@"
     stopUserge
 }

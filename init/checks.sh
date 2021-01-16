@@ -64,6 +64,12 @@ _checkDefaultVars() {
         test -z ${!key} && eval $key=${def_vals[$key]}
         set +a
     done
+    if test $WORKERS -le 0; then
+        WORKERS=$(($(nproc)+4))
+    elif test $WORKERS -gt 32; then
+        WORKERS=32
+    fi
+    export MOTOR_MAX_WORKERS=$WORKERS
     DOWN_PATH=${DOWN_PATH%/}/
     if [[ -n $HEROKU_API_KEY && -n $HEROKU_APP_NAME ]]; then
         local herokuErr=$(runPythonCode '
