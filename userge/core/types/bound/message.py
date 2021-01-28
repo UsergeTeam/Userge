@@ -115,7 +115,7 @@ class Message(RawMessage):
             _CANCEL_LIST.remove(self.message_id)
             self._process_canceled = True
         return self._process_canceled
-    
+
     @property
     def is_forwarded(self) -> bool:
         """ Returns True if message is forwarded """
