@@ -115,6 +115,13 @@ class Message(RawMessage):
             _CANCEL_LIST.remove(self.message_id)
             self._process_canceled = True
         return self._process_canceled
+    
+    @property
+    def is_forwarded(self) -> bool:
+        """ Returns True if message is forwarded """
+        if self.forward_from or self.forward_sender_name:
+            return True
+        return False
 
     @property
     def extract_user_and_text(self) -> Tuple[Optional[Union[str, int]], Optional[str]]:
