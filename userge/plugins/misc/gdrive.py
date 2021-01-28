@@ -958,7 +958,7 @@ async def gsetup_(message: Message):
     """ setup creds """
     link = "https://theuserge.github.io/deployment.html#3-g_drive_client_id--g_drive_client_secret"
     if Config.G_DRIVE_CLIENT_ID and Config.G_DRIVE_CLIENT_SECRET:
-        if message.chat.id == Config.LOG_CHANNEL_ID:
+        if message.chat.id in Config.AUTH_CHATS:
             await Worker(message).setup()
         else:
             await message.err("try in log channel")
