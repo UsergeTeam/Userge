@@ -245,8 +245,7 @@ if userge.has_bot:
                     InlineKeyboardButton(
                         "⏩ Next", callback_data=f"({cur_pos})next({current_page})".encode())],
             ]
-        if RawClient.DUAL_MODE:
-            pairs += default_buttons(cur_pos)
+        pairs += default_buttons(cur_pos)
         return pairs
 
     def main_menu_buttons():
@@ -264,9 +263,7 @@ if userge.has_bot:
                     "🖥 Main Menu", callback_data="mm".encode()))
                 tmp_btns.append(InlineKeyboardButton(
                     "🔄 Refresh", callback_data=f"refresh({cur_pos})".encode()))
-        else:
-            if not RawClient.DUAL_MODE:
-                return None
+        elif RawClient.DUAL_MODE:
             cur_clnt = "👲 USER" if Config.USE_USER_FOR_CLIENT_CHECKS else "🤖 BOT"
             tmp_btns.append(InlineKeyboardButton(
                 f"🔩 Client for Checks and Sudos : {cur_clnt}", callback_data="chgclnt".encode()))
