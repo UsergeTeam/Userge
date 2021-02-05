@@ -11,7 +11,6 @@
 import io
 import os
 import random
-import emoji
 
 from PIL import Image
 from pyrogram.raw.functions.messages import GetStickerSet
@@ -67,6 +66,7 @@ async def kang_(message: Message):
     if photo:
         args = message.filtered_input_str.split()
         pack = 1
+        emoji_ = "🤔"
         if len(args) == 2:
             emoji_, pack = args
         elif len(args) == 1:
@@ -74,11 +74,6 @@ async def kang_(message: Message):
                 pack = int(args[0])
             else:
                 emoji_ = args[0]
-
-        if emoji_ and emoji_ not in emoji.UNICODE_EMOJI:
-            emoji_ = None
-        if not emoji_:
-            emoji_ = "🤔"
 
         u_name = user.username
         if u_name:
@@ -133,7 +128,10 @@ async def kang_(message: Message):
                         await conv.send_document(photo)
                         await conv.get_response(mark_read=True)
                         await conv.send_message(emoji_)
-                        await conv.get_response(mark_read=True)
+                        k = await conv.get_response(mark_read=True)
+                        if "Please send us an emoji that best describes your sticker." in k.text:
+                            await conv.send_message("🤔")
+                            await conv.get_response(mark_read=True)
                         await conv.send_message("/publish")
                         if is_anim:
                             await conv.get_response(mark_read=True)
@@ -157,7 +155,10 @@ async def kang_(message: Message):
                                        "`bot to add the sticker manually.`")
                     return
                 await conv.send_message(emoji_)
-                await conv.get_response(mark_read=True)
+                k = await conv.get_response(mark_read=True)
+                if "Please send us an emoji that best describes your sticker." in k.text:
+                    await conv.send_message("🤔")
+                    await conv.get_response(mark_read=True)
                 await conv.send_message('/done')
                 await conv.get_response(mark_read=True)
         else:
@@ -178,7 +179,10 @@ async def kang_(message: Message):
                                        "`bot to add the sticker manually.`")
                     return
                 await conv.send_message(emoji_)
-                await conv.get_response(mark_read=True)
+                k = await conv.get_response(mark_read=True)
+                if "Please send us an emoji that best describes your sticker." in k.text:
+                    await conv.send_message("🤔")
+                    await conv.get_response(mark_read=True)
                 await conv.send_message("/publish")
                 if is_anim:
                     await conv.get_response(mark_read=True)
