@@ -11,8 +11,9 @@
 __all__ = ['RawClient']
 
 import asyncio
-import time
-from typing import Optional, Dict
+from math import floor
+from typing import Optional, Dict, List
+from time import time, perf_counter, sleep
 
 import pyrogram.raw.functions as funcs
 import pyrogram.raw.types as types
@@ -29,11 +30,8 @@ _LOG_STR = "<<<!  {  (FLOOD CONTROL) sleeping %.2fs in %d  }  !>>>"
 class RawClient(Client):
     """ userge raw client """
     DUAL_MODE = False
-    LAST_OUTGOING_TIME = time.time()
-
+    LAST_OUTGOING_TIME = time()
     REQ_LOGS: Dict[int, 'ChatReq'] = {}
-    DELAY_BET_MSG_REQ = 1
-    MSG_REQ_PER_MIN = 20
     REQ_LOCK = asyncio.Lock()
 
     def __init__(self, bot: Optional['userge.core.client.UsergeBot'] = None, **kwargs) -> None:
@@ -46,69 +44,92 @@ class RawClient(Client):
                    timeout: float = Session.WAIT_TIMEOUT, sleep_threshold: float = None):
         key = 0
         if isinstance(data, (funcs.messages.SendMessage,
+                             funcs.messages.SendMedia,
+                             funcs.messages.SendMultiMedia,
                              funcs.messages.EditMessage,
                              funcs.messages.ForwardMessages)):
             if isinstance(data, funcs.messages.ForwardMessages):
                 tmp = data.to_peer
             else:
                 tmp = data.peer
-            if isinstance(tmp, (types.InputPeerChannel, types.InputPeerChannelFromMessage)):
-                key = int(tmp.channel_id)
-            elif isinstance(tmp, types.InputPeerChat):
-                key = int(tmp.chat_id)
-            elif isinstance(tmp, (types.InputPeerUser, types.InputPeerUserFromMessage)):
-                key = int(tmp.user_id)
+            if isinstance(data, funcs.messages.SendMedia) and isinstance(
+                    data.media, (types.InputMediaUploadedDocument,
+                                 types.InputMediaUploadedPhoto)):
+                tmp = None
+            if tmp:
+                if isinstance(tmp, (types.InputPeerChannel, types.InputPeerChannelFromMessage)):
+                    key = int(tmp.channel_id)
+                elif isinstance(tmp, types.InputPeerChat):
+                    key = int(tmp.chat_id)
+                elif isinstance(tmp, (types.InputPeerUser, types.InputPeerUserFromMessage)):
+                    key = int(tmp.user_id)
         elif isinstance(data, funcs.channels.DeleteMessages):
             if isinstance(data.channel, (types.InputChannel, types.InputChannelFromMessage)):
                 key = int(data.channel.channel_id)
         if key:
-            async def slp(to_sl: float) -> None:
-                if to_sl > 0.1:
-                    if to_sl > 1:
-                        _LOG.info(_LOG_STR, to_sl, key)
-                    else:
-                        _LOG.debug(_LOG_STR, to_sl, key)
-                    await asyncio.sleep(to_sl)
             async with self.REQ_LOCK:
-                if key in self.REQ_LOGS:
-                    chat_req = self.REQ_LOGS[key]
-                else:
-                    chat_req = self.REQ_LOGS[key] = ChatReq()
-            diff = chat_req.small_diff
-            if 0 < diff < self.DELAY_BET_MSG_REQ:
-                await slp(1 - diff)
-            diff = chat_req.big_diff
-            if diff >= 60:
-                chat_req.reset()
-            elif chat_req.count > self.MSG_REQ_PER_MIN:
-                await slp(60 - diff)
-                chat_req.reset()
-            else:
-                chat_req.update()
+                try:
+                    req = self.REQ_LOGS[key]
+                except KeyError:
+                    req = self.REQ_LOGS[key] = ChatReq()
+            async with req.lock:
+                now = perf_counter()
+                req.update(now - 60)
+                if req.has:
+                    to_sl = 0.0
+                    diff = now - req.last
+                    if 0 < diff < 1:
+                        to_sl = 1 - diff
+                    diff = now - req.first
+                    if req.count > 18:
+                        to_sl = max(to_sl, 60 - diff)
+                    if to_sl > 0:
+                        if to_sl > 1:
+                            _LOG.info(_LOG_STR, to_sl, key)
+                        else:
+                            _LOG.debug(_LOG_STR, to_sl, key)
+                        await asyncio.sleep(to_sl)
+                        now += to_sl
+                count = 0
+                counter = floor(now - 1)
+                for r in self.REQ_LOGS.values():
+                    if r.has and r.last > counter:
+                        count += 1
+                if count > 25:
+                    _LOG.info(_LOG_STR, 1, key)
+                    sleep(1)
+                    now += 1
+                req.add(now)
         return await super().send(data, retries, timeout, sleep_threshold)
 
 
 class ChatReq:
     def __init__(self) -> None:
-        self._first = self._last = time.time()
-        self._count = 0
+        self._lock = asyncio.Lock()
+        self._logs: List[float] = []
 
     @property
-    def small_diff(self) -> float:
-        return time.time() - self._last
+    def lock(self):
+        return self._lock
 
     @property
-    def big_diff(self) -> float:
-        return time.time() - self._first
+    def has(self) -> bool:
+        return len(self._logs) != 0
 
     @property
-    def count(self) -> float:
-        return self._count
+    def first(self) -> float:
+        return self._logs[0]
 
-    def reset(self) -> None:
-        self._first = self._last = time.time()
-        self._count = 1
+    @property
+    def last(self) -> Optional[float]:
+        return self._logs[-1]
 
-    def update(self) -> None:
-        self._last = time.time()
-        self._count += 1
+    @property
+    def count(self) -> int:
+        return len(self._logs)
+
+    def add(self, log: float) -> None:
+        self._logs.append(log)
+
+    def update(self, t: float) -> None:
+        self._logs = [i for i in self._logs if i > t]
