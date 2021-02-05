@@ -64,6 +64,8 @@
 
 * [**With Git, Python and pip 🔧**](https://theuserge.github.io/deployment#deploying-with-legacy-method)
 
+* [**With Zeet ☻**](https://theuserge.github.io/deployment.html#deploying-on-zeet)
+
 ### Video Tutorial 🎥
 
   [![Tutorial](resources/tutorial.jpg)](https://youtu.be/M4T_BJvFqkc "Tutorial")
