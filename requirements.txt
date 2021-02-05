@@ -4,7 +4,6 @@ bs4
 covid
 cowpy
 dnspython
-emoji
 gitpython
 google-api-python-client
 google-auth-httplib2

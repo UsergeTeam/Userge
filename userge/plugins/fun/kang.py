@@ -11,9 +11,9 @@
 import io
 import os
 import random
-import emoji
 
 from PIL import Image
+from pyrogram import emoji
 from pyrogram.raw.functions.messages import GetStickerSet
 from pyrogram.raw.types import InputStickerSetShortName
 from pyrogram.errors import YouBlockedUser, StickersetInvalid
@@ -75,7 +75,8 @@ async def kang_(message: Message):
             else:
                 emoji_ = args[0]
 
-        if emoji_ and emoji_ not in emoji.UNICODE_EMOJI:
+        if emoji_ and emoji_ not in (
+                getattr(emoji, a) for a in dir(emoji) if not a.startswith("_")):
             emoji_ = None
         if not emoji_:
             emoji_ = "🤔"
