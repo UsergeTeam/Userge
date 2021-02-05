@@ -9,7 +9,6 @@
 # All rights reserved.
 
 import os
-import time
 import asyncio
 from re import sub
 from collections import deque
@@ -29,7 +28,6 @@ async def kek_(message: Message):
     """kek"""
     kek = ["/", "\\"]
     for i in range(1, 9):
-        time.sleep(0.3)
         await message.try_to_edit(":" + kek[i % 2])
 
 
@@ -206,7 +204,6 @@ async def moon_(message: Message):
     deq = deque(list("🌗🌘🌑🌒🌓🌔🌕🌖"))
     try:
         for _ in range(32):
-            await asyncio.sleep(0.1)
             await message.edit("".join(deq))
             deq.rotate(1)
     except Exception:
@@ -219,7 +216,6 @@ async def clock_(message: Message):
     deq = deque(list("🕚🕙🕘🕗🕖🕕🕔🕓🕒🕑🕐🕛"))
     try:
         for _ in range(36):
-            await asyncio.sleep(0.1)
             await message.edit("".join(deq))
             deq.rotate(1)
     except Exception:

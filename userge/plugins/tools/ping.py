@@ -17,18 +17,7 @@ from userge import userge, Message
     'flags': {'-a': "average ping"}}, group=-1)
 async def pingme(message: Message):
     start = datetime.now()
-    if '-a' in message.flags:
-        await message.edit('`!....`')
-        await asyncio.sleep(0.3)
-        await message.edit('`..!..`')
-        await asyncio.sleep(0.3)
-        await message.edit('`....!`')
-        end = datetime.now()
-        t_m_s = (end - start).microseconds / 1000
-        m_s = round((t_m_s - 0.6) / 3, 3)
-        await message.edit(f"**AvePong!**\n`{m_s} ms`")
-    else:
-        await message.edit('`Pong!`')
-        end = datetime.now()
-        m_s = (end - start).microseconds / 1000
-        await message.edit(f"**Pong!**\n`{m_s} ms`")
+    await message.edit('`Pong!`')
+    end = datetime.now()
+    m_s = (end - start).microseconds / 1000
+    await message.edit(f"**Pong!**\n`{m_s} ms`")
