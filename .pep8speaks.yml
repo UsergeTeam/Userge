@@ -5,6 +5,8 @@ scanner:
 
 flake8:
     max-line-length: 100
+    ignore:
+        - W503  # line break before binary operator
 
 message:
     opened:
