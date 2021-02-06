@@ -20,7 +20,7 @@ oauth2client
 Pillow==8.0
 psutil
 pybase64
-pyrogram==1.1.12
+pyrogram==1.1.13
 pySmartDL
 python-dotenv
 pytz
