@@ -53,7 +53,7 @@ class Command(Filter):
                 lambda _, __, m:
                 m.via_bot is None
                 and not m.scheduled
-                and not bool(m.forward_from or m.forward_sender_name)
+                and not (m.forward_from or m.forward_sender_name)
                 and not (m.from_user and m.from_user.is_bot)
                 and (m.outgoing or (m.from_user and m.from_user.is_self))
                 and not (m.chat and m.chat.type == "channel" and m.edit_date)
@@ -63,6 +63,8 @@ class Command(Filter):
                 m.via_bot is None
                 and not m.outgoing
                 and trigger
+                and not m.scheduled
+                and not (m.forward_from or m.forward_sender_name)
                 and m.from_user and m.text
                 and ((m.from_user.id in Config.OWNER_ID)
                      or (Config.SUDO_ENABLED and (m.from_user.id in Config.SUDO_USERS)
