@@ -14,7 +14,7 @@ import asyncio
 from pyrogram import filters
 from pyrogram.types import ChatPermissions
 
-from userge import userge, Config, Message, get_collection
+from userge import userge, Message, get_collection
 
 ANTIFLOOD_DATA = {}
 ADMINS = {}
@@ -76,7 +76,7 @@ async def set_flood(msg: Message):
             }},
             upsert=True
         )
-        await msg.edit("`Anti-Flood is Enabled Successfully...`", log = __name__, del_in=5)
+        await msg.edit("`Anti-Flood is Enabled Successfully...`", log=__name__, del_in=5)
     elif 'off' in args.lower():
         if msg.chat.id not in ANTIFLOOD_DATA or (
             msg.chat.id in ANTIFLOOD_DATA and ANTIFLOOD_DATA[msg.chat.id].get("data") == "off"
@@ -85,7 +85,7 @@ async def set_flood(msg: Message):
         ANTIFLOOD_DATA[msg.chat.id]["data"] = "off"
         await ANTI_FLOOD.update_one(
             {'chat_id': msg.chat.id}, {"$set": {'data': 'off'}}, upsert=True)
-        await msg.edit("`Anti-Flood is Disabled Successfully...`", log = __name__, del_in=5)
+        await msg.edit("`Anti-Flood is Disabled Successfully...`", log=__name__, del_in=5)
     elif args[0].isnumeric():
         if msg.chat.id not in ANTIFLOOD_DATA or (
             msg.chat.id in ANTIFLOOD_DATA and ANTIFLOOD_DATA[msg.chat.id].get("data") == "off"
@@ -100,7 +100,7 @@ async def set_flood(msg: Message):
             {'chat_id': msg.chat.id}, {"$set": {'limit': input_}}, upsert=True)
         await msg.edit(
             f"`Anti-Flood  limit is Successfully Updated for {input_}.`",
-            log = __name__, del_in=5
+            log=__name__, del_in=5
         )
     else:
         await msg.err("Invalid argument, read .help setflood")
@@ -127,12 +127,11 @@ async def set_mode(msg: Message):
             {'chat_id': msg.chat.id}, {"$set": {'mode': mode.lower()}}, upsert=True)
         await msg.edit(
             f"`Anti-Flood Mode is Successfully Updated to {mode.title()}`",
-            log = __name__, del_in=5
+            log=__name__, del_in=5
         )
     else:
         await msg.err("Invalid argument, read .help setmode")
          
-
 
 @userge.on_cmd("vflood", about={
     'header': "View Current Anti Flood Settings",
@@ -162,7 +161,7 @@ async def anti_flood_handler(msg: Message):
     chat_id = msg.chat.id
     user_id = msg.from_user.id
     first_name = msg.from_user.first_name
-    
+
     if not ADMINS.get(msg.chat.id):
         await cache_admins(msg)
     if user_id in ADMINS[chat_id]:
@@ -173,8 +172,8 @@ async def anti_flood_handler(msg: Message):
     ):
         return
 
-    if await WHITELIST.find_one({'user_id': user_id}):
-        continue
+    if await WHITELIST_USERS.find_one({'user_id': user_id}):
+        return
 
     mode = ANTIFLOOD_DATA[msg.chat.id]["mode"]
     limit = ANTIFLOOD_DATA[msg.chat.id]["limit"]
@@ -216,7 +215,7 @@ def check_flood(chat_id: int, user_id: int):
         }
         return False
     chat_flood = FLOOD_CACHE[chat_id]
-    cur_user, count = chat_flood["cur_user"], chat_flood["count"]
+    count = chat_flood["count"]
 
     count += 1
     if count >= ANTIFLOOD_DATA[chat_id]["limit"]:
