@@ -131,7 +131,7 @@ async def set_mode(msg: Message):
         )
     else:
         await msg.err("Invalid argument, read .help setmode")
-         
+
 
 @userge.on_cmd("vflood", about={
     'header': "View Current Anti Flood Settings",
