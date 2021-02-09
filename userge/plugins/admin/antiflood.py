@@ -221,6 +221,5 @@ def check_flood(chat_id: int, user_id: int):
     if count >= ANTIFLOOD_DATA[chat_id]["limit"]:
         del FLOOD_CACHE[chat_id]
         return True
-    else:
-        FLOOD_CACHE[chat_id] = {"cur_user": user_id, "count": count}
-        return False
+    FLOOD_CACHE[chat_id] = {"cur_user": user_id, "count": count}
+    return False
