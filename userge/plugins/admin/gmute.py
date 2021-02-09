@@ -11,7 +11,11 @@
 import asyncio
 
 from pyrogram.types import ChatPermissions
-from pyrogram.errors.exceptions.bad_request_400 import ChatAdminRequired, UserAdminInvalid
+from pyrogram.errors.exceptions.bad_request_400 import (
+    ChatAdminRequired,
+    UserAdminInvalid,
+    ChannelInvalid,
+)
 
 from userge import userge, Config, Message, get_collection, filters
 
@@ -75,7 +79,7 @@ async def gmute_user(msg: Message):
                 f"**Chat:** {chat.title}\n"
                 f"**Chat ID:** `{chat.id}`\n"
                 f"**Reason:** `{reason}`\n\n$GMUTE #id{user_id}")
-        except (ChatAdminRequired, UserAdminInvalid):
+        except (ChatAdminRequired, UserAdminInvalid, ChannelInvalid):
             pass
     if msg.reply_to_message:
         await CHANNEL.fwd_msg(msg.reply_to_message)
