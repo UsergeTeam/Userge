@@ -44,26 +44,31 @@ async def _init() -> None:
 @userge.on_cmd('restart', about={
     'header': "Restarts the bot and reload all plugins",
     'flags': {
-        '-h': "restart heroku dyno",
+        '-h': "restart hard",
         '-t': "clean temp loaded plugins",
         '-d': "clean working folder"},
     'usage': "{tr}restart [flag | flags]",
     'examples': "{tr}restart -t -d"}, del_pre=True, allow_channels=False)
 async def restart_(message: Message):
     """ restart userge """
-    await message.edit("Restarting Userge Services", log=__name__)
+    await message.edit("`Restarting Userge Services`", log=__name__)
     LOG.info("USERGE Services - Restart initiated")
     if 't' in message.flags:
         shutil.rmtree(Config.TMP_PATH, ignore_errors=True)
     if 'd' in message.flags:
         shutil.rmtree(Config.DOWN_PATH, ignore_errors=True)
-    if Config.HEROKU_APP and 'h' in message.flags:
-        await message.edit(
-            '`Heroku app found, trying to restart dyno...\nthis will take upto 30 sec`', del_in=3)
-        Config.HEROKU_APP.restart()
-        time.sleep(30)
+    if 'h' in message.flags:
+        if Config.HEROKU_ENV and Config.HEROKU_APP:
+            await message.edit(
+                '`Heroku app found, trying to restart dyno...\nthis will take upto 30 sec`',
+                del_in=3)
+            Config.HEROKU_APP.restart()
+            time.sleep(30)
+        else:
+            await message.edit("`Restarting [HARD] ...`", del_in=1)
+            asyncio.get_event_loop().create_task(userge.restart(hard=True))
     else:
-        await message.edit("finalizing...", del_in=1)
+        await message.edit("`Restarting [SOFT] ...`", del_in=1)
         asyncio.get_event_loop().create_task(userge.restart())
 
 

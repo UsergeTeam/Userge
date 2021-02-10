@@ -367,9 +367,9 @@ async def load(message: Message) -> None:
                 try:
                     await userge.load_plugin(plugin, reload_plugin=True)
                     await userge.finalize_load()
-                except (ImportError, SyntaxError, NameError) as i_e:
+                except Exception as i_e:  # pylint: disable=broad-except
                     os.remove(t_path)
-                    await message.err(i_e)
+                    await message.err(str(i_e))
                 else:
                     await message.edit(f"`Loaded {plugin}`", del_in=3, log=__name__)
             else:

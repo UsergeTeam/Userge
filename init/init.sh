@@ -14,6 +14,7 @@
 
 trap handleSigTerm TERM
 trap handleSigInt INT
+trap 'echo hi' USR1
 
 initUserge() {
     printLogo
@@ -32,7 +33,6 @@ startUserge() {
 stopUserge() {
     sendMessage "Exiting Userge ..."
     endLogBotPolling
-    exit 0
 }
 
 handleSigTerm() {
@@ -50,5 +50,7 @@ handleSigInt() {
 runUserge() {
     initUserge
     startUserge "$@"
+    local code=$?
     stopUserge
+    return $code
 }

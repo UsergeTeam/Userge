@@ -70,8 +70,9 @@ _checkDefaultVars() {
         WORKERS=32
     fi
     export MOTOR_MAX_WORKERS=$WORKERS
+    export HEROKU_ENV=$(test $DYNO && echo 1 || echo 0)
     DOWN_PATH=${DOWN_PATH%/}/
-    if [[ -n $HEROKU_API_KEY && -n $HEROKU_APP_NAME ]]; then
+    if [[ $HEROKU_ENV == 1 && -n $HEROKU_API_KEY && -n $HEROKU_APP_NAME ]]; then
         local herokuErr=$(runPythonCode '
 import heroku3
 try:

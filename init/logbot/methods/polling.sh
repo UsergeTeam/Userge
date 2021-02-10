@@ -17,6 +17,7 @@ startLogBotPolling() {
 
 endLogBotPolling() {
     test -z $BOT_TOKEN || echo quit >> $_input
+    wait
 }
 
 _polling() {

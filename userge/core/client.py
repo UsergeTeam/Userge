@@ -10,6 +10,7 @@
 
 __all__ = ['Userge']
 
+import os
 import time
 import signal
 import asyncio
@@ -33,6 +34,7 @@ _LOG_STR = "<<<!  #####  %s  #####  !>>>"
 _IMPORTED: List[ModuleType] = []
 _INIT_TASKS: List[asyncio.Task] = []
 _START_TIME = time.time()
+_SEND_SIGNAL = False
 
 
 async def _complete_init_tasks() -> None:
@@ -187,10 +189,13 @@ class Userge(_AbstractUserge):
             _LOG.info(_LOG_STR, "Loop Stopped !")
 
         async def _shutdown(sig: signal.Signals) -> None:
+            global _SEND_SIGNAL
             _LOG.info(_LOG_STR, f"Received Stop Signal [{sig.name}], Exiting Userge ...")
             await _finalize()
+            if sig == sig.SIGUSR1:
+                _SEND_SIGNAL = True
 
-        for sig in (signal.SIGHUP, signal.SIGTERM, signal.SIGINT):
+        for sig in (signal.SIGHUP, signal.SIGTERM, signal.SIGINT, signal.SIGUSR1):
             self.loop.add_signal_handler(
                 sig, lambda sig=sig: self.loop.create_task(_shutdown(sig)))
         self.loop.run_until_complete(self.start())
@@ -212,3 +217,5 @@ class Userge(_AbstractUserge):
         finally:
             self.loop.close()
             _LOG.info(_LOG_STR, "Loop Closed !")
+            if _SEND_SIGNAL:
+                os.kill(os.getpid(), signal.SIGUSR1)
