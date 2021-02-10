@@ -189,7 +189,7 @@ class Userge(_AbstractUserge):
             _LOG.info(_LOG_STR, "Loop Stopped !")
 
         async def _shutdown(sig: signal.Signals) -> None:
-            global _SEND_SIGNAL
+            global _SEND_SIGNAL  # pylint: disable=global-statement
             _LOG.info(_LOG_STR, f"Received Stop Signal [{sig.name}], Exiting Userge ...")
             await _finalize()
             if sig == sig.SIGUSR1:
