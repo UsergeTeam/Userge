@@ -7,6 +7,7 @@
 #
 # All rights reserved.
 
+import os
 import time
 import asyncio
 import shutil
@@ -46,7 +47,8 @@ async def _init() -> None:
     'flags': {
         '-h': "restart heroku dyno",
         '-t': "clean temp loaded plugins",
-        '-d': "clean working folder"},
+        '-d': "clean working folder",
+        '-u': "restart Unofficial Repo"},
     'usage': "{tr}restart [flag | flags]",
     'examples': "{tr}restart -t -d"}, del_pre=True, allow_channels=False)
 async def restart_(message: Message):
@@ -57,6 +59,16 @@ async def restart_(message: Message):
         shutil.rmtree(Config.TMP_PATH, ignore_errors=True)
     if 'd' in message.flags:
         shutil.rmtree(Config.DOWN_PATH, ignore_errors=True)
+    if '-u' in message.flags:
+       if not Config.LOAD_UNOFFICIAL_PLUGINS:
+           return await message.edit("`You already disabled Unofficial Plugins`")
+       cmd = ("rm -rf userge/plugins/unofficial"
+              " && git clone --depth=1 https://github.com/UsergeTeam/Userge-Plugins.git"
+              " && pip3 install -U pip && pip3 install -r Userge-Plugins/requirements.txt"
+              " && rm -rf userge/plugins/unofficial/
+              " && mv Userge-Plugins/plugins/ userge/plugins/unofficial/"
+              " && cp -r Userge-Plugins/resources/* resources/ && rm -rf Userge-Plugins/")
+        os.system(cmd)
     if Config.HEROKU_APP and 'h' in message.flags:
         await message.edit(
             '`Heroku app found, trying to restart dyno...\nthis will take upto 30 sec`', del_in=3)
