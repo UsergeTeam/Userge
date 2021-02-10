@@ -60,14 +60,14 @@ async def restart_(message: Message):
     if 'd' in message.flags:
         shutil.rmtree(Config.DOWN_PATH, ignore_errors=True)
     if '-u' in message.flags:
-       if not Config.LOAD_UNOFFICIAL_PLUGINS:
-           return await message.edit("`You already disabled Unofficial Plugins`")
-       cmd = ("rm -rf userge/plugins/unofficial"
-              " && git clone --depth=1 https://github.com/UsergeTeam/Userge-Plugins.git"
-              " && pip3 install -U pip && pip3 install -r Userge-Plugins/requirements.txt"
-              " && rm -rf userge/plugins/unofficial/
-              " && mv Userge-Plugins/plugins/ userge/plugins/unofficial/"
-              " && cp -r Userge-Plugins/resources/* resources/ && rm -rf Userge-Plugins/")
+        if not Config.LOAD_UNOFFICIAL_PLUGINS:
+            return await message.edit("`You already disabled Unofficial Plugins`")
+        cmd = (r"rm -rf userge/plugins/unofficial"
+               r" && git clone --depth=1 https://github.com/UsergeTeam/Userge-Plugins.git"
+               r" && pip3 install -U pip && pip3 install -r Userge-Plugins/requirements.txt"
+               r" && rm -rf userge/plugins/unofficial/"
+               r" && mv Userge-Plugins/plugins/ userge/plugins/unofficial/"
+               r" && cp -r Userge-Plugins/resources/* resources/ && rm -rf Userge-Plugins/")
         os.system(cmd)
     if Config.HEROKU_APP and 'h' in message.flags:
         await message.edit(
