@@ -120,7 +120,7 @@ async def send_new_post(entries):
     for chat_id in RSS_CHAT_ID:
         args.update({'chat_id': chat_id})
         try:
-            await send_rss_to_telegram(usere.bot, args)
+            await send_rss_to_telegram(userge.bot, args)
         except (ChatWriteForbidden, ChannelPrivate, UserNotParticipant, UsergeBotNotFound):
             await send_rss_to_telegram(userge, args)
 
