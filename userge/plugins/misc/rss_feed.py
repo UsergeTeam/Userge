@@ -154,7 +154,7 @@ async def send_rss_to_telegram(client, args: dict):
 async def add_rss_feed(msg: Message):
     """ Add a New feed Url """
     if not (msg.input_str and '|' in msg.input_str):
-        return await msg.edit("[Wrong syntax]\nCorrext syntax is addfeed title | feed_url")
+        return await msg.edit("[Wrong syntax]\nCorrect syntax is addfeed title | feed_url")
     title, url = msg.input_str.split('|', maxsplit=1)
     if not url:
         return await msg.err("Without Feed Url how can I add feed?")
@@ -173,7 +173,7 @@ async def add_rss_feed(msg: Message):
 async def delete_rss_feed(msg: Message):
     """ Delete to a existing Feed Url """
     if not (msg.input_str and '|' in msg.input_str):
-        return await msg.edit("[Wrong syntax]\nCorrext syntax is delfeed title | feed_url")
+        return await msg.edit("[Wrong syntax]\nCorrect syntax is delfeed title | feed_url")
     title, url = msg.input_str.split('|', maxsplit=1)
     if not url:
         return await msg.err("Without Feed Url how can I delete feed?")
