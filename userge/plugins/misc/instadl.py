@@ -257,7 +257,7 @@ async def _insta_post_downloader(message: Message):
                 return
             finally:
                 shutil.rmtree(dirname.format(target=post.owner_username), ignore_errors=True)
-            if limit > 0 and count == limit:
+            if 0 < limit == count:
                 break
         await sent.delete()
     elif match:

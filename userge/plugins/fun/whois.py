@@ -24,7 +24,7 @@ async def who_is(message: Message):
         try:
             from_user = await message.client.get_users(user_id)
             from_chat = await message.client.get_chat(user_id)
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             await message.err(
                 "no valid user_id or message specified, do .help whois for more info")
             return

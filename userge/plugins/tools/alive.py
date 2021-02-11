@@ -92,7 +92,7 @@ def _get_alive_text_and_markup(message: Message) -> Tuple[str, Optional[InlineKe
             ],
             [InlineKeyboardButton(text="🎖 GNU GPL v3.0", url=copy_)]
         ])
-    return (output, markup)
+    return output, markup
 
 
 def _parse_arg(arg: bool) -> str:

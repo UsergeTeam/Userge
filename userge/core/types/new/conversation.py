@@ -179,7 +179,7 @@ class Conversation:
                 _filters.create(
                     lambda _, __, query: _CONV_DICT and query.chat and (
                         query.chat.id, client
-                    ) in _CONV_DICT, 0
+                    ) in _CONV_DICT, "conversation"
                 )
             )
         )

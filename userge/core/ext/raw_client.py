@@ -63,9 +63,9 @@ class RawClient(Client):
                     key = int(tmp.chat_id)
                 elif isinstance(tmp, (types.InputPeerUser, types.InputPeerUserFromMessage)):
                     key = int(tmp.user_id)
-        elif isinstance(data, funcs.channels.DeleteMessages):
-            if isinstance(data.channel, (types.InputChannel, types.InputChannelFromMessage)):
-                key = int(data.channel.channel_id)
+        elif isinstance(data, funcs.channels.DeleteMessages) and isinstance(
+                data.channel, (types.InputChannel, types.InputChannelFromMessage)):
+            key = int(data.channel.channel_id)
         if key:
             async with self.REQ_LOCK:
                 try:

@@ -60,10 +60,6 @@ class SendAsFile(RawClient):  # pylint: disable=missing-class-docstring
                 to the log channel.
                 If ``str``, the logger name will be updated.
 
-            delete_message (``bool``, *optional*):
-                If ``True``, the message will be deleted
-                after sending the file.
-
             reply_to_message_id (``int``, *optional*):
                 If the message is a reply, ID of the original message.
 

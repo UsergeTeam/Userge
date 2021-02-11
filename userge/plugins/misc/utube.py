@@ -113,11 +113,9 @@ async def ytDown(message: Message):
             retcode = await _tubeDl(
                 [message.filtered_input_str], __progress, startTime, desiredFormat)
         else:
-            retcode = await _tubeDl(
-                [message.filtered_input_str], __progress, startTime, None)
+            retcode = await _tubeDl([message.filtered_input_str], __progress, startTime)
     else:
-        retcode = await _tubeDl(
-            [message.filtered_input_str], __progress, startTime, None)
+        retcode = await _tubeDl([message.filtered_input_str], __progress, startTime)
     if retcode == 0:
         _fpath = ''
         for _path in glob.glob(os.path.join(Config.DOWN_PATH, str(startTime), '*')):

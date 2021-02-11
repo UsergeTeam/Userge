@@ -206,7 +206,7 @@ async def moon_(message: Message):
         for _ in range(32):
             await message.edit("".join(deq))
             deq.rotate(1)
-    except Exception:
+    except Exception:  # pylint: disable=broad-except
         await message.delete()
 
 
@@ -218,7 +218,7 @@ async def clock_(message: Message):
         for _ in range(36):
             await message.edit("".join(deq))
             deq.rotate(1)
-    except Exception:
+    except Exception:  # pylint: disable=broad-except
         await message.delete()
 
 
@@ -331,7 +331,7 @@ async def slap_(message: Message):
                                   throws=throw, where=where)
     try:
         await message.edit(caption)
-    except Exception:
+    except Exception:  # pylint: disable=broad-except
         await message.edit(
             "`Can't slap this person, need to fetch some sticks and stones !!`")
 
@@ -547,7 +547,7 @@ async def scam_(message: Message):
                 await message.client.send_chat_action(chat_id, scam_action)
                 await asyncio.sleep(5)
                 count += 5
-    except Exception:
+    except Exception:  # pylint: disable=broad-except
         await message.delete()
 
 

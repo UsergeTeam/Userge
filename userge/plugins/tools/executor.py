@@ -94,7 +94,7 @@ async def exec_(message: Message):
     try:
         out, err, ret, pid = await runcmd(cmd)
     except Exception as t_e:  # pylint: disable=broad-except
-        await message.err(t_e)
+        await message.err(str(t_e))
         return
     out = out or "no output"
     err = err or "no error"
@@ -121,7 +121,7 @@ async def term_(message: Message):
     try:
         t_obj = await Term.execute(cmd)  # type: Term
     except Exception as t_e:  # pylint: disable=broad-except
-        await message.err(t_e)
+        await message.err(str(t_e))
         return
     curruser = getuser()
     try:
