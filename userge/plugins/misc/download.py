@@ -1,10 +1,10 @@
 """ downloader """
 
-# Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+# Please see < https://github.com/UsergeTeam/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
 
@@ -43,7 +43,7 @@ async def down_load_media(message: Message):
     except ProcessCanceled:
         await message.edit("`Process Canceled!`", del_in=5)
     except Exception as e_e:  # pylint: disable=broad-except
-        await message.err(e_e)
+        await message.err(str(e_e))
     else:
         await message.edit(f"Downloaded to `{dl_loc}` in {d_in} seconds")
 

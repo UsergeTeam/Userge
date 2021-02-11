@@ -1,10 +1,10 @@
 # pylint: disable=missing-module-docstring
 #
-# Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+# Please see < https://github.com/UsergeTeam/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
 
@@ -291,23 +291,22 @@ class RawDecorator(RawClient):
                             if isinstance(flt, types.raw.Command):
                                 await _raise("`required permisson [pin_messages]`")
                             return
-                if RawClient.DUAL_MODE:
-                    if (flt.check_client
-                            or (r_m.from_user and r_m.from_user.id in Config.SUDO_USERS)):
-                        cond = True
-                        async with await _get_lock(str(flt)):
-                            if flt.only_admins:
-                                cond = cond and await _both_are_admins(r_c, r_m)
-                            if flt.check_perm:
-                                cond = cond and await _both_have_perm(flt, r_c, r_m)
-                            if cond:
-                                if Config.USE_USER_FOR_CLIENT_CHECKS:
-                                    # pylint: disable=protected-access
-                                    if isinstance(r_c, _client.UsergeBot):
-                                        return
-                                elif await _bot_is_present(r_c, r_m):
-                                    if isinstance(r_c, _client.Userge):
-                                        return
+                if RawClient.DUAL_MODE and (flt.check_client or (
+                        r_m.from_user and r_m.from_user.id in Config.SUDO_USERS)):
+                    cond = True
+                    async with await _get_lock(str(flt)):
+                        if flt.only_admins:
+                            cond = cond and await _both_are_admins(r_c, r_m)
+                        if flt.check_perm:
+                            cond = cond and await _both_have_perm(flt, r_c, r_m)
+                        if cond:
+                            if Config.USE_USER_FOR_CLIENT_CHECKS:
+                                # pylint: disable=protected-access
+                                if isinstance(r_c, _client.UsergeBot):
+                                    return
+                            elif await _bot_is_present(r_c, r_m) and isinstance(
+                                    r_c, _client.Userge):
+                                return
                 if flt.check_downpath and not os.path.isdir(Config.DOWN_PATH):
                     os.makedirs(Config.DOWN_PATH)
                 try:

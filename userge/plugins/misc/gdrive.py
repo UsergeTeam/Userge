@@ -1,10 +1,10 @@
 """ manage your gdrive """
 
-# Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+# Please see < https://github.com/UsergeTeam/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
 
@@ -123,7 +123,7 @@ class _GDrive:
     @pool.run_in_thread
     def _search(self,
                 search_query: str,
-                flags: list,
+                flags: dict,
                 parent_id: str = "",
                 list_root: bool = False) -> str:
         force = '-f' in flags
@@ -220,7 +220,7 @@ class _GDrive:
         if parent_id:
             body["parents"] = [parent_id]
         if file_size == 0:
-            media_body = MediaFileUpload(file_path, mimetype=mime_type, resumable=False)
+            media_body = MediaFileUpload(file_path, mimetype=mime_type)
             u_file_obj = self._service.files().create(body=body, media_body=media_body,
                                                       supportsTeamDrives=True).execute()
             file_id = u_file_obj.get("id")
@@ -630,7 +630,7 @@ class Worker(_GDrive):
             cred = _AUTH_FLOW.step2_exchange(self._message.input_str)
         except FlowExchangeError as c_i:
             _LOG.exception(c_i)
-            await self._message.err(c_i)
+            await self._message.err(str(c_i))
         else:
             _AUTH_FLOW = None
             await asyncio.gather(
@@ -740,7 +740,7 @@ class Worker(_GDrive):
                 await self._message.edit("`Process Canceled!`", del_in=5)
                 return
             except Exception as e_e:
-                await self._message.err(e_e)
+                await self._message.err(str(e_e))
                 return
         elif is_url:
             try:
@@ -749,7 +749,7 @@ class Worker(_GDrive):
                 await self._message.edit("`Process Canceled!`", del_in=5)
                 return
             except Exception as e_e:
-                await self._message.err(e_e)
+                await self._message.err(str(e_e))
                 return
         file_path = dl_loc if dl_loc else self._message.input_str
         if not os.path.exists(file_path):

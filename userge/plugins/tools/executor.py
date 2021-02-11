@@ -1,10 +1,10 @@
 """ run shell or python command(s) """
 
-# Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+# Please see < https://github.com/UsergeTeam/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
 
@@ -94,7 +94,7 @@ async def exec_(message: Message):
     try:
         out, err, ret, pid = await runcmd(cmd)
     except Exception as t_e:  # pylint: disable=broad-except
-        await message.err(t_e)
+        await message.err(str(t_e))
         return
     out = out or "no output"
     err = err or "no error"
@@ -121,7 +121,7 @@ async def term_(message: Message):
     try:
         t_obj = await Term.execute(cmd)  # type: Term
     except Exception as t_e:  # pylint: disable=broad-except
-        await message.err(t_e)
+        await message.err(str(t_e))
         return
     curruser = getuser()
     try:
