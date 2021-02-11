@@ -21,7 +21,7 @@ from pyrogram.errors import ChatWriteForbidden, ChannelPrivate, UserNotParticipa
 from userge.utils.exceptions import UsergeBotNotFound
 from userge import userge, Message, Config, logging, get_collection, pool
 
-RSS_CHAT_ID = [int(x) for x in os.environ.get("RSS_CHAT_ID", "0")]
+RSS_CHAT_ID = [int(x) for x in os.environ.get("RSS_CHAT_ID", "0").split()]
 _LOG = logging.getLogger(__name__)
 
 RSS_URLS = {}
@@ -73,14 +73,14 @@ async def delete_feed(title: str, url: str) -> str:
 
 
 async def send_new_post(entries):
-    title = entries.get('title', None)
-    link = entries('link', None)
+    title = entries.get('title')
+    link = entries.get('link')
     time = entries.get('time')
     thumb = None
     author = None
     author_link = None
 
-    thumb_url = entries.get('media_thumbnail', None)
+    thumb_url = entries.get('media_thumbnail')
     if thumb_url:
         thumb = os.path.join(Config.DOWN_PATH, str(title).split('/')[-1])
         wget.download(thumb_url, thumb)
