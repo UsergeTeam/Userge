@@ -9,6 +9,7 @@
 # All rights reserved.
 
 import os
+import wget
 import asyncio
 import pytz
 import feedparser
@@ -18,7 +19,7 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.errors import ChatWriteForbidden, ChannelPrivate, UserNotParticipant
 
 from userge.utils.exceptions import UsergeBotNotFound
-from userge import userge, Message, logging, get_collection, pool
+from userge import userge, Message, Config, logging, get_collection, pool
 
 RSS_CHAT_ID = [int(x) for x in os.environ.get("RSS_CHAT_ID", "0")]
 _LOG = logging.getLogger(__name__)
@@ -85,8 +86,8 @@ async def send_new_post(entries):
         wget.download(thumb_url, thumb)
     if entries.get('time'):
         parse_time = parser.parse(entries)
-        if result.tzinfo is None:
-            aware_date = pytz.utc.localize(result)
+        if parse_time.tzinfo is None:
+            aware_date = pytz.utc.localize(parse_time)
             parse_time = aware_date.astimezone(pytz.timezone("India/Mumbai"))
         time = str(parse_time).split('+')[0][:-3]
     if entries.get('authors'):
