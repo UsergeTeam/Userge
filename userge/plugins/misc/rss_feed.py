@@ -187,7 +187,7 @@ async def rss_worker():
     while True:
         for title, url in RSS_URLS.items():
             rss = await _parse(url['feed_url'])
-            if url[1] != rss.entries[0]['link']:
+            if url['last_post'] != rss.entries[0]['link']:
                 RSS_URLS[title]['last_post'] = rss.entries[0]['link']
                 await RSS_COLLECTION.update_one(
                     {'title': title, 'feed_url': url['feed_url']},
