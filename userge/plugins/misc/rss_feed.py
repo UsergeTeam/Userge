@@ -92,7 +92,7 @@ async def send_new_post(entries):
         time = str(parse_time).split('+')[0][:-3]
     if entries.get('authors'):
         author = entries.get('authors')[0]['name'].split('/')[-1]
-        aurhor_link = entries.get('authors')[0]['href']
+        author_link = entries.get('authors')[0]['href']
     out_str = f"""
 **New post Found**
 
