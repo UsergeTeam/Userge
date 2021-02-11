@@ -110,13 +110,13 @@ async def send_new_post(entries):
             'reply_markup': markup
         }
     else:
+        out_str += f"\n\n[View Post Online]({link})"
         args = {
             'text': out_str,
             'disable_web_page_preview': True,
             'parse_mode': "md",
             'reply_markup': markup
         }
-        out_str += f"\n\n[View Post Online]({link})"
     for chat_id in RSS_CHAT_ID:
         args.update({'chat_id': chat_id})
         try:
