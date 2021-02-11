@@ -101,9 +101,8 @@ async def send_new_post(entries):
 **Last Updated:** `{time}`
 """
     markup = InlineKeyboardMarkup([[InlineKeyboardButton(text="View Post Online", url=link)]])
-    client = userge.bot
     if thumb:
-        send = client.send_cached_media
+        send = userge.bot.send_cached_media
         args = {
             'file_id': thumb,
             'caption': out_str,
@@ -112,7 +111,7 @@ async def send_new_post(entries):
             'reply_markup': markup
         }
     else:
-        send = client.send_message
+        send = userge.bot.send_message
         args = {
             'text': out_str,
             'disable_web_page_preview': True,
@@ -125,7 +124,7 @@ async def send_new_post(entries):
         try:
             await send(**args)
         except (ChatWriteForbidden, ChannelPrivate, UserNotParticipant, UsergeBotNotFound):
-            client = userge
+            send = userge.send_message if not thumb else userge.send_chached_media
             await send(**args)
 
 
@@ -187,11 +186,11 @@ async def rss_worker():
         return
     while True:
         for title, url in RSS_URLS.items():
-            rss = await _parse(url[0])
+            rss = await _parse(url['feed_url'])
             if url[1] != rss.entries[0]['link']:
                 RSS_URLS[title]['last_post'] = rss.entries[0]['link']
                 await RSS_COLLECTION.update_one(
-                    {'title': title, 'feed_url': url[0]},
+                    {'title': title, 'feed_url': url['feed_url']},
                     {"$set": {'last_post': rss.entries[0]['link']}}
                 )
                 await send_new_post(rss.entries[0])
