@@ -37,9 +37,9 @@ async def _init():
 
 async def add_new_feed(title: str, url: str, last_post: str) -> str:
     if title in RSS_URLS or url in RSS_URLS.items():
-       out_str = "`Url or Title is matched in Existing Feed Database.`"
+        out_str = "`Url or Title is matched in Existing Feed Database.`"
     else:
-       out_str = f"""
+        out_str = f"""
 #ADDED_NEW_FEED_URL
 
 \t\t**TITLE:** `{title}`
