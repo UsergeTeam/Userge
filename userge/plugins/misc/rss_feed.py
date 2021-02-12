@@ -27,16 +27,20 @@ _LOG = logging.getLogger(__name__)
 RSS_URLS = {}
 RSS_COLLECTION = get_collection("RSS_DATA")
 
+SHOULD_LOOP = False
+
 
 async def _init():
     async for url in RSS_COLLECTION.find():
         RSS_URLS[url['title']] = {
             'feed_url': url['feed_url'], 'last_post': url['last_post']
         }
+    if RSS_URLS is not None:
+        SHOULD_LOOP = asyncio.get_event_loop().create_task(rss_worker())
 
 
 async def add_new_feed(title: str, url: str, last_post: str) -> str:
-    if title in RSS_URLS or url in RSS_URLS.items():
+    if title in RSS_URLS.keys() or url in RSS_URLS.items():
         out_str = "`Url or Title is matched in Existing Feed Database.`"
     else:
         out_str = f"""
@@ -163,6 +167,8 @@ async def add_rss_feed(msg: Message):
     except IndexError:
         return await msg.edit("The link does not seem to be a RSS feed or is not supported")
     out_str = await add_new_feed(title, url, rss.entries[0]['link'])
+    if not SHOULD_LOOP:
+        SHOULD_LOOP = asyncio.get_event_loop().create_task(rss_worker())
     await msg.edit(out_str, log=__name__)
 
 
@@ -178,6 +184,10 @@ async def delete_rss_feed(msg: Message):
         return await msg.err("Without Feed Url how can I delete feed?")
     title, url = title.strip(), url.strip()
     out_str = await delete_feed(title, url)
+    if RSS_URLS is None:
+        if isinstance(SHOULD_LOOP, asyncio.Task):
+            SHOULD_LOOP.cancel()
+        SHOULD_LOOP = False
     await msg.edit(out_str, log=__name__)
 
 
@@ -198,7 +208,7 @@ async def list_rss_feed(msg: Message):
 
 @userge.add_task
 async def rss_worker():
-    while RSS_URLS is not None:
+    while SHOULD_LOOP:
         if RSS_CHAT_ID[0] == Config.LOG_CHANNEL_ID:
             _LOG.info(
                 "You have to add var for `RSS_CHAT_ID`, for Now i will send in LOG_CHANNEL")
