@@ -26,23 +26,18 @@ _LOG = logging.getLogger(__name__)
 
 RSS_URLS = {}
 RSS_COLLECTION = get_collection("RSS_DATA")
-
-SHOULD_LOOP = False
+TASK_RUNNING = False
 
 
 async def _init():
-    global SHOULD_LOOP  # pylint: disable=global-statement
     async for url in RSS_COLLECTION.find():
         RSS_URLS[url['title']] = {
             'feed_url': url['feed_url'], 'last_post': url['last_post']
         }
-    if RSS_URLS is not None:
-        SHOULD_LOOP = asyncio.get_event_loop().create_task(rss_worker())
 
 
 async def add_new_feed(title: str, url: str, last_post: str) -> str:
-    url_t = RSS_URLS.get(title)
-    if url_t and url_t.get("feed_url") == url:
+    if title in RSS_URLS or url in (v['feed_url'] for v in RSS_URLS.values()):
         out_str = "`Url or Title is matched in Existing Feed Database.`"
     else:
         out_str = f"""
@@ -53,25 +48,25 @@ async def add_new_feed(title: str, url: str, last_post: str) -> str:
 \t\t**LAST_POST:** `{last_post}`
 """
         RSS_URLS[title] = {'feed_url': url, 'last_post': last_post}
+        if not TASK_RUNNING:
+            asyncio.get_event_loop().create_task(rss_worker())
         await RSS_COLLECTION.update_one(
-            {'title': title}, {"$set": {'feed_url': url, 'last_post': last_post}}
+            {'title': title}, {"$set": {'feed_url': url, 'last_post': last_post}},
+            upsert=True
         )
     return out_str
 
 
-async def delete_feed(title: str, url: str) -> str:
-    url_t = RSS_URLS.get(title)
-    if url_t and url_t.get("feed_url") == url:
+async def delete_feed(title: str) -> str:
+    if title in RSS_URLS:
         out_str = f"""
 #DELETED_FEED_URL
 
 \t\t**TITLE:** `{title}`
-\t\t**FEED_URL:** `{url}`
+\t\t**FEED_URL:** `{RSS_URLS['title']['feed_url']}`
 """
         del RSS_URLS[title]
-        await RSS_COLLECTION.delete_one(
-            {'title': title, 'feed_url': url}
-        )
+        await RSS_COLLECTION.delete_one({'title': title})
     else:
         out_str = "`This Url is not in my database.`"
     return out_str
@@ -132,13 +127,9 @@ async def send_new_post(entries):
 
 async def send_rss_to_telegram(client, args: dict, path: str = None):
     if path:
-        if path.lower().endswith(
-            (".jpg", ".jpeg", ".png", ".bmp")
-        ):
+        if path.lower().endswith((".jpg", ".jpeg", ".png", ".bmp")):
             await client.send_photo(photo=path, **args)
-        elif path.lower().endswith(
-            (".mkv", ".mp4", ".webm")
-        ):
+        elif path.lower().endswith((".mkv", ".mp4", ".webm")):
             await client.send_video(video=path, **args)
         else:
             await client.send_document(document=path, **args)
@@ -151,7 +142,6 @@ async def send_rss_to_telegram(client, args: dict, path: str = None):
     'usage': "{tr}addfeed title | url"})
 async def add_rss_feed(msg: Message):
     """ Add a New feed Url """
-    global SHOULD_LOOP  # pylint: disable=global-statement
     if not (msg.input_str and '|' in msg.input_str):
         return await msg.edit("[Wrong syntax]\nCorrect syntax is addfeed title | feed_url")
     title, url = msg.input_str.split('|', maxsplit=1)
@@ -163,28 +153,17 @@ async def add_rss_feed(msg: Message):
     except IndexError:
         return await msg.edit("The link does not seem to be a RSS feed or is not supported")
     out_str = await add_new_feed(title, url, rss.entries[0]['link'])
-    if not SHOULD_LOOP:
-        SHOULD_LOOP = asyncio.get_event_loop().create_task(rss_worker())
     await msg.edit(out_str, log=__name__)
 
 
 @userge.on_cmd("delfeed", about={
     'header': "Delete a existing Feed Url from Database.",
-    'usage': "{tr}delfeed title | url"})
+    'usage': "{tr}delfeed title"})
 async def delete_rss_feed(msg: Message):
     """ Delete to a existing Feed Url """
-    global SHOULD_LOOP  # pylint: disable=global-statement
-    if not (msg.input_str and '|' in msg.input_str):
-        return await msg.edit("[Wrong syntax]\nCorrect syntax is delfeed title | feed_url")
-    title, url = msg.input_str.split('|', maxsplit=1)
-    if not url:
-        return await msg.err("Without Feed Url how can I delete feed?")
-    title, url = title.strip(), url.strip()
-    out_str = await delete_feed(title, url)
-    if RSS_URLS is None:
-        if isinstance(SHOULD_LOOP, asyncio.Task):
-            SHOULD_LOOP.cancel()
-        SHOULD_LOOP = False
+    if not msg.input_str:
+        return await msg.edit("[Wrong syntax]\nCorrect syntax is delfeed title")
+    out_str = await delete_feed(msg.input_str)
     await msg.edit(out_str, log=__name__)
 
 
@@ -205,9 +184,9 @@ async def list_rss_feed(msg: Message):
 
 @userge.add_task
 async def rss_worker():
-    global SHOULD_LOOP  # pylint: disable=global-statement
-
-    while SHOULD_LOOP:
+    global TASK_RUNNING  # pylint: disable=global-statement
+    TASK_RUNNING = True
+    while RSS_URLS:
         if RSS_CHAT_ID[0] == Config.LOG_CHANNEL_ID:
             _LOG.info(
                 "You have to add var for `RSS_CHAT_ID`, for Now i will send in LOG_CHANNEL")
@@ -221,6 +200,7 @@ async def rss_worker():
                 )
                 await send_new_post(rss.entries[0])
         await asyncio.sleep(60)
+    TASK_RUNNING = False
 
 
 @pool.run_in_thread
