@@ -9,7 +9,7 @@
 import os
 import wget
 import speedtest
-from userge import userge, Message
+from userge import userge, Message, pool
 from userge.utils import humanbytes
 
 CHANNEL = userge.getCLogger(__name__)
@@ -30,7 +30,7 @@ async def speedtst(message: Message):
     except Exception as e:
         await message.err(text=e)
         return
-    path = wget.download(result['share'])
+    path = await pool.run_in_thread(wget.download)(result['share'])
     output = f"""**--Started at {result['timestamp']}--
 
 Client:

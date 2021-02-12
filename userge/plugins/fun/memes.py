@@ -18,7 +18,7 @@ import wget
 import requests
 from cowpy import cow
 
-from userge import userge, Message
+from userge import userge, Message, pool
 
 
 @userge.on_cmd(r"(?:Kek|:/)$",
@@ -348,7 +348,7 @@ async def decide_(message: Message):
         r = requests.get(f"https://yesno.wtf/api?force={decision}").json()
     else:
         r = requests.get("https://yesno.wtf/api").json()
-    path = wget.download(r["image"])
+    path = await pool.run_in_thread(wget.download)(r["image"])
     chat_id = message.chat.id
     message_id = message.reply_to_message.message_id if message.reply_to_message else None
     await message.delete()

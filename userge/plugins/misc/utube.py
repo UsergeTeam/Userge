@@ -45,7 +45,8 @@ __{uploader}__
 {table}
     """.format_map(_exracted)
     if _exracted['thumb']:
-        _tmp = wget.download(_exracted['thumb'], os.path.join(Config.DOWN_PATH, f"{time()}.jpg"))
+        _tmp = await pool.run_in_thread(wget.download)(
+            _exracted['thumb'], os.path.join(Config.DOWN_PATH, f"{time()}.jpg"))
         await message.reply_photo(_tmp, caption=out)
         await message.delete()
         os.remove(_tmp)

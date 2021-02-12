@@ -38,8 +38,7 @@ run() {
     bash -c "$cmd" $0 "$@" &
     setProc $!
     waitProc
-    local code=$?
-    test $code -eq $usr1 && run "$@"
+    test $? -eq $usr1 && run "$@"
 }
 
 run "$@"
