@@ -110,7 +110,6 @@ async def send_new_post(entries):
     markup = InlineKeyboardMarkup([[InlineKeyboardButton(text="View Post Online", url=link)]])
     if thumb:
         args = {
-            'file_id': thumb,
             'caption': out_str,
             'parse_mode': "md",
             'reply_markup': markup
@@ -126,33 +125,25 @@ async def send_new_post(entries):
     for chat_id in RSS_CHAT_ID:
         args.update({'chat_id': chat_id})
         try:
-            await send_rss_to_telegram(userge.bot, args)
+            await send_rss_to_telegram(userge.bot, args, thumb)
         except (ChatWriteForbidden, ChannelPrivate, UserNotParticipant, UsergeBotNotFound):
-            await send_rss_to_telegram(userge, args)
+            await send_rss_to_telegram(userge, args, thumb)
 
 
-async def send_rss_to_telegram(client, args: dict):
-    path = None
-   tmp_args = args
-    if tmp_args.get('file_id'):
-        path = tmp_args.get('file_id')
+async def send_rss_to_telegram(client, args: dict, path: str = None):
     if path:
-        del tmp_args['file_id']
         if path.lower().endswith(
             (".jpg", ".jpeg", ".png", ".bmp")
         ):
-            tmp_args.update({'photo': path})
-            await client.send_photo(**tmp_args)
+            await client.send_photo(photo=path, **args)
         elif path.lower().endswith(
             (".mkv", ".mp4", ".webm")
         ):
-            tmp_args.update({'video': path})
-            await client.send_video(**tmp_args)
+            await client.send_video(video=path, **args)
         else:
-            tmp_args.update({'document': path})
-            await client.send_document(**tmp_args)
+            await client.send_document(document=path, **args)
     else:
-        await client.send_message(**tmp_args)
+        await client.send_message(**args)
 
 
 @userge.on_cmd("addfeed", about={
