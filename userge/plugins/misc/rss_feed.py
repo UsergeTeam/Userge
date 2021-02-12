@@ -133,25 +133,26 @@ async def send_new_post(entries):
 
 async def send_rss_to_telegram(client, args: dict):
     path = None
-    if args.get('file_id'):
-        path = args.get('file_id')
+   tmp_args = args
+    if tmp_args.get('file_id'):
+        path = tmp_args.get('file_id')
     if path:
-        del args['file_id']
+        del tmp_args['file_id']
         if path.lower().endswith(
             (".jpg", ".jpeg", ".png", ".bmp")
         ):
-            args.update({'photo': path})
-            await client.send_photo(**args)
+            tmp_args.update({'photo': path})
+            await client.send_photo(**tmp_args)
         elif path.lower().endswith(
             (".mkv", ".mp4", ".webm")
         ):
-            args.update({'video': path})
-            await client.send_video(**args)
+            tmp_args.update({'video': path})
+            await client.send_video(**tmp_args)
         else:
-            args.update({'document': path})
-            await client.send_document(**args)
+            tmp_args.update({'document': path})
+            await client.send_document(**tmp_args)
     else:
-        await client.send_message(**args)
+        await client.send_message(**tmp_args)
 
 
 @userge.on_cmd("addfeed", about={
