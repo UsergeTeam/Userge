@@ -62,6 +62,8 @@ async def active_afk(message: Message) -> None:
     allow_via_bot=False)
 async def handle_afk_incomming(message: Message) -> None:
     """ handle incomming messages when you afk """
+    if not message.from_user:
+        return
     user_id = message.from_user.id
     chat = message.chat
     user_dict = await message.client.get_user_dict(user_id)
