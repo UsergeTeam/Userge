@@ -31,6 +31,7 @@ SHOULD_LOOP = False
 
 
 async def _init():
+    global SHOULD_LOOP  #pylint: disable=global-statement
     async for url in RSS_COLLECTION.find():
         RSS_URLS[url['title']] = {
             'feed_url': url['feed_url'], 'last_post': url['last_post']
@@ -156,6 +157,7 @@ async def send_rss_to_telegram(client, args: dict):
     'usage': "{tr}addfeed title | url"})
 async def add_rss_feed(msg: Message):
     """ Add a New feed Url """
+    global SHOULD_LOOP  #pylint: disable=global-statement
     if not (msg.input_str and '|' in msg.input_str):
         return await msg.edit("[Wrong syntax]\nCorrect syntax is addfeed title | feed_url")
     title, url = msg.input_str.split('|', maxsplit=1)
@@ -177,6 +179,7 @@ async def add_rss_feed(msg: Message):
     'usage': "{tr}delfeed title | url"})
 async def delete_rss_feed(msg: Message):
     """ Delete to a existing Feed Url """
+    global SHOULD_LOOP  #pylint: disable=global-statement
     if not (msg.input_str and '|' in msg.input_str):
         return await msg.edit("[Wrong syntax]\nCorrect syntax is delfeed title | feed_url")
     title, url = msg.input_str.split('|', maxsplit=1)
@@ -208,6 +211,8 @@ async def list_rss_feed(msg: Message):
 
 @userge.add_task
 async def rss_worker():
+    global SHOULD_LOOP  #pylint: disable=global-statement
+
     while SHOULD_LOOP:
         if RSS_CHAT_ID[0] == Config.LOG_CHANNEL_ID:
             _LOG.info(
