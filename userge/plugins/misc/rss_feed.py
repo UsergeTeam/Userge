@@ -187,11 +187,10 @@ async def delete_rss_feed(msg: Message):
 async def list_rss_feed(msg: Message):
     """ List all Subscribed Feeds """
     out_str = ""
-    for title, feed_urls in RSS_URLS.items():
-        for url, last_post in feed_urls.items():
-            out_str += f"\n**TITLE:** `{title}`"
-            out_str += f"\n**FEED URL:** `{url}`"
-            out_str += f"\n**LAST POST:** `{last_post}`\n\n"
+    for title, urls in RSS_URLS.items():
+        out_str += f"\n**TITLE:** `{title}`"
+        out_str += f"\n**FEED URL:** `{urls['feed_url']}`"
+        out_str += f"\n**LAST POST:** `{url['last_post']}`\n"
     if not out_str:
         out_str = "`No feed Url Found.`"
     await msg.edit(out_str)
@@ -199,11 +198,11 @@ async def list_rss_feed(msg: Message):
 
 @userge.add_task
 async def rss_worker():
-    if not (RSS_URLS or RSS_CHAT_ID):
+    while RSS_URLS is not None:
         if not RSS_CHAT_ID:
-            _LOG.info("You should add var for `RSS_CHAT_ID`")
-        return
-    while True:
+            RSS_CHAT_ID.append(Config.LOG_CHANNEL_ID)
+            _LOG.info(
+                "You have to add var for `RSS_CHAT_ID`, for Now i will send in LOG_CHANNEL")
         for title, url in RSS_URLS.items():
             rss = await _parse(url['feed_url'])
             if url['last_post'] != rss.entries[0]['link']:
