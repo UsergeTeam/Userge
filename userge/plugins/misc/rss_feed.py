@@ -86,6 +86,7 @@ async def send_new_post(entries):
 
     thumb_url = entries.get('media_thumbnail')
     if thumb_url:
+        thumb_url = thumb_url[0].get('url')
         thumb = os.path.join(Config.DOWN_PATH, str(title).split('/')[-1])
         await pool.run_in_thread(wget.download)(thumb_url, thumb)
     if entries.get('time'):
