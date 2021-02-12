@@ -41,7 +41,8 @@ async def _init():
 
 
 async def add_new_feed(title: str, url: str, last_post: str) -> str:
-    if title in RSS_URLS.keys() or url in RSS_URLS.items():
+    url_t = RSS_URLS.get(title)
+    if url_t and url_t.get("feed_url") == url:
         out_str = "`Url or Title is matched in Existing Feed Database.`"
     else:
         out_str = f"""
@@ -79,7 +80,7 @@ async def delete_feed(title: str, url: str) -> str:
 async def send_new_post(entries):
     title = entries.get('title')
     link = entries.get('link')
-    time = entries.get('time')
+    time = entries.get('updated')
     thumb = None
     author = None
     author_link = None
@@ -87,10 +88,11 @@ async def send_new_post(entries):
     thumb_url = entries.get('media_thumbnail')
     if thumb_url:
         thumb_url = thumb_url[0].get('url')
-        thumb = os.path.join(Config.DOWN_PATH, str(title).split('/')[-1])
-        await pool.run_in_thread(wget.download)(thumb_url, thumb)
-    if entries.get('time'):
-        parse_time = parser.parse(entries)
+        thumb = os.path.join(Config.DOWN_PATH, f"{title}.{str(thumb_url).split('.')[-1]}")
+        if not os.path.exists(thumb):
+            await pool.run_in_thread(wget.download)(thumb_url, thumb)
+    if time:
+        parse_time = parser.parse(time)
         if parse_time.tzinfo is None:
             aware_date = pytz.utc.localize(parse_time)
             parse_time = aware_date.astimezone(pytz.timezone("India/Mumbai"))
@@ -110,7 +112,6 @@ async def send_new_post(entries):
         args = {
             'file_id': thumb,
             'caption': out_str,
-            'disable_web_page_preview': True,
             'parse_mode': "md",
             'reply_markup': markup
         }
