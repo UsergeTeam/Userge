@@ -190,7 +190,7 @@ async def list_rss_feed(msg: Message):
     for title, urls in RSS_URLS.items():
         out_str += f"\n**TITLE:** `{title}`"
         out_str += f"\n**FEED URL:** `{urls['feed_url']}`"
-        out_str += f"\n**LAST POST:** `{url['last_post']}`\n"
+        out_str += f"\n**LAST POST:** `{urls['last_post']}`\n"
     if not out_str:
         out_str = "`No feed Url Found.`"
     await msg.edit(out_str)
