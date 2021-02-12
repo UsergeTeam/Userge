@@ -55,7 +55,7 @@ def secure_text(text: str) -> str:
     if not text:
         return ''
     for var in _SECURE:
-        tvar = environ.get(var, None)
+        tvar = environ.get(var)
         if tvar and tvar in text:
             text = text.replace(tvar, "[SECURED!]")
     return text
