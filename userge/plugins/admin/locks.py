@@ -101,7 +101,7 @@ async def lock_perm(message: Message):
     if lock_type == "all":
         try:
             await message.client.set_chat_permissions(chat_id, ChatPermissions())
-            await message.edit("**🔒 Locked all permission from this Chat!**", del_in=5)
+            await message.edit("**🔒 mampus ke kunci aowkwok!**", del_in=5)
             await CHANNEL.log(
                 f"#LOCK\n\nCHAT: `{message.chat.title}` (`{chat_id}`)\n"
                 f"PERMISSIONS: `All Permissions`")
