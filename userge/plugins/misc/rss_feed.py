@@ -63,7 +63,7 @@ async def delete_feed(title: str) -> str:
 #DELETED_FEED_URL
 
 \t\t**TITLE:** `{title}`
-\t\t**FEED_URL:** `{RSS_URLS['title']['feed_url']}`
+\t\t**FEED_URL:** `{RSS_URLS[title]['feed_url']}`
 """
         del RSS_URLS[title]
         await RSS_COLLECTION.delete_one({'title': title})
