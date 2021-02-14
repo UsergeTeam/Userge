@@ -53,7 +53,7 @@ _checkDefaultVars() {
         [UPSTREAM_REMOTE]="upstream"
         [UPSTREAM_REPO]="https://github.com/UsergeTeam/Userge"
         [LOAD_UNOFFICIAL_PLUGINS]=false
-        [USER_PLUGINS_REPO]=""
+        [CUSTOM_PLUGINS_REPO]=""
         [G_DRIVE_IS_TD]=true
         [CMD_TRIGGER]="."
         [SUDO_TRIGGER]="!"
@@ -156,53 +156,39 @@ _checkUpstreamRepo() {
     deleteLastMessage
 }
 
-_checkUnoffPlugins() {
-    editLastMessage "Checking UnOfficial Plugins ..."
-    if test $LOAD_UNOFFICIAL_PLUGINS = true; then
-        editLastMessage "\tLoading UnOfficial Plugins ..."
+_setupPlugins() {
+    local link path tmp
+    editLastMessage "Checking $1 Plugins ..."
+    if test $(grep -P '^'$2'$' <<< $3); then
+        editLastMessage "\tLoading $1 Plugins ..."
         replyLastMessage "\t\tClonning ..."
-        gitClone --depth=1 https://github.com/UsergeTeam/Userge-Plugins.git
+        link=$(test $4 && echo $4 || echo $3)
+        tmp=Temp-Plugins
+        gitClone --depth=1 $link $tmp
         editLastMessage "\t\tUpgrading PIP ..."
         upgradePip
         editLastMessage "\t\tInstalling Requirements ..."
-        installReq Userge-Plugins
+        installReq $tmp
         editLastMessage "\t\tCleaning ..."
-        rm -rf userge/plugins/unofficial/
-        mv Userge-Plugins/plugins/ userge/plugins/unofficial/
-        cp -r Userge-Plugins/resources/* resources/
-        rm -rf Userge-Plugins/
+        path=$(tr "[:upper:]" "[:lower:]" <<< $1)
+        rm -rf userge/plugins/$path/
+        mv $tmp/plugins/ userge/plugins/$path/
+        cp -r $tmp/resources/. resources/
+        rm -rf $tmp/
         deleteLastMessage
-        editLastMessage "\tUnOfficial Plugins Loaded Successfully !"
+        editLastMessage "\t$1 Plugins Loaded Successfully !"
     else
-        editLastMessage "\tUnOfficial Plugins Disabled !"
+        editLastMessage "\t$1 Plugins Disabled !"
     fi
     deleteLastMessage
 }
 
-_checkUserPlugins() {
-    editLastMessage "Checking User Plugins ..."
-    if [[ $USER_PLUGINS_REPO != "" ]]; then
-        editLastMessage "\tLoading User Plugins ..."
-        replyLastMessage "\t\tClonning ..."
-        gitClone --depth=1 $USER_PLUGINS_REPO
-        IFS="/" read -r -a repo_details <<< $USER_PLUGINS_REPO
-        # echo "${repo_details[3]}"
-        # echo "${repo_details[4]}"
-        editLastMessage "\t\tUpgrading PIP ..."
-        upgradePip
-        editLastMessage "\t\tInstalling Requirements ..."
-        installReq ${repo_details[4]}
-        editLastMessage "\t\tCleaning ..."
-        rm -rf userge/plugins/user/
-        mv ${repo_details[4]}/plugins/ userge/plugins/user/
-        cp -r ${repo_details[4]}/resources/* resources/
-        rm -rf ${repo_details[4]}/
-        deleteLastMessage
-        editLastMessage "\tUser Plugins Loaded Successfully !"
-    else
-        editLastMessage "\tUser Plugins Disabled !"
-    fi
-    deleteLastMessage
+_checkUnoffPlugins() {
+    _setupPlugins UnOfficial true $LOAD_UNOFFICIAL_PLUGINS https://github.com/UsergeTeam/Userge-Plugins.git
+}
+
+_checkCustomPlugins() {
+    _setupPlugins Custom https://github.com/.+/.+ $CUSTOM_PLUGINS_REPO
 }
 
 assertPrerequisites() {
@@ -221,5 +207,5 @@ assertEnvironment() {
     _checkGit
     _checkUpstreamRepo
     _checkUnoffPlugins
-    _checkUserPlugins
+    _checkCustomPlugins
 }
