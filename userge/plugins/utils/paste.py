@@ -66,11 +66,12 @@ async def paste_(message: Message) -> None:
                     response = await resp.json()
                     key = response['key']
                     final_url = DOGBIN_URL + key
+                    final_url_raw = DOGBIN_URL + "raw/" + key
                     if response['isUrl']:
                         reply_text = (f"**Shortened** [URL]({final_url})\n"
                                       f"**Dogbin** [URL]({DOGBIN_URL}v/{key})")
                     else:
-                        reply_text = f"**Dogbin** [URL]({final_url}{file_ext})"
+                        reply_text = f"**Dogbin** [URL]({final_url}{file_ext})\n**Dogbin RAW** [URL]({final_url_raw}{file_ext})"
                     await message.edit(reply_text, disable_web_page_preview=True)
                 else:
                     await message.err("Failed to reach Dogbin")
