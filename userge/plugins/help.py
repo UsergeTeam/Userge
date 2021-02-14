@@ -30,6 +30,7 @@ _CATEGORY = {
     'utils': '🗂',
     'unofficial': '🃏',
     'temp': '♻️',
+    'custom': '👨',
     'plugins': '💎'
 }
 SAVED_SETTINGS = get_collection("CONFIGS")
