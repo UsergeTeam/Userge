@@ -21,7 +21,6 @@ ADMINS = {}
 FLOOD_CACHE = {}
 
 ANTI_FLOOD = get_collection("ANTIFLOOD")
-WHITELIST_USERS = get_collection("WHITELIST_USER")
 
 LOG = userge.getLogger(__name__)
 CHANNEL = userge.getCLogger(__name__)
