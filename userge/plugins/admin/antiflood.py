@@ -86,12 +86,12 @@ async def set_flood(msg: Message):
         await ANTI_FLOOD.update_one(
             {'chat_id': msg.chat.id}, {"$set": {'data': 'off'}}, upsert=True)
         await msg.edit("`Anti-Flood is Disabled Successfully...`", log=__name__, del_in=5)
-    elif args[0].isnumeric():
+    elif args.isnumeric():
         if msg.chat.id not in ANTIFLOOD_DATA or (
             msg.chat.id in ANTIFLOOD_DATA and ANTIFLOOD_DATA[msg.chat.id].get("data") == "off"
         ):
             return await msg.err("First turn ON ANTIFLOOD then set Limit.")
-        input_ = int(args[0])
+        input_ = int(args)
         if input_ < 3:
             await msg.err("Can't set Antiflood Limit less then 3")
             return
@@ -162,17 +162,14 @@ async def anti_flood_handler(msg: Message):
     user_id = msg.from_user.id
     first_name = msg.from_user.first_name
 
-    if not ADMINS.get(msg.chat.id):
-        await cache_admins(msg)
-    if user_id in ADMINS[chat_id]:
-        return
-
     if chat_id not in ANTIFLOOD_DATA or (
         chat_id in ANTIFLOOD_DATA and ANTIFLOOD_DATA[chat_id].get("data") == "off"
     ):
         return
 
-    if await WHITELIST_USERS.find_one({'user_id': user_id}):
+    if not ADMINS.get(msg.chat.id):
+        await cache_admins(msg)
+    if user_id in ADMINS[chat_id]:
         return
 
     mode = ANTIFLOOD_DATA[msg.chat.id]["mode"]
