@@ -195,7 +195,7 @@ async def rss_worker():
         _LOG.info(
             "You have to add var for `RSS_CHAT_ID`, for Now i will send in LOG_CHANNEL")
     while RSS_DICT:
-        for url in RSS_DICT.keys():
+        for url in RSS_DICT:
             rss = await _parse(url)
             for entries in rss.entries[:4]:
                 parsed_time = parser.parse(entries['published'])
