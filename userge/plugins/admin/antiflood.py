@@ -169,7 +169,8 @@ async def anti_flood_handler(msg: Message):
     if not ADMINS.get(msg.chat.id):
         await cache_admins(msg)
     if user_id in ADMINS[chat_id]:
-        del FLOOD_CACHE[chat_id]
+        if chat_id in FLOOD_CACHE:
+            del FLOOD_CACHE[chat_id]
         return
 
     mode = ANTIFLOOD_DATA[msg.chat.id]["mode"]
