@@ -33,13 +33,11 @@ TASK_RUNNING = False
 
 
 async def _init():
-    global RSS_DICT  # pylint: disable=global-statement
     async for i in RSS_COLLECTION.find():
         RSS_DICT[i['url']] = i['last_updated']
 
 
 async def add_new_feed(url: str, l_u: datetime) -> str:
-    global RSS_DICT  # pylint: disable=global-statement
     if url in RSS_DICT:
         out_str = "`Url is matched in Existing Feed Database.`"
     else:
@@ -61,7 +59,6 @@ async def add_new_feed(url: str, l_u: datetime) -> str:
 
 
 async def delete_feed(url: str) -> str:
-    global RSS_DICT  # pylint: disable=global-statement
     if url in RSS_DICT:
         out_str = f"""
 #DELETED_FEED_URL
@@ -148,7 +145,6 @@ async def send_rss_to_telegram(client, args: dict, path: str = None):
     'usage': "{tr}addfeed url"})
 async def add_rss_feed(msg: Message):
     """ Add a New feed Url """
-    global RSS_DICT  # pylint: disable=global-statement
     if len(RSS_DICT) >= 10:
         return await msg.edit("`Sorry, but not allowing to add urls more than 10.`")
     if not msg.input_str:
@@ -167,9 +163,8 @@ async def add_rss_feed(msg: Message):
     'usage': "{tr}delfeed title"})
 async def delete_rss_feed(msg: Message):
     """ Delete to a existing Feed Url """
-    global RSS_DICT  # pylint: disable=global-statement
     if msg.flags and '-all' in msg.flags:
-        del RSS_DICT
+        RSS_DICT.clear()
         await RSS_COLLECTION.drop()
         return await msg.edit("`Deleted All feeds Successfully...`")
     if not msg.input_str:
@@ -183,7 +178,6 @@ async def delete_rss_feed(msg: Message):
     'usage': "{tr}listrss"})
 async def list_rss_feed(msg: Message):
     """ List all Subscribed Feeds """
-    global RSS_DICT  # pylint: disable=global-statement
     out_str = ""
     for url, date in RSS_DICT.items():
         out_str += f"**FEED URL:** `{url}`"
@@ -195,9 +189,9 @@ async def list_rss_feed(msg: Message):
 
 @userge.add_task
 async def rss_worker():
-    global TASK_RUNNING, RSS_DICT  # pylint: disable=global-statement
+    global TASK_RUNNING  # pylint: disable=global-statement
     TASK_RUNNING = True
-    if RSS_CHAT_ID[0] == Config.LOG_CHANNEL_ID:
+    if RSS_DICT and RSS_CHAT_ID[0] == Config.LOG_CHANNEL_ID:
         _LOG.info(
             "You have to add var for `RSS_CHAT_ID`, for Now i will send in LOG_CHANNEL")
     while RSS_DICT:
