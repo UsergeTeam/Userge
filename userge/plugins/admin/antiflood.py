@@ -45,7 +45,7 @@ async def cache_admins(msg):
 @userge.on_cmd("setflood", about={
     'header': "Set Anti-Flood limit to take Action\n"
               "Pass <on/off> to turn Off and On.",
-    'usage': "{tr}setflood 5"
+    'usage': "{tr}setflood 5\n"
              "{tr}setflood on (for ON)\n{tr}setflood off (for OFF)"}, allow_private=False)
 async def set_flood(msg: Message):
     """ Set flood on/off and flood limit """
