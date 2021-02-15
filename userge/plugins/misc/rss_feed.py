@@ -9,7 +9,7 @@
 # All rights reserved.
 
 import os
-from typing import Dict, List, Tuple, Optional
+from typing import Dict, List, Tuple
 
 import wget
 import asyncio
@@ -28,7 +28,7 @@ from userge import userge, Message, Config, logging, get_collection, pool
 RSS_CHAT_ID = [int(x) for x in os.environ.get("RSS_CHAT_ID", str(Config.LOG_CHANNEL_ID)).split()]
 _LOG = logging.getLogger(__name__)
 
-RSS_DICT: Dict[str, List[datetime, Optional[datetime]]] = {}
+RSS_DICT: Dict[str, List[datetime]] = {}
 
 RSS_COLLECTION = get_collection("RSS_COLLECTION")  # Changed Collection Name cuz of Messsssss
 TASK_RUNNING = False
@@ -190,11 +190,12 @@ async def list_rss_feed(msg: Message):
 async def rss_worker():
     global TASK_RUNNING  # pylint: disable=global-statement
     TASK_RUNNING = True
-    chunk = 10
+    chunk = 20
     if RSS_DICT and RSS_CHAT_ID[0] == Config.LOG_CHANNEL_ID:
         _LOG.info(
             "You have to add var for `RSS_CHAT_ID`, for Now i will send in LOG_CHANNEL")
     while RSS_DICT:
+        _LOG.debug("Running RSS Worker Background ...")
         for url in RSS_DICT:
             rss = await _parse(url)
             if len(rss.entries) > chunk:
