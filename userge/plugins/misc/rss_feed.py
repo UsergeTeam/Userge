@@ -27,6 +27,7 @@ RSS_CHAT_ID = [int(x) for x in os.environ.get("RSS_CHAT_ID", str(Config.LOG_CHAN
 _LOG = logging.getLogger(__name__)
 
 RSS_DICT = {}
+PUBLISHED_DICT = {}
 
 RSS_COLLECTION = get_collection("RSS_COLLECTION")  # Changed Collection Name cuz of Messsssss
 TASK_RUNNING = False
@@ -35,6 +36,7 @@ TASK_RUNNING = False
 async def _init():
     async for i in RSS_COLLECTION.find():
         RSS_DICT[i['url']] = i['last_updated']
+        PUBLISHED_DICT[i['url']] = i['published']
 
 
 async def add_new_feed(url: str, l_u: datetime) -> str:
@@ -49,10 +51,11 @@ async def add_new_feed(url: str, l_u: datetime) -> str:
 \t\t**LAST UPDATED:** `{parse_time}`
 """
         RSS_DICT[url] = parse_time
+        PUBLISHED_DICT[url] = parse_time
         if not TASK_RUNNING:
             asyncio.get_event_loop().create_task(rss_worker())
         await RSS_COLLECTION.update_one(
-            {'url': url}, {"$set": {'last_updated': parse_time}},
+            {'url': url}, {"$set": {'last_updated': parse_time, 'published': parse_time}},
             upsert=True
         )
     return out_str
@@ -66,6 +69,7 @@ async def delete_feed(url: str) -> str:
 \t\t**FEED_URL:** `{url}`
 """
         del RSS_DICT[url]
+        del PUBLISHED[url]
         await RSS_COLLECTION.delete_one({'url': url})
     else:
         out_str = "`This Url is not in my database.`"
@@ -165,6 +169,7 @@ async def delete_rss_feed(msg: Message):
     """ Delete to a existing Feed Url """
     if msg.flags and '-all' in msg.flags:
         RSS_DICT.clear()
+        PUBLISHED_DICT.clear()
         await RSS_COLLECTION.drop()
         return await msg.edit("`Deleted All feeds Successfully...`")
     if not msg.input_str:
@@ -200,7 +205,7 @@ async def rss_worker():
             for entries in rss.entries[:4]:
                 parsed_time = parser.parse(entries['published'])
                 parsed_time = (parsed_time + timedelta(hours=5, minutes=30)).replace(tzinfo=None)
-                if not parsed_time > RSS_DICT[url]:
+                if not parsed_time > PUBLISBED_DICT[url]:
                     datetime_now = datetime.utcnow() + timedelta(hours=5, minutes=30)
                     RSS_DICT[url] = datetime_now
                     await RSS_COLLECTION.update_one(
@@ -208,9 +213,10 @@ async def rss_worker():
                     )
                     continue
                 await send_new_post(entries)
+                PUBLISHED_DICT[url] = parsed_time
                 RSS_DICT[url] = parsed_time
                 await RSS_COLLECTION.update_one(
-                    {'url': url}, {"$set": {'last_updated': parsed_time}}, upsert=True
+                    {'url': url}, {"$set": {'last_updated': parsed_time, 'published': parsed_time}}, upsert=True
                 )
             await asyncio.sleep(1)
         await asyncio.sleep(60)
