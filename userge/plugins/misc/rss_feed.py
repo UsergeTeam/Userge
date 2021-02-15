@@ -90,7 +90,7 @@ async def send_new_post(entries):
         if not os.path.exists(thumb):
             await pool.run_in_thread(wget.download)(thumb_url, thumb)
     if time:
-         time = (parser.parse(time) + timedelta(hours=5, minutes=30)).replace(tzinfo=None)
+        time = (parser.parse(time) + timedelta(hours=5, minutes=30)).replace(tzinfo=None)
     if entries.get('authors'):
         author = entries.get('authors')[0]['name'].split('/')[-1]
         author_link = entries.get('authors')[0]['href']
@@ -207,7 +207,7 @@ async def rss_worker():
                 parsed_time = parser.parse(entries['published'])
                 parsed_time = (parsed_time + timedelta(hours=5, minutes=30)).replace(tzinfo=None)
                 if not parsed_time > RSS_DICT[url]:
-                    datetime_now = datetime.utcnow() + time_delta(hours=5, minutes=30)
+                    datetime_now = datetime.utcnow() + timedelta(hours=5, minutes=30)
                     RSS_DICT[url] = datetime_now
                     await RSS_COLLECTION.update_one(
                         {'url': url}, {"$set": {'last_updated': datetime_now}}, upsert=True
