@@ -45,7 +45,7 @@ async def cache_admins(msg):
 @userge.on_cmd("setflood", about={
     'header': "Set Anti-Flood limit to take Action\n"
               "Pass <on/off> to turn Off and On.",
-    'usage': "{tr}setflood 5"
+    'usage': "{tr}setflood 5\n"
              "{tr}setflood on (for ON)\n{tr}setflood off (for OFF)"}, allow_private=False)
 async def set_flood(msg: Message):
     """ Set flood on/off and flood limit """
@@ -169,6 +169,7 @@ async def anti_flood_handler(msg: Message):
     if not ADMINS.get(msg.chat.id):
         await cache_admins(msg)
     if user_id in ADMINS[chat_id]:
+        del FLOOD_CACHE[chat_id]
         return
 
     mode = ANTIFLOOD_DATA[msg.chat.id]["mode"]
