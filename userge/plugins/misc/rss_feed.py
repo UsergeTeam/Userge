@@ -30,7 +30,7 @@ _LOG = logging.getLogger(__name__)
 
 RSS_DICT: Dict[str, List[datetime]] = {}
 
-RSS_COLLECTION = get_collection("RSS_COLLECTION")  # Changed Collection Name cuz of Messsssss
+RSS_COLLECTION = get_collection("RSS_FEED")  # Changed Collection Name cuz of Messsssss
 TASK_RUNNING = False
 
 
@@ -180,7 +180,7 @@ async def list_rss_feed(msg: Message):
     out_str = ""
     for url, date in RSS_DICT.items():
         out_str += f"**FEED URL:** `{url}`"
-        out_str += f"\n**LAST CHECKED:** `{date[1]}`\n"
+        out_str += f"\n**LAST CHECKED:** `{date[1]}`\n\n"
     if not out_str:
         out_str = "`No feed Url Found.`"
     await msg.edit(out_str)
