@@ -69,7 +69,7 @@ async def delete_feed(url: str) -> str:
 \t\t**FEED_URL:** `{url}`
 """
         del RSS_DICT[url]
-        del PUBLISHED[url]
+        del PUBLISHED_DICT[url]
         await RSS_COLLECTION.delete_one({'url': url})
     else:
         out_str = "`This Url is not in my database.`"
@@ -205,7 +205,7 @@ async def rss_worker():
             for entries in rss.entries[:4]:
                 parsed_time = parser.parse(entries['published'])
                 parsed_time = (parsed_time + timedelta(hours=5, minutes=30)).replace(tzinfo=None)
-                if not parsed_time > PUBLISBED_DICT[url]:
+                if not parsed_time > PUBLISHED_DICT[url]:
                     datetime_now = datetime.utcnow() + timedelta(hours=5, minutes=30)
                     RSS_DICT[url] = datetime_now
                     await RSS_COLLECTION.update_one(
@@ -216,7 +216,9 @@ async def rss_worker():
                 PUBLISHED_DICT[url] = parsed_time
                 RSS_DICT[url] = parsed_time
                 await RSS_COLLECTION.update_one(
-                    {'url': url}, {"$set": {'last_updated': parsed_time, 'published': parsed_time}}, upsert=True
+                    {'url': url},
+                    {"$set": {'last_updated': parsed_time, 'published': parsed_time}},
+                    upsert=True
                 )
             await asyncio.sleep(1)
         await asyncio.sleep(60)
