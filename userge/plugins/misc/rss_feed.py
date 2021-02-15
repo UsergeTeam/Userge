@@ -9,6 +9,8 @@
 # All rights reserved.
 
 import os
+from typing import Dict, List, Tuple
+
 import wget
 import asyncio
 import feedparser
@@ -26,7 +28,7 @@ from userge import userge, Message, Config, logging, get_collection, pool
 RSS_CHAT_ID = [int(x) for x in os.environ.get("RSS_CHAT_ID", str(Config.LOG_CHANNEL_ID)).split()]
 _LOG = logging.getLogger(__name__)
 
-RSS_DICT = {}
+RSS_DICT: Dict[str, List[datetime]] = {}
 
 RSS_COLLECTION = get_collection("RSS_COLLECTION")  # Changed Collection Name cuz of Messsssss
 TASK_RUNNING = False
@@ -34,27 +36,24 @@ TASK_RUNNING = False
 
 async def _init():
     async for i in RSS_COLLECTION.find():
-        RSS_DICT[i['url']] = i['last_updated']
+        RSS_DICT[i['url']] = [i['published'], None]
 
 
-async def add_new_feed(url: str, l_u: datetime) -> str:
+async def add_new_feed(url: str, l_u: str) -> str:
     if url in RSS_DICT:
         out_str = "`Url is matched in Existing Feed Database.`"
     else:
-        parse_time = (parser.parse(l_u) + timedelta(hours=5, minutes=30)).replace(tzinfo=None)
+        pub, now = _parse_time(l_u)
         out_str = f"""
 #ADDED_NEW_FEED_URL
 
 \t\t**FEED URL:** `{url}`
-\t\t**LAST UPDATED:** `{parse_time}`
+\t\t**LAST UPDATED:** `{pub}`
 """
-        RSS_DICT[url] = parse_time
+        RSS_DICT[url] = [pub, now]
         if not TASK_RUNNING:
             asyncio.get_event_loop().create_task(rss_worker())
-        await RSS_COLLECTION.update_one(
-            {'url': url}, {"$set": {'last_updated': parse_time}},
-            upsert=True
-        )
+        await RSS_COLLECTION.update_one({'url': url}, {"$set": {'published': pub}}, upsert=True)
     return out_str
 
 
@@ -87,7 +86,7 @@ async def send_new_post(entries):
         if not os.path.exists(thumb):
             await pool.run_in_thread(wget.download)(thumb_url, thumb)
     if time:
-        time = (parser.parse(time) + timedelta(hours=5, minutes=30)).replace(tzinfo=None)
+        time = _parse_time(time)[0]
     if entries.get('authors'):
         author = entries.get('authors')[0]['name'].split('/')[-1]
         author_link = entries.get('authors')[0]['href']
@@ -181,7 +180,7 @@ async def list_rss_feed(msg: Message):
     out_str = ""
     for url, date in RSS_DICT.items():
         out_str += f"**FEED URL:** `{url}`"
-        out_str += f"\n**LAST CHECKED:** `{date}`\n"
+        out_str += f"\n**LAST CHECKED:** `{date[1]}`\n"
     if not out_str:
         out_str = "`No feed Url Found.`"
     await msg.edit(out_str)
@@ -191,30 +190,38 @@ async def list_rss_feed(msg: Message):
 async def rss_worker():
     global TASK_RUNNING  # pylint: disable=global-statement
     TASK_RUNNING = True
+    chunk = 20
     if RSS_DICT and RSS_CHAT_ID[0] == Config.LOG_CHANNEL_ID:
         _LOG.info(
             "You have to add var for `RSS_CHAT_ID`, for Now i will send in LOG_CHANNEL")
     while RSS_DICT:
+        _LOG.debug("Running RSS Worker Background ...")
         for url in RSS_DICT:
             rss = await _parse(url)
-            for entries in rss.entries[:4]:
-                parsed_time = parser.parse(entries['published'])
-                parsed_time = (parsed_time + timedelta(hours=5, minutes=30)).replace(tzinfo=None)
-                if not parsed_time > RSS_DICT[url]:
-                    datetime_now = datetime.utcnow() + timedelta(hours=5, minutes=30)
-                    RSS_DICT[url] = datetime_now
-                    await RSS_COLLECTION.update_one(
-                        {'url': url}, {"$set": {'last_updated': datetime_now}}, upsert=True
-                    )
+            if len(rss.entries) > chunk:
+                entries = reversed(rss.entries[:chunk])
+            else:
+                entries = reversed(rss.entries)
+            for entry in entries:
+                pub, now = _parse_time(entry['published'])
+                if pub <= RSS_DICT[url][0]:
+                    RSS_DICT[url][1] = now
                     continue
-                await send_new_post(entries)
-                RSS_DICT[url] = parsed_time
+                await send_new_post(entry)
+                RSS_DICT[url] = [pub, now]
                 await RSS_COLLECTION.update_one(
-                    {'url': url}, {"$set": {'last_updated': parsed_time}}, upsert=True
-                )
-            await asyncio.sleep(1)
+                    {'url': url}, {"$set": {'published': pub}}, upsert=True)
+                await asyncio.sleep(1)
+            await asyncio.sleep(5)
         await asyncio.sleep(60)
     TASK_RUNNING = False
+
+
+def _parse_time(t: str) -> Tuple[datetime, datetime]:
+    _delta = timedelta(hours=5, minutes=30)
+    parsed_time = (parser.parse(t) + _delta).replace(tzinfo=None)
+    datetime_now = datetime.utcnow() + _delta
+    return parsed_time, datetime_now
 
 
 @pool.run_in_thread
