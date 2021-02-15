@@ -11,12 +11,14 @@
 import os
 import wget
 import asyncio
-import pytz
 import feedparser
+from datetime import datetime, timedelta
 from dateutil import parser
 
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from pyrogram.errors import ChatWriteForbidden, ChannelPrivate, UserNotParticipant
+from pyrogram.errors import (
+    ChatWriteForbidden, ChannelPrivate, UserNotParticipant, ChatIdInvalid
+)
 
 from userge.utils.exceptions import UsergeBotNotFound
 from userge import userge, Message, Config, logging, get_collection, pool
@@ -24,49 +26,50 @@ from userge import userge, Message, Config, logging, get_collection, pool
 RSS_CHAT_ID = [int(x) for x in os.environ.get("RSS_CHAT_ID", str(Config.LOG_CHANNEL_ID)).split()]
 _LOG = logging.getLogger(__name__)
 
-RSS_URLS = {}
-RSS_COLLECTION = get_collection("RSS_DATA")
+RSS_DICT = {}
+
+RSS_COLLECTION = get_collection("RSS_COLLECTION")  # Changed Collection Name cuz of Messsssss
 TASK_RUNNING = False
 
 
 async def _init():
-    async for url in RSS_COLLECTION.find():
-        RSS_URLS[url['title']] = {
-            'feed_url': url['feed_url'], 'last_post': url['last_post']
-        }
+    global RSS_DICT  # pylint: disable=global-statement
+    async for i in RSS_COLLECTION.find():
+        RSS_DICT[i['url']] = i['last_updated']
 
 
-async def add_new_feed(title: str, url: str, last_post: str) -> str:
-    if title in RSS_URLS or url in (v['feed_url'] for v in RSS_URLS.values()):
-        out_str = "`Url or Title is matched in Existing Feed Database.`"
+async def add_new_feed(url: str, l_u: datetime) -> str:
+    global RSS_DICT  # pylint: disable=global-statement
+    if url in RSS_DICT:
+        out_str = "`Url is matched in Existing Feed Database.`"
     else:
+        parse_time = (parser.parse(l_u) + timedelta(hours=5, minutes=30)).replace(tzinfo=None)
         out_str = f"""
 #ADDED_NEW_FEED_URL
 
-\t\t**TITLE:** `{title}`
-\t\t**FEED_URL:** `{url}`
-\t\t**LAST_POST:** `{last_post}`
+\t\t**FEED URL:** `{url}`
+\t\t**LAST UPDATED:** `{parse_time}`
 """
-        RSS_URLS[title] = {'feed_url': url, 'last_post': last_post}
+        RSS_DICT[url] = parse_time
         if not TASK_RUNNING:
             asyncio.get_event_loop().create_task(rss_worker())
         await RSS_COLLECTION.update_one(
-            {'title': title}, {"$set": {'feed_url': url, 'last_post': last_post}},
+            {'url': url}, {"$set": {'last_updated': parse_time}},
             upsert=True
         )
     return out_str
 
 
-async def delete_feed(title: str) -> str:
-    if title in RSS_URLS:
+async def delete_feed(url: str) -> str:
+    global RSS_DICT  # pylint: disable=global-statement
+    if url in RSS_DICT:
         out_str = f"""
 #DELETED_FEED_URL
 
-\t\t**TITLE:** `{title}`
-\t\t**FEED_URL:** `{RSS_URLS[title]['feed_url']}`
+\t\t**FEED_URL:** `{url}`
 """
-        del RSS_URLS[title]
-        await RSS_COLLECTION.delete_one({'title': title})
+        del RSS_DICT[url]
+        await RSS_COLLECTION.delete_one({'url': url})
     else:
         out_str = "`This Url is not in my database.`"
     return out_str
@@ -75,7 +78,7 @@ async def delete_feed(title: str) -> str:
 async def send_new_post(entries):
     title = entries.get('title')
     link = entries.get('link')
-    time = entries.get('updated')
+    time = entries.get('published')
     thumb = None
     author = None
     author_link = None
@@ -87,11 +90,7 @@ async def send_new_post(entries):
         if not os.path.exists(thumb):
             await pool.run_in_thread(wget.download)(thumb_url, thumb)
     if time:
-        parse_time = parser.parse(time)
-        if parse_time.tzinfo is None:
-            aware_date = pytz.utc.localize(parse_time)
-            parse_time = aware_date.astimezone(pytz.timezone("India/Mumbai"))
-        time = str(parse_time).split('+')[0][:-3]
+         time = (parser.parse(time) + timedelta(hours=5, minutes=30)).replace(tzinfo=None)
     if entries.get('authors'):
         author = entries.get('authors')[0]['name'].split('/')[-1]
         author_link = entries.get('authors')[0]['href']
@@ -107,21 +106,28 @@ async def send_new_post(entries):
         args = {
             'caption': out_str,
             'parse_mode': "md",
-            'reply_markup': markup
+            'reply_markup': markup if userge.has_bot else None
         }
     else:
-        out_str += f"\n\n[View Post Online]({link})"
         args = {
             'text': out_str,
             'disable_web_page_preview': True,
             'parse_mode': "md",
-            'reply_markup': markup
+            'reply_markup': markup if userge.has_bot else None
         }
     for chat_id in RSS_CHAT_ID:
         args.update({'chat_id': chat_id})
         try:
             await send_rss_to_telegram(userge.bot, args, thumb)
-        except (ChatWriteForbidden, ChannelPrivate, UserNotParticipant, UsergeBotNotFound):
+        except (
+            ChatWriteForbidden, ChannelPrivate, ChatIdInvalid,
+            UserNotParticipant, UsergeBotNotFound
+        ):
+            out_str += f"\n\n[View Post Online]({link})"
+            if 'caption' in args:
+                args.update({'caption': out_str})
+            else:
+                args.update({'text': out_str})
             await send_rss_to_telegram(userge, args, thumb)
 
 
@@ -139,30 +145,35 @@ async def send_rss_to_telegram(client, args: dict, path: str = None):
 
 @userge.on_cmd("addfeed", about={
     'header': "Add new Feed Url to get regular Updates from it.",
-    'usage': "{tr}addfeed title | url"})
+    'usage': "{tr}addfeed url"})
 async def add_rss_feed(msg: Message):
     """ Add a New feed Url """
-    if not (msg.input_str and '|' in msg.input_str):
-        return await msg.edit("[Wrong syntax]\nCorrect syntax is addfeed title | feed_url")
-    title, url = msg.input_str.split('|', maxsplit=1)
-    if not url:
-        return await msg.err("Without Feed Url how can I add feed?")
-    title, url = title.strip(), url.strip()
+    global RSS_DICT  # pylint: disable=global-statement
+    if len(RSS_DICT) >= 10:
+        return await msg.edit("`Sorry, but not allowing to add urls more than 10.`")
+    if not msg.input_str:
+        return await msg.edit("Check `.help addfeed`")
     try:
-        rss = await _parse(url)
+        rss = await _parse(msg.input_str)
     except IndexError:
         return await msg.edit("The link does not seem to be a RSS feed or is not supported")
-    out_str = await add_new_feed(title, url, rss.entries[0]['link'])
+    out_str = await add_new_feed(msg.input_str, rss.entries[0]['published'])
     await msg.edit(out_str, log=__name__)
 
 
 @userge.on_cmd("delfeed", about={
     'header': "Delete a existing Feed Url from Database.",
+    'flags': {'-all': 'Delete All Urls.'},
     'usage': "{tr}delfeed title"})
 async def delete_rss_feed(msg: Message):
     """ Delete to a existing Feed Url """
+    global RSS_DICT  # pylint: disable=global-statement
+    if msg.flags and '-all' in msg.flags:
+        del RSS_DICT
+        await RSS_COLLECTION.drop()
+        return await msg.edit("`Deleted All feeds Successfully...`")
     if not msg.input_str:
-        return await msg.edit("[Wrong syntax]\nCorrect syntax is delfeed title")
+        return await msg.edit("check `.help delfeed`")
     out_str = await delete_feed(msg.input_str)
     await msg.edit(out_str, log=__name__)
 
@@ -172,11 +183,11 @@ async def delete_rss_feed(msg: Message):
     'usage': "{tr}listrss"})
 async def list_rss_feed(msg: Message):
     """ List all Subscribed Feeds """
+    global RSS_DICT  # pylint: disable=global-statement
     out_str = ""
-    for title, urls in RSS_URLS.items():
-        out_str += f"\n**TITLE:** `{title}`"
-        out_str += f"\n**FEED URL:** `{urls['feed_url']}`"
-        out_str += f"\n**LAST POST:** `{urls['last_post']}`\n"
+    for url, date in RSS_DICT.items():
+        out_str += f"**FEED URL:** `{url}`"
+        out_str += f"\n**LAST CHECKED:** `{date}`\n"
     if not out_str:
         out_str = "`No feed Url Found.`"
     await msg.edit(out_str)
@@ -184,21 +195,30 @@ async def list_rss_feed(msg: Message):
 
 @userge.add_task
 async def rss_worker():
-    global TASK_RUNNING  # pylint: disable=global-statement
+    global TASK_RUNNING, RSS_DICT  # pylint: disable=global-statement
     TASK_RUNNING = True
-    while RSS_URLS:
-        if RSS_CHAT_ID[0] == Config.LOG_CHANNEL_ID:
-            _LOG.info(
-                "You have to add var for `RSS_CHAT_ID`, for Now i will send in LOG_CHANNEL")
-        for title, url in RSS_URLS.items():
-            rss = await _parse(url['feed_url'])
-            if url['last_post'] != rss.entries[0]['link']:
-                RSS_URLS[title]['last_post'] = rss.entries[0]['link']
+    if RSS_CHAT_ID[0] == Config.LOG_CHANNEL_ID:
+        _LOG.info(
+            "You have to add var for `RSS_CHAT_ID`, for Now i will send in LOG_CHANNEL")
+    while RSS_DICT:
+        for url in RSS_DICT.keys():
+            rss = await _parse(url)
+            for entries in rss.entries[:4]:
+                parsed_time = parser.parse(entries['published'])
+                parsed_time = (parsed_time + timedelta(hours=5, minutes=30)).replace(tzinfo=None)
+                if not parsed_time > RSS_DICT[url]:
+                    datetime_now = datetime.utcnow() + time_delta(hours=5, minutes=30)
+                    RSS_DICT[url] = datetime_now
+                    await RSS_COLLECTION.update_one(
+                        {'url': url}, {"$set": {'last_updated': datetime_now}}, upsert=True
+                    )
+                    continue
+                await send_new_post(entries)
+                RSS_DICT[url] = parsed_time
                 await RSS_COLLECTION.update_one(
-                    {'title': title, 'feed_url': url['feed_url']},
-                    {"$set": {'last_post': rss.entries[0]['link']}}
+                    {'url': url}, {"$set": {'last_updated': parsed_time}}, upsert=True
                 )
-                await send_new_post(rss.entries[0])
+            await asyncio.sleep(1)
         await asyncio.sleep(60)
     TASK_RUNNING = False
 
