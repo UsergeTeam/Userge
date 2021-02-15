@@ -150,7 +150,7 @@ async def view_flood_settings(msg: Message):
     )
 
 
-@userge.on_filters(filters.group & filters.incoming, group=1, check_restrict_perm=True)
+@userge.on_filters(filters.group & filters.incoming & ~filters.edited, group=1, check_restrict_perm=True)
 async def anti_flood_handler(msg: Message):
     """ Filtering msgs for Handling Flooding """
 
