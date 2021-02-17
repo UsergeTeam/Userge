@@ -295,7 +295,7 @@ async def gban_at_entry(message: Message):
                 async with ses.get(f'https://api.cas.chat/check?user_id={user_id}') as resp:
                     res = json.loads(await resp.text())
                 async with ses.get(
-                    "https://api.intellivoid.net/spamprotection/v1/lookup?query=" + user_id
+                    "https://api.intellivoid.net/spamprotection/v1/lookup?query=" + str(user_id)
                 ) as resp:
                     iv = json.loads(await resp.text())
             if iv['success'] and iv['results']['attributes']['is_blacklisted'] is True:
