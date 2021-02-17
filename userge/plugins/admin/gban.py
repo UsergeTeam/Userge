@@ -298,26 +298,7 @@ async def gban_at_entry(message: Message):
                     "https://api.intellivoid.net/spamprotection/v1/lookup?query=" + str(user_id)
                 ) as resp:
                     iv = json.loads(await resp.text())
-            if iv['success'] and iv['results']['attributes']['is_blacklisted'] is True:
-                reason = iv['results']['attributes']['blacklist_reason']
-                await asyncio.gather(
-                    message.client.kick_chat_member(chat_id, user_id),
-                    message.reply(
-                        r"\\**#Userge_Antispam**//"
-                        "\n\nGlobally Banned User Detected in this Chat.\n\n"
-                        "**$Intellivoid SpamProtection**\n"
-                        f"**User:** [{first_name}](tg://user?id={user_id})\n"
-                        f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n\n"
-                        "**Quick Action:** Banned", del_in=10),
-                    CHANNEL.log(
-                        r"\\**#Antispam_Log**//"
-                        "\n\n**GBanned User $SPOTTED**\n"
-                        "**$Intellivoid SpamProtection**"
-                        f"\n**User:** [{first_name}](tg://user?id={user_id})\n"
-                        f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n**Quick Action:**"
-                        f" Banned in {message.chat.title}\n\n$AUTOBAN #id{user_id}")
-                )
-            elif res['ok']:
+            if res['ok']:
                 reason = ' | '.join(
                     res['result']['messages']) if 'result' in res else None
                 await asyncio.gather(
@@ -333,6 +314,25 @@ async def gban_at_entry(message: Message):
                         r"\\**#Antispam_Log**//"
                         "\n\n**GBanned User $SPOTTED**\n"
                         "**$SENRTY #CAS BAN**"
+                        f"\n**User:** [{first_name}](tg://user?id={user_id})\n"
+                        f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n**Quick Action:**"
+                        f" Banned in {message.chat.title}\n\n$AUTOBAN #id{user_id}")
+                )
+            elif iv['success'] and iv['results']['attributes']['is_blacklisted'] is True:
+                reason = iv['results']['attributes']['blacklist_reason']
+                await asyncio.gather(
+                    message.client.kick_chat_member(chat_id, user_id),
+                    message.reply(
+                        r"\\**#Userge_Antispam**//"
+                        "\n\nGlobally Banned User Detected in this Chat.\n\n"
+                        "**$Intellivoid SpamProtection**\n"
+                        f"**User:** [{first_name}](tg://user?id={user_id})\n"
+                        f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n\n"
+                        "**Quick Action:** Banned", del_in=10),
+                    CHANNEL.log(
+                        r"\\**#Antispam_Log**//"
+                        "\n\n**GBanned User $SPOTTED**\n"
+                        "**$Intellivoid SpamProtection**"
                         f"\n**User:** [{first_name}](tg://user?id={user_id})\n"
                         f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n**Quick Action:**"
                         f" Banned in {message.chat.title}\n\n$AUTOBAN #id{user_id}")
