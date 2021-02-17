@@ -167,7 +167,7 @@ _setupPlugins() {
     local link path tmp
     editLastMessage "Checking $1 Plugins ..."
     if test $(grep -P '^'$2'$' <<< $3); then
-        replyLastMessage "\tLoading $1 Plugins ..."
+        editLastMessage "\tLoading $1 Plugins ..."
         replyLastMessage "\t\tClonning ..."
         link=$(test $4 && echo $4 || echo $3)
         tmp=Temp-Plugins
@@ -187,7 +187,6 @@ _setupPlugins() {
     else
         editLastMessage "\t$1 Plugins Disabled !"
     fi
-    deleteLastMessage
 }
 
 _checkUnoffPlugins() {
@@ -196,6 +195,10 @@ _checkUnoffPlugins() {
 
 _checkCustomPlugins() {
     _setupPlugins Custom https://github.com/.+/.+ $CUSTOM_PLUGINS_REPO
+}
+
+_flushMessages() {
+    deleteLastMessage
 }
 
 assertPrerequisites() {
@@ -215,4 +218,5 @@ assertEnvironment() {
     _checkUpstreamRepo
     _checkUnoffPlugins
     _checkCustomPlugins
+    _flushMessages
 }
