@@ -294,10 +294,6 @@ async def gban_at_entry(message: Message):
             async with aiohttp.ClientSession() as ses:
                 async with ses.get(f'https://api.cas.chat/check?user_id={user_id}') as resp:
                     res = json.loads(await resp.text())
-                async with ses.get(
-                    "https://api.intellivoid.net/spamprotection/v1/lookup?query=" + str(user_id)
-                ) as resp:
-                    iv = json.loads(await resp.text())
             if res['ok']:
                 reason = ' | '.join(
                     res['result']['messages']) if 'result' in res else None
@@ -318,7 +314,13 @@ async def gban_at_entry(message: Message):
                         f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n**Quick Action:**"
                         f" Banned in {message.chat.title}\n\n$AUTOBAN #id{user_id}")
                 )
-            elif iv['success'] and iv['results']['attributes']['is_blacklisted'] is True:
+                continue
+            async with aiohttp.ClientSession() as ses:
+                async with ses.get(
+                    "https://api.intellivoid.net/spamprotection/v1/lookup?query=" + str(user_id)
+                ) as resp:
+                    iv = json.loads(await resp.text())
+            if iv['success'] and iv['results']['attributes']['is_blacklisted'] is True:
                 reason = iv['results']['attributes']['blacklist_reason']
                 await asyncio.gather(
                     message.client.kick_chat_member(chat_id, user_id),
