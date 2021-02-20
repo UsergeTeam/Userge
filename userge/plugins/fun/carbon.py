@@ -149,12 +149,7 @@ async def carbon_(message: Message):
         }
         driver.execute("send_command", params)
         # driver.find_element_by_xpath("//button[contains(text(),'Export')]").click()
-        driver.find_element_by_id("export-menu").click()
-        await asyncio.sleep(1)
-        await message.edit("`Processing... 60%`")
-        driver.find_element_by_xpath("//button[contains(text(),'4x')]").click()
-        await asyncio.sleep(1)
-        driver.find_element_by_xpath("//button[contains(text(),'PNG')]").click()
+        driver.find_element_by_css_selector('[data-cy="quick-export-button"]').click()
         await message.edit("`Processing... 80%`")
         while not os.path.isfile(carbon_path):
             await asyncio.sleep(0.5)
