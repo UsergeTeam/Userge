@@ -27,7 +27,7 @@ _LOG = logging.getLogger(__name__)
 _IS_TELEGRAPH = False
 _IS_STICKER = False
 
-_DEFAULT = "https://t.me/theUserge/31"
+_DEFAULT = "https://telegra.ph/file/7165f3f5b7614d470cba4.mp4"
 _CHAT, _MSG_ID = None, None
 _LOGO_ID = None
 
@@ -65,7 +65,7 @@ def _get_mode() -> str:
 def _get_alive_text_and_markup(message: Message) -> Tuple[str, Optional[InlineKeyboardMarkup]]:
     markup = None
     output = f"""
-**⏱ Uptime** : `{userge.uptime}`
+**⏱ UpTime** : `{userge.uptime}`
 **💡 Version** : `{get_version()}`
 **⚙️ Mode** : `{_get_mode().upper()}`
 
