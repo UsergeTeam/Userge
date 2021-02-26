@@ -71,4 +71,4 @@ async def purge_(message: Message):
     end_t = datetime.now()
     time_taken_s = (end_t - start_t).seconds
     out = f"<u>purged</u> {purged_messages_count} messages in {time_taken_s} seconds."
-    await message.edit(out, del_in=3)
+    await message.edit(out, del_in=1)
