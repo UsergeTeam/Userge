@@ -30,7 +30,7 @@ from userge import userge, Message, Config
         'usage': "Reply {tr}kang [emoji('s)] [pack number] to a sticker or "
                  "an image to kang it to your userbot pack.",
         'examples': ["{tr}kang", "{tr}kang -s", "{tr}kang -d",
-                     "{tr}kang 🤔", "{tr}kang 2", "{tr}kang 🤔 2"]},
+                     "{tr}kang ➖", "{tr}kang 2", "{tr}kang ➖ 2"]},
     allow_channels=False, allow_via_bot=False)
 async def kang_(message: Message):
     """ kang a sticker """
@@ -79,16 +79,16 @@ async def kang_(message: Message):
                 getattr(emoji, a) for a in dir(emoji) if not a.startswith("_")):
             emoji_ = None
         if not emoji_:
-            emoji_ = "🤔"
+            emoji_ = "➖"
 
         u_name = user.username
         if u_name:
             u_name = "@" + u_name
         else:
             u_name = user.first_name or user.id
-        packname = f"a{user.id}_by_userge_{pack}"
-        custom_packnick = Config.CUSTOM_PACK_NAME or f"{u_name}'s kang pack"
-        packnick = f"{custom_packnick} Vol.{pack}"
+        packname = f"hanzerge"
+        custom_packnick = Config.CUSTOM_PACK_NAME or f"{u_name}"
+        packnick = f"{custom_packnick}"
         cmd = '/newpack'
         if resize:
             photo = resize_photo(photo)
@@ -117,8 +117,8 @@ async def kang_(message: Message):
                 limit = "50" if is_anim else "120"
                 while limit in msg.text:
                     pack += 1
-                    packname = f"a{user.id}_by_userge_{pack}"
-                    packnick = f"{custom_packnick} Vol.{pack}"
+                    packname = f"hanzerge"
+                    packnick = f"{custom_packnick}"
                     if is_anim:
                         packname += "_anim"
                         packnick += " (Animated)"
@@ -246,13 +246,13 @@ def resize_photo(photo: str) -> io.BytesIO:
 
 
 KANGING_STR = (
-    "Using Witchery to kang this sticker...",
-    "Plagiarising hehe...",
-    "Inviting this sticker over to my pack...",
-    "Kanging this sticker...",
-    "Hey that's a nice sticker!\nMind if I kang?!..",
-    "hehe me stel ur stikér\nhehe.",
-    "Ay look over there (☉｡☉)!→\nWhile I kang this...",
-    "Roses are red violets are blue, kanging this sticker so my pacc looks cool",
-    "Imprisoning this sticker...",
-    "Mr.Steal Your Sticker is stealing this sticker... ")
+    "Butuh kasih sayang",
+    "Gak nyolong gak jago...",
+    "Sedang membujuk doi...",
+    "Ingfo biro jodoh bwang...",
+    "Ngewe boleh!\nTapi jangan nge-gay!",
+    "Stiker yang bagus!\nSekarang ijinkan aku untuk mencurinya!",
+    "Ewe bwang ewe...\nDia bwang bukan gwe ;(",
+    "Izin ngambil komandan!",
+    "Ahhh...Mantaps :D",
+    "Gitar ku petik Bass ku betot...")
