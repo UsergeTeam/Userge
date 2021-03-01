@@ -37,7 +37,7 @@ async def _init() -> None:
         USERS.update({_user['_id']:  [_user['pcount'], _user['gcount'], _user['men']]})
 
 
-@userge.on_cmd("afk", about={
+@userge.on_cmd("ezafk", about={
     'header': "Set to AFK mode",
     'description': "Sets your status as AFK. Responds to anyone who tags/PM's.\n"
                    "you telling you are AFK. Switches off AFK when you type back anything.",
