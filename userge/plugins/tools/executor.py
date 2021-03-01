@@ -19,6 +19,8 @@ from os import geteuid
 from userge import userge, Message, Config
 from userge.utils import runcmd
 
+CHANNEL = userge.getCLogger()
+
 
 @userge.on_cmd("eval", about={
     'header': "run python code line | lines",
@@ -72,7 +74,10 @@ async def eval_(message: Message):
         output += f"**>** ```{cmd}```\n\n"
     if evaluation is not None:
         output += f"**>>** ```{evaluation}```"
-    if output:
+    if (exc or stderr) and message.chat.type in ("group", "supergroup", "channel"):
+        msg_id = await CHANNEL.log(output)
+        await message.edit(f"**Logs**: {CHANNEL.get_link(msg_id)}")
+    elif output:
         await message.edit_or_send_as_file(text=output,
                                            parse_mode='md',
                                            filename="eval.txt",
