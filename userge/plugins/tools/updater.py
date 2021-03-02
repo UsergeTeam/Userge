@@ -44,8 +44,10 @@ async def check_update(message: Message):
         if not Config.HEROKU_APP:
             await message.err("HEROKU APP : could not be found !")
             return
-        push_to_heroku = True
-        flags.remove("push")
+        await message.err("Still Not Tested !")
+        return
+        # push_to_heroku = True
+        # flags.remove("push")
     if len(flags) == 1:
         branch = flags[0]
         dev_branch = "alpha"
