@@ -44,8 +44,6 @@ class Config:
     UNFINISHED_PROGRESS_STR = os.environ.get("UNFINISHED_PROGRESS_STR")
     ALIVE_MEDIA = os.environ.get("ALIVE_MEDIA")
     CUSTOM_PACK_NAME = os.environ.get("CUSTOM_PACK_NAME")
-    INSTA_ID = os.environ.get("INSTA_ID")
-    INSTA_PASS = os.environ.get("INSTA_PASS")
     UPSTREAM_REPO = os.environ.get("UPSTREAM_REPO")
     UPSTREAM_REMOTE = os.environ.get("UPSTREAM_REMOTE")
     SPAM_WATCH_API = os.environ.get("SPAM_WATCH_API")
