@@ -116,7 +116,7 @@ async def _raise_func(r_c: Union['_client.Userge', '_client.UsergeBot'],
         await r_m.reply(f"< **ERROR**: {text} ! >")
     else:
         # pylint: disable=protected-access
-        await r_c._channel.log(f"{text}\nCaused By: [link]({link})", "ERROR")
+        await r_c._channel.log(f"{text}\nCaused By: [link]({r_m.link})", "ERROR")
 
 
 async def _is_admin(r_c: Union['_client.Userge', '_client.UsergeBot'],
