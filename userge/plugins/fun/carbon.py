@@ -20,7 +20,7 @@ from userge import userge, Message, Config
 CARBON = 'https://carbon.now.sh/?t={theme}&l={lang}&code={code}&bg={bg}'
 
 
-@userge.on_cmd("cn", about={
+@userge.on_cmd("carbon", about={
     'header': "create a carbon",
     'flags': {
         '-r': "red -> 0-255",
