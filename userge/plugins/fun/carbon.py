@@ -154,7 +154,7 @@ async def carbon_(message: Message):
         await message.edit("`Processing... 60%`")
         driver.find_element_by_xpath("//button[contains(text(),'4x')]").click()
         await asyncio.sleep(1)
-        driver.find_element_by_xpath("//button[contains(text(),'PNG')]").click()
+        driver.find_element_by_id("export-png").click()
         await message.edit("`Processing... 80%`")
         while not os.path.isfile(carbon_path):
             await asyncio.sleep(0.5)
