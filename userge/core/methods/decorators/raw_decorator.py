@@ -20,7 +20,7 @@ from typing import List, Dict, Union, Any, Callable, Optional
 from pyrogram import StopPropagation, ContinuePropagation
 from pyrogram.filters import Filter as RawFilter
 from pyrogram.types import Message as RawMessage, ChatMember
-from pyrogram.errors.exceptions.bad_request_400 import ChatAdminRequired, PeerIdInvalid
+from pyrogram.errors.exceptions.bad_request_400 import PeerIdInvalid
 
 from userge import logging, Config
 from ...ext import RawClient
@@ -112,10 +112,10 @@ async def _init(r_c: Union['_client.Userge', '_client.UsergeBot'],
 
 async def _raise_func(r_c: Union['_client.Userge', '_client.UsergeBot'],
                       r_m: RawMessage, text: str) -> None:
+    # pylint: disable=protected-access
     if r_m.chat.type in ("private", "bot"):
         await r_m.reply(f"< **ERROR**: {text} ! >")
     else:
-        # pylint: disable=protected-access
         await r_c._channel.log(f"{text}\nCaused By: [link]({r_m.link})", "ERROR")
 
 
