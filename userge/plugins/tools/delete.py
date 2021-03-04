@@ -7,11 +7,14 @@
 # All rights reserved.
 
 from userge import userge, Message
+from pyrogram.errors import MessageDeleteForbidden
 
 
 @userge.on_cmd("del", about={'header': "delete replied message"})
 async def del_msg(message: Message):
-    msg_ids = [message.message_id]
-    if message.reply_to_message:
-        msg_ids.append(message.reply_to_message.message_id)
-    await message.client.delete_messages(message.chat.id, msg_ids)
+    try:
+        if message.reply_to_message:
+            await message.reply_to_message.delete()
+        await message.delete()
+    except MessageDeleteForbidden:
+        pass
