@@ -181,11 +181,11 @@ class Term:
 
     @property
     def read_line(self) -> str:
-        return (self._stdout_line + self._stderr_line).decode('utf-8').strip()
+        return (self._stdout_line + self._stderr_line).decode('utf-8', 'replace').strip()
 
     @property
     def get_output(self) -> str:
-        return (self._stdout + self._stderr).decode('utf-8').strip()
+        return (self._stdout + self._stderr).decode('utf-8', 'replace').strip()
 
     async def _read_stdout(self) -> None:
         while True:

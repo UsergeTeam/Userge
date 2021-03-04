@@ -92,10 +92,10 @@ def get_version() -> str:
     if "/usergeteam/userge" in Config.UPSTREAM_REPO.lower():
         diff = list(_REPO.iter_commits(f'v{ver}..HEAD'))
         if diff:
-            return f"{ver}-patch.{len(diff)}"
+            ver = f"{ver}-patch.{len(diff)}"
     else:
         diff = list(_REPO.iter_commits(
             f'{Config.UPSTREAM_REMOTE}/master..HEAD'))
         if diff:
-            return f"{ver}-custom.{len(diff)}"
-    return ver
+            ver = f"{ver}-custom.{len(diff)}"
+    return ver + '@' + _REPO.active_branch.name
