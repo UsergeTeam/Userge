@@ -94,7 +94,7 @@ upgradePip() {
 }
 
 installReq() {
-    pip3 install --no-cache-dir -r $1/requirements.txt &> /dev/null
+    pip3 install -r $1/requirements.txt &> /dev/null
 }
 
 printLine() {
