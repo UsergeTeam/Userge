@@ -44,6 +44,6 @@ _getResponse() {
 \terror_code : [$errcode]
 \tdescription : $desc"
         fi
-        sleep 0.6
+        sleep 0.7
     fi
 }
