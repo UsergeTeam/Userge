@@ -8,6 +8,7 @@
 
 from datetime import datetime
 
+from pyrogram import raw
 from pyrogram.errors import MessageDeleteForbidden
 from userge import userge, Message
 
@@ -23,6 +24,7 @@ from userge import userge, Message
     allow_bots=False, del_pre=True)
 async def purge_(message: Message):
     await message.edit("`purging ...`")
+    peer = await userge.resolve_peer(message.chat.id)
     from_user_id = None
     if message.filtered_input_str:
         from_user_id = (await message.client.get_users(message.filtered_input_str)).id
@@ -48,35 +50,53 @@ async def purge_(message: Message):
         if not from_user_id:
             list_of_messages.append(_msg.message_id)
         if len(list_of_messages) >= 100:
-            for i in list_of_messages:
-                try:
-                    await message.client.delete_messages(
-                        message.chat.id, i
-                    )
-                    purged_messages_count += 1
-                except MessageDeleteForbidden:
-                    pass
+            count = await delete_messages()
+            purged_messages_count += count
             list_of_messages = []
+
+    async def delete_messages():
+        if isinstance(peer, raw.types.InputPeerChannel):
+            k = await userge.send(
+                raw.functions.channels.DeleteMessages(
+                    channel=peer,
+                    id=list_of_messages
+                )
+            )
+        else:
+            k = await userge.send(
+                raw.functions.messages.DeleteMessages(
+                    id=list_of_messages,
+                    revoke=True
+                )
+            )
+        if k.pts_count == 0:
+            raise MessageDeleteForbidden
+        return k.pts_count
 
     start_t = datetime.now()
     if message.client.is_bot:
         for msg in await message.client.get_messages(
                 chat_id=message.chat.id, replies=0,
                 message_ids=range(start_message, message.message_id)):
-            await handle_msg(msg)
+            try:
+                await handle_msg(msg)
+            except MessageDeleteForbidden:
+                return await message.edit("chat admin required to delete another messages")
     else:
         async for msg in message.client.iter_history(
                 chat_id=message.chat.id, offset_id=start_message, reverse=True):
-            await handle_msg(msg)
-    if list_of_messages:
-        for i in list_of_messages:
             try:
-                await message.client.delete_messages(
-                    message.chat.id, i
-                )
-                purged_messages_count += 1
+                await handle_msg(msg)
             except MessageDeleteForbidden:
-                pass
+                return await message.edit("chat admin required to delete another messages")
+
+    if list_of_messages:
+        try:
+            count = await delete_messages()
+        except MessageDeleteForbidden:
+            return await message.edit("chat admin required to delete another messages")
+        purged_messages_count += count
+        list_of_messages = []
     end_t = datetime.now()
     time_taken_s = (end_t - start_t).seconds
     out = f"<u>purged</u> {purged_messages_count} messages in {time_taken_s} seconds."
