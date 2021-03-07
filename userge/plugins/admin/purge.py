@@ -56,14 +56,14 @@ async def purge_(message: Message):
 
     async def delete_messages():
         if isinstance(peer, raw.types.InputPeerChannel):
-            k = await userge.send(
+            k = await message.client.send(
                 raw.functions.channels.DeleteMessages(
                     channel=peer,
                     id=list_of_messages
                 )
             )
         else:
-            k = await userge.send(
+            k = await message.client.send(
                 raw.functions.messages.DeleteMessages(
                     id=list_of_messages,
                     revoke=True
