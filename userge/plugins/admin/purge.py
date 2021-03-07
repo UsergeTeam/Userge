@@ -8,7 +8,6 @@
 
 from datetime import datetime
 
-from pyrogram.errors import MessageDeleteForbidden
 from userge import userge, Message
 
 
@@ -48,13 +47,10 @@ async def purge_(message: Message):
         if not from_user_id:
             list_of_messages.append(_msg.message_id)
         if len(list_of_messages) >= 100:
-            try:
-                await message.client.delete_messages(
-                    chat_id=message.chat.id,
-                    message_ids=list_of_messages
-                )
-            except MessageDeleteForbidden:
-                pass
+            await message.client.delete_messages(
+                chat_id=message.chat.id,
+                message_ids=list_of_messages
+            )
             purged_messages_count += len(list_of_messages)
             list_of_messages = []
 
@@ -69,13 +65,8 @@ async def purge_(message: Message):
                 chat_id=message.chat.id, offset_id=start_message, reverse=True):
             await handle_msg(msg)
     if list_of_messages:
-        try:
-            await message.client.delete_messages(
-                chat_id=message.chat.id,
-                message_ids=list_of_messages
-            )
-        except MessageDeleteForbidden:
-            pass
+        await message.client.delete_messages(chat_id=message.chat.id,
+                                             message_ids=list_of_messages)
         purged_messages_count += len(list_of_messages)
     end_t = datetime.now()
     time_taken_s = (end_t - start_t).seconds
