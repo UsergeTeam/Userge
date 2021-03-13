@@ -174,7 +174,7 @@ async def list_gbanned(message: Message):
 @userge.on_cmd("whitelist", about={
     'header': "Whitelist a User",
     'description': "Use whitelist to add users to bypass API Bans",
-    'useage': "{tr}whitelist [userid | reply to user]",
+    'usage': "{tr}whitelist [userid | reply to user]",
     'examples': "{tr}whitelist 5231147869"},
     allow_channels=False, allow_bots=False)
 async def whitelist(message: Message):
