@@ -34,6 +34,16 @@ RUN mkdir -p /tmp/ && \
 ENV GOOGLE_CHROME_DRIVER /usr/bin/chromedriver
 ENV GOOGLE_CHROME_BIN /usr/bin/google-chrome-stable
 
+# install rar
+RUN mkdir -p /tmp/ && \
+    cd /tmp/ && \
+    wget -O /tmp/rarlinux.tar.gz http://www.rarlab.com/rar/rarlinux-x64-6.0.0.tar.gz && \
+    tar -xzvf rarlinux.tar.gz && \
+    cd rar && \
+    cp -v rar unrar /usr/bin/ && \
+    # clean up
+    rm -rf /tmp/rar*
+
 # copy the dependencies file to the working directory
 COPY requirements.txt .
 
