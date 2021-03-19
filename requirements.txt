@@ -16,7 +16,7 @@ heroku3
 html-telegraph-poster
 motor
 oauth2client
-Pillow==8.0.1
+Pillow==8.1.1
 psutil
 pybase64
 pyrogram==1.1.13
