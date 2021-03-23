@@ -105,7 +105,7 @@ async def denyToPm(message: Message):
 @userge.on_cmd("listpm", about={
     'header': "List all Allowed PM's",
     'usage': "{tr}listpm"})
-async def ListPm(msg: Message):
+async def list_pm(msg: Message):
     out = "`Allowed list is empty`"
     if Config.ALLOWED_CHATS:
         out = "**Allowed Chats are:**\n"
