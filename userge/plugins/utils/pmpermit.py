@@ -83,9 +83,10 @@ async def allow(message: Message):
 async def denyToPm(message: Message):
     """ disallows to pm """
     if message.flags and '-all' in message.flags:
+        Config.ALLOWED_CHATS.clear()
         await ALLOWED_COLLECTION.drop()
         await message.edit("`Deleted all allowed Pms.`")
-        asyncio.get_event_loop().create_task(userge.restart())
+        return
     userid = await get_id(message)
     if userid:
         if userid in Config.ALLOWED_CHATS:
