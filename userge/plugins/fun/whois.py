@@ -1,8 +1,8 @@
-# Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+# Please see < https://github.com/UsergeTeam/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
 
@@ -24,7 +24,7 @@ async def who_is(message: Message):
         try:
             from_user = await message.client.get_users(user_id)
             from_chat = await message.client.get_chat(user_id)
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             await message.err(
                 "no valid user_id or message specified, do .help whois for more info")
             return
@@ -53,7 +53,7 @@ async def who_is(message: Message):
             pass
         else:
             message_out_str += f"<b>👥 Common Chats:</b> <code>{cc_no}</code>\n"
-        message_out_str += f"<b>📝 Bio:</b> <code>{from_chat.description}</code>\n\n"
+        message_out_str += f"<b>📝 Bio:</b> <code>{from_chat.bio}</code>\n\n"
         message_out_str += f"<b>👁 Last Seen:</b> <code>{from_user.status}</code>\n"
         message_out_str += "<b>🔗 Permanent Link To Profile:</b> "
         message_out_str += f"<a href='tg://user?id={from_user.id}'>{from_user.first_name}</a>"

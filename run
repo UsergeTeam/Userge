@@ -1,13 +1,44 @@
 #!/bin/bash
 #
-# Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+# Please see < https://github.com/UsergeTeam/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
 
-. init/init.sh
+trap joinProc INT TERM
 
-runUserge "$@"
+declare -i bgProc
+declare -ir usr1=138
+declare -r cmd='. init/init.sh; runUserge "$@"'
+
+setProc() {
+    bgProc=$1
+}
+
+waitProc() {
+    wait $bgProc
+}
+
+killProc() {
+    kill $bgProc &> /dev/null
+}
+
+joinProc() {
+    if test $bgProc; then
+        killProc
+        waitProc
+    fi
+}
+
+run() {
+    joinProc
+    bash -c "$cmd" $0 "$@" &
+    setProc $!
+    waitProc
+    test $? -eq $usr1 && run "$@"
+}
+
+run "$@"

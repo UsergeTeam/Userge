@@ -1,25 +1,27 @@
 #!/bin/bash
 #
-# Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+# Please see < https://github.com/UsergeTeam/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
 
 declare -r minPVer=8
-declare -r maxPVer=10
+declare -r maxPVer=9
 
 getPythonVersion() {
     local -i count=$minPVer
-    local tmp
+    local found
     while true; do
-        tmp=$(python3.$count -V 2> /dev/null)
-        [[ -n $tmp || $count -gt $maxPVer ]] && break
+        found=$(python3.$count -c "print('hi')" 2> /dev/null)
+        test "$found" && break
         count+=1
+        [[ $count -gt $maxPVer ]] && break
     done
-    declare -gr pVer=$(sed -E 's/Python (3\.[0-9]{1,2}\.[0-9]{1,2}).*/\1/g' <<< $tmp)
+    local ptn='s/Python (3\.[0-9]{1,2}\.[0-9]{1,2}).*/\1/g'
+    declare -gr pVer=$(sed -E "$ptn" <<< "$(python3.$count -V 2> /dev/null)")
 }
 
 log() {
@@ -92,7 +94,7 @@ upgradePip() {
 }
 
 installReq() {
-    pip3 install --use-feature=2020-resolver -r $1/requirements.txt &> /dev/null
+    pip3 install -r $1/requirements.txt &> /dev/null
 }
 
 printLine() {

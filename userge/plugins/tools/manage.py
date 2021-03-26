@@ -1,10 +1,10 @@
 """ manage your userge :) """
 
-# Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+# Please see < https://github.com/UsergeTeam/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
 
@@ -367,9 +367,9 @@ async def load(message: Message) -> None:
                 try:
                     await userge.load_plugin(plugin, reload_plugin=True)
                     await userge.finalize_load()
-                except (ImportError, SyntaxError, NameError) as i_e:
+                except Exception as i_e:  # pylint: disable=broad-except
                     os.remove(t_path)
-                    await message.err(i_e)
+                    await message.err(str(i_e))
                 else:
                     await message.edit(f"`Loaded {plugin}`", del_in=3, log=__name__)
             else:

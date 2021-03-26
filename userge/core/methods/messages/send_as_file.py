@@ -1,10 +1,10 @@
 # pylint: disable=missing-module-docstring
 #
-# Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+# Please see < https://github.com/UsergeTeam/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
 
@@ -59,10 +59,6 @@ class SendAsFile(RawClient):  # pylint: disable=missing-class-docstring
                 If ``True``, the message will be forwarded
                 to the log channel.
                 If ``str``, the logger name will be updated.
-
-            delete_message (``bool``, *optional*):
-                If ``True``, the message will be deleted
-                after sending the file.
 
             reply_to_message_id (``int``, *optional*):
                 If the message is a reply, ID of the original message.

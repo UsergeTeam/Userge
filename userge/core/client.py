@@ -1,15 +1,16 @@
 # pylint: disable=missing-module-docstring
 #
-# Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+# Please see < https://github.com/UsergeTeam/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
 
 __all__ = ['Userge']
 
+import os
 import time
 import signal
 import asyncio
@@ -25,6 +26,7 @@ from userge.utils.exceptions import UsergeBotNotFound
 from userge.plugins import get_all_plugins
 from .methods import Methods
 from .ext import RawClient, pool
+from .database import _close_db
 
 _LOG = logging.getLogger(__name__)
 _LOG_STR = "<<<!  #####  %s  #####  !>>>"
@@ -32,6 +34,7 @@ _LOG_STR = "<<<!  #####  %s  #####  !>>>"
 _IMPORTED: List[ModuleType] = []
 _INIT_TASKS: List[asyncio.Task] = []
 _START_TIME = time.time()
+_SEND_SIGNAL = False
 
 
 async def _complete_init_tasks() -> None:
@@ -103,7 +106,7 @@ class _AbstractUserge(Methods, RawClient):
         return len(reloaded)
 
 
-class _UsergeBot(_AbstractUserge):
+class UsergeBot(_AbstractUserge):
     """ UsergeBot, the bot """
     def __init__(self, **kwargs) -> None:
         _LOG.info(_LOG_STR, "Setting UsergeBot Configs")
@@ -131,12 +134,14 @@ class Userge(_AbstractUserge):
             kwargs['bot_token'] = Config.BOT_TOKEN
         if Config.HU_STRING_SESSION and Config.BOT_TOKEN:
             RawClient.DUAL_MODE = True
-            kwargs['bot'] = _UsergeBot(bot=self, **kwargs)
+            kwargs['bot'] = UsergeBot(bot=self, **kwargs)
         kwargs['session_name'] = Config.HU_STRING_SESSION or ":memory:"
         super().__init__(**kwargs)
+        self.executor.shutdown()
+        self.executor = pool._get()  # pylint: disable=protected-access
 
     @property
-    def bot(self) -> Union['_UsergeBot', 'Userge']:
+    def bot(self) -> Union['UsergeBot', 'Userge']:
         """ returns usergebot """
         if self._bot is None:
             if Config.BOT_TOKEN:
@@ -146,7 +151,6 @@ class Userge(_AbstractUserge):
 
     async def start(self) -> None:
         """ start client and bot """
-        pool._start()  # pylint: disable=protected-access
         _LOG.info(_LOG_STR, "Starting Userge")
         await super().start()
         if self._bot is not None:
@@ -161,7 +165,8 @@ class Userge(_AbstractUserge):
             await self._bot.stop()
         _LOG.info(_LOG_STR, "Stopping Userge")
         await super().stop()
-        await pool._stop()  # pylint: disable=protected-access
+        _close_db()
+        pool._stop()  # pylint: disable=protected-access
 
     def begin(self, coro: Optional[Awaitable[Any]] = None) -> None:
         """ start userge """
@@ -170,23 +175,29 @@ class Userge(_AbstractUserge):
 
         async def _finalize() -> None:
             async with lock:
-                for task in running_tasks:
-                    task.cancel()
+                for t in running_tasks:
+                    t.cancel()
                 if self.is_initialized:
                     await self.stop()
-                # pylint: disable=expression-not-assigned
-                [t.cancel() for t in asyncio.all_tasks() if t is not asyncio.current_task()]
-                await self.loop.shutdown_asyncgens()
-                self.loop.stop()
-                _LOG.info(_LOG_STR, "Loop Stopped !")
+                else:
+                    _close_db()
+                    pool._stop()  # pylint: disable=protected-access
+            # pylint: disable=expression-not-assigned
+            [t.cancel() for t in asyncio.all_tasks() if t is not asyncio.current_task()]
+            await self.loop.shutdown_asyncgens()
+            self.loop.stop()
+            _LOG.info(_LOG_STR, "Loop Stopped !")
 
-        async def _shutdown(sig: signal.Signals) -> None:
-            _LOG.info(_LOG_STR, f"Received Stop Signal [{sig.name}], Exiting Userge ...")
+        async def _shutdown(_sig: signal.Signals) -> None:
+            global _SEND_SIGNAL  # pylint: disable=global-statement
+            _LOG.info(_LOG_STR, f"Received Stop Signal [{_sig.name}], Exiting Userge ...")
             await _finalize()
+            if _sig == _sig.SIGUSR1:
+                _SEND_SIGNAL = True
 
-        for sig in (signal.SIGHUP, signal.SIGTERM, signal.SIGINT):
+        for sig in (signal.SIGHUP, signal.SIGTERM, signal.SIGINT, signal.SIGUSR1):
             self.loop.add_signal_handler(
-                sig, lambda sig=sig: self.loop.create_task(_shutdown(sig)))
+                sig, lambda _sig=sig: self.loop.create_task(_shutdown(_sig)))
         self.loop.run_until_complete(self.start())
         for task in self._tasks:
             running_tasks.append(self.loop.create_task(task()))
@@ -206,3 +217,5 @@ class Userge(_AbstractUserge):
         finally:
             self.loop.close()
             _LOG.info(_LOG_STR, "Loop Closed !")
+            if _SEND_SIGNAL:
+                os.kill(os.getpid(), signal.SIGUSR1)

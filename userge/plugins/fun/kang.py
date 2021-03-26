@@ -1,19 +1,19 @@
 """ kang stickers """
 
-# Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+# Please see < https://github.com/UsergeTeam/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
 
 import io
 import os
 import random
-import emoji
 
 from PIL import Image
+from pyrogram import emoji
 from pyrogram.raw.functions.messages import GetStickerSet
 from pyrogram.raw.types import InputStickerSetShortName
 from pyrogram.errors import YouBlockedUser, StickersetInvalid
@@ -75,7 +75,8 @@ async def kang_(message: Message):
             else:
                 emoji_ = args[0]
 
-        if emoji_ and emoji_ not in emoji.UNICODE_EMOJI:
+        if emoji_ and emoji_ not in (
+                getattr(emoji, a) for a in dir(emoji) if not a.startswith("_")):
             emoji_ = None
         if not emoji_:
             emoji_ = "🤔"

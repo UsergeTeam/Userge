@@ -1,10 +1,10 @@
 # pylint: disable=missing-module-docstring
 #
-# Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+# Please see < https://github.com/UsergeTeam/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
 
@@ -20,6 +20,7 @@ from pyrogram.types import (
 from pyrogram.errors.exceptions.bad_request_400 import MessageNotModified, MessageIdInvalid
 
 from userge import userge, Message, Config, get_collection
+from userge.core.ext import RawClient
 
 _CATEGORY = {
     'admin': '👨‍✈️',
@@ -29,6 +30,7 @@ _CATEGORY = {
     'utils': '🗂',
     'unofficial': '🃏',
     'temp': '♻️',
+    'custom': '👨',
     'plugins': '💎'
 }
 SAVED_SETTINGS = get_collection("CONFIGS")
@@ -182,6 +184,9 @@ if userge.has_bot:
     @userge.bot.on_callback_query(filters=filters.regex(pattern=r"^chgclnt$"))
     @check_owner
     async def callback_chgclnt(callback_query: CallbackQuery):
+        if not RawClient.DUAL_MODE:
+            return await callback_query.answer(
+                "you using [BOT MODE], can't change client.", show_alert=True)
         if Config.USE_USER_FOR_CLIENT_CHECKS:
             Config.USE_USER_FOR_CLIENT_CHECKS = False
         else:
@@ -259,7 +264,7 @@ if userge.has_bot:
                     "🖥 Main Menu", callback_data="mm".encode()))
                 tmp_btns.append(InlineKeyboardButton(
                     "🔄 Refresh", callback_data=f"refresh({cur_pos})".encode()))
-        else:
+        elif RawClient.DUAL_MODE:
             cur_clnt = "👲 USER" if Config.USE_USER_FOR_CLIENT_CHECKS else "🤖 BOT"
             tmp_btns.append(InlineKeyboardButton(
                 f"🔩 Client for Checks and Sudos : {cur_clnt}", callback_data="chgclnt".encode()))

@@ -1,10 +1,10 @@
 """ setup gban """
 
-# Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+# Please see < https://github.com/UsergeTeam/Userge/blob/master/LICENSE >
 #
 # All rights reserved
 
@@ -174,7 +174,7 @@ async def list_gbanned(message: Message):
 @userge.on_cmd("whitelist", about={
     'header': "Whitelist a User",
     'description': "Use whitelist to add users to bypass API Bans",
-    'useage': "{tr}whitelist [userid | reply to user]",
+    'usage': "{tr}whitelist [userid | reply to user]",
     'examples': "{tr}whitelist 5231147869"},
     allow_channels=False, allow_bots=False)
 async def whitelist(message: Message):
@@ -291,9 +291,7 @@ async def gban_at_entry(message: Message):
                     {"$set": {'chat_ids': chat_ids}}, upsert=True)
             )
         elif Config.ANTISPAM_SENTRY:
-            async with aiohttp.ClientSession() as ses:
-                async with ses.get(f'https://api.cas.chat/check?user_id={user_id}') as resp:
-                    res = json.loads(await resp.text())
+            res = await getData(f'https://api.cas.chat/check?user_id={user_id}')
             if res['ok']:
                 reason = ' | '.join(
                     res['result']['messages']) if 'result' in res else None
@@ -310,6 +308,29 @@ async def gban_at_entry(message: Message):
                         r"\\**#Antispam_Log**//"
                         "\n\n**GBanned User $SPOTTED**\n"
                         "**$SENRTY #CAS BAN**"
+                        f"\n**User:** [{first_name}](tg://user?id={user_id})\n"
+                        f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n**Quick Action:**"
+                        f" Banned in {message.chat.title}\n\n$AUTOBAN #id{user_id}")
+                )
+                continue
+            iv = await getData(
+                "https://api.intellivoid.net/spamprotection/v1/lookup?query=" + str(user_id)
+            )
+            if iv['success'] and iv['results']['attributes']['is_blacklisted'] is True:
+                reason = iv['results']['attributes']['blacklist_reason']
+                await asyncio.gather(
+                    message.client.kick_chat_member(chat_id, user_id),
+                    message.reply(
+                        r"\\**#Userge_Antispam**//"
+                        "\n\nGlobally Banned User Detected in this Chat.\n\n"
+                        "**$Intellivoid SpamProtection**\n"
+                        f"**User:** [{first_name}](tg://user?id={user_id})\n"
+                        f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n\n"
+                        "**Quick Action:** Banned", del_in=10),
+                    CHANNEL.log(
+                        r"\\**#Antispam_Log**//"
+                        "\n\n**GBanned User $SPOTTED**\n"
+                        "**$Intellivoid SpamProtection**"
                         f"\n**User:** [{first_name}](tg://user?id={user_id})\n"
                         f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n**Quick Action:**"
                         f" Banned in {message.chat.title}\n\n$AUTOBAN #id{user_id}")
@@ -336,6 +357,12 @@ async def gban_at_entry(message: Message):
                             f"$AUTOBAN #id{user_id}")
                     )
     message.continue_propagation()
+
+
+async def getData(link: str):
+    async with aiohttp.ClientSession() as ses:
+        async with ses.get(link) as resp:
+            return json.loads(await resp.text())
 
 
 @pool.run_in_thread

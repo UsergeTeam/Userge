@@ -134,17 +134,14 @@ dmypy.json
 .heroku/
 .profile.d/
 vendor/
-config.ini
 config.env
 .vscode/
 .idea/
 *.session
-log.txt
 unknown_errors.txt
 logs/
 bin/
 resources/base_profile_pic.jpg
 resources/mdfy_profile_pic.jpg
-pictest.py
 resources/MutantAcademyBB.ttf
 userge/plugins/dev/

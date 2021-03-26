@@ -1,8 +1,8 @@
-# Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+# Please see < https://github.com/UsergeTeam/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
 
@@ -39,13 +39,13 @@ async def purge_(message: Message):
     list_of_messages = []
     purged_messages_count = 0
 
-    async def handle_msg(a_message):
+    async def handle_msg(_msg):
         nonlocal list_of_messages, purged_messages_count
-        if (from_user_id and a_message and a_message.from_user
-                and a_message.from_user.id == from_user_id):
-            list_of_messages.append(a_message.message_id)
+        if (from_user_id and _msg and _msg.from_user
+                and _msg.from_user.id == from_user_id):
+            list_of_messages.append(_msg.message_id)
         if not from_user_id:
-            list_of_messages.append(a_message.message_id)
+            list_of_messages.append(_msg.message_id)
         if len(list_of_messages) >= 100:
             await message.client.delete_messages(
                 chat_id=message.chat.id,
@@ -56,15 +56,14 @@ async def purge_(message: Message):
 
     start_t = datetime.now()
     if message.client.is_bot:
-        for a_message in await message.client.get_messages(
+        for msg in await message.client.get_messages(
                 chat_id=message.chat.id, replies=0,
                 message_ids=range(start_message, message.message_id)):
-            await handle_msg(a_message)
+            await handle_msg(msg)
     else:
-        async for a_message in message.client.iter_history(
-                chat_id=message.chat.id, limit=None,
-                offset_id=start_message, reverse=True):
-            await handle_msg(a_message)
+        async for msg in message.client.iter_history(
+                chat_id=message.chat.id, offset_id=start_message, reverse=True):
+            await handle_msg(msg)
     if list_of_messages:
         await message.client.delete_messages(chat_id=message.chat.id,
                                              message_ids=list_of_messages)

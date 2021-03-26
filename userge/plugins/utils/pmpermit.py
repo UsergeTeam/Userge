@@ -1,10 +1,10 @@
 """ setup auto pm message """
 
-# Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+# Please see < https://github.com/UsergeTeam/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
 
@@ -75,12 +75,18 @@ async def allow(message: Message):
 
 @userge.on_cmd("nopm", about={
     'header': "Activates guarding on inbox",
+    'flags': {"-all": "Delete all allowed PM's"},
     'description': "Ones someone is allowed, "
                    "Userge will not interfere or handle such private chats",
     'usage': "{tr}nopm [username | userID]\nreply {tr}nopm to a message, "
              "do {tr}nopm in the private chat"}, allow_channels=False, allow_via_bot=False)
 async def denyToPm(message: Message):
     """ disallows to pm """
+    if message.flags and '-all' in message.flags:
+        Config.ALLOWED_CHATS.clear()
+        await ALLOWED_COLLECTION.drop()
+        await message.edit("`Deleted all allowed Pms.`")
+        return
     userid = await get_id(message)
     if userid:
         if userid in Config.ALLOWED_CHATS:
@@ -94,6 +100,18 @@ async def denyToPm(message: Message):
         await message.edit(
             "I need to reply to a user or provide the username/id or be in a private chat",
             del_in=3)
+
+
+@userge.on_cmd("listpm", about={
+    'header': "List all Allowed PM's",
+    'usage': "{tr}listpm"})
+async def list_pm(msg: Message):
+    out = "`Allowed list is empty`"
+    if Config.ALLOWED_CHATS:
+        out = "**Allowed Chats are:**\n"
+        for chat in Config.ALLOWED_CHATS:
+            out += f"\n`{chat}`"
+    await msg.edit_or_send_as_file(out)
 
 
 async def get_id(message: Message):
@@ -144,10 +162,10 @@ async def ipmguard(message: Message):
     global _IS_INLINE  # pylint: disable=global-statement
     if _IS_INLINE:
         _IS_INLINE = False
-        await message.edit("`Inline PM_guard activated`", del_in=3, log=__name__)
+        await message.edit("`Inline PM_guard deactivated`", del_in=3, log=__name__)
     else:
         _IS_INLINE = True
-        await message.edit("`Inline PM_guard deactivated`", del_in=3, log=__name__)
+        await message.edit("`Inline PM_guard activated`", del_in=3, log=__name__)
     await SAVED_SETTINGS.update_one(
         {'_id': 'INLINE_PM_PERMIT'}, {"$set": {'data': _IS_INLINE}}, upsert=True)
 
@@ -276,7 +294,7 @@ async def uninvitedPmHandler(message: Message):
                     message.chat.id, query_id=k.query_id,
                     result_id=k.results[2].id, hide_via=True
                 )
-            except BotInlineDisabled:
+            except (IndexError, BotInlineDisabled):
                 await message.reply(
                     noPmMessage.format_map(SafeDict(**user_dict)) + '\n`- Protected by userge`')
         else:
@@ -328,8 +346,9 @@ if userge.has_bot:
         owner = await userge.get_me()
         if c_q.from_user.id == owner.id:
             userID = int(c_q.matches[0].group(1))
+            user_dict = await userge.get_user_dict(userID)
             await userge.send_message(
-                userID, f"{owner.mention} `decided you to block, Sorry.`")
+                userID, blocked_message.format_map(SafeDict(**user_dict)))
             await userge.block_user(userID)
             if userID in pmCounter:
                 del pmCounter[userID]

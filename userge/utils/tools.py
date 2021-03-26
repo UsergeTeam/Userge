@@ -1,10 +1,10 @@
 # pylint: disable=missing-module-docstring
 #
-# Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+# Please see < https://github.com/UsergeTeam/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
 
@@ -35,7 +35,7 @@ _EMOJI_PATTERN = re.compile(
     "\U0001FA70-\U0001FAFF"  # Symbols and Pictographs Extended-A
     "\U00002702-\U000027B0"  # Dingbats
     "]+")
-_BTN_URL_REGEX = re.compile(r"(\[([^\[]+?)\]\[buttonurl:(?:/{0,2})(.+?)(:same)?\])")
+_BTN_URL_REGEX = re.compile(r"(\[([^\[]+?)]\[buttonurl:(?:/{0,2})(.+?)(:same)?])")
 
 
 # https://github.com/UsergeTeam/Userge-Plugins/blob/master/plugins/tweet.py
@@ -44,14 +44,14 @@ def demojify(string: str) -> str:
     return re.sub(_EMOJI_PATTERN, '', string)
 
 
-def get_file_id_and_ref(message: 'userge.Message') -> Tuple[Optional[str], Optional[str]]:
-    """ get file_id and file_ref """
+def get_file_id_of_media(message: 'userge.Message') -> Optional[str]:
+    """ get file_id """
     file_ = message.audio or message.animation or message.photo \
         or message.sticker or message.voice or message.video_note \
         or message.video or message.document
     if file_:
-        return file_.file_id, file_.file_ref
-    return None, None
+        return file_.file_id
+    return None
 
 
 def humanbytes(size: float) -> str:
