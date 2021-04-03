@@ -45,9 +45,9 @@ async def telegraph_(message: Message):
     )
     if replied.sticker:
         img = Image.open(dl_loc).convert('RGB')
-        img.save('userge.png', 'png')
+        img.save(f'{Config.DOWN_PATH}/userge.png', 'png')
         os.remove(dl_loc)
-        dl_loc = 'userge.png'
+        dl_loc = f'{Config.DOWN_PATH}/userge.png'
     await message.edit("`uploading to telegraph...`")
     try:
         response = upload_file(dl_loc)
