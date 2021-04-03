@@ -7,7 +7,7 @@
 # All rights reserved.
 
 import os
-
+from PIL import Image
 from telegraph import upload_file
 
 from userge import userge, Message, Config
@@ -18,7 +18,7 @@ _T_LIMIT = 5242880
 
 @userge.on_cmd("telegraph", about={
     'header': "Upload file to Telegra.ph's servers",
-    'types': ['.jpg', '.jpeg', '.png', '.gif', '.mp4'],
+    'types': ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webp'],
     'usage': "reply {tr}telegraph to supported media : limit 5MB"})
 async def telegraph_(message: Message):
     replied = message.reply_to_message
@@ -29,6 +29,7 @@ async def telegraph_(message: Message):
             or (replied.animation and replied.animation.file_size <= _T_LIMIT)
             or (replied.video and replied.video.file_name.endswith('.mp4')
                 and replied.video.file_size <= _T_LIMIT)
+            or (replied.sticker)
             or (replied.document
                 and replied.document.file_name.endswith(
                     ('.jpg', '.jpeg', '.png', '.gif', '.mp4'))
@@ -42,6 +43,11 @@ async def telegraph_(message: Message):
         progress=progress,
         progress_args=(message, "trying to download")
     )
+    if replied.sticker:
+        img = Image.open(dl_loc).convert('RGB')
+        img.save(f'{Config.DOWN_PATH}/userge.png', 'png')
+        os.remove(dl_loc)
+        dl_loc = f'{Config.DOWN_PATH}/userge.png'
     await message.edit("`uploading to telegraph...`")
     try:
         response = upload_file(dl_loc)
