@@ -79,7 +79,7 @@ async def url_download(message: Message, url: str) -> Tuple[str, int]:
         speed = downloader.get_speed(human=True)
         estimated_total_time = downloader.get_eta(human=True)
         progress_str = \
-            "__{}__\n" + \
+            "{}\n" + \
             "```[{}{}]```\n" + \
             "**Progress** : `{}%`\n" + \
             "**URL** : `{}`\n" + \
@@ -89,7 +89,7 @@ async def url_download(message: Message, url: str) -> Tuple[str, int]:
             "**Speed** : `{}`\n" + \
             "**ETA** : `{}`"
         progress_str = progress_str.format(
-            "trying to download",
+            "**Status** : __Downloading...__",
             ''.join((Config.FINISHED_PROGRESS_STR
                      for _ in range(math.floor(percentage / 5)))),
             ''.join((Config.UNFINISHED_PROGRESS_STR
@@ -111,7 +111,7 @@ async def url_download(message: Message, url: str) -> Tuple[str, int]:
 
 async def tg_download(message: Message, to_download: Message) -> Tuple[str, int]:
     """ download from tg file """
-    await message.edit("`Downloading From TG...`")
+    await message.edit("`Downloading From Telegram...`")
     start_t = datetime.now()
     custom_file_name = Config.DOWN_PATH
     if message.filtered_input_str:
