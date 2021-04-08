@@ -41,8 +41,8 @@ OAUTH_SCOPE = ["https://www.googleapis.com/auth/drive",
                "https://www.googleapis.com/auth/drive.metadata"]
 REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob"
 G_DRIVE_DIR_MIME_TYPE = "application/vnd.google-apps.folder"
-G_DRIVE_FILE_LINK = "📄 **File :** <a href='https://drive.google.com/open?id={}'>{}</a>\n **Size :** ({})"
-G_DRIVE_FOLDER_LINK = "📁 <a href='https://drive.google.com/drive/folders/{}'>{}</a> __(folder)__"
+G_DRIVE_FILE_LINK = "**Filename :** <a href='https://drive.google.com/open?id={}'>{}</a>\n **Size :** {}"
+G_DRIVE_FOLDER_LINK = "**Foldername :** <a href='https://drive.google.com/drive/folders/{}'>{}</a> __(folder)__"
 _GDRIVE_ID = re.compile(
     r'https://drive.google.com/[\w?.&=/]+([-\w]{33}|(?<=[/=])0(?:A[-\w]{17}|B[-\w]{26}))')
 
