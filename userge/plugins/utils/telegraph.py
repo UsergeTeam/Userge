@@ -58,15 +58,18 @@ async def telegraph_(message: Message):
     finally:
         os.remove(dl_loc)
 
-@userge.on_cmd("telepaste", about={ 
-    'header': "Paste text to telegraph with custom header(you can use html code.)", 
-    'usage': "{tr}telepaste [content | reply to msg]", 
+@userge.on_cmd("telepaste", about={
+    'header': "Paste text to telegraph with custom header(you can use html code.)",
+    'usage': "{tr}telepaste [content | reply to msg]",
     'examples': "{tr}telepaste This is header|This is my content"})
 async def telepaste(message: Message):
     await message.edit("Please wait.....")
     content = message.input_str
     if message.reply_to_message:
        content = message.reply_to_message.text
+    if not content:
+        await message.err(text="Please check `.help .telepaste`")
+        return
     if "|" in content:
         content = content.split("|")
         if len(content) == 2:
