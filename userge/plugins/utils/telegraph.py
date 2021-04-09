@@ -20,7 +20,7 @@ _T_LIMIT = 5242880
     'header': "Upload file to Telegra.ph's servers",
     'types': ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webp'],
     'usage': "reply {tr}telegraph to media or text : limit 5MB for media",
-    'examples': " reply {tr}telegraph to `This is header|This is my content`\n (You can use html code)"})
+    'examples': "reply {tr}telegraph to `header|content`\n(You can use html code)"})
 async def telegraph_(message: Message):
     replied = message.reply_to_message
     if not replied:
@@ -49,7 +49,7 @@ async def telegraph_(message: Message):
             text = content
             header = "Pasted content by @theuserge"
         t_url = post_to_telegraph(header, text)
-        await message.edit(f"**Your text pasted to [telegraph]({t_url})**", disable_web_page_preview=True)
+        await message.edit(f"**[Here Your Telegra.ph Link!]({t_url})**")
         return
     dl_loc = await message.client.download_media(
         message=message.reply_to_message,
