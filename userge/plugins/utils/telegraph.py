@@ -9,7 +9,7 @@
 import os
 from PIL import Image
 from telegraph import upload_file
-
+from userge.utils import post_to_telegraph
 from userge import userge, Message, Config
 from userge.utils import progress
 
@@ -57,3 +57,25 @@ async def telegraph_(message: Message):
         await message.edit(f"**[Here Your Telegra.ph Link!](https://telegra.ph{response[0]})**")
     finally:
         os.remove(dl_loc)
+
+
+
+@userge.on_cmd("telepaste", about={ 'header': "Paste text to telegraph with custom header(you can use html code.)", 'usage': "{tr}telepaste [content | reply to msg]", 'examples': "{tr}telepaste This is header|This is my content"})
+async def telepaste(message: Message):
+    await message.edit("Please wait.....")
+    content = message.input_str
+    if message.reply_to_message:
+       content = message.reply_to_message.text
+    if "|" in content:
+        content = content.split("|")
+        if len(content) == 2:
+            header = content[0]
+            text = content[1]  
+        else:
+            text = content
+            header = "Pasted content by @theuserge"
+    else:
+        text = content
+        header = "Pasted content by userge"
+    t_url = post_to_telegraph(header, text)
+    await message.edit(text=f"Your text pasted to [telegraph]({t_url})")
