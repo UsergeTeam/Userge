@@ -66,7 +66,7 @@ async def telepaste(message: Message):
     await message.edit("Please wait.....")
     content = message.input_str
     if message.reply_to_message:
-       content = message.reply_to_message.text
+        content = message.reply_to_message.text
     if not content:
         await message.err(text="Please check `.help .telepaste`")
         return
@@ -74,7 +74,7 @@ async def telepaste(message: Message):
         content = content.split("|")
         if len(content) == 2:
             header = content[0]
-            text = content[1]  
+            text = content[1]
         else:
             text = content
             header = "Pasted content by @theuserge"
