@@ -58,9 +58,10 @@ async def telegraph_(message: Message):
     finally:
         os.remove(dl_loc)
 
-
-
-@userge.on_cmd("telepaste", about={ 'header': "Paste text to telegraph with custom header(you can use html code.)", 'usage': "{tr}telepaste [content | reply to msg]", 'examples': "{tr}telepaste This is header|This is my content"})
+@userge.on_cmd("telepaste", about={ 
+    'header': "Paste text to telegraph with custom header(you can use html code.)", 
+    'usage': "{tr}telepaste [content | reply to msg]", 
+    'examples': "{tr}telepaste This is header|This is my content"})
 async def telepaste(message: Message):
     await message.edit("Please wait.....")
     content = message.input_str
@@ -76,6 +77,6 @@ async def telepaste(message: Message):
             header = "Pasted content by @theuserge"
     else:
         text = content
-        header = "Pasted content by userge"
+        header = "Pasted content by @theuserge"
     t_url = post_to_telegraph(header, text)
     await message.edit(text=f"Your text pasted to [telegraph]({t_url})")
