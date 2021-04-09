@@ -49,7 +49,8 @@ async def telegraph_(message: Message):
             text = content
             header = "Pasted content by @theuserge"
         t_url = post_to_telegraph(header, text)
-        await message.edit(f"**[Here Your Telegra.ph Link!]({t_url})**")
+        jv_text = f"**[Here Your Telegra.ph Link!]({t_url})**"
+        await message.edit(text=jv_text, disable_web_page_preview=True)
         return
     dl_loc = await message.client.download_media(
         message=message.reply_to_message,
