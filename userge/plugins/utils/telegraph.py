@@ -42,13 +42,9 @@ async def telegraph_(message: Message):
     if replied.text:
         content = message.reply_to_message.text
         if "|" in content:
-            content = content.split("|")
-            if len(content) == 2:
-                header = content[0]
-                text = content[1]
-            else:
-                text = content
-                header = "Pasted content by @theuserge"
+            content = content.split("|", maxsplit=1)
+            header = content[0]
+            text = content[1]
         else:
             text = content
             header = "Pasted content by @theuserge"
