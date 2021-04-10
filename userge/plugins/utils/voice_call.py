@@ -69,7 +69,7 @@ async def joinvc(msg: Message):
             peer = await msg.client.resolve_peer(CHAT_ID)
             await userge.send(
                 functions.phone.CreateGroupCall(
-                    peer=peer, random_id=1
+                    peer=peer, random_id=2
                 )
             )
             await call.start(CHAT_ID
