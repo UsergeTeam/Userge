@@ -30,7 +30,7 @@ async def telegraph_(message: Message):
             or (replied.animation and replied.animation.file_size <= _T_LIMIT)
             or (replied.video and replied.video.file_name.endswith('.mp4')
                 and replied.video.file_size <= _T_LIMIT)
-            or (replied.sticker)
+            or (replied.sticker and replied.sticker.file_name.endswith('.webp'))
             or (replied.text)
             or (replied.document
                 and replied.document.file_name.endswith(
