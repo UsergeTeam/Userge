@@ -18,7 +18,7 @@ import shutil
 import asyncio
 import youtube_dl as ytdl
 
-from typing import List, Union, Dict
+from typing import List
 from traceback import format_exc
 from pytgcalls import GroupCall
 from pyrogram.raw import functions
@@ -27,7 +27,7 @@ from pyrogram.types import (
 )
 from pyrogram.errors import MessageDeleteForbidden
 
-from userge import userge, Message, Config, pool, filters
+from userge import userge, Message, pool, filters
 from userge.utils import time_formatter
 
 CHANNEL = userge.getCLogger(__name__)
@@ -76,11 +76,7 @@ def default_markup():
 
 
 async def reply_text(
-    msg: Message,
-    text: str,
-    markup = None,
-    to_reply = True
-) -> Message:
+    msg: Message, text: str, markup=None, to_reply=True) -> Message:
     return await msg.client.send_message(
         msg.chat.id,
         text,
@@ -131,7 +127,7 @@ async def joinvc(msg: Message):
 )
 async def leavevc(msg: Message):
     """ leave voice chat """
-    global CHAT_NAME, CHAT_ID # pylint: disbale=global-statement
+    global CHAT_NAME, CHAT_ID  # pylint: disbale=global-statement
 
     await msg.delete()
 
