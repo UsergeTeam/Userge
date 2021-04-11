@@ -25,7 +25,6 @@ from pyrogram.raw import functions
 from pyrogram.types import (
     InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 )
-from pyrogram.errors import MessageDeleteForbidden
 
 from userge import userge, Message, pool, filters
 from userge.utils import time_formatter
@@ -57,10 +56,8 @@ def vc_chat(func):
         if CHAT_ID and msg.chat.id == CHAT_ID:
             await func(msg)
         else:
-            try:
-                await msg.delete()
-            except MessageDeleteForbidden:
-                pass
+            send = msg.edit if msg.from_user.is_self else msg.reply
+            await send("`Didn't join any Voice-Call...`")
 
     return checker
 
@@ -358,9 +355,9 @@ async def yt_down(msg: Message):
     call.input_filename = new_path
 
     BACK_BUTTON_TEXT = (
-        f"`Now playing` [{title}]({url})\n"
-        f"**Duration:** `{duration}`\n"
-        f"**Requested By:** {msg.from_user.mention}"
+        f"🎶 **Now playing:** [{title}]({url})\n"
+        f"⏳ **Duration:** `{duration}`\n"
+        f"🎧 **Requested By:** {msg.from_user.mention}"
     )
 
     CQ_MSG = await reply_text(
@@ -395,9 +392,9 @@ async def tg_down(msg: Message):
     call.input_filename = new_path
 
     BACK_BUTTON_TEXT = (
-        f"`Now playing` [{replied.audio.title}]({replied.link})\n"
-        f"**Duration:** `{time_formatter(replied.audio.duration)}`\n"
-        f"**Requested By:** {msg.from_user.mention}"
+        f"🎶 **Now playing:** [{replied.audio.title}]({replied.link})\n"
+        f"⏳ **Duration:** `{time_formatter(replied.audio.duration)}`\n"
+        f"🎧 **Requested By:** {msg.from_user.mention}"
     )
 
     CQ_MSG = await reply_text(
