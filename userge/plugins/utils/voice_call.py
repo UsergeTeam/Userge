@@ -76,7 +76,8 @@ def default_markup():
 
 
 async def reply_text(
-    msg: Message, text: str, markup=None, to_reply=True) -> Message:
+    msg: Message, text: str, markup=None, to_reply=True
+) -> Message:
     return await msg.client.send_message(
         msg.chat.id,
         text,
