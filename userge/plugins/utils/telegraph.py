@@ -40,16 +40,17 @@ async def telegraph_(message: Message):
         return
     await message.edit("`processing...`")
     if ((replied.text)
-        or (replied.document 
+        or (replied.document
             and replied.document.file_name.endswith(
             ('.html', '.txt')))):
         if replied.document:
             dl_loc = await message.client.download_media(
-                          message=message.reply_to_message,
-                          file_name=Config.DOWN_PATH,
-                          progress=progress,
-                          progress_args=(message, "trying to download"))
-            with open(path, "r") as jv:
+                message=message.reply_to_message,
+                file_name=Config.DOWN_PATH,
+                progress=progress,
+                progress_args=(message, "trying to download")
+            )
+            with open(dl_loc, "r") as jv:
                 content = jv.read()
             os.remove(dl_loc)
         else:
