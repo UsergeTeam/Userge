@@ -448,7 +448,7 @@ if userge.has_bot:
             return
 
         if "skip" in cq.data:
-            if not ADMINS and ADMINS[cq.message.chat.id]:
+            if not ADMINS and ADMINS.get(cq.message.chat.id):
                 await cacheadmins(cq.message.chat.id)
 
             if cq.from_user.id not in ADMINS[cq.message.chat.id]:
