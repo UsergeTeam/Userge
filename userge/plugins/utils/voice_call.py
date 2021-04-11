@@ -94,7 +94,7 @@ async def reply_text(
 )
 async def joinvc(msg: Message):
     """ join voice chat """
-    global CHAT_NAME, CHAT_ID  # pylint: disbale=global-statement
+    global CHAT_NAME, CHAT_ID  # pylint: disable=global-statement
 
     await msg.delete()
 
@@ -128,7 +128,7 @@ async def joinvc(msg: Message):
 )
 async def leavevc(msg: Message):
     """ leave voice chat """
-    global CHAT_NAME, CHAT_ID  # pylint: disbale=global-statement
+    global CHAT_NAME, CHAT_ID  # pylint: disable=global-statement
 
     await msg.delete()
 
@@ -338,7 +338,7 @@ async def yt_down(msg: Message):
 
     for i in ["*.mp3", "*.flac", "*.wav", "*.m4a"]:
         aup = glob.glob("temp_music_dir/" + i)
-        if aup and aup[0]:
+        if aup[0]:
             if os.path.exists(aup[0]):
                 audio_path = aup[0]
                 break
