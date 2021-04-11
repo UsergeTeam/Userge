@@ -31,6 +31,8 @@ from userge.utils import time_formatter
 
 CHANNEL = userge.getCLogger(__name__)
 
+ADMINS = {}
+
 PLAYING = False
 
 CHAT_NAME = None
@@ -82,6 +84,14 @@ async def reply_text(
         reply_markup=markup,
         disable_web_page_preview=True
     )
+
+
+async def cacheadmins(chat_id: int) -> None:
+    k = []
+    for user in userge.get_chat_members(chat_id=chat_id, filter="administrators"):
+        k.append(user.id)
+
+    ADMINS[chat_id] = k
 
 
 @userge.on_cmd("joinvc", about={
@@ -438,6 +448,12 @@ if userge.has_bot:
             return
 
         if "skip" in cq.data:
+            if not ADMINS and ADMINS[cq.message.chat.id]:
+                await cacheadmins(cq.message.chat.id)
+
+            if cq.from_user.id not in ADMINS[cq.message.chat.id]:
+                return await cq.answer("Only Admins can Skip Song.")
+
             text = f"{cq.from_user.mention} Skipped this Song."
             pattern = re.compile(r'\((.*)\)')
             for match in pattern.finditer(BACK_BUTTON_TEXT):
