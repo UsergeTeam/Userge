@@ -88,9 +88,9 @@ async def reply_text(
 
 async def cacheadmins(chat_id: int) -> None:
     k = []
-    for user in userge.get_chat_members(chat_id=chat_id, filter="administrators"):
-        k.append(user.id)
-
+    async for member in userge.iter_chat_members(chat_id):
+        if member.status in ("creator", "administrator"):
+            k.append(member.user.id)
     ADMINS[chat_id] = k
 
 
@@ -448,7 +448,7 @@ if userge.has_bot:
             return
 
         if "skip" in cq.data:
-            if not ADMINS and ADMINS.get(cq.message.chat.id):
+            if not ADMINS or ADMINS.get(cq.message.chat.id):
                 await cacheadmins(cq.message.chat.id)
 
             if cq.from_user.id not in ADMINS[cq.message.chat.id]:
