@@ -338,10 +338,9 @@ async def yt_down(msg: Message):
 
     for i in ["*.mp3", "*.flac", "*.wav", "*.m4a"]:
         aup = glob.glob("temp_music_dir/" + i)
-        if aup[0]:
-            if os.path.exists(aup[0]):
-                audio_path = aup[0]
-                break
+        if aup and aup[0] and os.path.exists(aup[0]):
+            audio_path = aup[0]
+            break
 
     if not os.path.exists(audio_path):
         raise Exception("Song not Downloaded, add again in Queue [your wish]")
