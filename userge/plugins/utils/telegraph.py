@@ -18,7 +18,7 @@ _T_LIMIT = 5242880
 
 @userge.on_cmd("telegraph", about={
     'header': "Upload file to Telegra.ph's servers",
-    'types': ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webp', '.html', '.txt'],
+    'types': ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webp', '.html', '.txt', '.py'],
     'usage': "reply {tr}telegraph to media or text : limit 5MB for media",
     'examples': "reply {tr}telegraph to `header|content`\n(You can use html code)"})
 async def telegraph_(message: Message):
@@ -34,7 +34,7 @@ async def telegraph_(message: Message):
             or (replied.text)
             or (replied.document
                 and replied.document.file_name.endswith(
-                    ('.jpg', '.jpeg', '.png', '.gif', '.mp4', '.html', '.txt'))
+                    ('.jpg', '.jpeg', '.png', '.gif', '.mp4', '.html', '.txt', '.py'))
                 and replied.document.file_size <= _T_LIMIT)):
         await message.err("not supported!")
         return
@@ -42,7 +42,7 @@ async def telegraph_(message: Message):
     if ((replied.text)
         or (replied.document
             and replied.document.file_name.endswith(
-            ('.html', '.txt')))):
+            ('.html', '.txt', '.py')))):
         if replied.document:
             dl_loc = await message.client.download_media(
                 message=message.reply_to_message,
