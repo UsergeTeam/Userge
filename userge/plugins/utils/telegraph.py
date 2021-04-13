@@ -12,6 +12,7 @@ from telegraph import upload_file
 from userge.utils import post_to_telegraph
 from userge import userge, Message, Config, pool
 from userge.utils import progress
+from urllib.parse import quote
 
 _T_LIMIT = 5242880
 
@@ -44,7 +45,7 @@ async def telegraph_(message: Message):
         if "|" in content:
             content = content.split("|", maxsplit=1)
             header = content[0]
-            text = content[1]
+            text = quote(content[1])
         else:
             text = content
             header = "Pasted content by @theuserge"
