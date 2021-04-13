@@ -58,7 +58,6 @@ async def telegraph_(message: Message):
             os.remove(dl_loc)
         else:
             content = message.reply_to_message.text
-        if replied.text:
             if "|" in content:
                 content = content.split("|", maxsplit=1)
                 header = content[0]
