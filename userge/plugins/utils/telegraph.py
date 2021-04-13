@@ -51,17 +51,21 @@ async def telegraph_(message: Message):
                 progress_args=(message, "trying to download")
             )
             with open(dl_loc, "r") as jv:
-                content = jv.read()
+                text = jv.read()
+            header = message.input_str
+            if not header:
+                header = "Pasted content by @theuserge"
             os.remove(dl_loc)
         else:
             content = message.reply_to_message.text
-        if "|" in content:
-            content = content.split("|", maxsplit=1)
-            header = content[0]
-            text = content[1]
-        else:
-            text = content
-            header = "Pasted content by @theuserge"
+        if replied.text:
+            if "|" in content:
+                content = content.split("|", maxsplit=1)
+                header = content[0]
+                text = content[1]
+            else:
+                text = content
+                header = "Pasted content by @theuserge"
         t_url = await pool.run_in_thread(post_to_telegraph)(header, text)
         jv_text = f"**[Here Your Telegra.ph Link!]({t_url})**"
         await message.edit(text=jv_text, disable_web_page_preview=True)
