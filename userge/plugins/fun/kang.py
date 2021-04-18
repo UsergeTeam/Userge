@@ -79,8 +79,9 @@ async def kang_(message: Message):
         if _emoji is not None:
             for k in _emoji:
                 if k and k in (
-                    getattr(emoji, a) for a in dir(emoji) if not a.startswith("_")):
-                emoji_ += k
+                    getattr(emoji, a) for a in dir(emoji) if not a.startswith("_")
+                ):
+                    emoji_ += k
         if not emoji_:
             emoji_ = "🤔"
 
