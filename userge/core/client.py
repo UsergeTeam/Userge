@@ -1,15 +1,16 @@
 # pylint: disable=missing-module-docstring
 #
-# Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+# Please see < https://github.com/UsergeTeam/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
 
 __all__ = ['Userge']
 
+import os
 import time
 import signal
 import asyncio
@@ -33,6 +34,7 @@ _LOG_STR = "<<<!  #####  %s  #####  !>>>"
 _IMPORTED: List[ModuleType] = []
 _INIT_TASKS: List[asyncio.Task] = []
 _START_TIME = time.time()
+_SEND_SIGNAL = False
 
 
 async def _complete_init_tasks() -> None:
@@ -173,8 +175,8 @@ class Userge(_AbstractUserge):
 
         async def _finalize() -> None:
             async with lock:
-                for task in running_tasks:
-                    task.cancel()
+                for t in running_tasks:
+                    t.cancel()
                 if self.is_initialized:
                     await self.stop()
                 else:
@@ -186,13 +188,16 @@ class Userge(_AbstractUserge):
             self.loop.stop()
             _LOG.info(_LOG_STR, "Loop Stopped !")
 
-        async def _shutdown(sig: signal.Signals) -> None:
-            _LOG.info(_LOG_STR, f"Received Stop Signal [{sig.name}], Exiting Userge ...")
+        async def _shutdown(_sig: signal.Signals) -> None:
+            global _SEND_SIGNAL  # pylint: disable=global-statement
+            _LOG.info(_LOG_STR, f"Received Stop Signal [{_sig.name}], Exiting Userge ...")
             await _finalize()
+            if _sig == _sig.SIGUSR1:
+                _SEND_SIGNAL = True
 
-        for sig in (signal.SIGHUP, signal.SIGTERM, signal.SIGINT):
+        for sig in (signal.SIGHUP, signal.SIGTERM, signal.SIGINT, signal.SIGUSR1):
             self.loop.add_signal_handler(
-                sig, lambda sig=sig: self.loop.create_task(_shutdown(sig)))
+                sig, lambda _sig=sig: self.loop.create_task(_shutdown(_sig)))
         self.loop.run_until_complete(self.start())
         for task in self._tasks:
             running_tasks.append(self.loop.create_task(task()))
@@ -212,3 +217,5 @@ class Userge(_AbstractUserge):
         finally:
             self.loop.close()
             _LOG.info(_LOG_STR, "Loop Closed !")
+            if _SEND_SIGNAL:
+                os.kill(os.getpid(), signal.SIGUSR1)

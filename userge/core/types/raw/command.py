@@ -1,10 +1,10 @@
 # pylint: disable=missing-module-docstring
 #
-# Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+# Please see < https://github.com/UsergeTeam/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
 
@@ -52,6 +52,8 @@ class Command(Filter):
             outgoing_flt = filters.create(
                 lambda _, __, m:
                 m.via_bot is None
+                and not m.scheduled
+                and not (m.forward_from or m.forward_sender_name)
                 and not (m.from_user and m.from_user.is_bot)
                 and (m.outgoing or (m.from_user and m.from_user.is_self))
                 and not (m.chat and m.chat.type == "channel" and m.edit_date)
@@ -61,6 +63,8 @@ class Command(Filter):
                 m.via_bot is None
                 and not m.outgoing
                 and trigger
+                and not m.scheduled
+                and not (m.forward_from or m.forward_sender_name)
                 and m.from_user and m.text
                 and ((m.from_user.id in Config.OWNER_ID)
                      or (Config.SUDO_ENABLED and (m.from_user.id in Config.SUDO_USERS)

@@ -1,10 +1,10 @@
 """ run shell or python command(s) """
 
-# Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+# Please see < https://github.com/UsergeTeam/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
 
@@ -18,6 +18,8 @@ from os import geteuid
 
 from userge import userge, Message, Config
 from userge.utils import runcmd
+
+CHANNEL = userge.getCLogger()
 
 
 @userge.on_cmd("eval", about={
@@ -72,7 +74,10 @@ async def eval_(message: Message):
         output += f"**>** ```{cmd}```\n\n"
     if evaluation is not None:
         output += f"**>>** ```{evaluation}```"
-    if output:
+    if (exc or stderr) and message.chat.type in ("group", "supergroup", "channel"):
+        msg_id = await CHANNEL.log(output)
+        await message.edit(f"**Logs**: {CHANNEL.get_link(msg_id)}")
+    elif output:
         await message.edit_or_send_as_file(text=output,
                                            parse_mode='md',
                                            filename="eval.txt",
@@ -94,7 +99,7 @@ async def exec_(message: Message):
     try:
         out, err, ret, pid = await runcmd(cmd)
     except Exception as t_e:  # pylint: disable=broad-except
-        await message.err(t_e)
+        await message.err(str(t_e))
         return
     out = out or "no output"
     err = err or "no error"
@@ -121,7 +126,7 @@ async def term_(message: Message):
     try:
         t_obj = await Term.execute(cmd)  # type: Term
     except Exception as t_e:  # pylint: disable=broad-except
-        await message.err(t_e)
+        await message.err(str(t_e))
         return
     curruser = getuser()
     try:
@@ -176,11 +181,11 @@ class Term:
 
     @property
     def read_line(self) -> str:
-        return (self._stdout_line + self._stderr_line).decode('utf-8').strip()
+        return (self._stdout_line + self._stderr_line).decode('utf-8', 'replace').strip()
 
     @property
     def get_output(self) -> str:
-        return (self._stdout + self._stderr).decode('utf-8').strip()
+        return (self._stdout + self._stderr).decode('utf-8', 'replace').strip()
 
     async def _read_stdout(self) -> None:
         while True:

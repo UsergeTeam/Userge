@@ -57,12 +57,12 @@
 
 ## How To Deploy 👷
 
-* [**With Heroku 🇭**](https://theuserge.github.io/deployment#deploying-with-heroku)  
-  [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Usergeteam/Userge/tree/beta)
 
 * [**With Docker 🐳**](https://theuserge.github.io/deployment#deploying-with-docker-)
 
 * [**With Git, Python and pip 🔧**](https://theuserge.github.io/deployment#deploying-with-legacy-method)
+
+* [**With Zeet ☻**](https://theuserge.github.io/deployment.html#deploying-on-zeet)
 
 ### Video Tutorial 🎥
 
@@ -79,5 +79,5 @@
 
 ### Copyright & License 👮
 
-* Copyright (C) 2020 by [UsergeTeam](https://github.com/UsergeTeam) ❤️️
+* Copyright (C) 2020 - 2021 by [UsergeTeam](https://github.com/UsergeTeam) ❤️️
 * Licensed under the terms of the [GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007](https://github.com/UsergeTeam/Userge/blob/master/LICENSE)

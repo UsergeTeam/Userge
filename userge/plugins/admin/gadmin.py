@@ -1,10 +1,10 @@
 """ manage your group """
 
-# Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+# Please see < https://github.com/UsergeTeam/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
 
@@ -47,12 +47,7 @@ async def promote_usr(message: Message):
             custom_rank = custom_rank[:15]
     try:
         get_mem = await message.client.get_chat_member(chat_id, user_id)
-        await message.client.promote_chat_member(chat_id, user_id,
-                                                 can_change_info=True,
-                                                 can_delete_messages=True,
-                                                 can_restrict_members=True,
-                                                 can_invite_users=True,
-                                                 can_pin_messages=True)
+        await message.client.promote_chat_member(chat_id, user_id, can_pin_messages=True)
         if custom_rank:
             await asyncio.sleep(2)
             await message.client.set_administrator_title(chat_id, user_id, custom_rank)
@@ -92,12 +87,9 @@ async def demote_usr(message: Message):
         return
     try:
         get_mem = await message.client.get_chat_member(chat_id, user_id)
-        await message.client.promote_chat_member(chat_id, user_id,
-                                                 can_change_info=False,
+        await message.client.promote_chat_member(chat_id, user_id, can_change_info=False,
                                                  can_delete_messages=False,
-                                                 can_restrict_members=False,
-                                                 can_invite_users=False,
-                                                 can_pin_messages=False)
+                                                 can_restrict_members=False, can_invite_users=False)
         await message.edit("`🛡 Demoted Successfully..`", del_in=5)
         await CHANNEL.log(
             "#DEMOTE\n\n"
@@ -385,7 +377,6 @@ async def zombie_clean(message: Message):
         del_users = 0
         del_admins = 0
         del_total = 0
-        del_stats = r"`Zero zombie accounts found in this chat... WOOHOO group is clean.. \^o^/`"
         if can_clean:
             await message.edit("`Hang on!! cleaning zombie accounts from this chat..`")
             async for member in message.client.iter_chat_members(chat_id):

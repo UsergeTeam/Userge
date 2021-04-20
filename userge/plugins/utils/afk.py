@@ -1,10 +1,10 @@
 """ setup AFK mode """
 
-# Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+# Please see < https://github.com/UsergeTeam/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
 
@@ -62,6 +62,8 @@ async def active_afk(message: Message) -> None:
     allow_via_bot=False)
 async def handle_afk_incomming(message: Message) -> None:
     """ handle incomming messages when you afk """
+    if not message.from_user:
+        return
     user_id = message.from_user.id
     chat = message.chat
     user_dict = await message.client.get_user_dict(user_id)

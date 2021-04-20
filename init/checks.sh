@@ -1,10 +1,10 @@
 #!/bin/bash
 #
-# Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+# Please see < https://github.com/UsergeTeam/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
 
@@ -53,6 +53,7 @@ _checkDefaultVars() {
         [UPSTREAM_REMOTE]="upstream"
         [UPSTREAM_REPO]="https://github.com/UsergeTeam/Userge"
         [LOAD_UNOFFICIAL_PLUGINS]=false
+        [CUSTOM_PLUGINS_REPO]=""
         [G_DRIVE_IS_TD]=true
         [CMD_TRIGGER]="."
         [SUDO_TRIGGER]="!"
@@ -70,8 +71,9 @@ _checkDefaultVars() {
         WORKERS=32
     fi
     export MOTOR_MAX_WORKERS=$WORKERS
+    export HEROKU_ENV=$(test $DYNO && echo 1 || echo 0)
     DOWN_PATH=${DOWN_PATH%/}/
-    if [[ -n $HEROKU_API_KEY && -n $HEROKU_APP_NAME ]]; then
+    if [[ $HEROKU_ENV == 1 && -n $HEROKU_API_KEY && -n $HEROKU_APP_NAME ]]; then
         local herokuErr=$(runPythonCode '
 import heroku3
 try:
@@ -80,7 +82,6 @@ try:
 except Exception as e:
     print(e)')
         [[ $herokuErr ]] && quit "heroku response > $herokuErr"
-        declare -g HEROKU_GIT_URL="https://api:$HEROKU_API_KEY@git.heroku.com/$HEROKU_APP_NAME.git"
     fi
     for var in G_DRIVE_IS_TD LOAD_UNOFFICIAL_PLUGINS; do
         eval $var=$(tr "[:upper:]" "[:lower:]" <<< ${!var})
@@ -133,54 +134,44 @@ _checkBins() {
     done
 }
 
-_checkGit() {
-    editLastMessage "Checking GIT ..."
-    if test ! -d .git; then
-        if test ! -z $HEROKU_GIT_URL; then
-            replyLastMessage "\tClonning Heroku Git ..."
-            gitClone $HEROKU_GIT_URL tmp_git || quit "Invalid HEROKU_API_KEY or HEROKU_APP_NAME var !"
-            mv tmp_git/.git .
-            rm -rf tmp_git
-            editLastMessage "\tChecking Heroku Remote ..."
-            remoteIsExist heroku || addHeroku
-        else
-            replyLastMessage "\tInitializing Empty Git ..."
-            gitInit
-        fi
-        deleteLastMessage
-    fi
-}
-
 _checkUpstreamRepo() {
-    editLastMessage "Checking UPSTREAM_REPO ..."
     remoteIsExist $UPSTREAM_REMOTE || addUpstream
-    replyLastMessage "\tFetching Data From UPSTREAM_REPO ..."
+    editLastMessage "Fetching Data From UPSTREAM_REPO ..."
     fetchUpstream || updateUpstream && fetchUpstream || quit "Invalid UPSTREAM_REPO var !"
     fetchBranches
     updateBuffer
-    deleteLastMessage
+}
+
+_setupPlugins() {
+    local link path tmp
+    if test $(grep -P '^'$2'$' <<< $3); then
+        editLastMessage "Cloning $1 Plugins ..."
+        link=$(test $4 && echo $4 || echo $3)
+        tmp=Temp-Plugins
+        gitClone --depth=1 $link $tmp
+        replyLastMessage "\tInstalling Requirements ..."
+        upgradePip
+        installReq $tmp
+        path=$(tr "[:upper:]" "[:lower:]" <<< $1)
+        rm -rf userge/plugins/$path/
+        mv $tmp/plugins/ userge/plugins/$path/
+        cp -r $tmp/resources/. resources/
+        rm -rf $tmp/
+        deleteLastMessage
+    else
+        editLastMessage "$1 Plugins Disabled !"
+    fi
 }
 
 _checkUnoffPlugins() {
-    editLastMessage "Checking UnOfficial Plugins ..."
-    if test $LOAD_UNOFFICIAL_PLUGINS = true; then
-        editLastMessage "\tLoading UnOfficial Plugins ..."
-        replyLastMessage "\t\tClonning ..."
-        gitClone --depth=1 https://github.com/UsergeTeam/Userge-Plugins.git
-        editLastMessage "\t\tUpgrading PIP ..."
-        upgradePip
-        editLastMessage "\t\tInstalling Requirements ..."
-        installReq Userge-Plugins
-        editLastMessage "\t\tCleaning ..."
-        rm -rf userge/plugins/unofficial/
-        mv Userge-Plugins/plugins/ userge/plugins/unofficial/
-        cp -r Userge-Plugins/resources/* resources/
-        rm -rf Userge-Plugins/
-        deleteLastMessage
-        editLastMessage "\tUnOfficial Plugins Loaded Successfully !"
-    else
-        editLastMessage "\tUnOfficial Plugins Disabled !"
-    fi
+    _setupPlugins UnOfficial true $LOAD_UNOFFICIAL_PLUGINS https://github.com/UsergeTeam/Userge-Plugins.git
+}
+
+_checkCustomPlugins() {
+    _setupPlugins Custom "https://([0-9a-f]{40}@)?github.com/.+/.+" $CUSTOM_PLUGINS_REPO
+}
+
+_flushMessages() {
     deleteLastMessage
 }
 
@@ -197,7 +188,8 @@ assertEnvironment() {
     _checkTriggers
     _checkPaths
     _checkBins
-    _checkGit
     _checkUpstreamRepo
     _checkUnoffPlugins
+    _checkCustomPlugins
+    _flushMessages
 }

@@ -1,8 +1,8 @@
-# Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+# Please see < https://github.com/UsergeTeam/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
 
@@ -18,7 +18,7 @@ from pyrogram.errors import (
     FileIdInvalid, FileReferenceEmpty, BadRequest, ChannelInvalid, MediaEmpty
 )
 
-from userge.core.ext import RawClient
+from userge.core.ext import RawClient, pool
 from userge.utils import get_file_id_of_media
 from userge import userge, Message, Config, versions, get_version, logging
 
@@ -92,7 +92,7 @@ def _get_alive_text_and_markup(message: Message) -> Tuple[str, Optional[InlineKe
             ],
             [InlineKeyboardButton(text="🎖 GNU GPL v3.0", url=copy_)]
         ])
-    return (output, markup)
+    return output, markup
 
 
 def _parse_arg(arg: bool) -> str:
@@ -179,7 +179,7 @@ def _set_data(errored: bool = False) -> None:
 async def _send_telegraph(msg: Message, text: str, reply_markup: Optional[InlineKeyboardMarkup]):
     path = os.path.join(Config.DOWN_PATH, os.path.split(Config.ALIVE_MEDIA)[1])
     if not os.path.exists(path):
-        wget.download(Config.ALIVE_MEDIA, path)
+        await pool.run_in_thread(wget.download)(Config.ALIVE_MEDIA, path)
     if path.lower().endswith((".jpg", ".jpeg", ".png", ".bmp")):
         await msg.client.send_photo(
             chat_id=msg.chat.id,

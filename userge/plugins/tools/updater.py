@@ -1,8 +1,8 @@
-# Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+# Please see < https://github.com/UsergeTeam/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
 
@@ -44,8 +44,10 @@ async def check_update(message: Message):
         if not Config.HEROKU_APP:
             await message.err("HEROKU APP : could not be found !")
             return
-        push_to_heroku = True
-        flags.remove("push")
+        await message.err("Still Not Tested !")
+        return
+        # push_to_heroku = True
+        # flags.remove("push")
     if len(flags) == 1:
         branch = flags[0]
         dev_branch = "alpha"

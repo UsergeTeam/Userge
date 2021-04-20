@@ -1,10 +1,10 @@
 # pylint: disable=missing-module-docstring
 #
-# Copyright (C) 2020 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
-# Please see < https://github.com/uaudith/Userge/blob/master/LICENSE >
+# Please see < https://github.com/UsergeTeam/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
 
@@ -20,7 +20,7 @@ from typing import List, Dict, Union, Any, Callable, Optional
 from pyrogram import StopPropagation, ContinuePropagation
 from pyrogram.filters import Filter as RawFilter
 from pyrogram.types import Message as RawMessage, ChatMember
-from pyrogram.errors.exceptions.bad_request_400 import ChatAdminRequired, PeerIdInvalid
+from pyrogram.errors.exceptions.bad_request_400 import PeerIdInvalid
 
 from userge import logging, Config
 from ...ext import RawClient
@@ -111,16 +111,12 @@ async def _init(r_c: Union['_client.Userge', '_client.UsergeBot'],
 
 
 async def _raise_func(r_c: Union['_client.Userge', '_client.UsergeBot'],
-                      chat_id: int, message_id: int, text: str) -> None:
-    try:
-        _sent = await r_c.send_message(
-            chat_id=chat_id,
-            text=f"< **ERROR** : {text} ! >",
-            reply_to_message_id=message_id)
-        await asyncio.sleep(5)
-        await _sent.delete()
-    except ChatAdminRequired:
-        pass
+                      r_m: RawMessage, text: str) -> None:
+    # pylint: disable=protected-access
+    if r_m.chat.type in ("private", "bot"):
+        await r_m.reply(f"< **ERROR**: {text} ! >")
+    else:
+        await r_c._channel.log(f"{text}\nCaused By: [link]({r_m.link})", "ERROR")
 
 
 async def _is_admin(r_c: Union['_client.Userge', '_client.UsergeBot'],
@@ -240,7 +236,7 @@ class RawDecorator(RawClient):
                 if r_m.chat and r_m.chat.id in Config.DISABLED_CHATS:
                     return
                 await _init(r_c, r_m)
-                _raise = partial(_raise_func, r_c, r_m.chat.id, r_m.message_id)
+                _raise = partial(_raise_func, r_c, r_m)
                 if r_m.chat and r_m.chat.type not in flt.scope:
                     if isinstance(flt, types.raw.Command):
                         await _raise(f"`invalid chat type [{r_m.chat.type}]`")
@@ -291,23 +287,21 @@ class RawDecorator(RawClient):
                             if isinstance(flt, types.raw.Command):
                                 await _raise("`required permisson [pin_messages]`")
                             return
-                if RawClient.DUAL_MODE:
-                    if (flt.check_client
-                            or (r_m.from_user and r_m.from_user.id in Config.SUDO_USERS)):
-                        cond = True
-                        async with await _get_lock(str(flt)):
-                            if flt.only_admins:
-                                cond = cond and await _both_are_admins(r_c, r_m)
-                            if flt.check_perm:
-                                cond = cond and await _both_have_perm(flt, r_c, r_m)
-                            if cond:
-                                if Config.USE_USER_FOR_CLIENT_CHECKS:
-                                    # pylint: disable=protected-access
-                                    if isinstance(r_c, _client.UsergeBot):
-                                        return
-                                elif await _bot_is_present(r_c, r_m):
-                                    if isinstance(r_c, _client.Userge):
-                                        return
+                if RawClient.DUAL_MODE and (flt.check_client or (
+                        r_m.from_user and r_m.from_user.id in Config.SUDO_USERS)):
+                    cond = True
+                    async with await _get_lock(str(flt)):
+                        if flt.only_admins:
+                            cond = cond and await _both_are_admins(r_c, r_m)
+                        if flt.check_perm:
+                            cond = cond and await _both_have_perm(flt, r_c, r_m)
+                        if cond:
+                            if Config.USE_USER_FOR_CLIENT_CHECKS:
+                                if isinstance(r_c, _client.UsergeBot):
+                                    return
+                            elif await _bot_is_present(r_c, r_m) and isinstance(
+                                    r_c, _client.Userge):
+                                return
                 if flt.check_downpath and not os.path.isdir(Config.DOWN_PATH):
                     os.makedirs(Config.DOWN_PATH)
                 try:
@@ -322,7 +316,6 @@ class RawDecorator(RawClient):
                                             f"**ERROR** : `{f_e or None}`\n"
                                             f"\n```{format_exc().strip()}```",
                                             "TRACEBACK")
-                    await _raise(f"`{f_e}`\n__see logs for more info__")
             flt.update(func, template)
             self.manager.get_plugin(func.__module__).add(flt)
             _LOG.debug(_LOG_STR, f"Imported => [ async def {func.__name__}(message) ] "
