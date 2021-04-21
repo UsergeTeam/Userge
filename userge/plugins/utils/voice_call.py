@@ -25,6 +25,7 @@ from pyrogram.raw import functions
 from pyrogram.types import (
     InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 )
+from pyrogram.errors import MessageDeleteForbidden
 
 from userge import userge, Message, pool, filters
 from userge.utils import time_formatter
@@ -58,8 +59,12 @@ def vc_chat(func):
         if CHAT_ID and msg.chat.id == CHAT_ID:
             await func(msg)
         else:
-            send = msg.edit if msg.from_user.is_self else msg.reply
-            await send("`Didn't join any Voice-Call...`")
+            try:
+                await msg.edit(
+                    "`Didn't join any Voice-Call...`"
+                ) if msg.from_user.is_self else await msg.delete()
+            except MessageDeleteForbidden:
+                pass
 
     return checker
 
@@ -68,7 +73,7 @@ def default_markup():
     buttons = InlineKeyboardMarkup(
         [[
             InlineKeyboardButton(text="⏩ Skip", callback_data="skip"),
-            InlineKeyboardButton(text="Queue", callback_data="queue")
+            InlineKeyboardButton(text="🗒 Queue", callback_data="queue")
         ]]
     )
     return buttons
