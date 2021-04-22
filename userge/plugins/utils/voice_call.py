@@ -278,7 +278,7 @@ async def stop_music(msg: Message):
 
     await msg.delete()
     await _skip(True)
-    
+
     await reply_text(msg, "`Stopped Userge-Music.`")
 
 
@@ -311,7 +311,7 @@ async def handle_queue():
 
 
 async def _skip(clear_queue: bool = False):
-    global PLAYING, CQ_MSG  # pylint: disable=global-statement
+    global PLAYING, CQ_MSG, QUEUE  # pylint: disable=global-statement
 
     call.input_filename = ''
 
@@ -319,7 +319,7 @@ async def _skip(clear_queue: bool = False):
         await CQ_MSG.delete()
 
     if clear_queue:
-        del QUEUE
+        QUEUE = []
 
     if not bool(QUEUE):
         PLAYING = False
