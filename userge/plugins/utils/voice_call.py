@@ -138,6 +138,7 @@ async def joinvc(msg: Message):
     'usage': "{tr}leavevc"},
     allow_private=False, allow_channels=False
 )
+@vc_chat
 async def leavevc(msg: Message):
     """ leave voice chat """
     global CHAT_NAME, CHAT_ID  # pylint: disable=global-statement
@@ -209,9 +210,6 @@ async def view_queue(msg: Message):
 
     await msg.delete()
 
-    if not CHAT_ID or msg.chat.id != CHAT_ID:
-        return
-
     if not bool(QUEUE):
         out = "`Queue is empty`"
     else:
@@ -235,9 +233,6 @@ async def skip_music(msg: Message):
 
     await msg.delete()
 
-    if not CHAT_ID or msg.chat.id != CHAT_ID:
-        return
-
     await _skip()
     await reply_text(msg, "`Skipped`")
 
@@ -252,9 +247,6 @@ async def pause_music(msg: Message):
     """ paise music in vc """
 
     await msg.delete()
-
-    if not CHAT_ID or msg.chat.id != CHAT_ID:
-        return
 
     call.pause_playout()
     await reply_text(msg, "⏸️ **Paused** Music Successfully")
@@ -271,11 +263,23 @@ async def resume_music(msg: Message):
 
     await msg.delete()
 
-    if not CHAT_ID or msg.chat.id != CHAT_ID:
-        return
-
     call.resume_playout()
     await reply_text(msg, "◀️ **Resumed** Music Successfully")
+
+
+@userge.on_cmd("stopvc", about={
+    'header': "Stop vc and clear Queue.",
+    'usage': "{tr}stopvc"},
+    allow_private=False, allow_channels=False
+)
+@vc_chat
+async def stop_music(msg: Message):
+    """ stop music in vc """
+
+    await msg.delete()
+    await _skip(True)
+    
+    await reply_text(msg, "`Stopped Userge-Music.`")
 
 
 @call.on_network_status_changed
@@ -306,13 +310,16 @@ async def handle_queue():
     await _skip()
 
 
-async def _skip():
+async def _skip(clear_queue: bool = False):
     global PLAYING, CQ_MSG  # pylint: disable=global-statement
 
     call.input_filename = ''
 
     if CQ_MSG:
         await CQ_MSG.delete()
+
+    if clear_queue:
+        del QUEUE
 
     if not bool(QUEUE):
         PLAYING = False
