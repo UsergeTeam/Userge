@@ -18,12 +18,12 @@ import shutil
 import asyncio
 import youtube_dl as ytdl
 
-from typing import List
+from typing import List, Optional
 from traceback import format_exc
 from pytgcalls import GroupCall
 from pyrogram.raw import functions
 from pyrogram.types import (
-    InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+    InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, Message as RawMessage
 )
 from pyrogram.errors import MessageDeleteForbidden
 
@@ -36,12 +36,12 @@ ADMINS = {}
 
 PLAYING = False
 
-CHAT_NAME = None
+CHAT_NAME = ""
 CHAT_ID = 0
 QUEUE: List[Message] = []
 
-BACK_BUTTON_TEXT = None
-CQ_MSG = None
+BACK_BUTTON_TEXT = ""
+CQ_MSG: Optional[RawMessage] = None
 
 call = GroupCall(userge, play_on_repeat=False)
 
@@ -91,7 +91,7 @@ async def reply_text(
     )
 
 
-async def cacheadmins(chat_id: int) -> None:
+async def cache_admins(chat_id: int) -> None:
     k = []
     async for member in userge.iter_chat_members(chat_id):
         if member.status in ("creator", "administrator"):
@@ -110,7 +110,7 @@ async def joinvc(msg: Message):
 
     await msg.delete()
 
-    if CHAT_NAME is not None:
+    if CHAT_NAME:
         await reply_text(msg, f"`Already joined in {CHAT_NAME}`")
         return
 
@@ -130,7 +130,7 @@ async def joinvc(msg: Message):
             await call.start(CHAT_ID)
         except Exception as err:
             await msg.err(str(err))
-            CHAT_ID, CHAT_NAME = 0, None
+            CHAT_ID, CHAT_NAME = 0, ""
 
 
 @userge.on_cmd("leavevc", about={
@@ -145,10 +145,10 @@ async def leavevc(msg: Message):
 
     await msg.delete()
 
-    if CHAT_NAME is not None:
+    if CHAT_NAME:
         await call.stop()
         await asyncio.sleep(2)
-        CHAT_NAME = None
+        CHAT_NAME = ""
         CHAT_ID = 0
     else:
         await reply_text(msg, "`I didn't find any Voice-Chat to leave")
@@ -178,7 +178,7 @@ async def play_music(msg: Message):
             )
         else:
             await reply_text(msg, "Only youtube links are supported")
-    elif (msg.reply_to_message and msg.reply_to_message.audio):
+    elif msg.reply_to_message and msg.reply_to_message.audio:
         QUEUE.append(msg)
         replied = msg.reply_to_message
         text = (
@@ -210,7 +210,7 @@ async def view_queue(msg: Message):
 
     await msg.delete()
 
-    if not bool(QUEUE):
+    if not QUEUE:
         out = "`Queue is empty`"
     else:
         out = f"**{len(QUEUE)} Songs in Queue:**\n"
@@ -311,7 +311,7 @@ async def handle_queue():
 
 
 async def _skip(clear_queue: bool = False):
-    global PLAYING, CQ_MSG, QUEUE  # pylint: disable=global-statement
+    global PLAYING, CQ_MSG  # pylint: disable=global-statement
 
     call.input_filename = ''
 
@@ -319,9 +319,9 @@ async def _skip(clear_queue: bool = False):
         await CQ_MSG.delete()
 
     if clear_queue:
-        QUEUE = []
+        QUEUE.clear()
 
-    if not bool(QUEUE):
+    if not QUEUE:
         PLAYING = False
         return
 
@@ -335,7 +335,7 @@ async def _skip(clear_queue: bool = False):
         PLAYING = False
         out = f"**ERROR:** `{str(err)}`"
         await CHANNEL.log(f"`{format_exc().strip()}`")
-        if bool(QUEUE):
+        if QUEUE:
             out += "\n\n`Playing next Song.`"
         await userge.send_message(
             CHAT_ID,
@@ -355,26 +355,19 @@ async def yt_down(msg: Message):
     del QUEUE[0]
     title, duration = await mp3_down(url.strip())
 
+    audio_path = None
     for i in ["*.mp3", "*.flac", "*.wav", "*.m4a"]:
         aup = glob.glob("temp_music_dir/" + i)
         if aup and aup[0] and os.path.exists(aup[0]):
             audio_path = aup[0]
             break
 
-    if not os.path.exists(audio_path):
+    if audio_path is None or not os.path.exists(audio_path):
         raise Exception("Song not Downloaded, add again in Queue [your wish]")
-    new_path = "output.raw"
 
     await message.edit("`Transcoding...`")
-    ffmpeg.input(audio_path).output(
-        new_path,
-        format='s16le',
-        acodec='pcm_s16le',
-        ac=2, ar='48k'
-    ).overwrite_output().run()
-
+    call.input_filename = await _transcode(audio_path)
     await message.delete()
-    call.input_filename = new_path
 
     BACK_BUTTON_TEXT = (
         f"🎶 **Now playing:** [{title}]({url})\n"
@@ -400,18 +393,10 @@ async def tg_down(msg: Message):
     message = await reply_text(replied, "`Downloading this Song...`")
     path = await replied.download("temp_music_dir/")
     filename = os.path.join("temp_music_dir", os.path.basename(path))
-    new_path = "output.raw"
 
     await message.edit("`Transcoding...`")
-    ffmpeg.input(filename).output(
-        new_path,
-        format='s16le',
-        acodec='pcm_s16le',
-        ac=2, ar='48k'
-    ).overwrite_output().run()
-
+    call.input_filename = await _transcode(filename)
     await message.delete()
-    call.input_filename = new_path
 
     BACK_BUTTON_TEXT = (
         f"🎶 **Now playing:** [{replied.audio.title}]({replied.link})\n"
@@ -445,13 +430,24 @@ def mp3_down(url: str):
     }
 
     with ytdl.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=True)
+        info = ydl.extract_info(url)
 
-    return (info.get("title"), time_formatter(info.get("duration")))
+    return info.get("title"), time_formatter(info.get("duration"))
+
+
+@pool.run_in_thread
+def _transcode(input_: str) -> str:
+    output = "output.raw"
+    ffmpeg.input(input_).output(
+        output,
+        format='s16le',
+        acodec='pcm_s16le',
+        ac=2, ar='48k'
+    ).overwrite_output().run()
+    return output
 
 
 if userge.has_bot:
-
     @userge.bot.on_callback_query(filters.regex("(skip|queue|back)"))
     async def vc_callback(_, cq: CallbackQuery):
         global CQ_MSG  # pylint: disable=global-statement
@@ -460,18 +456,19 @@ if userge.has_bot:
             return
 
         if "skip" in cq.data:
-            if not ADMINS or ADMINS.get(cq.message.chat.id):
-                await cacheadmins(cq.message.chat.id)
+            if not ADMINS or not ADMINS.get(cq.message.chat.id):
+                await cache_admins(cq.message.chat.id)
 
             if cq.from_user.id not in ADMINS[cq.message.chat.id]:
                 return await cq.answer("Only Admins can Skip Song.")
 
             text = f"{cq.from_user.mention} Skipped this Song."
             pattern = re.compile(r'\((.*)\)')
+            url = None
             for match in pattern.finditer(BACK_BUTTON_TEXT):
                 url = match.group(1)
                 break
-            if url is not None:
+            if url:
                 text = f"{cq.from_user.mention} Skipped this [Song]({url})."
 
             CQ_MSG = None
@@ -479,7 +476,7 @@ if userge.has_bot:
             await handle_queue()
 
         elif "queue" in cq.data:
-            if not bool(QUEUE):
+            if not QUEUE:
                 out = "`Queue is empty.`"
             else:
                 out = f"**{len(QUEUE)} Song"
