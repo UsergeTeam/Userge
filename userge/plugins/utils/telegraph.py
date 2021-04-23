@@ -7,8 +7,11 @@
 # All rights reserved.
 
 import os
+from urllib.parse import quote
+
 from PIL import Image
 from telegraph import upload_file
+
 from userge.utils import post_to_telegraph
 from userge import userge, Message, Config, pool
 from userge.utils import progress
@@ -31,7 +34,7 @@ async def telegraph_(message: Message):
             or (replied.video and replied.video.file_name.endswith('.mp4')
                 and replied.video.file_size <= _T_LIMIT)
             or (replied.sticker and replied.sticker.file_name.endswith('.webp'))
-            or (replied.text)
+            or replied.text
             or (replied.document
                 and replied.document.file_name.endswith(
                     ('.jpg', '.jpeg', '.png', '.gif', '.mp4', '.html', '.txt', '.py'))
@@ -39,7 +42,7 @@ async def telegraph_(message: Message):
         await message.err("not supported!")
         return
     await message.edit("`processing...`")
-    if ((replied.text)
+    if (replied.text
         or (replied.document
             and replied.document.file_name.endswith(
             ('.html', '.txt', '.py')))):
@@ -65,7 +68,7 @@ async def telegraph_(message: Message):
             else:
                 text = content
                 header = "Pasted content by @theuserge"
-        t_url = await pool.run_in_thread(post_to_telegraph)(header, text)
+        t_url = await pool.run_in_thread(post_to_telegraph)(header, quote(text))
         jv_text = f"**[Here Your Telegra.ph Link!]({t_url})**"
         await message.edit(text=jv_text, disable_web_page_preview=True)
         return
