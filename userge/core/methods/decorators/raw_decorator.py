@@ -20,7 +20,7 @@ from typing import List, Dict, Union, Any, Callable, Optional
 from pyrogram import StopPropagation, ContinuePropagation
 from pyrogram.filters import Filter as RawFilter
 from pyrogram.types import Message as RawMessage, ChatMember
-from pyrogram.errors.exceptions.bad_request_400 import PeerIdInvalid
+from pyrogram.errors.exceptions.bad_request_400 import PeerIdInvalid, UserNotParticipant
 
 from userge import logging, Config
 from ...ext import RawClient
@@ -47,9 +47,12 @@ _CH_LKS_LK = asyncio.Lock()
 _INIT_LK = asyncio.Lock()
 
 
-async def _update_u_cht(r_m: RawMessage) -> ChatMember:
+async def _update_u_cht(r_m: RawMessage) -> Optional[ChatMember]:
     if r_m.chat.id not in {**_U_AD_CHT, **_U_NM_CHT}:
-        user = await r_m.chat.get_member(_U_ID)
+        try:
+            user = await r_m.chat.get_member(_U_ID)
+        except UserNotParticipant:
+            return None
         user.can_all = None
         if user.status == "creator":
             user.can_all = True
@@ -64,9 +67,12 @@ async def _update_u_cht(r_m: RawMessage) -> ChatMember:
     return user
 
 
-async def _update_b_cht(r_m: RawMessage) -> ChatMember:
+async def _update_b_cht(r_m: RawMessage) -> Optional[ChatMember]:
     if r_m.chat.id not in {**_B_AD_CHT, **_B_NM_CHT}:
-        bot = await r_m.chat.get_member(_B_ID)
+        try:
+            bot = await r_m.chat.get_member(_B_ID)
+        except UserNotParticipant:
+            return None
         if bot.status == "administrator":
             _B_AD_CHT[r_m.chat.id] = bot
         else:
@@ -187,6 +193,8 @@ async def _both_have_perm(flt: Union['types.raw.Command', 'types.raw.Filter'],
         user = await _update_u_cht(r_m)
         bot = await _update_b_cht(r_m)
     except PeerIdInvalid:
+        return False
+    if user is None or bot is None:
         return False
     if flt.check_change_info_perm and not (
             (user.can_all or user.can_change_info) and bot.can_change_info):
