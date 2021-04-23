@@ -46,6 +46,12 @@ async def _complete_init_tasks() -> None:
 
 class _AbstractUserge(Methods, RawClient):
     @property
+    def id(self) -> int:
+        if self.is_bot:
+            return RawClient.BOT_ID
+        return RawClient.USER_ID
+
+    @property
     def is_bot(self) -> bool:
         """ returns client is bot or not """
         if self._bot is not None:
@@ -105,6 +111,9 @@ class _AbstractUserge(Methods, RawClient):
         await self.finalize_load()
         return len(reloaded)
 
+    def __eq__(self, o: '_AbstractUserge') -> bool:
+        return self.id == o.id
+
 
 class UsergeBot(_AbstractUserge):
     """ UsergeBot, the bot """
@@ -139,6 +148,10 @@ class Userge(_AbstractUserge):
         super().__init__(**kwargs)
         self.executor.shutdown()
         self.executor = pool._get()  # pylint: disable=protected-access
+
+    @property
+    def dual_mode(self) -> bool:
+        return RawClient.DUAL_MODE
 
     @property
     def bot(self) -> Union['UsergeBot', 'Userge']:

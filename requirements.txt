@@ -6,6 +6,7 @@ cowpy
 dnspython
 emoji==0.6.0
 feedparser
+ffmpeg-python
 gitpython
 google-api-python-client
 google-auth-httplib2
@@ -16,11 +17,13 @@ heroku3
 html-telegraph-poster
 motor
 oauth2client
-Pillow==8.0.1
+Pillow==8.1.1
 psutil
 pybase64
-pyrogram==1.1.13
+pyrogram==1.2.9
 pySmartDL
+pysocks
+pytgcalls
 python-dotenv
 pytz
 rarfile

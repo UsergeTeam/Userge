@@ -174,7 +174,7 @@ async def list_gbanned(message: Message):
 @userge.on_cmd("whitelist", about={
     'header': "Whitelist a User",
     'description': "Use whitelist to add users to bypass API Bans",
-    'useage': "{tr}whitelist [userid | reply to user]",
+    'usage': "{tr}whitelist [userid | reply to user]",
     'examples': "{tr}whitelist 5231147869"},
     allow_channels=False, allow_bots=False)
 async def whitelist(message: Message):
@@ -291,9 +291,7 @@ async def gban_at_entry(message: Message):
                     {"$set": {'chat_ids': chat_ids}}, upsert=True)
             )
         elif Config.ANTISPAM_SENTRY:
-            async with aiohttp.ClientSession() as ses:
-                async with ses.get(f'https://api.cas.chat/check?user_id={user_id}') as resp:
-                    res = json.loads(await resp.text())
+            res = await getData(f'https://api.cas.chat/check?user_id={user_id}')
             if res['ok']:
                 reason = ' | '.join(
                     res['result']['messages']) if 'result' in res else None
@@ -315,11 +313,9 @@ async def gban_at_entry(message: Message):
                         f" Banned in {message.chat.title}\n\n$AUTOBAN #id{user_id}")
                 )
                 continue
-            async with aiohttp.ClientSession() as ses:
-                async with ses.get(
-                    "https://api.intellivoid.net/spamprotection/v1/lookup?query=" + str(user_id)
-                ) as resp:
-                    iv = json.loads(await resp.text())
+            iv = await getData(
+                "https://api.intellivoid.net/spamprotection/v1/lookup?query=" + str(user_id)
+            )
             if iv['success'] and iv['results']['attributes']['is_blacklisted'] is True:
                 reason = iv['results']['attributes']['blacklist_reason']
                 await asyncio.gather(
@@ -361,6 +357,12 @@ async def gban_at_entry(message: Message):
                             f"$AUTOBAN #id{user_id}")
                     )
     message.continue_propagation()
+
+
+async def getData(link: str):
+    async with aiohttp.ClientSession() as ses:
+        async with ses.get(link) as resp:
+            return json.loads(await resp.text())
 
 
 @pool.run_in_thread

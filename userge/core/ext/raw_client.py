@@ -30,6 +30,8 @@ _LOG_STR = "<<<!  {  (FLOOD CONTROL) sleeping %.2fs in %d  }  !>>>"
 class RawClient(Client):
     """ userge raw client """
     DUAL_MODE = False
+    USER_ID = 0
+    BOT_ID = 0
     LAST_OUTGOING_TIME = time()
     REQ_LOGS: Dict[int, 'ChatReq'] = {}
     REQ_LOCK = asyncio.Lock()

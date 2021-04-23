@@ -75,12 +75,18 @@ async def allow(message: Message):
 
 @userge.on_cmd("nopm", about={
     'header': "Activates guarding on inbox",
+    'flags': {"-all": "Delete all allowed PM's"},
     'description': "Ones someone is allowed, "
                    "Userge will not interfere or handle such private chats",
     'usage': "{tr}nopm [username | userID]\nreply {tr}nopm to a message, "
              "do {tr}nopm in the private chat"}, allow_channels=False, allow_via_bot=False)
 async def denyToPm(message: Message):
     """ disallows to pm """
+    if message.flags and '-all' in message.flags:
+        Config.ALLOWED_CHATS.clear()
+        await ALLOWED_COLLECTION.drop()
+        await message.edit("`Deleted all allowed Pms.`")
+        return
     userid = await get_id(message)
     if userid:
         if userid in Config.ALLOWED_CHATS:
@@ -94,6 +100,18 @@ async def denyToPm(message: Message):
         await message.edit(
             "I need to reply to a user or provide the username/id or be in a private chat",
             del_in=3)
+
+
+@userge.on_cmd("listpm", about={
+    'header': "List all Allowed PM's",
+    'usage': "{tr}listpm"})
+async def list_pm(msg: Message):
+    out = "`Allowed list is empty`"
+    if Config.ALLOWED_CHATS:
+        out = "**Allowed Chats are:**\n"
+        for chat in Config.ALLOWED_CHATS:
+            out += f"\n`{chat}`"
+    await msg.edit_or_send_as_file(out)
 
 
 async def get_id(message: Message):

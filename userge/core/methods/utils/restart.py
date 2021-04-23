@@ -32,7 +32,7 @@ class Restart(RawClient):  # pylint: disable=missing-class-docstring
         if update_req:
             _LOG.info(_LOG_STR, "Installing Requirements...")
             os.system(  # nosec
-                "pip3 install -U pip && pip3 install --no-cache-dir -r requirements.txt")
+                "pip3 install -U pip && pip3 install -r requirements.txt")
             _LOG.info(_LOG_STR, "Requirements Installed !")
         if hard:
             os.kill(os.getpid(), signal.SIGUSR1)
