@@ -180,9 +180,10 @@ async def play_music(msg: Message):
             results = VideosSearch(msg.input_str, limit=1).result()['result']
             if results:
                 link = results[0]['link']
-                await mesg.edit(
+                await mesg.delete()
+                mesg = await reply_text(
+                    msg,
                     f"Found {link}",
-                    disable_web_page_preview=True
                 )
                 QUEUE.append(mesg)
                 text = (
