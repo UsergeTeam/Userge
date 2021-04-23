@@ -21,6 +21,8 @@ import youtube_dl as ytdl
 from typing import List, Optional
 from traceback import format_exc
 from pytgcalls import GroupCall
+from youtubesearchpython import VideosSearch
+
 from pyrogram.raw import functions
 from pyrogram.types import (
     InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, Message as RawMessage
@@ -172,12 +174,27 @@ async def play_music(msg: Message):
                 f"[Song]({msg.input_str}) "
                 f"Scheduled to QUEUE on #{len(QUEUE)} position."
             )
-            await reply_text(
-                msg,
-                text
-            )
+            await reply_text(msg, text)
         else:
-            await reply_text(msg, "Only youtube links are supported")
+            mesg = await reply_text(msg, f"Searching `{msg.input_str}` on YouTube")
+            result = VideosSearch(msg.input_str, limit=1).result()['result']
+            if results:
+                link = results[0]['link']
+                await mesg.edit(
+                    f"Found {link}",
+                    disable_web_page_preview=True
+                )
+                QUEUE.append(mesg)
+                text = (
+                    "`Playing` "
+                    f"[{link}]({mesg.link})"
+                ) if not PLAYING else (
+                    f"[Song]({link}) "
+                    f"Scheduled to QUEUE on #{len(QUEUE)} position."
+                )
+                await reply_text(msg, text)
+            else:
+                await mesg.edit("No results found.")
     elif msg.reply_to_message and msg.reply_to_message.audio:
         QUEUE.append(msg)
         replied = msg.reply_to_message
