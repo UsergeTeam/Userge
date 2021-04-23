@@ -38,5 +38,6 @@ async def del_msg(message: Message):
                     pass
     else:
         await message.delete()
-        if replied := message.reply_to_message:
+        replied = message.reply_to_message
+        if replied:
             await replied.delete()
