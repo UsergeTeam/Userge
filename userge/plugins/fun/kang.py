@@ -30,14 +30,15 @@ from userge import userge, Message, Config
         'usage': "Reply {tr}kang [emoji('s)] [pack number] to a sticker or "
                  "an image to kang it to your userbot pack.",
         'examples': ["{tr}kang", "{tr}kang -s", "{tr}kang -d",
-                     "{tr}kang 🤔", "{tr}kang 2", "{tr}kang 🤔 2"]},
+                     "{tr}kang 🤔😎", "{tr}kang 2", "{tr}kang 🤔🤣😂 2"]},
     allow_channels=False, allow_via_bot=False)
 async def kang_(message: Message):
     """ kang a sticker """
     user = await userge.get_me()
     replied = message.reply_to_message
     photo = None
-    emoji_ = None
+    _emoji = None
+    emoji_ = ""
     is_anim = False
     resize = False
     if replied and replied.media:
@@ -65,19 +66,22 @@ async def kang_(message: Message):
         await message.edit("`I can't kang that...`")
         return
     if photo:
-        args = message.filtered_input_str.split()
+        args = message.filtered_input_str.split(' ')
         pack = 1
         if len(args) == 2:
-            emoji_, pack = args
+            _emoji, pack = args
         elif len(args) == 1:
             if args[0].isnumeric():
                 pack = int(args[0])
             else:
-                emoji_ = args[0]
+                _emoji = args[0]
 
-        if emoji_ and emoji_ not in (
-                getattr(emoji, a) for a in dir(emoji) if not a.startswith("_")):
-            emoji_ = None
+        if _emoji is not None:
+            for k in _emoji:
+                if k and k in (
+                    getattr(emoji, a) for a in dir(emoji) if not a.startswith("_")
+                ):
+                    emoji_ += k
         if not emoji_:
             emoji_ = "🤔"
 
