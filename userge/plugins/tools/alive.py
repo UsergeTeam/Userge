@@ -18,7 +18,7 @@ from pyrogram.errors import (
     FileIdInvalid, FileReferenceEmpty, BadRequest, ChannelInvalid, MediaEmpty
 )
 
-from userge.core.ext import RawClient, pool
+from userge.core.ext import pool
 from userge.utils import get_file_id_of_media
 from userge import userge, Message, Config, versions, get_version, logging
 
@@ -55,7 +55,7 @@ async def alive(message: Message):
 
 
 def _get_mode() -> str:
-    if RawClient.DUAL_MODE:
+    if userge.dual_mode:
         return "Dual"
     if Config.BOT_TOKEN:
         return "Bot"
