@@ -177,7 +177,7 @@ async def play_music(msg: Message):
             await reply_text(msg, text)
         else:
             mesg = await reply_text(msg, f"Searching `{msg.input_str}` on YouTube")
-            result = VideosSearch(msg.input_str, limit=1).result()['result']
+            results = VideosSearch(msg.input_str, limit=1).result()['result']
             if results:
                 link = results[0]['link']
                 await mesg.edit(
