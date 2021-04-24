@@ -18,7 +18,7 @@ import shutil
 import asyncio
 import youtube_dl as ytdl
 
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from traceback import format_exc
 from pytgcalls import GroupCall
 from youtubesearchpython import VideosSearch
@@ -177,20 +177,16 @@ async def play_music(msg: Message):
             await reply_text(msg, text)
         else:
             mesg = await reply_text(msg, f"Searching `{msg.input_str}` on YouTube")
-            results = VideosSearch(msg.input_str, limit=1).result()['result']
-            if results:
-                link = results[0]['link']
+            title, link = await _get_song(msg.input_str)
+            if link:
                 await mesg.delete()
-                mesg = await reply_text(
-                    msg,
-                    f"Found {link}",
-                )
+                mesg = await reply_text(msg, f"Found {link}")
                 QUEUE.append(mesg)
                 text = (
                     "`Playing` "
-                    f"[{link}]({mesg.link})"
+                    f"[{title}]({mesg.link})"
                 ) if not PLAYING else (
-                    f"[Song]({link}) "
+                    f"[Song]({mesg.link}) "
                     f"Scheduled to QUEUE on #{len(QUEUE)} position."
                 )
                 await reply_text(msg, text)
@@ -203,13 +199,10 @@ async def play_music(msg: Message):
             "`Playing` "
             f"[{replied.audio.title}]({replied.link})"
         ) if not PLAYING else (
-            f"[Song]({msg.reply_to_message.link}) "
+            f"[Song]({replied.link}) "
             f"Scheduled to QUEUE on #{len(QUEUE)} position."
         )
-        await reply_text(
-            msg,
-            text
-        )
+        await reply_text(msg, text)
     else:
         return await reply_text(msg, "Input not found")
 
@@ -429,6 +422,14 @@ async def tg_down(msg: Message):
         to_reply=False
     )
     shutil.rmtree("temp_music_dir", ignore_errors=True)
+
+
+@pool.run_in_thread
+def _get_song(name: str) -> Tuple[str, str]:
+    results: List[dict] = VideosSearch(name, limit=1).result()['result']
+    if results:
+        return results[0].get('title', name), results[0].get('link')
+    return name, ""
 
 
 @pool.run_in_thread
