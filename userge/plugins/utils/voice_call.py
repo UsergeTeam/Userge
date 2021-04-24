@@ -94,10 +94,10 @@ async def reply_text(
 
 
 async def cache_admins(chat_id: int) -> None:
-    k = []
-    async for member in userge.iter_chat_members(chat_id):
-        if member.status in ("creator", "administrator"):
-            k.append(member.user.id)
+    k = [
+        member.user.id async for member in userge.iter_chat_members(chat_id)
+        if member.status in ("creator", "administrator")
+    ]
     ADMINS[chat_id] = k
 
 
@@ -389,7 +389,7 @@ async def yt_down(msg: Message):
 
     def requester():
         replied = msg.reply_to_message
-        if msg.client.id == msg.from_user.id and replied:
+        if (await msg.client.get_me()).id == msg.from_user.id and replied:
             return replied.from_user.mention
         return msg.from_user.mnetion
 
@@ -407,7 +407,7 @@ async def yt_down(msg: Message):
     )
     shutil.rmtree("temp_music_dir", ignore_errors=True)
 
-    if msg.client.id == msg.from_user.id:
+    if (await msg.client.get_me()).id == msg.from_user.id:
         await msg.delete()
 
 
