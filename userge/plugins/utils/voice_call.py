@@ -227,8 +227,14 @@ async def view_queue(msg: Message):
         out = f"**{len(QUEUE)} Songs in Queue:**\n"
         for i in QUEUE:
             replied = i.reply_to_message
-            out += f" - [{replied.audio.title if replied else i.input_str}]"
-            out += f"({replied.link if replied else i.link})"
+            if replied and replied.audio:
+                out += f"\n - [{replied.audio.title}]"
+                out += f"({replied.link})"
+            else:
+                link = i.input_str
+                if "Found" in i.text:
+                    link = i.entities[0].url
+                out += f"\n{link}"
 
     await reply_text(msg, out)
 
@@ -362,7 +368,7 @@ async def yt_down(msg: Message):
     shutil.rmtree("temp_music_dir", ignore_errors=True)
     message = await reply_text(msg, "`Downloading this Song...`")
 
-    url = msg.entities[0].url
+    url = msg.entities[0].url if "Found" in msg.text else msg.input_str
 
     del QUEUE[0]
     title, duration = await mp3_down(url.strip())
@@ -381,12 +387,16 @@ async def yt_down(msg: Message):
     call.input_filename = await _transcode(audio_path)
     await message.delete()
 
-    replied = msg.reply_to_message
+    def requester():
+        replied = msg.reply_to_message
+        if msg.client.id == msg.from_user.id and replied:
+            return replied.from_user.mention
+        return msg.from_user.mnetion
+
     BACK_BUTTON_TEXT = (
         f"🎶 **Now playing:** [{title}]({url})\n"
         f"⏳ **Duration:** `{duration}`\n"
-        "🎧 **Requested By:** "
-        f"{replied.from_user.mention if replied else msg.from_user.mention}"
+        f"🎧 **Requested By:** {requester()}"
     )
 
     CQ_MSG = await reply_text(
@@ -508,8 +518,14 @@ if userge.has_bot:
                 out += f"{'s' if len(QUEUE) > 1 else ''} in Queue:**\n"
                 for i in QUEUE:
                     replied = i.reply_to_message
-                    out += f"\n - [{replied.audio.title if replied else i.input_str}]"
-                    out += f"({replied.link if replied else i.link})"
+                    if replied and replied.audio:
+                        out += f"\n - [{replied.audio.title}]"
+                        out += f"({replied.link})"
+                    else:
+                        link = i.input_str
+                        if "Found" in i.text:
+                            link = i.entities[0].url
+                        out += f"\n{link}"
 
             out += f"\n\n**Clicked by:** {cq.from_user.mention}"
             button = InlineKeyboardMarkup(
