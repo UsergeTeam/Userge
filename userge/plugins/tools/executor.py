@@ -15,6 +15,7 @@ import keyword
 import traceback
 from getpass import getuser
 from os import geteuid
+from types import SimpleNamespace
 
 from userge import userge, Message, Config
 from userge.utils import runcmd
@@ -49,17 +50,26 @@ async def eval_(message: Message):
     ret_val, stdout, stderr, exc = None, None, None, None
 
     async def aexec(code):
-        head = "async def __aexec(userge, message):\n "
+        head = "async def __aexec(userge, message, replied, old):\n try:\n  "
+        tail = "\n finally: globals()['_OLD'] = locals()"
         if '\n' in code:
-            rest_code = '\n '.join(iter(code.split('\n')))
+            code = '\n  '.join(iter(code.split('\n')))
         elif (any(True for k_ in keyword.kwlist
                   if k_ not in ('True', 'False', 'None') and code.startswith(f"{k_} "))
-              or '=' in code):
-            rest_code = f"\n {code}"
+              or ('=' in code and '==' not in code)):
+            code = f"\n  {code}"
         else:
-            rest_code = f"\n return {code}"
-        exec(head + rest_code)  # nosec pylint: disable=W0122
-        return await locals()['__aexec'](userge, message)
+            code = f"\n  return {code}"
+        exec(head + code + tail)  # nosec pylint: disable=W0122
+        _old = globals().get('_OLD', {})
+        try:
+            old = _old.pop('old')
+            if not isinstance(old, SimpleNamespace):
+                raise KeyError
+            old.__dict__.update(_old)
+        except KeyError:
+            old = SimpleNamespace(**_old)
+        return await locals()['__aexec'](userge, message, message.reply_to_message, old)
     try:
         ret_val = await aexec(cmd)
     except Exception:  # pylint: disable=broad-except

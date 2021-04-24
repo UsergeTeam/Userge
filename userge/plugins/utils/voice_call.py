@@ -391,7 +391,7 @@ async def yt_down(msg: Message):
         replied = msg.reply_to_message
         if msg.client.id == msg.from_user.id and replied:
             return replied.from_user.mention
-        return msg.from_user.mnetion
+        return msg.from_user.mention
 
     BACK_BUTTON_TEXT = (
         f"🎶 **Now playing:** [{title}]({url})\n"
