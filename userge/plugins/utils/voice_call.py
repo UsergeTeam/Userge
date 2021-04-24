@@ -180,13 +180,13 @@ async def play_music(msg: Message):
             title, link = await _get_song(msg.input_str)
             if link:
                 await mesg.delete()
-                mesg = await reply_text(msg, f"Found {link}")
+                mesg = await reply_text(msg, f"Found [{title}]({link})")
                 QUEUE.append(mesg)
                 text = (
                     "`Playing` "
                     f"[{title}]({mesg.link})"
                 ) if not PLAYING else (
-                    f"[Song]({mesg.link}) "
+                    f"[{title}]({mesg.link}) "
                     f"Scheduled to QUEUE on #{len(QUEUE)} position."
                 )
                 await reply_text(msg, text)
@@ -199,7 +199,7 @@ async def play_music(msg: Message):
             "`Playing` "
             f"[{replied.audio.title}]({replied.link})"
         ) if not PLAYING else (
-            f"[Song]({replied.link}) "
+            f"[{replied.audio.title}]({replied.link}) "
             f"Scheduled to QUEUE on #{len(QUEUE)} position."
         )
         await reply_text(msg, text)
@@ -363,6 +363,7 @@ async def yt_down(msg: Message):
     message = await reply_text(msg, "`Downloading this Song...`")
 
     url = msg.input_str
+
     del QUEUE[0]
     title, duration = await mp3_down(url.strip())
 
@@ -380,10 +381,12 @@ async def yt_down(msg: Message):
     call.input_filename = await _transcode(audio_path)
     await message.delete()
 
+    replied = msg.reply_to_message
     BACK_BUTTON_TEXT = (
         f"🎶 **Now playing:** [{title}]({url})\n"
         f"⏳ **Duration:** `{duration}`\n"
-        f"🎧 **Requested By:** {msg.from_user.mention}"
+        "🎧 **Requested By:** "
+        f"{replied.from_user.mention if replied else msg.from_user.mention}"
     )
 
     CQ_MSG = await reply_text(
@@ -393,6 +396,9 @@ async def yt_down(msg: Message):
         to_reply=False
     )
     shutil.rmtree("temp_music_dir", ignore_errors=True)
+
+    if (await msg.client.get_me()).id == msg.from_user.id:
+        await msg.delete()
 
 
 async def tg_down(msg: Message):
