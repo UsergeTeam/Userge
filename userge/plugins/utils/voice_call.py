@@ -18,9 +18,11 @@ import shutil
 import asyncio
 import youtube_dl as ytdl
 
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from traceback import format_exc
 from pytgcalls import GroupCall
+from youtubesearchpython import VideosSearch
+
 from pyrogram.raw import functions
 from pyrogram.types import (
     InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, Message as RawMessage
@@ -92,10 +94,10 @@ async def reply_text(
 
 
 async def cache_admins(chat_id: int) -> None:
-    k = []
-    async for member in userge.iter_chat_members(chat_id):
-        if member.status in ("creator", "administrator"):
-            k.append(member.user.id)
+    k = [
+        member.user.id async for member in userge.iter_chat_members(chat_id)
+        if member.status in ("creator", "administrator")
+    ]
     ADMINS[chat_id] = k
 
 
@@ -172,12 +174,24 @@ async def play_music(msg: Message):
                 f"[Song]({msg.input_str}) "
                 f"Scheduled to QUEUE on #{len(QUEUE)} position."
             )
-            await reply_text(
-                msg,
-                text
-            )
+            await reply_text(msg, text)
         else:
-            await reply_text(msg, "Only youtube links are supported")
+            mesg = await reply_text(msg, f"Searching `{msg.input_str}` on YouTube")
+            title, link = await _get_song(msg.input_str)
+            if link:
+                await mesg.delete()
+                mesg = await reply_text(msg, f"Found [{title}]({link})")
+                QUEUE.append(mesg)
+                text = (
+                    "`Playing` "
+                    f"[{title}]({mesg.link})"
+                ) if not PLAYING else (
+                    f"[{title}]({mesg.link}) "
+                    f"Scheduled to QUEUE on #{len(QUEUE)} position."
+                )
+                await reply_text(msg, text)
+            else:
+                await mesg.edit("No results found.")
     elif msg.reply_to_message and msg.reply_to_message.audio:
         QUEUE.append(msg)
         replied = msg.reply_to_message
@@ -185,13 +199,10 @@ async def play_music(msg: Message):
             "`Playing` "
             f"[{replied.audio.title}]({replied.link})"
         ) if not PLAYING else (
-            f"[Song]({msg.reply_to_message.link}) "
+            f"[{replied.audio.title}]({replied.link}) "
             f"Scheduled to QUEUE on #{len(QUEUE)} position."
         )
-        await reply_text(
-            msg,
-            text
-        )
+        await reply_text(msg, text)
     else:
         return await reply_text(msg, "Input not found")
 
@@ -216,8 +227,14 @@ async def view_queue(msg: Message):
         out = f"**{len(QUEUE)} Songs in Queue:**\n"
         for i in QUEUE:
             replied = i.reply_to_message
-            out += f" - [{replied.audio.title if replied else i.input_str}]"
-            out += f"({replied.link if replied else i.link})"
+            if replied and replied.audio:
+                out += f"\n - [{replied.audio.title}]"
+                out += f"({replied.link})"
+            else:
+                link = i.input_str
+                if "Found" in i.text:
+                    link = i.entities[0].url
+                out += f"\n{link}"
 
     await reply_text(msg, out)
 
@@ -351,7 +368,8 @@ async def yt_down(msg: Message):
     shutil.rmtree("temp_music_dir", ignore_errors=True)
     message = await reply_text(msg, "`Downloading this Song...`")
 
-    url = msg.input_str
+    url = msg.entities[0].url if "Found" in msg.text else msg.input_str
+
     del QUEUE[0]
     title, duration = await mp3_down(url.strip())
 
@@ -369,10 +387,16 @@ async def yt_down(msg: Message):
     call.input_filename = await _transcode(audio_path)
     await message.delete()
 
+    def requester():
+        replied = msg.reply_to_message
+        if msg.client.id == msg.from_user.id and replied:
+            return replied.from_user.mention
+        return msg.from_user.mnetion
+
     BACK_BUTTON_TEXT = (
         f"🎶 **Now playing:** [{title}]({url})\n"
         f"⏳ **Duration:** `{duration}`\n"
-        f"🎧 **Requested By:** {msg.from_user.mention}"
+        f"🎧 **Requested By:** {requester()}"
     )
 
     CQ_MSG = await reply_text(
@@ -382,6 +406,9 @@ async def yt_down(msg: Message):
         to_reply=False
     )
     shutil.rmtree("temp_music_dir", ignore_errors=True)
+
+    if msg.client.id == msg.from_user.id:
+        await msg.delete()
 
 
 async def tg_down(msg: Message):
@@ -411,6 +438,14 @@ async def tg_down(msg: Message):
         to_reply=False
     )
     shutil.rmtree("temp_music_dir", ignore_errors=True)
+
+
+@pool.run_in_thread
+def _get_song(name: str) -> Tuple[str, str]:
+    results: List[dict] = VideosSearch(name, limit=1).result()['result']
+    if results:
+        return results[0].get('title', name), results[0].get('link')
+    return name, ""
 
 
 @pool.run_in_thread
@@ -483,8 +518,14 @@ if userge.has_bot:
                 out += f"{'s' if len(QUEUE) > 1 else ''} in Queue:**\n"
                 for i in QUEUE:
                     replied = i.reply_to_message
-                    out += f"\n - [{replied.audio.title if replied else i.input_str}]"
-                    out += f"({replied.link if replied else i.link})"
+                    if replied and replied.audio:
+                        out += f"\n - [{replied.audio.title}]"
+                        out += f"({replied.link})"
+                    else:
+                        link = i.input_str
+                        if "Found" in i.text:
+                            link = i.entities[0].url
+                        out += f"\n{link}"
 
             out += f"\n\n**Clicked by:** {cq.from_user.mention}"
             button = InlineKeyboardMarkup(
