@@ -362,7 +362,7 @@ async def yt_down(msg: Message):
     shutil.rmtree("temp_music_dir", ignore_errors=True)
     message = await reply_text(msg, "`Downloading this Song...`")
 
-    url = msg.input_str
+    url = msg.entities[0].url
 
     del QUEUE[0]
     title, duration = await mp3_down(url.strip())
