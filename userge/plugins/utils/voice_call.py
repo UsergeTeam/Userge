@@ -389,7 +389,7 @@ async def yt_down(msg: Message):
 
     def requester():
         replied = msg.reply_to_message
-        if (await msg.client.get_me()).id == msg.from_user.id and replied:
+        if msg.client.id == msg.from_user.id and replied:
             return replied.from_user.mention
         return msg.from_user.mnetion
 
@@ -407,7 +407,7 @@ async def yt_down(msg: Message):
     )
     shutil.rmtree("temp_music_dir", ignore_errors=True)
 
-    if (await msg.client.get_me()).id == msg.from_user.id:
+    if msg.client.id == msg.from_user.id:
         await msg.delete()
 
 
