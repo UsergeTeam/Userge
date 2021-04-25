@@ -111,8 +111,11 @@ class _AbstractUserge(Methods, RawClient):
         await self.finalize_load()
         return len(reloaded)
 
-    def __eq__(self, o: '_AbstractUserge') -> bool:
-        return self.id == o.id
+    def __eq__(self, o: object) -> bool:
+        return isinstance(o, _AbstractUserge) and self.id == o.id
+
+    def __hash__(self) -> int:
+        return super().__hash__()
 
 
 class UsergeBot(_AbstractUserge):
