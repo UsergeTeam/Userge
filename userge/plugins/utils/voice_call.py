@@ -52,6 +52,7 @@ yt_regex = (
     r'(youtube|youtu|youtube-nocookie)\.(com|be)/'
     r'(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})'
 )
+SCHEDULED = "[{title}]({link}) Scheduled to QUEUE on #{position} position"
 
 
 def vc_chat(func):
@@ -156,7 +157,9 @@ async def leavevc(msg: Message):
         await reply_text(msg, "`I didn't find any Voice-Chat to leave")
 
 
-@userge.on_filters(filters.group & filters.command("play"))
+@userge.on_cmd("play", about={'header': "play or add songs to queue"},
+               trigger='/', filter_me=False, allow_private=False,
+               allow_bots=False, allow_channels=False)
 @vc_chat
 async def play_music(msg: Message):
     """ play music in voice chat """
@@ -167,14 +170,10 @@ async def play_music(msg: Message):
     if msg.input_str:
         if re.match(yt_regex, msg.input_str):
             QUEUE.append(msg)
-            text = (
-                "`Playing` "
-                f"[{msg.input_str}]({msg.link})"
-            ) if not PLAYING else (
-                f"[Song]({msg.input_str}) "
-                f"Scheduled to QUEUE on #{len(QUEUE)} position."
-            )
-            await reply_text(msg, text)
+            if PLAYING:
+                text = SCHEDULED.format(
+                    title="Song", link=msg.input_str, position=len(QUEUE))
+                await reply_text(msg, text)
         else:
             mesg = await reply_text(msg, f"Searching `{msg.input_str}` on YouTube")
             title, link = await _get_song(msg.input_str)
@@ -182,27 +181,19 @@ async def play_music(msg: Message):
                 await mesg.delete()
                 mesg = await reply_text(msg, f"Found [{title}]({link})")
                 QUEUE.append(mesg)
-                text = (
-                    "`Playing` "
-                    f"[{title}]({mesg.link})"
-                ) if not PLAYING else (
-                    f"[{title}]({mesg.link}) "
-                    f"Scheduled to QUEUE on #{len(QUEUE)} position."
-                )
-                await reply_text(msg, text)
+                if PLAYING:
+                    text = SCHEDULED.format(
+                        title=title, link=mesg.link, position=len(QUEUE))
+                    await reply_text(msg, text)
             else:
                 await mesg.edit("No results found.")
     elif msg.reply_to_message and msg.reply_to_message.audio:
         QUEUE.append(msg)
         replied = msg.reply_to_message
-        text = (
-            "`Playing` "
-            f"[{replied.audio.title}]({replied.link})"
-        ) if not PLAYING else (
-            f"[{replied.audio.title}]({replied.link}) "
-            f"Scheduled to QUEUE on #{len(QUEUE)} position."
-        )
-        await reply_text(msg, text)
+        if PLAYING:
+            text = SCHEDULED.format(
+                title=replied.audio.title, link=replied.link, position=len(QUEUE))
+            await reply_text(msg, text)
     else:
         return await reply_text(msg, "Input not found")
 
