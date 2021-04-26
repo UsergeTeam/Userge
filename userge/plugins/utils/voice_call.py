@@ -159,7 +159,7 @@ async def leavevc(msg: Message):
 
 @userge.on_cmd("play", about={'header': "play or add songs to queue"},
                trigger='/', filter_me=False, allow_private=False,
-               allow_bots=False, allow_channels=False)
+               allow_bots=False, allow_channels=False, check_client=True)
 @vc_chat
 async def play_music(msg: Message):
     """ play music in voice chat """
