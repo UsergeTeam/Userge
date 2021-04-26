@@ -27,6 +27,7 @@ from pyrogram.raw import functions
 from pyrogram.types import (
     InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, Message as RawMessage
 )
+from pyrogram.types.messages_and_media.message import Str
 from pyrogram.errors import MessageDeleteForbidden
 
 from userge import userge, Message, pool, filters
@@ -47,12 +48,16 @@ CQ_MSG: Optional[RawMessage] = None
 
 call = GroupCall(userge, play_on_repeat=False)
 
-yt_regex = (
+yt_regex = re.compile(
     r'(https?://)?(www\.)?'
     r'(youtube|youtu|youtube-nocookie)\.(com|be)/'
-    r'(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})'
+    r'(watch\?v=|embed/|v/|.+\?v=)?([^&=%?]{11})'
 )
-SCHEDULED = "[{title}]({link}) Scheduled to QUEUE on #{position} position"
+_SCHEDULED = "[{title}]({link}) Scheduled to QUEUE on #{position} position"
+
+
+def _get_scheduled_text(title: str, link: str) -> str:
+    return _SCHEDULED.format(title=title, link=link, position=len(QUEUE)+1)
 
 
 def vc_chat(func):
@@ -82,9 +87,7 @@ def default_markup():
     return buttons
 
 
-async def reply_text(
-    msg: Message, text: str, markup=None, to_reply=True
-) -> Message:
+async def reply_text(msg: Message, text: str, markup=None, to_reply=True) -> Message:
     return await msg.client.send_message(
         msg.chat.id,
         text,
@@ -105,8 +108,7 @@ async def cache_admins(chat_id: int) -> None:
 @userge.on_cmd("joinvc", about={
     'header': "Join Voice-Call",
     'usage': "{tr}joinvc"},
-    allow_private=False, allow_channels=False
-)
+    allow_private=False, allow_channels=False)
 async def joinvc(msg: Message):
     """ join voice chat """
     global CHAT_NAME, CHAT_ID  # pylint: disable=global-statement
@@ -139,8 +141,7 @@ async def joinvc(msg: Message):
 @userge.on_cmd("leavevc", about={
     'header': "Leave Voice-Call",
     'usage': "{tr}leavevc"},
-    allow_private=False, allow_channels=False
-)
+    allow_private=False, allow_channels=False)
 @vc_chat
 async def leavevc(msg: Message):
     """ leave voice chat """
@@ -163,37 +164,31 @@ async def leavevc(msg: Message):
 @vc_chat
 async def play_music(msg: Message):
     """ play music in voice chat """
-
     if not CHAT_ID or msg.chat.id != CHAT_ID:
         return
 
     if msg.input_str:
-        if re.match(yt_regex, msg.input_str):
-            QUEUE.append(msg)
+        if yt_regex.match(msg.input_str):
             if PLAYING:
-                text = SCHEDULED.format(
-                    title="Song", link=msg.input_str, position=len(QUEUE))
-                await reply_text(msg, text)
+                msg = await reply_text(msg, _get_scheduled_text("Song", msg.input_str))
+            QUEUE.append(msg)
         else:
             mesg = await reply_text(msg, f"Searching `{msg.input_str}` on YouTube")
             title, link = await _get_song(msg.input_str)
             if link:
                 await mesg.delete()
-                mesg = await reply_text(msg, f"Found [{title}]({link})")
-                QUEUE.append(mesg)
                 if PLAYING:
-                    text = SCHEDULED.format(
-                        title=title, link=mesg.link, position=len(QUEUE))
-                    await reply_text(msg, text)
+                    msg = await reply_text(msg, _get_scheduled_text(title, link))
+                else:
+                    msg.text = f"[{title}]({link})"
+                QUEUE.append(msg)
             else:
                 await mesg.edit("No results found.")
     elif msg.reply_to_message and msg.reply_to_message.audio:
-        QUEUE.append(msg)
         replied = msg.reply_to_message
+        QUEUE.append(replied)
         if PLAYING:
-            text = SCHEDULED.format(
-                title=replied.audio.title, link=replied.link, position=len(QUEUE))
-            await reply_text(msg, text)
+            await reply_text(msg, _get_scheduled_text(replied.audio.title, replied.link))
     else:
         return await reply_text(msg, "Input not found")
 
@@ -204,28 +199,22 @@ async def play_music(msg: Message):
 @userge.on_cmd("queue", about={
     'header': "View Queue of Songs",
     'usage': "{tr}queue"},
-    allow_private=False, allow_channels=False
-)
+    allow_private=False, allow_channels=False)
 @vc_chat
 async def view_queue(msg: Message):
     """ View Queue """
-
     await msg.delete()
 
     if not QUEUE:
         out = "`Queue is empty`"
     else:
         out = f"**{len(QUEUE)} Songs in Queue:**\n"
-        for i in QUEUE:
-            replied = i.reply_to_message
-            if replied and replied.audio:
-                out += f"\n - [{replied.audio.title}]"
-                out += f"({replied.link})"
+        for m in QUEUE:
+            if m.audio:
+                out += f"\n - [{m.audio.title}]({m.link})"
             else:
-                link = i.input_str
-                if "Found" in i.text:
-                    link = i.entities[0].url
-                out += f"\n{link}"
+                title, link = _get_yt_info(m)
+                out += f"\n - [{title}]({link})"
 
     await reply_text(msg, out)
 
@@ -233,12 +222,10 @@ async def view_queue(msg: Message):
 @userge.on_cmd("skip", about={
     'header': "Skip Song",
     'usage': "{tr}skip"},
-    allow_private=False, allow_channels=False
-)
+    allow_private=False, allow_channels=False)
 @vc_chat
 async def skip_music(msg: Message):
     """ skip music in vc """
-
     await msg.delete()
 
     await _skip()
@@ -248,12 +235,10 @@ async def skip_music(msg: Message):
 @userge.on_cmd("pause", about={
     'header': "Pause Song.",
     'usage': "{tr}pause"},
-    allow_private=False, allow_channels=False
-)
+    allow_private=False, allow_channels=False)
 @vc_chat
 async def pause_music(msg: Message):
     """ paise music in vc """
-
     await msg.delete()
 
     call.pause_playout()
@@ -263,12 +248,10 @@ async def pause_music(msg: Message):
 @userge.on_cmd("resume", about={
     'header': "Resume Song.",
     'usage': "{tr}resume"},
-    allow_private=False, allow_channels=False
-)
+    allow_private=False, allow_channels=False)
 @vc_chat
 async def resume_music(msg: Message):
     """ resume music in vc """
-
     await msg.delete()
 
     call.resume_playout()
@@ -278,12 +261,10 @@ async def resume_music(msg: Message):
 @userge.on_cmd("stopvc", about={
     'header': "Stop vc and clear Queue.",
     'usage': "{tr}stopvc"},
-    allow_private=False, allow_channels=False
-)
+    allow_private=False, allow_channels=False)
 @vc_chat
 async def stop_music(msg: Message):
     """ stop music in vc """
-
     await msg.delete()
     await _skip(True)
 
@@ -307,7 +288,6 @@ async def nsc_handler(c: GroupCall, connected: bool):
 
 @call.on_playout_ended
 async def skip_handler(_, __):
-
     await handle_queue()
 
 
@@ -333,12 +313,13 @@ async def _skip(clear_queue: bool = False):
         PLAYING = False
         return
 
-    msg = QUEUE[0].reply_to_message
+    shutil.rmtree("temp_music_dir", ignore_errors=True)
+    msg = QUEUE.pop(0)
     try:
-        if QUEUE[0] and msg and msg.audio:
-            await tg_down(QUEUE[0])
+        if msg.audio:
+            await tg_down(msg)
         else:
-            await yt_down(QUEUE[0])
+            await yt_down(msg)
     except Exception as err:
         PLAYING = False
         out = f"**ERROR:** `{str(err)}`"
@@ -351,17 +332,15 @@ async def _skip(clear_queue: bool = False):
             disable_web_page_preview=True
         )
         await handle_queue()
+    finally:
+        shutil.rmtree("temp_music_dir", ignore_errors=True)
 
 
 async def yt_down(msg: Message):
     global BACK_BUTTON_TEXT, CQ_MSG  # pylint: disable=global-statement
 
-    shutil.rmtree("temp_music_dir", ignore_errors=True)
+    url = _get_yt_link(msg)
     message = await reply_text(msg, "`Downloading this Song...`")
-
-    url = msg.entities[0].url if "Found" in msg.text else msg.input_str
-
-    del QUEUE[0]
     title, duration = await mp3_down(url.strip())
 
     audio_path = None
@@ -380,7 +359,7 @@ async def yt_down(msg: Message):
 
     def requester():
         replied = msg.reply_to_message
-        if msg.client.id == msg.from_user.id and replied:
+        if replied and msg.client.id == msg.from_user.id:
             return replied.from_user.mention
         return msg.from_user.mention
 
@@ -396,7 +375,6 @@ async def yt_down(msg: Message):
         markup=default_markup() if userge.has_bot else None,
         to_reply=False
     )
-    shutil.rmtree("temp_music_dir", ignore_errors=True)
 
     if msg.client.id == msg.from_user.id:
         await msg.delete()
@@ -405,11 +383,8 @@ async def yt_down(msg: Message):
 async def tg_down(msg: Message):
     global BACK_BUTTON_TEXT, CQ_MSG  # pylint: disable=global-statement
 
-    replied = msg.reply_to_message
-    del QUEUE[0]
-
-    message = await reply_text(replied, "`Downloading this Song...`")
-    path = await replied.download("temp_music_dir/")
+    message = await reply_text(msg, "`Downloading this Song...`")
+    path = await msg.download("temp_music_dir/")
     filename = os.path.join("temp_music_dir", os.path.basename(path))
 
     await message.edit("`Transcoding...`")
@@ -417,8 +392,8 @@ async def tg_down(msg: Message):
     await message.delete()
 
     BACK_BUTTON_TEXT = (
-        f"🎶 **Now playing:** [{replied.audio.title}]({replied.link})\n"
-        f"⏳ **Duration:** `{time_formatter(replied.audio.duration)}`\n"
+        f"🎶 **Now playing:** [{msg.audio.title}]({msg.link})\n"
+        f"⏳ **Duration:** `{time_formatter(msg.audio.duration)}`\n"
         f"🎧 **Requested By:** {msg.from_user.mention}"
     )
 
@@ -428,7 +403,22 @@ async def tg_down(msg: Message):
         markup=default_markup() if userge.has_bot else None,
         to_reply=False
     )
-    shutil.rmtree("temp_music_dir", ignore_errors=True)
+
+
+def _get_yt_link(msg: Message) -> str:
+    text = msg.text
+    if isinstance(text, Str):
+        text = text.markdown
+    for _ in yt_regex.finditer(text):
+        return _.group(0)
+    return ""
+
+
+def _get_yt_info(msg: Message) -> Tuple[str, str]:
+    for e in msg.entities:
+        if e.url:
+            return msg.text[e.offset:e.length], e.url
+    return "Song", _get_yt_link(msg)
 
 
 @pool.run_in_thread
@@ -507,16 +497,12 @@ if userge.has_bot:
             else:
                 out = f"**{len(QUEUE)} Song"
                 out += f"{'s' if len(QUEUE) > 1 else ''} in Queue:**\n"
-                for i in QUEUE:
-                    replied = i.reply_to_message
-                    if replied and replied.audio:
-                        out += f"\n - [{replied.audio.title}]"
-                        out += f"({replied.link})"
+                for m in QUEUE:
+                    if m.audio:
+                        out += f"\n - [{m.audio.title}]({m.link})"
                     else:
-                        link = i.input_str
-                        if "Found" in i.text:
-                            link = i.entities[0].url
-                        out += f"\n{link}"
+                        title, link = _get_yt_info(m)
+                        out += f"\n - [{title}]({link})"
 
             out += f"\n\n**Clicked by:** {cq.from_user.mention}"
             button = InlineKeyboardMarkup(
