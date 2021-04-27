@@ -81,7 +81,7 @@ def vc_chat(func):
 
 
 def check_enable_for_all(func):
-    """ decorator tk check users """
+    """ decorator to check cmd is_enable for others """
 
     async def checker(msg: Message):
         if msg.from_user.is_self or CMDS_FOR_ALL:
@@ -177,10 +177,10 @@ async def leavevc(msg: Message):
         await reply_text(msg, "`I didn't find any Voice-Chat to leave")
 
 
-@userge.on_cmd("enablevc", about={
+@userge.on_cmd("togglevc", about={
     'header': "Toggle to enable or disable play and queue commands for all users"},
     allow_private=False)
-async def enable_vc(msg: Message):
+async def toggle_vc(msg: Message):
     global CMDS_FOR_ALL  # pylint: disable=global-statement
 
     await msg.delete()
