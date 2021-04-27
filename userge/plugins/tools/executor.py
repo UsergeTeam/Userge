@@ -167,7 +167,7 @@ async def init_func(message: Message):
     cmd = message.input_str
     if (rep and rep.document and rep.document.file_name.endswith(('.txt', '.py'))
         and rep.document.file_size <= 2097152
-       ):
+   ):
         dl_loc = await message.client.download_media(
             message=rep,
             file_name=Config.DOWN_PATH,
