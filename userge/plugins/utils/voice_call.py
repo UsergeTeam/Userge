@@ -240,7 +240,7 @@ async def play_music(msg: Message):
 @userge.on_cmd("queue", about={
     'header': "View Queue of Songs",
     'usage': "{tr}queue"},
-    trigger='/', filter_me=False
+    trigger='/', filter_me=False,
     allow_bots=False, allow_private=False)
 @vc_chat
 @check_enable_for_all
