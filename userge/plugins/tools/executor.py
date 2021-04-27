@@ -27,7 +27,7 @@ CHANNEL = userge.getCLogger()
 @userge.on_cmd("eval", about={
     'header': "run python code line | lines",
     'flags': {'-s': "silent mode (hide STDIN)"},
-    'usage': "{tr}eval [flag] [code lines]",
+    'usage': "{tr}eval [flag] [code lines or reply to .py or .txt file]",
     'examples': [
         "{tr}eval print('Userge')", "{tr}eval -s print('Userge')",
         "{tr}eval 5 + 6", "{tr}eval -s 5 + 6"]}, allow_channels=False)
@@ -167,7 +167,7 @@ async def init_func(message: Message):
     cmd = message.input_str
     if (rep.document and rep.document.file_name.endswith('.txt', '.py')
         and rep.document.file_size <= 2097152
-    ):
+       ):
         dl_loc = await message.client.download_media(
             message=rep,
             file_name=Config.DOWN_PATH,
