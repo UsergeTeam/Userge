@@ -178,8 +178,8 @@ async def leavevc(msg: Message):
 
 
 @userge.on_cmd("enablevc", about={
-    'header': "Toggle to enable or disable play and queue commands for all users"
-    }, allow_private=False)
+    'header': "Toggle to enable or disable play and queue commands for all users"},
+    allow_private=False)
 async def enable_vc(msg: Message):
     global CMDS_FOR_ALL  # pylint: disable=global-statement
 
@@ -188,9 +188,13 @@ async def enable_vc(msg: Message):
         CMDS_FOR_ALL = False
     else:
         CMDS_FOR_ALL = True
-    await VC_DB.update_one({'_id': 'VC_CMD_TOGGLE'}'},
-                           {"$set": {'is_enable': CMDS_FOR_ALL}},
-                           upsert=True)
+
+    await VC_DB.update_one(
+        {'_id': 'VC_CMD_TOGGLE'},
+        {"$set": {'is_enable': CMDS_FOR_ALL}},
+        upsert=True
+    )
+
     text = "**Enabled**" if CMDS_FOR_ALL else "**Disabled**"
     text += " commands Successfully"
     await reply_text(msg, text)
