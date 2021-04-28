@@ -388,7 +388,7 @@ async def yt_down(msg: Message):
     global BACK_BUTTON_TEXT, CQ_MSG  # pylint: disable=global-statement
 
     title, url = _get_yt_info(msg)
-    message = await reply_text(msg, "`Downloading {title}`")
+    message = await reply_text(msg, f"`Downloading {title}`")
     title, duration = await mp3_down(url.strip())
 
     audio_path = None
@@ -432,7 +432,7 @@ async def yt_down(msg: Message):
 async def tg_down(msg: Message):
     global BACK_BUTTON_TEXT, CQ_MSG  # pylint: disable=global-statement
 
-    message = await reply_text(msg, "`Downloading {msg.audio.title}`")
+    message = await reply_text(msg, f"`Downloading {msg.audio.title}`")
     path = await msg.download("temp_music_dir/")
     filename = os.path.join("temp_music_dir", os.path.basename(path))
 
