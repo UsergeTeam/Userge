@@ -387,8 +387,8 @@ async def _skip(clear_queue: bool = False):
 async def yt_down(msg: Message):
     global BACK_BUTTON_TEXT, CQ_MSG  # pylint: disable=global-statement
 
-    url = _get_yt_link(msg)
-    message = await reply_text(msg, "`Downloading this Song...`")
+    title, url = _get_yt_info(msg)
+    message = await reply_text(msg, "`Downloading {title}`")
     title, duration = await mp3_down(url.strip())
 
     audio_path = None
@@ -432,7 +432,7 @@ async def yt_down(msg: Message):
 async def tg_down(msg: Message):
     global BACK_BUTTON_TEXT, CQ_MSG  # pylint: disable=global-statement
 
-    message = await reply_text(msg, "`Downloading this Song...`")
+    message = await reply_text(msg, "`Downloading {msg.audio.title}`")
     path = await msg.download("temp_music_dir/")
     filename = os.path.join("temp_music_dir", os.path.basename(path))
 
@@ -524,7 +524,7 @@ if userge.has_bot:
 
         if "skip" in cq.data:
             text = f"{cq.from_user.mention} Skipped the Song."
-            pattern = re.compile(r'\[(.*)]\]')
+            pattern = re.compile(r'\[(.*)\]')
             name = None
             for match in pattern.finditer(BACK_BUTTON_TEXT):
                 name = match.group(1)
