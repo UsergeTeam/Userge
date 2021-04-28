@@ -84,7 +84,7 @@ def check_enable_for_all(func):
     """ decorator to check cmd is_enable for others """
 
     async def checker(msg: Message):
-        if msg.from_user.is_self or CMDS_FOR_ALL:
+        if msg.from_user.id == userge.id or CMDS_FOR_ALL:
             await func(msg)
     return checker
 
@@ -92,7 +92,7 @@ def check_enable_for_all(func):
 def check_cq_for_all(func):
 
     async def checker(_, c_q: CallbackQuery):
-        if c_q.from_user.is_self or CMDS_FOR_ALL:
+        if c_q.from_user.id == userge.id or CMDS_FOR_ALL:
             await func(c_q)
         else:
             await c_q.answer(
