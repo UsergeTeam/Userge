@@ -89,6 +89,17 @@ def check_enable_for_all(func):
     return checker
 
 
+def check_cq_for_all(func):
+
+    async def checker(_, c_q: CallbackQuery):
+        if c_q.from_user.is_self or CMDS_FOR_ALL:
+            await func(c_q)
+        else:
+            await c_q.answer(
+                "You don't have permission to use me", show_alert=True)
+    return checker
+
+
 def default_markup():
     buttons = InlineKeyboardMarkup(
         [[
@@ -107,14 +118,6 @@ async def reply_text(msg: Message, text: str, markup=None, to_reply=True) -> Mes
         reply_markup=markup,
         disable_web_page_preview=True
     )
-
-
-async def cache_admins(chat_id: int) -> None:
-    k = [
-        member.user.id async for member in userge.iter_chat_members(chat_id)
-        if member.status in ("creator", "administrator")
-    ]
-    ADMINS[chat_id] = k
 
 
 async def _init():
@@ -240,7 +243,7 @@ async def play_music(msg: Message):
 @userge.on_cmd("queue", about={
     'header': "View Queue of Songs",
     'usage': "{tr}queue"},
-    trigger='/', filter_me=False,
+    trigger='/', filter_me=False, check_client=True,
     allow_bots=False, allow_private=False)
 @vc_chat
 @check_enable_for_all
@@ -347,7 +350,7 @@ async def _skip(clear_queue: bool = False):
     call.input_filename = ''
 
     if CQ_MSG:
-        # deleting many messages message without bot object 😂😂
+        # deleting many messages without bot object 😂😂
         for msg in CQ_MSG:
             await msg.delete()
 
@@ -519,20 +522,20 @@ if userge.has_bot:
             return
 
         if "skip" in cq.data:
-            if not ADMINS or not ADMINS.get(cq.message.chat.id):
-                await cache_admins(cq.message.chat.id)
-
-            if cq.from_user.id not in ADMINS[cq.message.chat.id]:
-                return await cq.answer("Only Admins can Skip Song.")
-
-            text = f"{cq.from_user.mention} Skipped this Song."
-            pattern = re.compile(r'\((.*)\)')
-            url = None
+            text = f"{cq.from_user.mention} Skipped the Song."
+            pattern = re.compile(r'\[(.*)]\]')
+            name = None
             for match in pattern.finditer(BACK_BUTTON_TEXT):
-                url = match.group(1)
+                name = match.group(1)
                 break
-            if url:
-                text = f"{cq.from_user.mention} Skipped this [Song]({url})."
+            if name:
+                text = f"{cq.from_user.mention} Skipped `{name}`."
+
+            if CQ_MSG:
+                for i, msg in enumerate(CQ_MSG, start=0):
+                    if msg.message_id == cq.message.message_id:
+                        CQ_MSG.pop(i)
+                        break
 
             await cq.edit_message_text(text, disable_web_page_preview=True)
             await handle_queue()
