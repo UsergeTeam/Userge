@@ -72,7 +72,7 @@ def vc_chat(func):
         else:
             try:
                 await msg.edit(
-                    "`Dosen't join any Voice-Call...`"
+                    "`Doesn't join any Voice-Call...`"
                 ) if msg.from_user.is_self else await msg.delete()
             except MessageDeleteForbidden:
                 pass
