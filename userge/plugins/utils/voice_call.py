@@ -515,6 +515,7 @@ def _transcode(input_: str) -> str:
 
 if userge.has_bot:
     @userge.bot.on_callback_query(filters.regex("(skip|queue|back)"))
+    @check_cq_for_all
     async def vc_callback(_, cq: CallbackQuery):
         global CQ_MSG  # pylint: disable=global-statement
         if not CHAT_NAME:
