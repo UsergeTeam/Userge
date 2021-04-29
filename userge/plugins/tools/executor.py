@@ -37,6 +37,10 @@ async def eval_(message: Message):
     if cmd is None:
         return
     silent_mode = False
+    if message.reply_to_message:
+        cmd_flag = message.input_str
+        if cmd_flag:
+            cmd = cmd_flag + cmd
     if cmd.startswith('-s'):
         silent_mode = True
         cmd = cmd[2:].strip()
