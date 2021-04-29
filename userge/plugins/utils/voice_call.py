@@ -32,6 +32,7 @@ from pyrogram.errors import MessageDeleteForbidden
 
 from userge import userge, Message, pool, filters, get_collection
 from userge.utils import time_formatter
+from userge.utils.exceptions import StopConversation
 
 CHANNEL = userge.getCLogger(__name__)
 
@@ -90,6 +91,7 @@ def check_enable_for_all(func):
 
 
 def check_cq_for_all(func):
+    """ decorator to check CallbackQuery users """
 
     async def checker(_, c_q: CallbackQuery):
         if c_q.from_user.id == userge.id or CMDS_FOR_ALL:
@@ -101,6 +103,8 @@ def check_cq_for_all(func):
 
 
 def default_markup():
+    """ default markup for playing text """
+
     buttons = InlineKeyboardMarkup(
         [[
             InlineKeyboardButton(text="⏩ Skip", callback_data="skip"),
@@ -110,10 +114,33 @@ def default_markup():
     return buttons
 
 
-async def reply_text(msg: Message, text: str, markup=None, to_reply=True) -> Message:
+def volume_button_markup():
+    """ volume buttons markup """
+
+    buttons = [
+        [
+            InlineKeyboardButton(text="10", callback_data="vol(10)"),
+            InlineKeyboardButton(text="50", callback_data="vol(50)")
+        ],
+        [
+            InlineKeyboardButton(text="100", callback_data="vol(100)"),
+            InlineKeyboardButton(text="200", callback_data="vol(200)")
+        ],
+        [
+            InlineKeyboardButton(text="Custom", callback_data="vol(custom)"),
+        ]
+    ]
+
+    return InlineKeyboardMarkup(buttons)
+
+
+async def reply_text(
+    msg: Message, text: str, markup=None, to_reply=True, del_in: int = 0
+) -> Message:
     return await msg.client.send_message(
         msg.chat.id,
         text,
+        del_in=del_in,
         reply_to_message_id=msg.message_id if to_reply else None,
         reply_markup=markup,
         disable_web_page_preview=True
@@ -180,10 +207,12 @@ async def leavevc(msg: Message):
         await reply_text(msg, "`I didn't find any Voice-Chat to leave")
 
 
-@userge.on_cmd("togglevc", about={
+@userge.on_cmd("vcmode", about={
     'header': "Toggle to enable or disable play and queue commands for all users"},
     allow_private=False)
 async def toggle_vc(msg: Message):
+    """ toggle enable/disable vc cmds """
+
     global CMDS_FOR_ALL  # pylint: disable=global-statement
 
     await msg.delete()
@@ -200,7 +229,7 @@ async def toggle_vc(msg: Message):
 
     text = "**Enabled**" if CMDS_FOR_ALL else "**Disabled**"
     text += " commands Successfully"
-    await reply_text(msg, text)
+    await reply_text(msg, text, del_in=5)
 
 
 @userge.on_cmd("play", about={'header': "play or add songs to queue"},
@@ -263,6 +292,42 @@ async def view_queue(msg: Message):
                 out += f"\n - [{title}]({link})"
 
     await reply_text(msg, out)
+
+
+@userge.on_cmd("volume", about={
+    'header': "Set volume",
+    'usage': "{tr}volume\n{tr}volume 69"},
+    trigger='/', filter_me=False, check_client=True,
+    allow_bots=False, allow_private=False)
+@vc_chat
+@check_enable_for_all
+async def set_volume(msg: Message):
+    """ change volume """
+
+    await msg.delete()
+ 
+    if msg.input_str:
+        if msg.input_str.isnumeric():
+            if 200 > int(msg.input_str) > 0:
+                await call.set_my_volume(int(msg.input_str))
+                await reply_text(msg, f"Successfully set volume to {msg.input_str}")
+            else:
+                await reply_text(msg, "Invalid Range!")
+        else:
+            await reply_text(msg, "Invalid Arguments!")
+    else:
+        try:
+
+            await userge.bot.send_message(
+                msg.chat.id,
+                "`Click on the button to change volume"
+                " or Click last option to Enter volume manually.`",
+                reply_markup=volume_button_markup()
+            )
+
+        except Exception:
+
+            await reply_text(msg, "Input not found!")
 
 
 @userge.on_cmd("skip", about={
@@ -385,6 +450,8 @@ async def _skip(clear_queue: bool = False):
 
 
 async def yt_down(msg: Message):
+    """ youtube downloader """
+
     global BACK_BUTTON_TEXT, CQ_MSG  # pylint: disable=global-statement
 
     title, url = _get_yt_info(msg)
@@ -430,6 +497,8 @@ async def yt_down(msg: Message):
 
 
 async def tg_down(msg: Message):
+    """ TG downloader """
+
     global BACK_BUTTON_TEXT, CQ_MSG  # pylint: disable=global-statement
 
     message = await reply_text(msg, f"`Downloading {msg.audio.title}`")
@@ -574,3 +643,50 @@ if userge.has_bot:
                 )
             else:
                 await cq.message.delete()
+
+
+    @userge.bot.on_callback_query(filters.regex(r"vol\((.+)\)"))
+    @check_cq_for_all
+    async def vc_callback(cq: CallbackQuery):
+
+        arg = cq.matches[0].group(1)
+        volume = 0
+
+        if arg.isnumeric():
+            volume = int(arg)
+
+        elif arg == "custom":
+
+            try:
+
+                async with userge.conversation(cq.message.chat.id) as conv:
+
+                    await cq.edit_message_text("`Now Input Volume`")
+
+                    response = await conv.get_response(mark_read=True)
+                    replied = response.reply_to_message
+
+                    while not (
+                        response.from_user.id == cq.from_user.id
+                        and replied 
+                        and replied.message_id == cq.message.message_id
+                    ):
+                        response = await conv.get_response(mark_read=True)
+                        replied = response.reply_to_message
+
+            except StopConversation:
+
+                await cq.edit_message_text("No arguments passed!")
+                return
+
+            if response.text.isnumeric():
+                volume = int(response.text)
+                if not (200 >= volume > 0):
+                    await cq.edit_message_text("`Invalid Range!`")
+            else:
+                await cq.edit_message_text("`Invalid Arguments!`")
+                return
+
+        if 200 >= volume > 0:
+            await call.set_my_volume(volume)
+            await cq.edit_message_text(f"Successfully set volume to {volume}")
