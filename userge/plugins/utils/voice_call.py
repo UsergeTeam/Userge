@@ -305,7 +305,7 @@ async def set_volume(msg: Message):
     """ change volume """
 
     await msg.delete()
- 
+
     if msg.input_str:
         if msg.input_str.isnumeric():
             if 200 > int(msg.input_str) > 0:
@@ -644,10 +644,9 @@ if userge.has_bot:
             else:
                 await cq.message.delete()
 
-
     @userge.bot.on_callback_query(filters.regex(r"vol\((.+)\)"))
     @check_cq_for_all
-    async def vc_callback(cq: CallbackQuery):
+    async def vol_callback(cq: CallbackQuery):
 
         arg = cq.matches[0].group(1)
         volume = 0
@@ -668,7 +667,7 @@ if userge.has_bot:
 
                     while not (
                         response.from_user.id == cq.from_user.id
-                        and replied 
+                        and replied
                         and replied.message_id == cq.message.message_id
                     ):
                         response = await conv.get_response(mark_read=True)
