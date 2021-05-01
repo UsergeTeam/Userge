@@ -658,7 +658,9 @@ if userge.has_bot:
 
             try:
 
-                async with userge.conversation(cq.message.chat.id) as conv:
+                async with userge.conversation(
+                    cq.message.chat.id, cq.from_user.id
+                ) as conv:
 
                     await cq.edit_message_text("`Now Input Volume`")
 
@@ -680,7 +682,7 @@ if userge.has_bot:
 
             if response.text.isnumeric():
                 volume = int(response.text)
-                if not (200 >= volume > 0):
+                if not 200 >= volume > 0:
                     await cq.edit_message_text("`Invalid Range!`")
             else:
                 await cq.edit_message_text("`Invalid Arguments!`")
