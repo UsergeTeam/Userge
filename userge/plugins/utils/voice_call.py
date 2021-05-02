@@ -656,7 +656,7 @@ if userge.has_bot:
         elif arg == "custom":
 
             try:
-                async with userge.conversation(cq.message.chat.id, cq.from_user.id) as conv:
+                async with userge.conversation(cq.message.chat.id, user_id=cq.from_user.id) as conv:
                     await cq.edit_message_text("`Now Input Volume`")
 
                     def _filter(_, __, m: RawMessage) -> bool:
