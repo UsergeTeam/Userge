@@ -98,7 +98,7 @@ def check_cq_for_all(func):
             await func(c_q)
         else:
             await c_q.answer(
-                "You don't have permission to use me", show_alert=True)
+                "⚠️ You don't have permission to use me", show_alert=True)
     return checker
 
 
@@ -119,15 +119,15 @@ def volume_button_markup():
 
     buttons = [
         [
-            InlineKeyboardButton(text="10", callback_data="vol(10)"),
-            InlineKeyboardButton(text="50", callback_data="vol(50)")
+            InlineKeyboardButton(text="🔈 50", callback_data="vol(50)"),
+            InlineKeyboardButton(text="🔉 100", callback_data="vol(100)")
         ],
         [
-            InlineKeyboardButton(text="100", callback_data="vol(100)"),
-            InlineKeyboardButton(text="200", callback_data="vol(200)")
+            InlineKeyboardButton(text="🔉 150", callback_data="vol(150)"),
+            InlineKeyboardButton(text="🔊 200", callback_data="vol(200)")
         ],
         [
-            InlineKeyboardButton(text="Custom", callback_data="vol(custom)"),
+            InlineKeyboardButton(text="🖌 Enter Manually", callback_data="vol(custom)"),
         ]
     ]
 
@@ -308,7 +308,7 @@ async def set_volume(msg: Message):
 
     if msg.input_str:
         if msg.input_str.isnumeric():
-            if 200 > int(msg.input_str) > 0:
+            if 200 >= int(msg.input_str) > 0:
                 await call.set_my_volume(int(msg.input_str))
                 await reply_text(msg, f"Successfully set volume to {msg.input_str}")
             else:
@@ -320,7 +320,7 @@ async def set_volume(msg: Message):
 
             await userge.bot.send_message(
                 msg.chat.id,
-                "`Click on the button to change volume"
+                "**🎚 Volume Control**\n\n`Click on the button to change volume"
                 " or Click last option to Enter volume manually.`",
                 reply_markup=volume_button_markup()
             )
