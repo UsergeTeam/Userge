@@ -368,8 +368,7 @@ if userge.has_bot:
                                 url="https://github.com/UsergeTeam/Userge"),
                             InlineKeyboardButton(
                                 "🖥 Deploy Userge",
-                                url=("https://heroku.com/deploy?template="
-                                     "https://github.com/UsergeTeam/Userge/tree/master"))
+                                url="https://t.me/theUserge/102")
                         ]
                     ]
                 )
