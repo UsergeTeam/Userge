@@ -459,7 +459,7 @@ async def yt_down(msg: Message):
 
     title, url = _get_yt_info(msg)
     message = await reply_text(msg, f"`Downloading {title}`")
-    song_detais = await mp3_down(url.strip())
+    song_details = await mp3_down(url.strip())
     if not song_details:
         await message.delete()
         shutil.rmtree("temp_music_dir", ignore_errors=True)
