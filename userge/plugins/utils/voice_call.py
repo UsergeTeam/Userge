@@ -135,16 +135,19 @@ def volume_button_markup():
 
 
 async def reply_text(
-    msg: Message, text: str, markup=None, to_reply: bool = True, del_in: int = -1
+    msg: Message, text: str, markup=None, to_reply=True, del_in: int = 0
 ) -> Message:
-    return await msg.client.send_message(
+    message = await msg.client.send_message(
         msg.chat.id,
         text,
-        del_in=del_in,
         reply_to_message_id=msg.message_id if to_reply else None,
         reply_markup=markup,
         disable_web_page_preview=True
     )
+    if del_in:
+        await asyncio.sleep(del_in)
+        await message.delete()
+    return message
 
 
 async def _init():
@@ -456,7 +459,13 @@ async def yt_down(msg: Message):
 
     title, url = _get_yt_info(msg)
     message = await reply_text(msg, f"`Downloading {title}`")
-    title, duration = await mp3_down(url.strip())
+    song_detais = await mp3_down(url.strip())
+    if not song_details:
+        await message.delete()
+        shutil.rmtree("temp_music_dir", ignore_errors=True)
+        return await _skip()
+
+    title, duration = song_details
 
     audio_path = None
     for i in ["*.mp3", "*.flac", "*.wav", "*.m4a"]:
@@ -500,6 +509,9 @@ async def tg_down(msg: Message):
     """ TG downloader """
 
     global BACK_BUTTON_TEXT  # pylint: disable=global-statement
+
+    if msg.audio.duration > 900:
+        return await _skip()
 
     message = await reply_text(msg, f"`Downloading {msg.audio.title}`")
     path = await msg.download("temp_music_dir/")
@@ -566,6 +578,8 @@ def mp3_down(url: str):
 
     with ytdl.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url)
+    if info.get("duration") > 900:
+        return False
 
     return info.get("title"), time_formatter(info.get("duration"))
 
