@@ -135,7 +135,7 @@ def volume_button_markup():
 
 
 async def reply_text(
-    msg: Message, text: str, markup=None, to_reply=True, del_in: int = 0
+    msg: Message, text: str, markup=None, to_reply: bool = True, del_in: int = -1
 ) -> Message:
     return await msg.client.send_message(
         msg.chat.id,
