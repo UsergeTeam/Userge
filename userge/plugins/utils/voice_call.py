@@ -671,9 +671,6 @@ if userge.has_bot:
 
             if response.text.isnumeric():
                 volume = int(response.text)
-                if not 200 >= volume > 0:
-                    await cq.edit_message_text("`Invalid Range!`")
-                    return
             else:
                 await cq.edit_message_text("`Invalid Arguments!`")
                 return
@@ -681,3 +678,5 @@ if userge.has_bot:
         if 200 >= volume > 0:
             await call.set_my_volume(volume)
             await cq.edit_message_text(f"Successfully set volume to {volume}")
+        else:
+            await cq.edit_message_text("`Invalid Range!`")
