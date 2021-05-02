@@ -166,7 +166,7 @@ async def list_gbanned(message: Message):
     msg = ''
     async for c in GBAN_USER_BASE.find():
         msg += ("**User** : " + str(c['firstname']) + "-> with **User ID** -> "
-                + str(c['user_id']) + " is **GBanned for** : " + str(c['reason']) + "\n\n")
+                + str(c['user_id']) + " is **GBanned for** : " + str(c.get('reason')) + "\n\n")
     await message.edit_or_send_as_file(
         f"**--Globally Banned Users List--**\n\n{msg}" if msg else "`glist empty!`")
 
