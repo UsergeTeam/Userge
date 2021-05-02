@@ -410,7 +410,7 @@ async def handle_queue():
 
 
 async def _skip(clear_queue: bool = False):
-    global PLAYING, CQ_MSG  # pylint: disable=global-statement
+    global PLAYING  # pylint: disable=global-statement
 
     call.input_filename = ''
 
@@ -452,7 +452,7 @@ async def _skip(clear_queue: bool = False):
 async def yt_down(msg: Message):
     """ youtube downloader """
 
-    global BACK_BUTTON_TEXT, CQ_MSG  # pylint: disable=global-statement
+    global BACK_BUTTON_TEXT  # pylint: disable=global-statement
 
     title, url = _get_yt_info(msg)
     message = await reply_text(msg, f"`Downloading {title}`")
@@ -499,7 +499,7 @@ async def yt_down(msg: Message):
 async def tg_down(msg: Message):
     """ TG downloader """
 
-    global BACK_BUTTON_TEXT, CQ_MSG  # pylint: disable=global-statement
+    global BACK_BUTTON_TEXT  # pylint: disable=global-statement
 
     message = await reply_text(msg, f"`Downloading {msg.audio.title}`")
     path = await msg.download("temp_music_dir/")
@@ -586,7 +586,6 @@ if userge.has_bot:
     @userge.bot.on_callback_query(filters.regex("(skip|queue|back)"))
     @check_cq_for_all
     async def vc_callback(cq: CallbackQuery):
-        global CQ_MSG  # pylint: disable=global-statement
         if not CHAT_NAME:
             await cq.edit_message_text("`Already Left Voice-Call`")
             return
@@ -602,7 +601,7 @@ if userge.has_bot:
                 text = f"{cq.from_user.mention} Skipped `{name}`."
 
             if CQ_MSG:
-                for i, msg in enumerate(CQ_MSG, start=0):
+                for i, msg in enumerate(CQ_MSG):
                     if msg.message_id == cq.message.message_id:
                         CQ_MSG.pop(i)
                         break
@@ -657,26 +656,16 @@ if userge.has_bot:
         elif arg == "custom":
 
             try:
-
-                async with userge.conversation(
-                    cq.message.chat.id, cq.from_user.id
-                ) as conv:
-
+                async with userge.conversation(cq.message.chat.id, cq.from_user.id) as conv:
                     await cq.edit_message_text("`Now Input Volume`")
 
-                    response = await conv.get_response(mark_read=True)
-                    replied = response.reply_to_message
+                    def _filter(_, __, m: RawMessage) -> bool:
+                        r = m.reply_to_message
+                        return r and r.message_id == cq.message.message_id
 
-                    while not (
-                        response.from_user.id == cq.from_user.id
-                        and replied
-                        and replied.message_id == cq.message.message_id
-                    ):
-                        response = await conv.get_response(mark_read=True)
-                        replied = response.reply_to_message
-
+                    response = await conv.get_response(mark_read=True,
+                                                       filters=filters.create(_filter))
             except StopConversation:
-
                 await cq.edit_message_text("No arguments passed!")
                 return
 
@@ -684,6 +673,7 @@ if userge.has_bot:
                 volume = int(response.text)
                 if not 200 >= volume > 0:
                     await cq.edit_message_text("`Invalid Range!`")
+                    return
             else:
                 await cq.edit_message_text("`Invalid Arguments!`")
                 return
