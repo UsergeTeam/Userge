@@ -135,19 +135,15 @@ def volume_button_markup():
 
 
 async def reply_text(
-    msg: Message, text: str, markup=None, to_reply=True, del_in: int = 0
+    msg: Message, text: str, markup=None, to_reply: bool = True, del_in: int = -1
 ) -> Message:
-    message = await msg.client.send_message(
+    return await msg.client.send_message(
         msg.chat.id,
         text,
         reply_to_message_id=msg.message_id if to_reply else None,
         reply_markup=markup,
         disable_web_page_preview=True
     )
-    if del_in:
-        await asyncio.sleep(del_in)
-        await message.delete()
-    return message
 
 
 async def _init():
