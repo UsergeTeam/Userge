@@ -144,10 +144,13 @@ def _get_chat_member(r_m: RawMessage, is_bot: bool) -> Optional[ChatMember]:
     if is_bot:
         if r_m.chat.id in _B_AD_CHT:
             return _B_AD_CHT[r_m.chat.id]
-        return _B_NM_CHT[r_m.chat.id]
+        if r_m.chat.id in _B_NM_CHT:
+            return _B_NM_CHT[r_m.chat.id]
     if r_m.chat.id in _U_AD_CHT:
         return _U_AD_CHT[r_m.chat.id]
-    return _U_NM_CHT[r_m.chat.id]
+    if r_m.chat.id in _U_NM_CHT:
+        return _U_NM_CHT[r_m.chat.id]
+    return None
 
 
 async def _get_lock(key: str) -> asyncio.Lock:
