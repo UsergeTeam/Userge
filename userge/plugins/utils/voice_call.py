@@ -38,6 +38,7 @@ CHANNEL = userge.getCLogger(__name__)
 
 VC_DB = get_collection("VC_CMDS_TOGGLE")
 CMDS_FOR_ALL = False
+MAX_DURATION = 900
 
 ADMINS = {}
 
@@ -140,6 +141,7 @@ async def reply_text(
     return await msg.client.send_message(
         msg.chat.id,
         text,
+        del_in=del_in,
         reply_to_message_id=msg.message_id if to_reply else None,
         reply_markup=markup,
         disable_web_page_preview=True
@@ -458,7 +460,6 @@ async def yt_down(msg: Message):
     song_details = await mp3_down(url.strip())
     if not song_details:
         await message.delete()
-        shutil.rmtree("temp_music_dir", ignore_errors=True)
         return await _skip()
 
     title, duration = song_details
@@ -506,7 +507,7 @@ async def tg_down(msg: Message):
 
     global BACK_BUTTON_TEXT  # pylint: disable=global-statement
 
-    if msg.audio.duration > 900:
+    if msg.audio.duration > MAX_DURATION:
         return await _skip()
 
     message = await reply_text(msg, f"`Downloading {msg.audio.title}`")
@@ -574,7 +575,7 @@ def mp3_down(url: str):
 
     with ytdl.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url)
-    if info.get("duration") > 900:
+    if info.get("duration") > MAX_DURATION:
         return False
 
     return info.get("title"), time_formatter(info.get("duration"))
