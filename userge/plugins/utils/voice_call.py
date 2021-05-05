@@ -38,7 +38,7 @@ CHANNEL = userge.getCLogger(__name__)
 
 VC_DB = get_collection("VC_CMDS_TOGGLE")
 CMDS_FOR_ALL = False
-MAX_DURATION = 900
+MAX_DURATION = int(os.environ.get("MAX_DURATION", 900))
 
 ADMINS = {}
 
