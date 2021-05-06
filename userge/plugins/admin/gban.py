@@ -87,7 +87,7 @@ async def gban_user(message: Message):
             "**Already_GBanned**\n\nUser Already Exists in My Gban List.\n"
             f"**Reason For GBan:** `{found['reason']}`", del_in=5)
         return
-    await message.edit(r"\\**GBanned_User**//"
+    await message.edit(r"\\**GBanned User**//"
                        f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
                        f"**User ID:** `{user_id}`\n**Reason:** `{reason}`")
     # TODO: can we add something like "GBanned by {any_sudo_user_fname}"
@@ -101,7 +101,7 @@ async def gban_user(message: Message):
             await chat.kick_member(user_id)
             gbanned_chats.append(chat.id)
             await CHANNEL.log(
-                r"\\**Antispam_Log**//"
+                r"\\**Antispam Log**//"
                 f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
                 f"**User ID:** `{user_id}`\n"
                 f"**Chat:** {chat.title}\n"
@@ -143,13 +143,13 @@ async def ungban_user(message: Message):
             try:
                 await userge.unban_chat_member(chat_id, user_id)
                 await CHANNEL.log(
-                    r"\\**Antispam_Log**//"
+                    r"\\**Antispam Log**//"
                     f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
                     f"**User ID:** `{user_id}`\n\n"
                     f"UNGBAN #id{user_id}")
             except (ChatAdminRequired, UserAdminInvalid, ChannelInvalid):
                 pass
-    await message.edit(r"\\**UnGbanned_User**//"
+    await message.edit(r"\\**UnGbanned User**//"
                        f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
                        f"**User ID:** `{user_id}`")
     await GBAN_USER_BASE.delete_one({'firstname': firstname, 'user_id': user_id})
@@ -193,11 +193,11 @@ async def whitelist(message: Message):
     await asyncio.gather(
         WHITELIST.insert_one({'firstname': firstname, 'user_id': user_id}),
         message.edit(
-            r"\\**Whitelisted_User**//"
+            r"\\**Whitelisted User**//"
             f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
             f"**User ID:** `{user_id}`"),
         CHANNEL.log(
-            r"\\**Antispam_Log**//"
+            r"\\**Antispam Log**//"
             f"\n**User:** [{firstname}](tg://user?id={user_id})\n"
             f"**User ID:** `{user_id}`\n"
             f"**Chat:** {message.chat.title}\n"
@@ -275,13 +275,13 @@ async def gban_at_entry(message: Message):
             await asyncio.gather(
                 message.client.kick_chat_member(chat_id, user_id),
                 message.reply(
-                    r"**Userbot_Antispam**"
+                    r"**Userbot Antispam**"
                     "\n\nGlobally Banned User Detected in this Chat.\n\n"
                     f"**User:** [{first_name}](tg://user?id={user_id})\n"
                     f"**ID:** `{user_id}`\n**Reason:** `{gbanned['reason']}`\n\n"
                     "**Quick Action:** Banned", del_in=10),
                 CHANNEL.log(
-                    r"\\**Antispam_Log**//"
+                    r"\\**Antispam Log**//"
                     "\n\n**GBanned User SPOTTED**\n"
                     f"**User:** [{first_name}](tg://user?id={user_id})\n"
                     f"**ID:** `{user_id}`\n**Reason:** {gbanned['reason']}\n**Quick Action:** "
@@ -298,14 +298,14 @@ async def gban_at_entry(message: Message):
                 await asyncio.gather(
                     message.client.kick_chat_member(chat_id, user_id),
                     message.reply(
-                        r"**Userbot_Antispam**"
+                        r"**Userbot Antispam**"
                         "\n\nGlobally Banned User Detected in this Chat.\n\n"
                         "**SENTRY CAS Federation Ban**\n"
                         f"**User:** [{first_name}](tg://user?id={user_id})\n"
                         f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n\n"
                         "**Quick Action:** Banned", del_in=10),
                     CHANNEL.log(
-                        r"\\**Antispam_Log**//"
+                        r"\\**Antispam Log**//"
                         "\n\n**GBanned User SPOTTED**\n"
                         "**SENRTY CAS BAN**"
                         f"\n**User:** [{first_name}](tg://user?id={user_id})\n"
@@ -321,14 +321,14 @@ async def gban_at_entry(message: Message):
                 await asyncio.gather(
                     message.client.kick_chat_member(chat_id, user_id),
                     message.reply(
-                        r"**Userbot_Antispam**"
+                        r"**Userbot Antispam**"
                         "\n\nGlobally Banned User Detected in this Chat.\n\n"
                         "**Intellivoid SpamProtection**\n"
                         f"**User:** [{first_name}](tg://user?id={user_id})\n"
                         f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n\n"
                         "**Quick Action:** Banned", del_in=10),
                     CHANNEL.log(
-                        r"\\**Antispam_Log**//"
+                        r"\\**Antispam Log**//"
                         "\n\n**GBanned User SPOTTED**\n"
                         "**Intellivoid SpamProtection**"
                         f"\n**User:** [{first_name}](tg://user?id={user_id})\n"
@@ -341,14 +341,14 @@ async def gban_at_entry(message: Message):
                     await asyncio.gather(
                         message.client.kick_chat_member(chat_id, user_id),
                         message.reply(
-                            r"**Userbot_Antispam**"
+                            r"**Userbot Antispam**"
                             "\n\nGlobally Banned User Detected in this Chat.\n\n"
                             "**SENTRY SpamWatch Federation Ban**\n"
                             f"**User:** [{first_name}](tg://user?id={user_id})\n"
                             f"**ID:** `{user_id}`\n**Reason:** `{intruder.reason}`\n\n"
                             "**Quick Action:** Banned", del_in=10),
                         CHANNEL.log(
-                            r"\\**Antispam_Log**//"
+                            r"\\**Antispam Log**//"
                             "\n\n**GBanned User SPOTTED**\n"
                             "**SENRTY SPAMWATCH_API BAN**"
                             f"\n**User:** [{first_name}](tg://user?id={user_id})\n"
