@@ -274,12 +274,6 @@ async def gban_at_entry(message: Message):
                 chat_ids = [chat_id]
             await asyncio.gather(
                 message.client.kick_chat_member(chat_id, user_id),
-                message.reply(
-                    r"**Userbot Antispam**"
-                    "\n\nGlobally Banned User Detected in this Chat.\n\n"
-                    f"**User:** [{first_name}](tg://user?id={user_id})\n"
-                    f"**ID:** `{user_id}`\n**Reason:** `{gbanned['reason']}`\n\n"
-                    "**Quick Action:** Banned", del_in=10),
                 CHANNEL.log(
                     r"\\**Antispam Log**//"
                     "\n\n**GBanned User SPOTTED**\n"
@@ -297,13 +291,6 @@ async def gban_at_entry(message: Message):
                     res['result']['messages']) if 'result' in res else None
                 await asyncio.gather(
                     message.client.kick_chat_member(chat_id, user_id),
-                    message.reply(
-                        r"**Userbot Antispam**"
-                        "\n\nGlobally Banned User Detected in this Chat.\n\n"
-                        "**SENTRY CAS Federation Ban**\n"
-                        f"**User:** [{first_name}](tg://user?id={user_id})\n"
-                        f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n\n"
-                        "**Quick Action:** Banned", del_in=10),
                     CHANNEL.log(
                         r"\\**Antispam Log**//"
                         "\n\n**GBanned User SPOTTED**\n"
@@ -320,13 +307,6 @@ async def gban_at_entry(message: Message):
                 reason = iv['results']['attributes']['blacklist_reason']
                 await asyncio.gather(
                     message.client.kick_chat_member(chat_id, user_id),
-                    message.reply(
-                        r"**Userbot Antispam**"
-                        "\n\nGlobally Banned User Detected in this Chat.\n\n"
-                        "**Intellivoid SpamProtection**\n"
-                        f"**User:** [{first_name}](tg://user?id={user_id})\n"
-                        f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n\n"
-                        "**Quick Action:** Banned", del_in=10),
                     CHANNEL.log(
                         r"\\**Antispam Log**//"
                         "\n\n**GBanned User SPOTTED**\n"
@@ -340,13 +320,6 @@ async def gban_at_entry(message: Message):
                 if intruder:
                     await asyncio.gather(
                         message.client.kick_chat_member(chat_id, user_id),
-                        message.reply(
-                            r"**Userbot Antispam**"
-                            "\n\nGlobally Banned User Detected in this Chat.\n\n"
-                            "**SENTRY SpamWatch Federation Ban**\n"
-                            f"**User:** [{first_name}](tg://user?id={user_id})\n"
-                            f"**ID:** `{user_id}`\n**Reason:** `{intruder.reason}`\n\n"
-                            "**Quick Action:** Banned", del_in=10),
                         CHANNEL.log(
                             r"\\**Antispam Log**//"
                             "\n\n**GBanned User SPOTTED**\n"
