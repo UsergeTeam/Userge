@@ -74,7 +74,7 @@ def vc_chat(func):
         else:
             try:
                 await msg.edit(
-                    "`Doesn't join any Voice-Call...`"
+                    "`Haven't join any Voice-Call...`"
                 ) if msg.from_user.is_self else await msg.delete()
             except MessageDeleteForbidden:
                 pass
@@ -380,7 +380,7 @@ async def stop_music(msg: Message):
     await msg.delete()
     await _skip(True)
 
-    await reply_text(msg, "`Stopped Userge-Music.`")
+    await reply_text(msg, "`Stopped Userge-Music.`", del_in=5)
 
 
 @call.on_network_status_changed
@@ -394,7 +394,8 @@ async def nsc_handler(c: GroupCall, connected: bool):
 
     await userge.send_message(
         int("-100" + str(c.full_chat.id)) if connected else CHAT_ID,
-        f"`{'Joined' if connected else 'Left'} Voice-Chat Successfully`"
+        f"`{'Joined' if connected else 'Left'} Voice-Chat Successfully`",
+        del_in=5 if not connected else -1
     )
 
 
