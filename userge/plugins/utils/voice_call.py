@@ -395,7 +395,7 @@ async def nsc_handler(c: GroupCall, connected: bool):
     await userge.send_message(
         int("-100" + str(c.full_chat.id)) if connected else CHAT_ID,
         f"`{'Joined' if connected else 'Left'} Voice-Chat Successfully`",
-        del_in=5 if not connected else 0
+        del_in=5 if not connected else -1
     )
 
 
