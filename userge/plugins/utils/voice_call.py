@@ -30,7 +30,7 @@ from pyrogram.types import (
 from pyrogram.types.messages_and_media.message import Str
 from pyrogram.errors import MessageDeleteForbidden
 
-from userge import userge, Message, pool, filters, get_collection
+from userge import userge, Message, pool, filters, get_collection, Config
 from userge.utils import time_formatter
 from userge.utils.exceptions import StopConversation
 
@@ -38,7 +38,7 @@ CHANNEL = userge.getCLogger(__name__)
 
 VC_DB = get_collection("VC_CMDS_TOGGLE")
 CMDS_FOR_ALL = False
-MAX_DURATION = int(os.environ.get("MAX_DURATION", 900))
+MAX_DURATION = Config.MAX_DURATION
 
 ADMINS = {}
 
