@@ -269,36 +269,11 @@ async def play_music(msg: Message):
         await handle_queue()
 
 
-@userge.on_cmd("queue", about={
-    'header': "View Queue of Songs",
-    'usage': "{tr}queue"},
-    trigger='/', filter_me=False, check_client=True,
-    allow_bots=False, allow_private=False)
-@vc_chat
-@check_enable_for_all
-async def view_queue(msg: Message):
-    """ View Queue """
-    await msg.delete()
-
-    if not QUEUE:
-        out = "`Queue is empty`"
-    else:
-        out = f"**{len(QUEUE)} Songs in Queue:**\n"
-        for m in QUEUE:
-            if m.audio:
-                out += f"\n - [{m.audio.title}]({m.link})"
-            else:
-                title, link = _get_yt_info(m)
-                out += f"\n - [{title}]({link})"
-
-    await reply_text(msg, out)
-
-
 @userge.on_cmd("forceplay", about={
     'header': "Force play with skip the current song and "
               "Play your song on #1 Position"},
-     trigger='/', allow_private=False, filter_me=False,
-     allow_bots=False, check_client=True)
+    trigger='/', allow_private=False, filter_me=False,
+    allow_bots=False, check_client=True)
 @vc_chat
 @check_enable_for_all
 async def force_play_music(msg: Message):
@@ -326,6 +301,31 @@ async def force_play_music(msg: Message):
         return await reply_text(msg, "Input not found")
 
     await _skip()
+
+
+@userge.on_cmd("queue", about={
+    'header': "View Queue of Songs",
+    'usage': "{tr}queue"},
+    trigger='/', filter_me=False, check_client=True,
+    allow_bots=False, allow_private=False)
+@vc_chat
+@check_enable_for_all
+async def view_queue(msg: Message):
+    """ View Queue """
+    await msg.delete()
+
+    if not QUEUE:
+        out = "`Queue is empty`"
+    else:
+        out = f"**{len(QUEUE)} Songs in Queue:**\n"
+        for m in QUEUE:
+            if m.audio:
+                out += f"\n - [{m.audio.title}]({m.link})"
+            else:
+                title, link = _get_yt_info(m)
+                out += f"\n - [{title}]({link})"
+
+    await reply_text(msg, out)
 
 
 @userge.on_cmd("volume", about={
