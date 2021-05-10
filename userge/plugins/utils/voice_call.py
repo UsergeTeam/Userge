@@ -282,6 +282,8 @@ async def play_music(msg: Message):
 async def force_play_music(msg: Message):
     """ Force play music in voice call """
 
+    await _skip()
+
     if not QUEUE:
         return await play_music(msg)
 
@@ -302,8 +304,6 @@ async def force_play_music(msg: Message):
         QUEUE.insert(0, replied)
     else:
         return await reply_text(msg, "Input not found")
-
-    await _skip()
 
 
 @userge.on_cmd("queue", about={
@@ -611,9 +611,12 @@ def mp3_down(url: str):
     }
 
     with ytdl.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url)
-    if info.get("duration") > Config.MAX_DURATION:
-        return False
+        info = ydl.extract_info(url, download=False)
+
+        if info.get("duration") > Config.MAX_DURATION:
+            return False
+
+        ydl.download([url])
 
     return info.get("title"), time_formatter(info.get("duration"))
 
