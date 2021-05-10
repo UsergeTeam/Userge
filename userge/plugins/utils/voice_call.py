@@ -137,7 +137,7 @@ def volume_button_markup():
 async def reply_text(
     msg: Message, text: str, markup=None, to_reply: bool = True, del_in: int = -1
 ) -> Message:
-    return await msg.client.send_message(
+    new_msg = await msg.client.send_message(
         msg.chat.id,
         text,
         del_in=del_in,
@@ -145,6 +145,9 @@ async def reply_text(
         reply_markup=markup,
         disable_web_page_preview=True
     )
+    if to_reply:
+        new_msg.reply_to_message = msg
+    return new_msg
 
 
 async def _init():
