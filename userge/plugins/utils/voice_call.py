@@ -272,6 +272,40 @@ async def play_music(msg: Message):
         await handle_queue()
 
 
+@userge.on_cmd("forceplay", about={
+    'header': "Force play with skip the current song and "
+              "Play your song on #1 Position"},
+    trigger='/', allow_private=False, filter_me=False,
+    allow_bots=False, check_client=True)
+@vc_chat
+@check_enable_for_all
+async def force_play_music(msg: Message):
+    """ Force play music in voice call """
+
+    if not QUEUE:
+        return await play_music(msg)
+
+    if msg.input_str:
+        if yt_regex.match(msg.input_str):
+            QUEUE.insert(0, msg)
+        else:
+            mesg = await reply_text(msg, f"Searching `{msg.input_str}` on YouTube")
+            title, link = await _get_song(msg.input_str)
+            if link:
+                await mesg.delete()
+                msg.text = f"[{title}]({link})"
+                QUEUE.insert(0, msg)
+            else:
+                await mesg.edit("No results found.")
+    elif msg.reply_to_message and msg.reply_to_message.audio:
+        replied = msg.reply_to_message
+        QUEUE.insert(0, replied)
+    else:
+        return await reply_text(msg, "Input not found")
+
+    await _skip()
+
+
 @userge.on_cmd("queue", about={
     'header': "View Queue of Songs",
     'usage': "{tr}queue"},
