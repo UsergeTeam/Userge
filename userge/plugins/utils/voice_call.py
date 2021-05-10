@@ -297,6 +297,7 @@ async def force_play_music(msg: Message):
                 QUEUE.insert(0, msg)
             else:
                 await mesg.edit("No results found.")
+                return
     elif msg.reply_to_message and msg.reply_to_message.audio:
         replied = msg.reply_to_message
         QUEUE.insert(0, replied)
