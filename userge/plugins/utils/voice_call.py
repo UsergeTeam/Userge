@@ -282,9 +282,7 @@ async def play_music(msg: Message):
 async def force_play_music(msg: Message):
     """ Force play music in voice call """
 
-    await _skip()
-
-    if not QUEUE:
+    if not PLAYING:
         return await play_music(msg)
 
     if msg.input_str:
@@ -304,6 +302,8 @@ async def force_play_music(msg: Message):
         QUEUE.insert(0, replied)
     else:
         return await reply_text(msg, "Input not found")
+
+    await _skip()
 
 
 @userge.on_cmd("queue", about={
