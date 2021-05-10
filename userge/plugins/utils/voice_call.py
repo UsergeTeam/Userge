@@ -30,7 +30,7 @@ from pyrogram.types import (
 from pyrogram.types.messages_and_media.message import Str
 from pyrogram.errors import MessageDeleteForbidden
 
-from userge import userge, Message, pool, filters, get_collection
+from userge import userge, Message, pool, filters, get_collection, Config
 from userge.utils import time_formatter
 from userge.utils.exceptions import StopConversation
 
@@ -38,7 +38,6 @@ CHANNEL = userge.getCLogger(__name__)
 
 VC_DB = get_collection("VC_CMDS_TOGGLE")
 CMDS_FOR_ALL = False
-MAX_DURATION = int(os.environ.get("MAX_DURATION", 900))
 
 ADMINS = {}
 
@@ -508,7 +507,7 @@ async def tg_down(msg: Message):
 
     global BACK_BUTTON_TEXT  # pylint: disable=global-statement
 
-    if msg.audio.duration > MAX_DURATION:
+    if msg.audio.duration > Config.MAX_DURATION:
         return await _skip()
 
     message = await reply_text(msg, f"`Downloading {msg.audio.title}`")
@@ -576,7 +575,7 @@ def mp3_down(url: str):
 
     with ytdl.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url)
-    if info.get("duration") > MAX_DURATION:
+    if info.get("duration") > Config.MAX_DURATION:
         return False
 
     return info.get("title"), time_formatter(info.get("duration"))
