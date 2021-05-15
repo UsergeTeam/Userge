@@ -239,7 +239,7 @@ async def toggle_vc(msg: Message):
 
 
 @userge.on_cmd("play", about={'header': "play or add songs to queue"},
-               trigger='/', allow_private=False, check_client=True
+               trigger='/', allow_private=False, check_client=True,
                filter_me=False, allow_bots=False)
 @vc_chat
 @check_enable_for_all
