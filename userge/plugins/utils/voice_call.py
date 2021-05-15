@@ -309,7 +309,7 @@ async def _help(msg: Message):
 
     else:
         if msg.input_str.lstrip('/') in raw_cmds:
-            key = key.lstrip(Config.CMD_TRIGGER)
+            key = msg.input_str.lstrip(Config.CMD_TRIGGER)
             key_ = Config.CMD_TRIGGER + key
             if key in commands:
                 out_str = f"<code>{key}</code>\n\n{commands[key].about}"
