@@ -31,6 +31,7 @@ from pyrogram.types.messages_and_media.message import Str
 from pyrogram.errors import MessageDeleteForbidden
 
 from userge import userge, Message, pool, filters, get_collection, Config
+from userge.plugins.help import helpme
 from userge.utils import time_formatter
 from userge.utils.exceptions import StopConversation
 
@@ -297,7 +298,7 @@ async def _help(msg: Message):
         await reply_text(msg, out_str)
 
     else:
-        if message.input_str in cmds:
+        if msg.input_str in cmds:
             await helpme(msg)
 
 
