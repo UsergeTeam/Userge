@@ -31,7 +31,6 @@ from pyrogram.types.messages_and_media.message import Str
 from pyrogram.errors import MessageDeleteForbidden
 
 from userge import userge, Message, pool, filters, get_collection, Config
-from userge.plugins.help import helpme
 from userge.utils import time_formatter
 from userge.utils.exceptions import StopConversation
 
@@ -139,12 +138,18 @@ def volume_button_markup():
 
 
 async def reply_text(
-    msg: Message, text: str, markup=None, to_reply: bool = True, del_in: int = -1
+    msg: Message,
+    text: str,
+    markup=None,
+    to_reply: bool = True,
+    parse_mode: str = "md",
+    del_in: int = -1
 ) -> Message:
     new_msg = await msg.client.send_message(
         msg.chat.id,
         text,
         del_in=del_in,
+        parse_mode=parse_mode,
         reply_to_message_id=msg.message_id if to_reply else None,
         reply_markup=markup,
         disable_web_page_preview=True
@@ -283,11 +288,16 @@ async def play_music(msg: Message):
 @check_enable_for_all
 async def _help(msg: Message):
     """ help commands of this plugin for others """
+
     commands = userge.manager.enabled_plugins["voice_call"].enabled_commands
     cmds = []
+    raw_cmds = []
+
     for i in commands:
-        if i.startswith('/'):
+        if i.name.startswith('/'):
             cmds.append(i)
+            raw_cmds.append(i.name.lstrip('/'))
+
     if not msg.input_str:
         out_str = f"""⚔ <b><u>(<code>{len(cmds)}</code>) Command(s) Available</u></b>
 🔧 <b>Plugin:</b>  <code>voice_call</code>
@@ -295,11 +305,18 @@ async def _help(msg: Message):
         for i, cmd in enumerate(cmds, start=1):
             out_str += (f"    🤖 <b>cmd(<code>{i}</code>):</b>  <code>{cmd.name}</code>\n"
                         f"    📚 <b>info:</b>  <i>{cmd.doc}</i>\n\n")
-        await reply_text(msg, out_str)
+        await reply_text(msg, out_str, parse_mode="html")
 
     else:
-        if msg.input_str in cmds:
-            await helpme(msg)
+        if msg.input_str.lstrip('/') in raw_cmds:
+            key = key.lstrip(Config.CMD_TRIGGER)
+            key_ = Config.CMD_TRIGGER + key
+            if key in commands:
+                out_str = f"<code>{key}</code>\n\n{commands[key].about}"
+                await reply_text(msg, out_str, parse_mode="html")
+            elif key_ in commands:
+                out_str = f"<code>{key_}</code>\n\n{commands[key_].about}"
+                await reply_text(msg, out_str, parse_mode="html")
 
 
 @userge.on_cmd("forceplay", about={
@@ -397,7 +414,8 @@ async def set_volume(msg: Message):
 @userge.on_cmd("skip", about={
     'header': "Skip Song",
     'usage': "{tr}skip"},
-    allow_private=False)
+    trigger='/', check_client=True, allow_private=False,
+    filter_me=False, allow_bots=False)
 @vc_chat
 async def skip_music(msg: Message):
     """ skip music in vc """
@@ -410,7 +428,8 @@ async def skip_music(msg: Message):
 @userge.on_cmd("pause", about={
     'header': "Pause Song.",
     'usage': "{tr}pause"},
-    allow_private=False)
+    trigger='/', check_client=True, allow_private=False,
+    filter_me=False, allow_bots=False)
 @vc_chat
 async def pause_music(msg: Message):
     """ paise music in vc """
@@ -423,7 +442,8 @@ async def pause_music(msg: Message):
 @userge.on_cmd("resume", about={
     'header': "Resume Song.",
     'usage': "{tr}resume"},
-    allow_private=False)
+    trigger='/', check_client=True, allow_private=False,
+    filter_me=False, allow_bots=False)
 @vc_chat
 async def resume_music(msg: Message):
     """ resume music in vc """
