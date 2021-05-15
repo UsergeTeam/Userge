@@ -437,7 +437,7 @@ async def skip_music(msg: Message):
     filter_me=False, allow_bots=False)
 @vc_chat
 async def pause_music(msg: Message):
-    """ paise music in vc """
+    """ pause music in vc """
     await msg.delete()
 
     call.pause_playout()
