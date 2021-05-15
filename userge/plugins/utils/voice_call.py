@@ -337,7 +337,7 @@ async def force_play_music(msg: Message):
 @userge.on_cmd("queue", about={
     'header': "View Queue of Songs",
     'usage': "{tr}queue"},
-    trigger='/', check_client=True, allow_private=False
+    trigger='/', check_client=True, allow_private=False,
     filter_me=False, allow_bots=False)
 @vc_chat
 @check_enable_for_all
@@ -362,10 +362,8 @@ async def view_queue(msg: Message):
 @userge.on_cmd("volume", about={
     'header': "Set volume",
     'usage': "{tr}volume\n{tr}volume 69"},
-    trigger='/', check_client=True, allow_private=False
-    filter_me=False, allow_bots=False)
+    allow_private=False)
 @vc_chat
-@check_enable_for_all
 async def set_volume(msg: Message):
     """ change volume """
 
