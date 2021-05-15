@@ -147,18 +147,20 @@ async def reply_text(
     text: str,
     markup=None,
     to_reply: bool = True,
-    parse_mode: str = "md",
+    parse_mode: str = None,
     del_in: int = -1
 ) -> Message:
-    new_msg = await msg.client.send_message(
-        msg.chat.id,
-        text,
-        del_in=del_in,
-        parse_mode=parse_mode,
-        reply_to_message_id=msg.message_id if to_reply else None,
-        reply_markup=markup,
-        disable_web_page_preview=True
+    kwargs = {
+        'chat_id': msg.chat.id,
+        'text': text,
+        'del_in': del_in,
+        'reply_to_message_id': msg.message_id if to_reply else None,
+        'reply_markup': markup,
+        'disable_web_page_preview': True
     )
+    if parse_mode:
+        kwargs['parse_mode'] = parse_mode
+    new_msg = await msg.client.send_message(**kwargs)
     if to_reply:
         new_msg.reply_to_message = msg
     return new_msg
