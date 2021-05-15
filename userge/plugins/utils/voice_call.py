@@ -16,6 +16,7 @@ import glob
 import ffmpeg
 import shutil
 import asyncio
+import random
 import youtube_dl as ytdl
 
 from typing import List, Tuple
@@ -68,6 +69,7 @@ def vc_chat(func):
     """ decorator for Voice-Call chat """
 
     async def checker(msg: Message):
+        checker.__doc__ = func.__doc__
         if CHAT_ID and msg.chat.id == CHAT_ID:
             await func(msg)
         else:
@@ -85,6 +87,7 @@ def check_enable_for_all(func):
     """ decorator to check cmd is_enable for others """
 
     async def checker(msg: Message):
+        checker.__doc__ = func.__doc__
         if msg.from_user.id == userge.id or CMDS_FOR_ALL:
             await func(msg)
     return checker
@@ -94,6 +97,7 @@ def check_cq_for_all(func):
     """ decorator to check CallbackQuery users """
 
     async def checker(_, c_q: CallbackQuery):
+        checker.__doc__ = func.__doc__
         if c_q.from_user.id == userge.id or CMDS_FOR_ALL:
             await func(c_q)
         else:
@@ -214,7 +218,6 @@ async def leavevc(msg: Message):
     'header': "Toggle to enable or disable play and queue commands for all users"},
     allow_private=False)
 async def toggle_vc(msg: Message):
-    # why func.__doc__ not showing in .help voice_call
     """ toggle enable/disable vc cmds """
 
     global CMDS_FOR_ALL  # pylint: disable=global-statement
@@ -237,8 +240,8 @@ async def toggle_vc(msg: Message):
 
 
 @userge.on_cmd("play", about={'header': "play or add songs to queue"},
-               trigger='/' if CMDS_FOR_ALL else '.', allow_private=False,
-               filter_me=False, allow_bots=False, check_client=True)
+               trigger='/', allow_private=False, check_client=True
+               filter_me=False, allow_bots=False)
 @vc_chat
 @check_enable_for_all
 async def play_music(msg: Message):
@@ -271,6 +274,32 @@ async def play_music(msg: Message):
 
     if not PLAYING:
         await handle_queue()
+
+
+@userge.on_cmd("helpvc", about={'header': "help for voice_call plugin"},
+               trigger='/', allow_private=False, check_client=True,
+               filter_me=False, allow_bots=False)
+@vc_chat
+@check_enable_for_all
+async def _help(msg: Message):
+    """ help commands of this plugin for others """
+    commands = userge.manager.enabled_plugins["voice_call"].enabled_commands
+    cmds = []
+    for i in commands:
+        if i.startswith('/'):
+            cmds.append(i)
+    if not msg.input_str:
+        out_str = f"""⚔ <b><u>(<code>{len(cmds)}</code>) Command(s) Available</u></b>
+🔧 <b>Plugin:</b>  <code>voice_call</code>
+📘 <b>Doc:</b>  <code>Userge Voice-Call Plugin</code>\n\n"""
+        for i, cmd in enumerate(cmds, start=1):
+            out_str += (f"    🤖 <b>cmd(<code>{i}</code>):</b>  <code>{cmd.name}</code>\n"
+                        f"    📚 <b>info:</b>  <i>{cmd.doc}</i>\n\n")
+        await reply_text(msg, out_str)
+
+    else:
+        if message.input_str in cmds:
+            await helpme(msg)
 
 
 @userge.on_cmd("forceplay", about={
@@ -309,8 +338,8 @@ async def force_play_music(msg: Message):
 @userge.on_cmd("queue", about={
     'header': "View Queue of Songs",
     'usage': "{tr}queue"},
-    trigger='/' if CMDS_FOR_ALL else '.', check_client=True,
-    filter_me=False, allow_bots=False, allow_private=False)
+    trigger='/', check_client=True, allow_private=False
+    filter_me=False, allow_bots=False)
 @vc_chat
 @check_enable_for_all
 async def view_queue(msg: Message):
@@ -334,8 +363,8 @@ async def view_queue(msg: Message):
 @userge.on_cmd("volume", about={
     'header': "Set volume",
     'usage': "{tr}volume\n{tr}volume 69"},
-    trigger='/' if CMDS_FOR_ALL else '.', check_client=True,
-    filter_me=False, allow_bots=False, allow_private=False)
+    trigger='/', check_client=True, allow_private=False
+    filter_me=False, allow_bots=False)
 @vc_chat
 @check_enable_for_all
 async def set_volume(msg: Message):
