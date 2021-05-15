@@ -16,7 +16,6 @@ import glob
 import ffmpeg
 import shutil
 import asyncio
-import random
 import youtube_dl as ytdl
 
 from typing import List, Tuple
