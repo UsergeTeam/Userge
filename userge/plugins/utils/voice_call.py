@@ -68,7 +68,7 @@ def vc_chat(func):
     """ decorator for Voice-Call chat """
 
     async def checker(msg: Message):
-        checker.__doc__ = func.__doc__
+
         if CHAT_ID and msg.chat.id == CHAT_ID:
             await func(msg)
         else:
@@ -78,6 +78,7 @@ def vc_chat(func):
                 ) if msg.from_user.is_self else await msg.delete()
             except MessageDeleteForbidden:
                 pass
+    checker.__doc__ = func.__doc__
 
     return checker
 
@@ -86,9 +87,11 @@ def check_enable_for_all(func):
     """ decorator to check cmd is_enable for others """
 
     async def checker(msg: Message):
-        checker.__doc__ = func.__doc__
+
         if msg.from_user.id == userge.id or CMDS_FOR_ALL:
             await func(msg)
+    checker.__doc__ = func.__doc__
+
     return checker
 
 
@@ -96,12 +99,14 @@ def check_cq_for_all(func):
     """ decorator to check CallbackQuery users """
 
     async def checker(_, c_q: CallbackQuery):
-        checker.__doc__ = func.__doc__
+
         if c_q.from_user.id == userge.id or CMDS_FOR_ALL:
             await func(c_q)
         else:
             await c_q.answer(
                 "⚠️ You don't have permission to use me", show_alert=True)
+    checker.__doc__ = func.__doc__
+
     return checker
 
 
