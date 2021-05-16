@@ -252,7 +252,7 @@ async def toggle_vc(msg: Message):
 
 
 @userge.on_cmd("play", about={'header': "play or add songs to queue"},
-               trigger='/', allow_private=False, check_client=True,
+               trigger='!', allow_private=False, check_client=True,
                filter_me=False, allow_bots=False)
 @vc_chat
 @check_enable_for_all
@@ -289,7 +289,7 @@ async def play_music(msg: Message):
 
 
 @userge.on_cmd("helpvc", about={'header': "help for voice_call plugin"},
-               trigger='/', allow_private=False, check_client=True,
+               trigger='!', allow_private=False, check_client=True,
                filter_me=False, allow_bots=False)
 @vc_chat
 @check_enable_for_all
@@ -363,7 +363,7 @@ async def force_play_music(msg: Message):
 @userge.on_cmd("queue", about={
     'header': "View Queue of Songs",
     'usage': "{tr}queue"},
-    trigger='/', check_client=True, allow_private=False,
+    trigger='!', check_client=True, allow_private=False,
     filter_me=False, allow_bots=False)
 @vc_chat
 @check_enable_for_all
@@ -422,7 +422,7 @@ async def set_volume(msg: Message):
 @userge.on_cmd("skip", about={
     'header': "Skip Song",
     'usage': "{tr}skip"},
-    trigger='/', check_client=True, allow_private=False,
+    trigger='!', check_client=True, allow_private=False,
     filter_me=False, allow_bots=False)
 @vc_chat
 async def skip_music(msg: Message):
@@ -436,7 +436,7 @@ async def skip_music(msg: Message):
 @userge.on_cmd("pause", about={
     'header': "Pause Song.",
     'usage': "{tr}pause"},
-    trigger='/', check_client=True, allow_private=False,
+    trigger='!', check_client=True, allow_private=False,
     filter_me=False, allow_bots=False)
 @vc_chat
 async def pause_music(msg: Message):
@@ -450,7 +450,7 @@ async def pause_music(msg: Message):
 @userge.on_cmd("resume", about={
     'header': "Resume Song.",
     'usage': "{tr}resume"},
-    trigger='/', check_client=True, allow_private=False,
+    trigger='!', check_client=True, allow_private=False,
     filter_me=False, allow_bots=False)
 @vc_chat
 async def resume_music(msg: Message):
