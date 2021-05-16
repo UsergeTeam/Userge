@@ -362,7 +362,10 @@ async def gban_at_entry(message: Message):
 async def getData(link: str):
     async with aiohttp.ClientSession() as ses:
         async with ses.get(link) as resp:
-            return json.loads(await resp.text())
+            try:
+                return json.loads(await resp.text())
+            except json.decoder.JSONDecodeError:
+                return dict(ok=False, success=False)
 
 
 @pool.run_in_thread
