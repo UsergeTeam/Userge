@@ -68,6 +68,7 @@ def vc_chat(func):
     """ decorator for Voice-Call chat """
 
     async def checker(msg: Message):
+
         if CHAT_ID and msg.chat.id == CHAT_ID:
             await func(msg)
         else:
@@ -77,6 +78,7 @@ def vc_chat(func):
                 ) if msg.from_user.is_self else await msg.delete()
             except MessageDeleteForbidden:
                 pass
+    checker.__doc__ = func.__doc__
 
     return checker
 
@@ -85,8 +87,11 @@ def check_enable_for_all(func):
     """ decorator to check cmd is_enable for others """
 
     async def checker(msg: Message):
+
         if msg.from_user.id == userge.id or CMDS_FOR_ALL:
             await func(msg)
+    checker.__doc__ = func.__doc__
+
     return checker
 
 
@@ -94,11 +99,14 @@ def check_cq_for_all(func):
     """ decorator to check CallbackQuery users """
 
     async def checker(_, c_q: CallbackQuery):
+
         if c_q.from_user.id == userge.id or CMDS_FOR_ALL:
             await func(c_q)
         else:
             await c_q.answer(
                 "⚠️ You don't have permission to use me", show_alert=True)
+    checker.__doc__ = func.__doc__
+
     return checker
 
 
@@ -135,16 +143,24 @@ def volume_button_markup():
 
 
 async def reply_text(
-    msg: Message, text: str, markup=None, to_reply: bool = True, del_in: int = -1
+    msg: Message,
+    text: str,
+    markup=None,
+    to_reply: bool = True,
+    parse_mode: str = None,
+    del_in: int = -1
 ) -> Message:
-    new_msg = await msg.client.send_message(
-        msg.chat.id,
-        text,
-        del_in=del_in,
-        reply_to_message_id=msg.message_id if to_reply else None,
-        reply_markup=markup,
-        disable_web_page_preview=True
-    )
+    kwargs = {
+        'chat_id': msg.chat.id,
+        'text': text,
+        'del_in': del_in,
+        'reply_to_message_id': msg.message_id if to_reply else None,
+        'reply_markup': markup,
+        'disable_web_page_preview': True
+    }
+    if parse_mode:
+        kwargs['parse_mode'] = parse_mode
+    new_msg = await msg.client.send_message(**kwargs)
     if to_reply:
         new_msg.reply_to_message = msg
     return new_msg
@@ -236,8 +252,8 @@ async def toggle_vc(msg: Message):
 
 
 @userge.on_cmd("play", about={'header': "play or add songs to queue"},
-               trigger='/', allow_private=False, filter_me=False,
-               allow_bots=False, check_client=True)
+               trigger='/', allow_private=False, check_client=True,
+               filter_me=False, allow_bots=False)
 @vc_chat
 @check_enable_for_all
 async def play_music(msg: Message):
@@ -272,13 +288,49 @@ async def play_music(msg: Message):
         await handle_queue()
 
 
+@userge.on_cmd("helpvc", about={'header': "help for voice_call plugin"},
+               trigger='/', allow_private=False, check_client=True,
+               filter_me=False, allow_bots=False)
+@vc_chat
+@check_enable_for_all
+async def _help(msg: Message):
+    """ help commands of this plugin for others """
+
+    commands = userge.manager.enabled_plugins["voice_call"].enabled_commands
+    cmds = []
+    raw_cmds = []
+
+    for i in commands:
+        if i.name.startswith('/'):
+            cmds.append(i)
+            raw_cmds.append(i.name.lstrip('/'))
+
+    if not msg.input_str:
+        out_str = f"""⚔ <b><u>(<code>{len(cmds)}</code>) Command(s) Available</u></b>
+🔧 <b>Plugin:</b>  <code>voice_call</code>
+📘 <b>Doc:</b>  <code>Userge Voice-Call Plugin</code>\n\n"""
+        for i, cmd in enumerate(cmds, start=1):
+            out_str += (f"    🤖 <b>cmd(<code>{i}</code>):</b>  <code>{cmd.name}</code>\n"
+                        f"    📚 <b>info:</b>  <i>{cmd.doc}</i>\n\n")
+        await reply_text(msg, out_str, parse_mode="html")
+
+    else:
+        if msg.input_str.lstrip('/') in raw_cmds:
+            key = msg.input_str.lstrip(Config.CMD_TRIGGER)
+            key_ = Config.CMD_TRIGGER + key
+            if key in commands:
+                out_str = f"<code>{key}</code>\n\n{commands[key].about}"
+                await reply_text(msg, out_str, parse_mode="html")
+            elif key_ in commands:
+                out_str = f"<code>{key_}</code>\n\n{commands[key_].about}"
+                await reply_text(msg, out_str, parse_mode="html")
+
+
 @userge.on_cmd("forceplay", about={
     'header': "Force play with skip the current song and "
               "Play your song on #1 Position"},
-    trigger='/', allow_private=False, filter_me=False,
-    allow_bots=False, check_client=True)
+    allow_private=False)
 @vc_chat
-@check_enable_for_all
 async def force_play_music(msg: Message):
     """ Force play music in voice call """
 
@@ -310,8 +362,8 @@ async def force_play_music(msg: Message):
 @userge.on_cmd("queue", about={
     'header': "View Queue of Songs",
     'usage': "{tr}queue"},
-    trigger='/', filter_me=False, check_client=True,
-    allow_bots=False, allow_private=False)
+    trigger='/', check_client=True, allow_private=False,
+    filter_me=False, allow_bots=False)
 @vc_chat
 @check_enable_for_all
 async def view_queue(msg: Message):
@@ -335,10 +387,8 @@ async def view_queue(msg: Message):
 @userge.on_cmd("volume", about={
     'header': "Set volume",
     'usage': "{tr}volume\n{tr}volume 69"},
-    trigger='/', filter_me=False, check_client=True,
-    allow_bots=False, allow_private=False)
+    allow_private=False)
 @vc_chat
-@check_enable_for_all
 async def set_volume(msg: Message):
     """ change volume """
 
@@ -348,7 +398,7 @@ async def set_volume(msg: Message):
         if msg.input_str.isnumeric():
             if 200 >= int(msg.input_str) > 0:
                 await call.set_my_volume(int(msg.input_str))
-                await reply_text(msg, f"Successfully set volume to {msg.input_str}")
+                await reply_text(msg, f"Successfully set volume to __{msg.input_str}__")
             else:
                 await reply_text(msg, "Invalid Range!")
         else:
@@ -371,7 +421,8 @@ async def set_volume(msg: Message):
 @userge.on_cmd("skip", about={
     'header': "Skip Song",
     'usage': "{tr}skip"},
-    allow_private=False)
+    trigger='/', check_client=True, allow_private=False,
+    filter_me=False, allow_bots=False)
 @vc_chat
 async def skip_music(msg: Message):
     """ skip music in vc """
@@ -384,10 +435,11 @@ async def skip_music(msg: Message):
 @userge.on_cmd("pause", about={
     'header': "Pause Song.",
     'usage': "{tr}pause"},
-    allow_private=False)
+    trigger='/', check_client=True, allow_private=False,
+    filter_me=False, allow_bots=False)
 @vc_chat
 async def pause_music(msg: Message):
-    """ paise music in vc """
+    """ pause music in vc """
     await msg.delete()
 
     call.pause_playout()
@@ -397,7 +449,8 @@ async def pause_music(msg: Message):
 @userge.on_cmd("resume", about={
     'header': "Resume Song.",
     'usage': "{tr}resume"},
-    allow_private=False)
+    trigger='/', check_client=True, allow_private=False,
+    filter_me=False, allow_bots=False)
 @vc_chat
 async def resume_music(msg: Message):
     """ resume music in vc """
