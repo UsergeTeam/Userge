@@ -157,7 +157,7 @@ async def reply_text(
         'reply_to_message_id': msg.message_id if to_reply else None,
         'reply_markup': markup,
         'disable_web_page_preview': True
-    )
+    }
     if parse_mode:
         kwargs['parse_mode'] = parse_mode
     new_msg = await msg.client.send_message(**kwargs)
