@@ -71,11 +71,9 @@ def vc_chat(func):
         if CHAT_ID and msg.chat.id == CHAT_ID:
             await func(msg)
         else:
-            try:
-                if msg.from_user.is_self:
-                    await msg.edit(
-                        "`Haven't join any Voice-Call...`"
-                    )
+            if msg.from_user.is_self:
+                await msg.edit("`Haven't join any Voice-Call...`")
+                   
     checker.__doc__ = func.__doc__
 
     return checker
