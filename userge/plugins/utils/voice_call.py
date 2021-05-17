@@ -218,10 +218,9 @@ async def leavevc(msg: Message):
     await msg.delete()
 
     if CHAT_NAME:
-        await call.stop()
-        await asyncio.sleep(2)
         CHAT_NAME = ""
         CHAT_ID = 0
+        await call.stop()
     else:
         await reply_text(msg, "`I didn't find any Voice-Chat to leave")
 
