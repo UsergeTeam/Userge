@@ -28,7 +28,6 @@ from pyrogram.types import (
     InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, Message as RawMessage
 )
 from pyrogram.types.messages_and_media.message import Str
-from pyrogram.errors import MessageDeleteForbidden
 
 from userge import userge, Message, pool, filters, get_collection, Config
 from userge.utils import time_formatter
@@ -73,11 +72,10 @@ def vc_chat(func):
             await func(msg)
         else:
             try:
-                await msg.edit(
-                    "`Haven't join any Voice-Call...`"
-                ) if msg.from_user.is_self else await msg.delete()
-            except MessageDeleteForbidden:
-                pass
+                if msg.from_user.is_self:
+                    await msg.edit(
+                        "`Haven't join any Voice-Call...`"
+                    ) 
     checker.__doc__ = func.__doc__
 
     return checker
@@ -220,7 +218,7 @@ async def leavevc(msg: Message):
     if CHAT_NAME:
         CHAT_NAME = ""
         CHAT_ID = 0
-        await call.stop()
+        await pool.run_in_thread(call.stop)()
     else:
         await reply_text(msg, "`I didn't find any Voice-Chat to leave")
 
@@ -251,7 +249,7 @@ async def toggle_vc(msg: Message):
 
 
 @userge.on_cmd("play", about={'header': "play or add songs to queue"},
-               trigger='/', allow_private=False, check_client=True,
+               trigger=Config.SUDO_TRIGGER, allow_private=False, check_client=True,
                filter_me=False, allow_bots=False)
 @vc_chat
 @check_enable_for_all
@@ -288,7 +286,7 @@ async def play_music(msg: Message):
 
 
 @userge.on_cmd("helpvc", about={'header': "help for voice_call plugin"},
-               trigger='/', allow_private=False, check_client=True,
+               trigger=Config.SUDO_TRIGGER, allow_private=False, check_client=True,
                filter_me=False, allow_bots=False)
 @vc_chat
 @check_enable_for_all
@@ -300,9 +298,9 @@ async def _help(msg: Message):
     raw_cmds = []
 
     for i in commands:
-        if i.name.startswith('/'):
+        if i.name.startswith(Config.SUDO_TRIGGER):
             cmds.append(i)
-            raw_cmds.append(i.name.lstrip('/'))
+            raw_cmds.append(i.name.lstrip(Config.SUDO_TRIGGER))
 
     if not msg.input_str:
         out_str = f"""⚔ <b><u>(<code>{len(cmds)}</code>) Command(s) Available</u></b>
@@ -315,7 +313,7 @@ async def _help(msg: Message):
         await reply_text(msg, out_str, parse_mode="html")
 
     else:
-        if msg.input_str.lstrip('/') in raw_cmds:
+        if msg.input_str.lstrip(Config.SUDO_TRIGGER) in raw_cmds:
             key = msg.input_str.lstrip(Config.CMD_TRIGGER)
             key_ = Config.CMD_TRIGGER + key
             if key in commands:
@@ -359,10 +357,31 @@ async def force_play_music(msg: Message):
     await _skip()
 
 
+@userge.on_cmd("current", about={
+    'header': "View Current playing Song.",
+    'usage': "{tr}current"},
+    trigger=Config.SUDO_TRIGGER, check_client=True, allow_private=False,
+    filter_me=False, allow_bots=False)
+@vc_chat
+@check_enable_for_all
+async def current(msg: Message):
+    """ View current playing song """
+    await msg.delete()
+
+    if not BACK_BUTTON_TEXT:
+        return await reply_text(msg, "No song is playing!")
+    await reply_text(
+        msg,
+        BACK_BUTTON_TEXT,
+        markup=default_markup() if userge.has_bot else None,
+        to_reply=True
+    )
+
+
 @userge.on_cmd("queue", about={
     'header': "View Queue of Songs",
     'usage': "{tr}queue"},
-    trigger='/', check_client=True, allow_private=False,
+    trigger=Config.SUDO_TRIGGER, check_client=True, allow_private=False,
     filter_me=False, allow_bots=False)
 @vc_chat
 @check_enable_for_all
@@ -421,7 +440,7 @@ async def set_volume(msg: Message):
 @userge.on_cmd("skip", about={
     'header': "Skip Song",
     'usage': "{tr}skip"},
-    trigger='/', check_client=True, allow_private=False,
+    trigger=Config.SUDO_TRIGGER, check_client=True, allow_private=False,
     filter_me=False, allow_bots=False)
 @vc_chat
 async def skip_music(msg: Message):
@@ -435,7 +454,7 @@ async def skip_music(msg: Message):
 @userge.on_cmd("pause", about={
     'header': "Pause Song.",
     'usage': "{tr}pause"},
-    trigger='/', check_client=True, allow_private=False,
+    trigger=Config.SUDO_TRIGGER, check_client=True, allow_private=False,
     filter_me=False, allow_bots=False)
 @vc_chat
 async def pause_music(msg: Message):
@@ -449,7 +468,7 @@ async def pause_music(msg: Message):
 @userge.on_cmd("resume", about={
     'header': "Resume Song.",
     'usage': "{tr}resume"},
-    trigger='/', check_client=True, allow_private=False,
+    trigger=Config.SUDO_TRIGGER, check_client=True, allow_private=False,
     filter_me=False, allow_bots=False)
 @vc_chat
 async def resume_music(msg: Message):
@@ -478,6 +497,7 @@ async def nsc_handler(c: GroupCall, connected: bool):
     global PLAYING  # pylint: disable=global-statement
 
     PLAYING = False
+    BACK_BUTTON_TEXT = ""
 
     if os.path.exists("output.raw"):
         os.remove("output.raw")
