@@ -73,7 +73,7 @@ def vc_chat(func):
         else:
             if msg.from_user.is_self:
                 await msg.edit("`Haven't join any Voice-Call...`")
-                   
+
     checker.__doc__ = func.__doc__
 
     return checker
@@ -492,7 +492,7 @@ async def stop_music(msg: Message):
 
 @call.on_network_status_changed
 async def nsc_handler(c: GroupCall, connected: bool):
-    global PLAYING  # pylint: disable=global-statement
+    global PLAYING, BACK_BUTTON_TEXT  # pylint: disable=global-statement
 
     PLAYING = False
     BACK_BUTTON_TEXT = ""
