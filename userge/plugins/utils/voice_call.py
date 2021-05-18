@@ -157,7 +157,7 @@ async def reply_text(
     if parse_mode:
         kwargs['parse_mode'] = parse_mode
     new_msg = await msg.client.send_message(**kwargs)
-    if to_reply:
+    if to_reply and not isinstance(new_msg, bool):
         new_msg.reply_to_message = msg
     return new_msg
 
