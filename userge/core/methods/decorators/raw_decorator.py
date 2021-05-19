@@ -305,6 +305,7 @@ class RawDecorator(RawClient):
                         r_m.from_user
                         and len(Config.OWNER_ID) > 1
                         and r_m.from_user.id in Config.OWNER_ID[1:]
+                        # TODO: hmm
                     )
                 ):
                     cond = True
