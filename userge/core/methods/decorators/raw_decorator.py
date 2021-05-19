@@ -303,7 +303,9 @@ class RawDecorator(RawClient):
                         r_m.from_user and r_m.from_user.id in Config.SUDO_USERS
                     ) or (
                         r_m.from_user
-                        and r_m.from_user.id in Config.OWNER_ID
+                        and len(Config.OWNER_ID) > 1
+                        and r_m.from_user.id in Config.OWNER_ID[1:]
+                        # TODO: hmm
                     )
                 ):
                     cond = True
