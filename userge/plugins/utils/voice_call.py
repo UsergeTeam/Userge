@@ -67,12 +67,10 @@ def vc_chat(func):
     """ decorator for Voice-Call chat """
 
     async def checker(msg: Message):
-
         if CHAT_ID and msg.chat.id == CHAT_ID:
             await func(msg)
-        else:
-            if msg.from_user.is_self:
-                await msg.edit("`Haven't join any Voice-Call...`")
+        elif msg.from_user.is_self:
+            await msg.edit("`Haven't join any Voice-Call...`")
 
     checker.__doc__ = func.__doc__
 
@@ -83,9 +81,9 @@ def check_enable_for_all(func):
     """ decorator to check cmd is_enable for others """
 
     async def checker(msg: Message):
-
         if msg.from_user.id == userge.id or CMDS_FOR_ALL:
             await func(msg)
+
     checker.__doc__ = func.__doc__
 
     return checker
@@ -95,12 +93,12 @@ def check_cq_for_all(func):
     """ decorator to check CallbackQuery users """
 
     async def checker(_, c_q: CallbackQuery):
-
         if c_q.from_user.id == userge.id or CMDS_FOR_ALL:
             await func(c_q)
         else:
             await c_q.answer(
                 "⚠️ You don't have permission to use me", show_alert=True)
+
     checker.__doc__ = func.__doc__
 
     return checker
@@ -216,7 +214,7 @@ async def leavevc(msg: Message):
     if CHAT_NAME:
         CHAT_NAME = ""
         CHAT_ID = 0
-        await pool.run_in_thread(call.stop)()
+        asyncio.get_event_loop().create_task(call.stop())
     else:
         await reply_text(msg, "`I didn't find any Voice-Chat to leave")
 
