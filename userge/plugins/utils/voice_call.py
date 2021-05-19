@@ -261,11 +261,11 @@ async def play_music(msg: Message):
             mesg = await reply_text(msg, f"Searching `{msg.input_str}` on YouTube")
             title, link = await _get_song(msg.input_str)
             if link:
-                await mesg.delete()
                 if PLAYING:
                     msg = await reply_text(msg, _get_scheduled_text(title, link))
                 else:
-                    msg.text = f"[{title}]({link})"
+                    msg = await msg.edit(f"[{title}]({link})")
+                await mesg.delete()
                 QUEUE.append(msg)
             else:
                 await mesg.edit("No results found.")
