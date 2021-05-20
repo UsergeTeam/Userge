@@ -436,7 +436,7 @@ async def zombie_clean(message: Message):
     'description': "pin & unpin messages in groups with or without notify to members.",
     'flags': {
         '-s': "silent",
-        '-u': "unpin"
+        '-u': "unpin",
         '-all': "unpin all messages (should be used with -u)"},
     'examples': [
         "{tr}pin [reply to chat message]",
