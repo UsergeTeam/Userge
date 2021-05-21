@@ -436,7 +436,8 @@ async def zombie_clean(message: Message):
     'description': "pin & unpin messages in groups with or without notify to members.",
     'flags': {
         '-s': "silent",
-        '-u': "unpin"},
+        '-u': "unpin",
+        '-all': "unpin all messages (should be used with -u)"},
     'examples': [
         "{tr}pin [reply to chat message]",
         "{tr}pin -s [reply to chat message]",
@@ -455,7 +456,7 @@ async def pin_msgs(message: Message):
             if message.reply_to_message:
                 await message.client.unpin_chat_message(
                     chat_id, message.reply_to_message.message_id)
-            else:
+            elif "-all" in message.flags:
                 await message.client.unpin_all_chat_messages(chat_id)
             await message.delete()
             await CHANNEL.log(
