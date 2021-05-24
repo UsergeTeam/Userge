@@ -37,7 +37,7 @@ async def direct_(message: Message):
     if not links:
         await message.err("No links found!")
         return
-    reply = "**Direct Links** :\n\n"
+    reply = "<b>Direct Links</b> :\n\n"
     for link in links:
         if 'drive.google.com' in link:
             reply += f" 👉 {gdrive(link)}\n"
@@ -59,7 +59,7 @@ async def direct_(message: Message):
             reply += f" 👉 {onedrive(link)}\n"
         else:
             reply += f" 👀 {link} is not supported!\n"
-    await message.edit(reply)
+    await message.edit(reply, parse_mode="html")
 
 
 def gdrive(url: str) -> str:
