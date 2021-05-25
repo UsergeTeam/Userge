@@ -8,44 +8,17 @@
 #
 # All rights reserved
 
-import json
 import asyncio
-from typing import Union
 
-import aiohttp
-import spamwatch
-from spamwatch.types import Ban
 from pyrogram.errors.exceptions.bad_request_400 import (
     ChatAdminRequired, UserAdminInvalid, ChannelInvalid)
 
-from userge import userge, Message, Config, get_collection, filters, pool
+from userge import userge, Message, Config, get_collection
 
-SAVED_SETTINGS = get_collection("CONFIGS")
 GBAN_USER_BASE = get_collection("GBAN_USER")
 WHITELIST = get_collection("WHITELIST_USER")
 CHANNEL = userge.getCLogger(__name__)
 LOG = userge.getLogger(__name__)
-
-
-async def _init() -> None:
-    s_o = await SAVED_SETTINGS.find_one({'_id': 'ANTISPAM_ENABLED'})
-    if s_o:
-        Config.ANTISPAM_SENTRY = s_o['data']
-
-
-@userge.on_cmd("antispam", about={
-    'header': "enable / disable antispam",
-    'description': "Toggle API Auto Bans"}, allow_channels=False)
-async def antispam_(message: Message):
-    """ enable / disable antispam """
-    if Config.ANTISPAM_SENTRY:
-        Config.ANTISPAM_SENTRY = False
-        await message.edit("`antispam disabled !`", del_in=3)
-    else:
-        Config.ANTISPAM_SENTRY = True
-        await message.edit("`antispam enabled !`", del_in=3)
-    await SAVED_SETTINGS.update_one(
-        {'_id': 'ANTISPAM_ENABLED'}, {"$set": {'data': Config.ANTISPAM_SENTRY}}, upsert=True)
 
 
 @userge.on_cmd("gban", about={
@@ -254,120 +227,3 @@ async def list_white(message: Message):
                 str(c['user_id']) + "\n\n")
     await message.edit_or_send_as_file(
         f"**--Whitelisted Users List--**\n\n{msg}" if msg else "`whitelist empty!`")
-
-
-@userge.on_filters(filters.group & filters.new_chat_members, group=1, check_restrict_perm=True)
-async def gban_at_entry(message: Message):
-    """ handle gbans """
-    chat_id = message.chat.id
-    for user in message.new_chat_members:
-        user_id = user.id
-        first_name = user.first_name
-        if await WHITELIST.find_one({'user_id': user_id}):
-            continue
-        gbanned = await GBAN_USER_BASE.find_one({'user_id': user_id})
-        if gbanned:
-            if 'chat_ids' in gbanned:
-                chat_ids = gbanned['chat_ids']
-                chat_ids.append(chat_id)
-            else:
-                chat_ids = [chat_id]
-            await asyncio.gather(
-                message.client.kick_chat_member(chat_id, user_id),
-                message.reply(
-                    r"\\**#Userge_Antispam**//"
-                    "\n\nGlobally Banned User Detected in this Chat.\n\n"
-                    f"**User:** [{first_name}](tg://user?id={user_id})\n"
-                    f"**ID:** `{user_id}`\n**Reason:** `{gbanned['reason']}`\n\n"
-                    "**Quick Action:** Banned", del_in=10),
-                CHANNEL.log(
-                    r"\\**#Antispam_Log**//"
-                    "\n\n**GBanned User $SPOTTED**\n"
-                    f"**User:** [{first_name}](tg://user?id={user_id})\n"
-                    f"**ID:** `{user_id}`\n**Reason:** {gbanned['reason']}\n**Quick Action:** "
-                    f"Banned in {message.chat.title}"),
-                GBAN_USER_BASE.update_one(
-                    {'user_id': user_id, 'firstname': first_name},
-                    {"$set": {'chat_ids': chat_ids}}, upsert=True)
-            )
-        elif Config.ANTISPAM_SENTRY:
-            res = await getData(f'https://api.cas.chat/check?user_id={user_id}')
-            if res['ok']:
-                reason = ' | '.join(
-                    res['result']['messages']) if 'result' in res else None
-                await asyncio.gather(
-                    message.client.kick_chat_member(chat_id, user_id),
-                    message.reply(
-                        r"\\**#Userge_Antispam**//"
-                        "\n\nGlobally Banned User Detected in this Chat.\n\n"
-                        "**$SENTRY CAS Federation Ban**\n"
-                        f"**User:** [{first_name}](tg://user?id={user_id})\n"
-                        f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n\n"
-                        "**Quick Action:** Banned", del_in=10),
-                    CHANNEL.log(
-                        r"\\**#Antispam_Log**//"
-                        "\n\n**GBanned User $SPOTTED**\n"
-                        "**$SENRTY #CAS BAN**"
-                        f"\n**User:** [{first_name}](tg://user?id={user_id})\n"
-                        f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n**Quick Action:**"
-                        f" Banned in {message.chat.title}\n\n$AUTOBAN #id{user_id}")
-                )
-                continue
-            iv = await getData(
-                "https://api.intellivoid.net/spamprotection/v1/lookup?query=" + str(user_id)
-            )
-            if iv['success'] and iv['results']['attributes']['is_blacklisted'] is True:
-                reason = iv['results']['attributes']['blacklist_reason']
-                await asyncio.gather(
-                    message.client.kick_chat_member(chat_id, user_id),
-                    message.reply(
-                        r"\\**#Userge_Antispam**//"
-                        "\n\nGlobally Banned User Detected in this Chat.\n\n"
-                        "**$Intellivoid SpamProtection**\n"
-                        f"**User:** [{first_name}](tg://user?id={user_id})\n"
-                        f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n\n"
-                        "**Quick Action:** Banned", del_in=10),
-                    CHANNEL.log(
-                        r"\\**#Antispam_Log**//"
-                        "\n\n**GBanned User $SPOTTED**\n"
-                        "**$Intellivoid SpamProtection**"
-                        f"\n**User:** [{first_name}](tg://user?id={user_id})\n"
-                        f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n**Quick Action:**"
-                        f" Banned in {message.chat.title}\n\n$AUTOBAN #id{user_id}")
-                )
-            elif Config.SPAM_WATCH_API:
-                intruder = await _get_spamwatch_data(user_id)
-                if intruder:
-                    await asyncio.gather(
-                        message.client.kick_chat_member(chat_id, user_id),
-                        message.reply(
-                            r"\\**#Userge_Antispam**//"
-                            "\n\nGlobally Banned User Detected in this Chat.\n\n"
-                            "**$SENTRY SpamWatch Federation Ban**\n"
-                            f"**User:** [{first_name}](tg://user?id={user_id})\n"
-                            f"**ID:** `{user_id}`\n**Reason:** `{intruder.reason}`\n\n"
-                            "**Quick Action:** Banned", del_in=10),
-                        CHANNEL.log(
-                            r"\\**#Antispam_Log**//"
-                            "\n\n**GBanned User $SPOTTED**\n"
-                            "**$SENRTY #SPAMWATCH_API BAN**"
-                            f"\n**User:** [{first_name}](tg://user?id={user_id})\n"
-                            f"**ID:** `{user_id}`\n**Reason:** `{intruder.reason}`\n"
-                            f"**Quick Action:** Banned in {message.chat.title}\n\n"
-                            f"$AUTOBAN #id{user_id}")
-                    )
-    message.continue_propagation()
-
-
-async def getData(link: str):
-    async with aiohttp.ClientSession() as ses:
-        async with ses.get(link) as resp:
-            try:
-                return json.loads(await resp.text())
-            except json.decoder.JSONDecodeError:
-                return dict(ok=False, success=False)
-
-
-@pool.run_in_thread
-def _get_spamwatch_data(user_id: int) -> Union[Ban, bool]:
-    return spamwatch.Client(Config.SPAM_WATCH_API).get_ban(user_id)
