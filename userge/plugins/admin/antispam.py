@@ -52,6 +52,7 @@ async def antispam_(message: Message):
 async def gban_at_entry(message: Message):
     """ handle gbans """
     chat_id = message.chat.id
+    warned = False
     for user in message.new_chat_members:
         user_id = user.id
         first_name = user.first_name
@@ -108,8 +109,10 @@ async def gban_at_entry(message: Message):
                 try:
                     response = await _get_userge_antispam_data(user_id)
                 except InvalidApiToken:
-                    LOG.error("Your Userge AntiSpam Api key is Invalid!")
-                    await CHANNEL.log("Your Userge AntiSpam Api key is Invalid!")
+                    if not warned:
+                        LOG.error("Your Userge AntiSpam Api key is Invalid!")
+                        await CHANNEL.log("Your Userge AntiSpam Api key is Invalid!")
+                        warned = True
                     continue
                 if response["success"]:
                     await asyncio.gather(
