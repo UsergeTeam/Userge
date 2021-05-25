@@ -1,4 +1,4 @@
-""" setup gban """
+""" setup antispam """
 
 # Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
@@ -104,14 +104,13 @@ async def gban_at_entry(message: Message):
                         f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n**Quick Action:**"
                         f" Banned in {message.chat.title}\n\n$AUTOBAN #id{user_id}")
                 )
-                continue
             elif Config.USERGE_ANTISPAM_API:
                 try:
                     response = await _get_userge_antispam_data(user_id)
                 except InvalidApiToken:
                     LOG.error("Your Userge AntiSpam Api key is Invalid!")
                     await CHANNEL.log("Your Userge AntiSpam Api key is Invalid!")
-                    return
+                    continue
                 if response["success"]:
                     await asyncio.gather(
                         message.client.kick_chat_member(chat_id, user_id),
@@ -156,12 +155,11 @@ async def gban_at_entry(message: Message):
 
 
 async def getData(link: str):
-    async with aiohttp.ClientSession() as ses:
-        async with ses.get(link) as resp:
-            try:
-                return json.loads(await resp.text())
-            except json.decoder.JSONDecodeError:
-                return dict(ok=False, success=False)
+    async with aiohttp.ClientSession() as ses, ses.get(link) as resp:
+        try:
+            return json.loads(await resp.text())
+        except json.decoder.JSONDecodeError:
+            return dict(ok=False, success=False)
 
 
 @pool.run_in_thread
