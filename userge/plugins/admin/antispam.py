@@ -169,7 +169,7 @@ async def getData(link: str):
 
 @pool.run_in_thread
 def _get_userge_antispam_data(user_id: int):
-    return Client(Config.USERGE_ANTISPAM_API).get_ban(user_id)
+    return Client(Config.USERGE_ANTISPAM_API).getban(user_id)
 
 
 @pool.run_in_thread
