@@ -9,12 +9,13 @@
 import re
 import json
 import urllib.parse
+from base64 import standard_b64encode
 from os import popen
 from random import choice
+from urllib.parse import urlparse
 
 import requests
 from bs4 import BeautifulSoup
-
 from userge import userge, Message
 from userge.utils import humanbytes
 
@@ -23,7 +24,7 @@ from userge.utils import humanbytes
     'header': "Generate a direct download link",
     'supported links': [
         'Google Drive', 'Cloud Mail', 'Yandex.Disk', 'AFH',
-        'MediaFire', 'SourceForge', 'OSDN', 'GitHub'],
+        'MediaFire', 'SourceForge', 'OSDN', 'GitHub', 'Onedrive'],
     'usage': "{tr}direct [link]"})
 async def direct_(message: Message):
     """direct links generator"""
@@ -36,7 +37,7 @@ async def direct_(message: Message):
     if not links:
         await message.err("No links found!")
         return
-    reply = "**Direct Links** :\n\n"
+    reply = "<b>Direct Links</b> :\n\n"
     for link in links:
         if 'drive.google.com' in link:
             reply += f" 👉 {gdrive(link)}\n"
@@ -54,9 +55,11 @@ async def direct_(message: Message):
             reply += f" 👉 {github(link)}\n"
         elif 'androidfilehost.com' in link:
             reply += f" 👉 {androidfilehost(link)}\n"
+        elif "1drv.ms" in link:
+            reply += f" 👉 {onedrive(link)}\n"
         else:
             reply += f" 👀 {link} is not supported!\n"
-    await message.edit(reply)
+    await message.edit(reply, parse_mode="html")
 
 
 def gdrive(url: str) -> str:
@@ -274,6 +277,13 @@ def androidfilehost(url: str) -> str:
         dl_url = item['url']
         reply += f'[{name}]({dl_url}) '
     return reply
+
+
+def onedrive(link: str) -> str:
+    link_without_query = urlparse(link)._replace(query=None).geturl()
+    direct_link_encoded = str(standard_b64encode(bytes(link_without_query, "utf-8")), "utf-8")
+    direct_link1 = f"https://api.onedrive.com/v1.0/shares/u!{direct_link_encoded}/root/content"
+    return requests.head(direct_link1).next.url
 
 
 def useragent():
