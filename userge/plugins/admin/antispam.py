@@ -105,7 +105,8 @@ async def gban_at_entry(message: Message):
                         f"**ID:** `{user_id}`\n**Reason:** `{reason}`\n**Quick Action:**"
                         f" Banned in {message.chat.title}\n\n$AUTOBAN #id{user_id}")
                 )
-            elif Config.USERGE_ANTISPAM_API:
+                continue
+            if Config.USERGE_ANTISPAM_API:
                 try:
                     response = await _get_userge_antispam_data(user_id)
                 except InvalidApiToken:
@@ -113,27 +114,28 @@ async def gban_at_entry(message: Message):
                         LOG.error("Your Userge AntiSpam Api key is Invalid!")
                         await CHANNEL.log("Your Userge AntiSpam Api key is Invalid!")
                         warned = True
-                    continue
-                if response["success"]:
-                    await asyncio.gather(
-                        message.client.kick_chat_member(chat_id, user_id),
-                        message.reply(
-                            r"\\**#Userge_Antispam**//"
-                            "\n\nGlobally Banned User Detected in this Chat.\n\n"
-                            "**$SENTRY Userge AntiSpam API Ban**\n"
-                            f"**User:** [{first_name}](tg://user?id={user_id})\n"
-                            f"**ID:** `{user_id}`\n**Reason:** `{response['reason']}`\n\n"
-                            "**Quick Action:** Banned", del_in=10),
-                        CHANNEL.log(
-                            r"\\**#Antispam_Log**//"
-                            "\n\n**GBanned User $SPOTTED**\n"
-                            "**$SENRTY #USERGE_ANTISPAM_API BAN**"
-                            f"\n**User:** [{first_name}](tg://user?id={user_id})\n"
-                            f"**ID:** `{user_id}`\n**Reason:** `{response['reason']}`\n"
-                            f"**Quick Action:** Banned in {message.chat.title}\n\n"
-                            f"$AUTOBAN #id{user_id}")
-                    )
-            elif Config.SPAM_WATCH_API:
+                else:
+                    if response["success"]:
+                        await asyncio.gather(
+                            message.client.kick_chat_member(chat_id, user_id),
+                            message.reply(
+                                r"\\**#Userge_Antispam**//"
+                                "\n\nGlobally Banned User Detected in this Chat.\n\n"
+                                "**$SENTRY Userge AntiSpam API Ban**\n"
+                                f"**User:** [{first_name}](tg://user?id={user_id})\n"
+                                f"**ID:** `{user_id}`\n**Reason:** `{response['reason']}`\n\n"
+                                "**Quick Action:** Banned", del_in=10),
+                            CHANNEL.log(
+                                r"\\**#Antispam_Log**//"
+                                "\n\n**GBanned User $SPOTTED**\n"
+                                "**$SENRTY #USERGE_ANTISPAM_API BAN**"
+                                f"\n**User:** [{first_name}](tg://user?id={user_id})\n"
+                                f"**ID:** `{user_id}`\n**Reason:** `{response['reason']}`\n"
+                                f"**Quick Action:** Banned in {message.chat.title}\n\n"
+                                f"$AUTOBAN #id{user_id}")
+                        )
+                        continue
+            if Config.SPAM_WATCH_API:
                 intruder = await _get_spamwatch_data(user_id)
                 if intruder:
                     await asyncio.gather(
