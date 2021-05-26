@@ -35,7 +35,7 @@ _LOG = userge.getLogger(__name__)
 def check_numerical_order(a: Path) -> Union[float, str]:
     r = re.search(r"^\d{,2}(?:\.\d{,2})?", a.name).group()
     if r:
-      return float(r)
+        return float(r)
     return a.name
 
 
