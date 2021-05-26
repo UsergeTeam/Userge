@@ -8,7 +8,7 @@
 #
 # All rights reserved.
 
-import os
+import os, re
 from time import time
 from glob import glob
 from asyncio import sleep
@@ -29,6 +29,12 @@ from userge.utils import humanbytes, time_formatter
 from userge.utils.exceptions import ProcessCanceled
 
 _LOG = userge.getLogger(__name__)
+
+def check_numerical_order(a: Path) -> Union[float, str]:
+ r = re.search(r"^\d{,2}(?:\.\d{,2})?", a.name).group()
+ if r:
+   return float(r)
+ return a.name
 
 
 class _BaseLib:
@@ -347,7 +353,7 @@ async def ls_dir(message: Message) -> None:
     if path_.is_dir():
         folders = ''
         files = ''
-        for p_s in sorted(path_.iterdir()):
+        for p_s in sorted(path_.iterdir(), key = check_numerical_order):
             if p_s.is_file():
                 if str(p_s).endswith((".mp3", ".flac", ".wav", ".m4a")):
                     files += '🎵'
