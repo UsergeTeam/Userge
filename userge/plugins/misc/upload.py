@@ -32,6 +32,14 @@ CHANNEL = userge.getCLogger(__name__)
 LOGO_PATH = 'resources/userge.png'
 
 
+def check_numerical_order(a: Path):
+ r = re.search(r"^\d{,2}(?:\.\d{,2})?", a.name).group()
+ if r:
+   return float(r)
+ return a.name
+
+
+
 @userge.on_cmd("rename", about={
     'header': "Rename telegram files",
     'flags': {
@@ -126,7 +134,7 @@ async def upload_path(message: Message, path: Path, del_path: bool):
             if _path.is_file() and _path.stat().st_size:
                 file_paths.append(_path)
             elif _path.is_dir():
-                for i in sorted(_path.iterdir()):
+                for i in sorted(_path.iterdir(), key = check_numerical_order):
                     explorer(i)
         explorer(path)
     else:
