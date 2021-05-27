@@ -52,11 +52,11 @@ async def fban(msg: Message):
     """ fban user """
     user_id, reason = msg.extract_user_and_text
     if not user_id:
-        return await msg.err("user id not found!")
+        await msg.err("user id not found!")
     elif not reason:
-        return await msg.err("reason not found!")
+        await msg.err("reason not found!")
     elif await FBAN_USERS.find_one({"user_id": user_id}):
-        return await msg.err("this user is already fbanned!")
+        await msg.err("this user is already fbanned!")
     else:
         try:
             await pool.run_in_thread(client.add_ban)(user_id, reason)
@@ -108,7 +108,7 @@ async def unfban(msg: Message):
     """ unfban user """
     user_id, _ = msg.extract_user_and_text
     if not user_id:
-        return await msg.err("user id not found!")
+        await msg.err("user id not found!")
     else:
         try:
             await pool.run_in_thread(client.delete_ban)(user_id)
@@ -172,7 +172,7 @@ async def fstatus(msg: Message):
     """ check status of ban of any user """
     user_id, _ = msg.extract_user_and_text
     if not user_id:
-        return await msg.err("user id not found!")
+        await msg.err("user id not found!")
     else:
         try:
             ban = await pool.run_in_thread(client.getban)(user_id)
