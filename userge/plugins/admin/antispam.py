@@ -118,8 +118,7 @@ async def gban_at_entry(message: Message):
                     if ban:
                         chat_ids = [chat_id]
                         fbanned = await FBAN_USERS.find_one({"user_id": user_id})
-                        if fbanned:
-                            if 'chat_ids' in fbanned:
+                        if fbanned and 'chat_ids' in fbanned:
                                 chat_ids = fbanned[chat_ids].append(chat_id)
                         await asyncio.gather(
                             message.client.kick_chat_member(chat_id, user_id),
