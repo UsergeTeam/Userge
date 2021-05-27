@@ -13,7 +13,7 @@ import re
 import shlex
 import asyncio
 from os.path import basename
-from typing import Tuple, List, Optional
+from typing import Tuple, List, Optional, Union
 
 from html_telegraph_poster import TelegraphPoster
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
@@ -36,6 +36,15 @@ _EMOJI_PATTERN = re.compile(
     "\U00002702-\U000027B0"  # Dingbats
     "]+")
 _BTN_URL_REGEX = re.compile(r"(\[([^\[]+?)]\[buttonurl:(?:/{0,2})(.+?)(:same)?])")
+
+
+def check_numerical_order(a: str) -> Union[float, str]:
+    r = getattr(re.search(r"^\d+(?:\.\d+)?", a),
+                "group",
+                lambda: None)()
+    if r:
+        return float(r)
+    return a
 
 
 # https://github.com/UsergeTeam/Userge-Plugins/blob/master/plugins/tweet.py
