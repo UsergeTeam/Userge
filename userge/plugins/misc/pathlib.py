@@ -348,7 +348,7 @@ async def ls_dir(message: Message) -> None:
     if path_.is_dir():
         folders = ''
         files = ''
-        for p_s in sorted(path_.iterdir(), key=lamdba a:check_numerical_order(a.name)):
+        for p_s in sorted(path_.iterdir(), key=lambda a: check_numerical_order(a.name)):
             if p_s.is_file():
                 if str(p_s).endswith((".mp3", ".flac", ".wav", ".m4a")):
                     files += '🎵'
