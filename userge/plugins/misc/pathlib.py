@@ -26,17 +26,10 @@ from typing import Union, List, Tuple, Sequence
 from rarfile import RarFile, is_rarfile
 
 from userge import userge, Message, Config, pool
-from userge.utils import humanbytes, time_formatter
+from userge.utils import check_numerical_order, humanbytes, time_formatter
 from userge.utils.exceptions import ProcessCanceled
 
 _LOG = userge.getLogger(__name__)
-
-
-def check_numerical_order(a: Path) -> Union[float, str]:
-    r = re.search(r"^\d{,2}(?:\.\d{,2})?", a.name).group()
-    if r:
-        return float(r)
-    return a.name
 
 
 class _BaseLib:
@@ -355,7 +348,7 @@ async def ls_dir(message: Message) -> None:
     if path_.is_dir():
         folders = ''
         files = ''
-        for p_s in sorted(path_.iterdir(), key=check_numerical_order):
+        for p_s in sorted(path_.iterdir(), key=lamdba a:check_numerical_order(a.name)):
             if p_s.is_file():
                 if str(p_s).endswith((".mp3", ".flac", ".wav", ".m4a")):
                     files += '🎵'

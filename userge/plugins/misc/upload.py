@@ -22,7 +22,7 @@ from hachoir.parser import createParser
 from pyrogram.errors.exceptions import FloodWait
 
 from userge import userge, Config, Message
-from userge.utils import progress, take_screen_shot, humanbytes
+from userge.utils import check_numerical_order, progress, take_screen_shot, humanbytes
 from userge.utils.exceptions import ProcessCanceled
 from userge.plugins.misc.download import tg_download, url_download
 
@@ -30,13 +30,6 @@ LOGGER = userge.getLogger(__name__)
 CHANNEL = userge.getCLogger(__name__)
 
 LOGO_PATH = 'resources/userge.png'
-
-
-def check_numerical_order(a: Path):
-    r = re.search(r"^\d{,2}(?:\.\d{,2})?", a.name).group()
-    if r:
-        return float(r)
-    return a.name
 
 
 @userge.on_cmd("rename", about={
@@ -133,7 +126,7 @@ async def upload_path(message: Message, path: Path, del_path: bool):
             if _path.is_file() and _path.stat().st_size:
                 file_paths.append(_path)
             elif _path.is_dir():
-                for i in sorted(_path.iterdir(), key=check_numerical_order):
+                for i in sorted(_path.iterdir(), key=lamdba a:check_numerical_order(a.name)):
                     explorer(i)
         explorer(path)
     else:
