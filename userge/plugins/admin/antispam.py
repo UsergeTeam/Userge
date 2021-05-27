@@ -8,7 +8,6 @@
 #
 # All rights reserved
 
-from fban import FBAN_USERS
 import json
 import asyncio
 from typing import Union
@@ -22,7 +21,7 @@ from userge import userge, Message, Config, get_collection, filters, pool
 
 SAVED_SETTINGS = get_collection("CONFIGS")
 GBAN_USER_BASE = get_collection("GBAN_USER")
-FBAN_USER = get_collection("FBAN_USERS")
+FBAN_USERS = get_collection("FBAN_USERS")
 WHITELIST = get_collection("WHITELIST_USER")
 CHANNEL = userge.getCLogger(__name__)
 LOG = userge.getLogger(__name__)
