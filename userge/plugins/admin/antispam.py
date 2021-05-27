@@ -8,6 +8,7 @@
 #
 # All rights reserved
 
+from fban import FBAN_USERS
 import json
 import asyncio
 from typing import Union
@@ -21,6 +22,7 @@ from userge import userge, Message, Config, get_collection, filters, pool
 
 SAVED_SETTINGS = get_collection("CONFIGS")
 GBAN_USER_BASE = get_collection("GBAN_USER")
+FBAN_USER = get_collection("FBAN_USERS")
 WHITELIST = get_collection("WHITELIST_USER")
 CHANNEL = userge.getCLogger(__name__)
 LOG = userge.getLogger(__name__)
@@ -115,6 +117,11 @@ async def gban_at_entry(message: Message):
                         warned = True
                 else:
                     if ban:
+                        chat_ids= [chat_id]
+                        fbanned = await FBAN_USERS.find_one({"user_id": user_id})
+                        if fbanned:
+                            if 'chat_ids' in fbanned:
+                                chat_ids = fbanned[chat_ids].append(chat_id)
                         await asyncio.gather(
                             message.client.kick_chat_member(chat_id, user_id),
                             message.reply(
@@ -131,7 +138,12 @@ async def gban_at_entry(message: Message):
                                 f"\n**User:** [{first_name}](tg://user?id={user_id})\n"
                                 f"**ID:** `{user_id}`\n**Reason:** `{ban.reason}`\n"
                                 f"**Quick Action:** Banned in {message.chat.title}\n\n"
-                                f"$AUTOBAN #id{user_id}")
+                                f"$AUTOBAN #id{user_id}"),
+                            FBAN_USERS.update_one(
+                                {"user_id": user_id, "name": first_name},
+                                {"$set": {"chat_ids": chat_ids}},
+                                upsert=True
+                            )
                         )
                         continue
             if Config.SPAM_WATCH_API:
