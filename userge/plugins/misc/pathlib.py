@@ -9,7 +9,6 @@
 # All rights reserved.
 
 import os
-import re
 from time import time
 from glob import glob
 from asyncio import sleep
