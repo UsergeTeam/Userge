@@ -1,4 +1,4 @@
-""" setup antispam """
+""" setup fban """
 
 # Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
@@ -38,6 +38,7 @@ def check_client(func):
             await func(msg)
         else:
             await msg.err("USERGE_ANTISPAM_API not found!")
+    wrapper.__doc__ = func.__doc__
     return wrapper
 
 
@@ -48,6 +49,7 @@ def check_client(func):
 }, allow_channels=False, allow_bots=False)
 @check_client
 async def fban(msg: Message):
+    """ fban user """
     user_id, reason = msg.extract_user_and_text
     if not user_id:
         return await msg.err("user id not found!")
@@ -103,6 +105,7 @@ async def fban(msg: Message):
 }, allow_channels=False, allow_bots=False)
 @check_client
 async def unfban(msg: Message):
+    """ unfban user """
     user_id, _ = msg.extract_user_and_text
     if not user_id:
         return await msg.err("user id not found!")
@@ -139,7 +142,7 @@ async def unfban(msg: Message):
 @userge.on_cmd("flist", about={
     'header': "List Fbanned Users by you in Userge AntiSpam Api",
     'usage': "{tr}flist",
-    'examples': "{tr}fban"
+    'examples': "{tr}flist"
 }, allow_channels=False, allow_bots=False)
 @check_client
 async def list_fbanned_users(msg: Message):
@@ -162,10 +165,11 @@ async def list_fbanned_users(msg: Message):
 @userge.on_cmd("fstatus", about={
     'header': "Check fbanned status of user in Userge antispam",
     'usage': "{tr}fstatus [user id | username | reply to user]",
-    'examples': "{tr}fban 777000"
+    'examples': "{tr}fstatus 777000"
 }, allow_channels=False, allow_bots=False)
 @check_client
 async def fstatus(msg: Message):
+    """ check status of ban of any user """
     user_id, _ = msg.extract_user_and_text
     if not user_id:
         return await msg.err("user id not found!")
