@@ -168,7 +168,7 @@ _checkUnoffPlugins() {
 }
 
 _checkCustomPlugins() {
-    _setupPlugins Custom "https://([0-9a-f]{40}@)?github.com/.+/.+" $CUSTOM_PLUGINS_REPO
+    _setupPlugins Custom "https://(ghp_[0-9A-z]{36}@)?github.com/.+/.+" $CUSTOM_PLUGINS_REPO
 }
 
 _flushMessages() {
