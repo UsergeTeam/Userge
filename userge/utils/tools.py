@@ -45,7 +45,7 @@ def check_numerical_order(a: str, total: int) -> Union[float, str]:
     if r:
         return float(r)
     nval = ord(a[0])
-    return (total + nval if total > nval else nval)
+    return total + nval if total > nval else nval
 
 
 # https://github.com/UsergeTeam/Userge-Plugins/blob/master/plugins/tweet.py
