@@ -128,7 +128,11 @@ async def upload_path(message: Message, path: Path, del_path: bool):
             elif _path.is_dir():
                 path_iterator = _path.iterdir()
                 iterator_len = len(list(path_iterator))
-                for i in sorted(path_iterator, key=lambda a: check_numerical_order(a.name, iterator_len)):
+                for i in sorted(path_iterator,
+                                key=(lambda a:
+                                     check_numerical_order(
+                                                           a.name,
+                                                           iterator_len))):
                     explorer(i)
         explorer(path)
     else:
