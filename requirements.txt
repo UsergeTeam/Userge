@@ -38,6 +38,7 @@ stagger
 telegraph
 tgcrypto
 urbandict==0.5
+UsergeAntiSpamApi
 wget
 wikipedia
 youtube_dl>=2021.1.8
