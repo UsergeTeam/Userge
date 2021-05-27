@@ -116,7 +116,7 @@ async def gban_at_entry(message: Message):
                         warned = True
                 else:
                     if ban:
-                        chat_ids= [chat_id]
+                        chat_ids = [chat_id]
                         fbanned = await FBAN_USERS.find_one({"user_id": user_id})
                         if fbanned:
                             if 'chat_ids' in fbanned:
