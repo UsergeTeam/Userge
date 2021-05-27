@@ -38,13 +38,13 @@ _EMOJI_PATTERN = re.compile(
 _BTN_URL_REGEX = re.compile(r"(\[([^\[]+?)]\[buttonurl:(?:/{0,2})(.+?)(:same)?])")
 
 
-def check_numerical_order(a: str) -> Union[float, str]:
+def check_numerical_order(a: str, total: int) -> Union[float, str]:
     r = getattr(re.search(r"^\d+(?:\.\d+)?", a),
                 "group",
                 lambda: None)()
     if r:
         return float(r)
-    return a
+    return total + ord(a[0])
 
 
 # https://github.com/UsergeTeam/Userge-Plugins/blob/master/plugins/tweet.py
