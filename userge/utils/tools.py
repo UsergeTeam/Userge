@@ -39,10 +39,9 @@ _BTN_URL_REGEX = re.compile(r"(\[([^\[]+?)]\[buttonurl:(?:/{0,2})(.+?)(:same)?])
 
 
 def check_numerical_order(a: str) -> Union[float, str]:
-    r = getattr(
-                re.search(r"^\d+(?:\.\d+)?", a), 
-                "group", 
-                lambda : None
+    r = getattr(re.search(r"^\d+(?:\.\d+)?", a),
+                "group",
+                lambda: None
     )()
     if r:
         return float(r)
