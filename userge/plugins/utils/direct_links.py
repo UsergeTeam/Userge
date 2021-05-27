@@ -16,6 +16,7 @@ from urllib.parse import urlparse
 
 import requests
 from bs4 import BeautifulSoup
+
 from userge import userge, Message
 from userge.utils import humanbytes
 
@@ -283,7 +284,14 @@ def onedrive(link: str) -> str:
     link_without_query = urlparse(link)._replace(query=None).geturl()
     direct_link_encoded = str(standard_b64encode(bytes(link_without_query, "utf-8")), "utf-8")
     direct_link1 = f"https://api.onedrive.com/v1.0/shares/u!{direct_link_encoded}/root/content"
-    return requests.head(direct_link1).next.url
+    resp = requests.head(direct_link1)
+    if resp.status_code != 302:
+        return "`Error: Unauthorized link, the link may be private`"
+    dl_link = resp.next.url
+    file_name = dl_link.rsplit("/", 1)[1]
+    resp2 = requests.head(dl_link)
+    dl_size = humanbytes(int(resp2.headers["Content-Length"]))
+    return f"[{file_name} ({dl_size})]({dl_link})"
 
 
 def useragent():
