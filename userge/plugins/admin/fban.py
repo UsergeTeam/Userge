@@ -23,6 +23,7 @@ client = None
 
 
 async def _init() -> None:
+    global client  # pylint: disable=global-statement
     if Config.USERGE_ANTISPAM_API:
         try:
             client = await pool.run_in_thread(Client)(Config.USERGE_ANTISPAM_API)
@@ -129,8 +130,8 @@ async def unfban(msg: Message):
                     except (ChatAdminRequired, UserAdminInvalid, ChannelInvalid):
                         pass
             await msg.edit(r"\\**#UnFbanned_User**//"
-                            f"\n\n**First Name:** [{name}](tg://user?id={user_id})\n"
-                            f"**User ID:** `{user_id}`")
+                           f"\n\n**First Name:** [{name}](tg://user?id={user_id})\n"
+                           f"**User ID:** `{user_id}`")
             await FBAN_USERS.delete_one({'name': name, 'user_id': user_id})
             LOG.info("UnFbanned %s", str(user_id))
 
