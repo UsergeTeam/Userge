@@ -130,9 +130,7 @@ async def upload_path(message: Message, path: Path, del_path: bool):
                 iterator_len = len(list(path_iterator))
                 for i in sorted(path_iterator,
                                 key=(lambda a:
-                                     check_numerical_order(
-                                                           a.name,
-                                                           iterator_len))):
+                                     check_numerical_order(a.name, iterator_len))):
                     explorer(i)
         explorer(path)
     else:
