@@ -22,7 +22,7 @@ from hachoir.parser import createParser
 from pyrogram.errors.exceptions import FloodWait
 
 from userge import userge, Config, Message
-from userge.utils import check_numerical_order, progress, take_screen_shot, humanbytes
+from userge.utils import sort_file_name_key, progress, take_screen_shot, humanbytes
 from userge.utils.exceptions import ProcessCanceled
 from userge.plugins.misc.download import tg_download, url_download
 
@@ -126,7 +126,7 @@ async def upload_path(message: Message, path: Path, del_path: bool):
             if _path.is_file() and _path.stat().st_size:
                 file_paths.append(_path)
             elif _path.is_dir():
-                for i in sorted(_path.iterdir(), key=lambda a: check_numerical_order(a.name)):
+                for i in sorted(_path.iterdir(), key=lambda a: sort_file_name_key(a.name)):
                     explorer(i)
         explorer(path)
     else:

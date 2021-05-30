@@ -25,7 +25,7 @@ from typing import Union, List, Tuple, Sequence
 from rarfile import RarFile, is_rarfile
 
 from userge import userge, Message, Config, pool
-from userge.utils import check_numerical_order, humanbytes, time_formatter
+from userge.utils import humanbytes, time_formatter
 from userge.utils.exceptions import ProcessCanceled
 
 _LOG = userge.getLogger(__name__)
@@ -347,7 +347,7 @@ async def ls_dir(message: Message) -> None:
     if path_.is_dir():
         folders = ''
         files = ''
-        for p_s in sorted(path_.iterdir(), key=lambda a: check_numerical_order(a.name)):
+        for p_s in sorted(path_.iterdir()):
             if p_s.is_file():
                 if str(p_s).endswith((".mp3", ".flac", ".wav", ".m4a")):
                     files += '🎵'
@@ -385,7 +385,7 @@ async def dset_(message: Message) -> None:
         Config.DOWN_PATH = path.rstrip('/') + '/'
         await message.edit(f"set `{path}` as **working directory** successfully!", del_in=5)
     except Exception as p_e:
-        await message.err(p_e)
+        await message.err(str(p_e))
 
 
 @userge.on_cmd('dreset', about={

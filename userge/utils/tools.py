@@ -8,12 +8,12 @@
 #
 # All rights reserved.
 
-import os
 import re
 import shlex
 import asyncio
-from os.path import basename
-from typing import Tuple, List, Optional, Union
+from os.path import basename, splitext, join, exists
+from emoji import get_emoji_regexp
+from typing import Tuple, List, Optional
 
 from html_telegraph_poster import TelegraphPoster
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
@@ -21,36 +21,36 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import userge
 
 _LOG = userge.logging.getLogger(__name__)
-_EMOJI_PATTERN = re.compile(
-    "["
-    "\U0001F1E0-\U0001F1FF"  # flags (iOS)
-    "\U0001F300-\U0001F5FF"  # symbols & pictographs
-    "\U0001F600-\U0001F64F"  # emoticons
-    "\U0001F680-\U0001F6FF"  # transport & map symbols
-    "\U0001F700-\U0001F77F"  # alchemical symbols
-    "\U0001F780-\U0001F7FF"  # Geometric Shapes Extended
-    "\U0001F800-\U0001F8FF"  # Supplemental Arrows-C
-    "\U0001F900-\U0001F9FF"  # Supplemental Symbols and Pictographs
-    "\U0001FA00-\U0001FA6F"  # Chess Symbols
-    "\U0001FA70-\U0001FAFF"  # Symbols and Pictographs Extended-A
-    "\U00002702-\U000027B0"  # Dingbats
-    "]+")
-_BTN_URL_REGEX = re.compile(r"(\[([^\[]+?)]\[buttonurl:(?:/{0,2})(.+?)(:same)?])")
+_BTN_URL_REGEX = re.compile(r"(\[([^\[]+?)]\[buttonurl:/{0,2}(.+?)(:same)?])")
 
 
-def check_numerical_order(a: str) -> Union[float, str]:
-    r = getattr(re.search(r"^\d+(?:\.\d+)?", a),
-                "group",
-                lambda: None)()
-    if r:
-        return float(r)
-    return a
+def sort_file_name_key(file_name: str) -> float:
+    if not isinstance(file_name, str):
+        raise TypeError(f"Invalid type provided: {type(file_name)}")
+
+    prefix, suffix = splitext(file_name)
+
+    val = 0.0
+    inc = 2
+
+    i = 0
+    for c in list(prefix)[::-1]:
+        if not c.isdigit():
+            i += inc
+        val += ord(c) * 10 ** i
+
+    i = 0
+    for c in list(suffix):
+        if not c.isdigit():
+            i += inc
+        val += ord(c) * 10 ** i
+
+    return val
 
 
-# https://github.com/UsergeTeam/Userge-Plugins/blob/master/plugins/tweet.py
 def demojify(string: str) -> str:
     """ Remove emojis and other non-safe characters from string """
-    return re.sub(_EMOJI_PATTERN, '', string)
+    return get_emoji_regexp().sub(u'', string)
 
 
 def get_file_id_of_media(message: 'userge.Message') -> Optional[str]:
@@ -120,19 +120,19 @@ async def take_screen_shot(video_file: str, duration: int, path: str = '') -> Op
     """ take a screenshot """
     _LOG.info('[[[Extracting a frame from %s ||| Video duration => %s]]]', video_file, duration)
     ttl = duration // 2
-    thumb_image_path = path or os.path.join(userge.Config.DOWN_PATH, f"{basename(video_file)}.jpg")
+    thumb_image_path = path or join(userge.Config.DOWN_PATH, f"{basename(video_file)}.jpg")
     command = f'''ffmpeg -ss {ttl} -i "{video_file}" -vframes 1 "{thumb_image_path}"'''
     err = (await runcmd(command))[1]
     if err:
         _LOG.error(err)
-    return thumb_image_path if os.path.exists(thumb_image_path) else None
+    return thumb_image_path if exists(thumb_image_path) else None
 
 
 def parse_buttons(markdown_note: str) -> Tuple[str, Optional[InlineKeyboardMarkup]]:
     """ markdown_note to string and buttons """
     prev = 0
     note_data = ""
-    buttons: List[Tuple[str, str, str]] = []
+    buttons: List[Tuple[str, str, bool]] = []
     for match in _BTN_URL_REGEX.finditer(markdown_note):
         n_escapes = 0
         to_check = match.start(1) - 1
