@@ -11,9 +11,9 @@
 import re
 import shlex
 import asyncio
-from os.path import basename, splitext, join, exists
+from os.path import basename, join, exists
 from emoji import get_emoji_regexp
-from typing import Tuple, List, Optional
+from typing import Tuple, List, Optional, Iterator, Union
 
 from html_telegraph_poster import TelegraphPoster
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
@@ -22,30 +22,65 @@ import userge
 
 _LOG = userge.logging.getLogger(__name__)
 _BTN_URL_REGEX = re.compile(r"(\[([^\[]+?)]\[buttonurl:/{0,2}(.+?)(:same)?])")
+_PTN_INT_OR_FLOAT = re.compile(r'(\.\d+|\.|\d+)')
 
 
-def sort_file_name_key(file_name: str) -> float:
+def sort_file_name_key(file_name: str) -> tuple:
+    """ sort key for file names """
     if not isinstance(file_name, str):
-        raise TypeError(f"Invalid type provided: {type(file_name)}")
+        file_name = str(file_name)
+    return tuple(_sort_algo(_PTN_INT_OR_FLOAT.split(file_name.lower())))
 
-    prefix, suffix = splitext(file_name)
 
-    val = 0.0
-    inc = 2
+# this algo doesn't support signed values
+def _sort_algo(data: List[str]) -> Iterator[Union[str, float]]:
+    """ sort algo for file names """
+    p1 = 0.0
+    for p2 in data:
+        # skipping null values
+        if not p2:
+            continue
 
-    i = 0
-    for c in list(prefix)[::-1]:
-        if not c.isdigit():
-            i += inc
-        val += ord(c) * 10 ** i
+        # first letter of the part
+        c = p2[0]
 
-    i = 0
-    for c in list(suffix):
-        if not c.isdigit():
-            i += inc
-        val += ord(c) * 10 ** i
+        # checking c is a digit or not
+        # if yes, p2 should not contain any non digits
+        if c.isdigit():
+            # p2 should be [0-9]+
+            # so c should be 0-9
+            if c == '0':
+                # add padding
+                # this fixes `a1` and `a01` messing
+                if isinstance(p1, str):
+                    yield 0.0
+                yield c
 
-    return val
+            # converting to float
+            p2 = float(p2)
+
+            # add padding
+            if isinstance(p1, float):
+                yield ''
+
+        # checking p2 is `.[0-9]+` or not
+        elif c == '.' and len(p2) > 1 and p2[1].isdigit():
+            # p2 should be `.[0-9]+`
+            # so converting to float
+            p2 = float(p2)
+
+            # add padding
+            if isinstance(p1, str):
+                yield 0.0
+            yield c
+
+        # add padding if previous and current both are strings
+        if isinstance(p1, str) and isinstance(p2, str):
+            yield 0.0
+
+        yield p2
+        # saving current value for previous use
+        p1 = p2
 
 
 def demojify(string: str) -> str:

@@ -185,7 +185,7 @@ class Userge(_AbstractUserge):
     async def start(self) -> None:
         """ start client and bot """
         counter = 0
-        timeout = 10  # 10 sec
+        timeout = 30  # 30 sec
         max_ = 3600  # 1 hour
 
         while True:

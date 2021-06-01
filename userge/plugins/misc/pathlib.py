@@ -25,7 +25,7 @@ from typing import Union, List, Tuple, Sequence
 from rarfile import RarFile, is_rarfile
 
 from userge import userge, Message, Config, pool
-from userge.utils import humanbytes, time_formatter
+from userge.utils import humanbytes, time_formatter, sort_file_name_key
 from userge.utils.exceptions import ProcessCanceled
 
 _LOG = userge.getLogger(__name__)
@@ -347,7 +347,7 @@ async def ls_dir(message: Message) -> None:
     if path_.is_dir():
         folders = ''
         files = ''
-        for p_s in sorted(path_.iterdir()):
+        for p_s in sorted(path_.iterdir(), key=lambda a: sort_file_name_key(a.name)):
             if p_s.is_file():
                 if str(p_s).endswith((".mp3", ".flac", ".wav", ".m4a")):
                     files += '🎵'
