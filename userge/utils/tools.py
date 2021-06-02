@@ -22,14 +22,14 @@ import userge
 
 _LOG = userge.logging.getLogger(__name__)
 _BTN_URL_REGEX = re.compile(r"(\[([^\[]+?)]\[buttonurl:/{0,2}(.+?)(:same)?])")
-_PTN_INT_OR_FLOAT = re.compile(r'(\.\d+|\.|\d+)')
+_PTN_SPLIT = re.compile(r'(\.\d+|\.|\d+)')
 
 
 def sort_file_name_key(file_name: str) -> tuple:
     """ sort key for file names """
     if not isinstance(file_name, str):
         file_name = str(file_name)
-    return tuple(_sort_algo(_PTN_INT_OR_FLOAT.split(file_name.lower())))
+    return tuple(_sort_algo(_PTN_SPLIT.split(file_name.lower())))
 
 
 # this algo doesn't support signed values
@@ -79,7 +79,7 @@ def _sort_algo(data: List[str]) -> Iterator[Union[str, float]]:
             yield 0.0
 
         yield p2
-        # saving current value for previous use
+        # saving current value for later use
         p1 = p2
 
 

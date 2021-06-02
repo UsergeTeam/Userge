@@ -9,12 +9,19 @@
 # All rights reserved.
 
 . init/logbot/logbot.sh
+. init/proc.sh
 . init/utils.sh
 . init/checks.sh
 
-trap handleSigTerm TERM
-trap handleSigInt INT
-trap 'echo hi' USR1
+trap 'handleSig SIGHUP' HUP
+trap 'handleSig SIGTERM' TERM
+trap 'handleSig SIGINT' INT
+trap '' USR1
+
+handleSig() {
+    log "Exiting With $1 ..."
+    killProc
+}
 
 initUserge() {
     printLogo
@@ -28,23 +35,12 @@ initUserge() {
 startUserge() {
     startLogBotPolling
     runPythonModule userge "$@"
+    waitProc
 }
 
 stopUserge() {
     sendMessage "Exiting Userge ..."
     endLogBotPolling
-}
-
-handleSigTerm() {
-    log "Exiting With SIGTERM (143) ..."
-    stopUserge
-    exit 143
-}
-
-handleSigInt() {
-    log "Exiting With SIGINT (130) ..."
-    stopUserge
-    exit 130
 }
 
 runUserge() {

@@ -223,7 +223,14 @@ class Userge(_AbstractUserge):
     def begin(self, coro: Optional[Awaitable[Any]] = None) -> None:
         """ start userge """
         lock = asyncio.Lock()
+        loop_is_stopped = asyncio.Event()
         running_tasks: List[asyncio.Task] = []
+
+        async def _waiter() -> None:
+            try:
+                await asyncio.wait_for(loop_is_stopped.wait(), 30)
+            except asyncio.exceptions.TimeoutError:
+                pass
 
         async def _finalize() -> None:
             async with lock:
@@ -239,6 +246,7 @@ class Userge(_AbstractUserge):
             await self.loop.shutdown_asyncgens()
             self.loop.stop()
             _LOG.info(_LOG_STR, "Loop Stopped !")
+            loop_is_stopped.set()
 
         async def _shutdown(_sig: signal.Signals) -> None:
             global _SEND_SIGNAL  # pylint: disable=global-statement
@@ -250,12 +258,25 @@ class Userge(_AbstractUserge):
         for sig in (signal.SIGHUP, signal.SIGTERM, signal.SIGINT, signal.SIGUSR1):
             self.loop.add_signal_handler(
                 sig, lambda _sig=sig: self.loop.create_task(_shutdown(_sig)))
-        self.loop.run_until_complete(self.start())
+
+        def _close_loop() -> None:
+            self.loop.run_until_complete(_waiter())
+            self.loop.close()
+            _LOG.info(_LOG_STR, "Loop Closed !")
+
+        try:
+            self.loop.run_until_complete(self.start())
+        except RuntimeError:
+            _close_loop()
+            return
+
         for task in self._tasks:
             running_tasks.append(self.loop.create_task(task()))
+
         logbot.edit_last_msg("Userge has Started Successfully !")
         logbot.end()
         mode = "[DUAL]" if RawClient.DUAL_MODE else "[BOT]" if Config.BOT_TOKEN else "[USER]"
+
         try:
             if coro:
                 _LOG.info(_LOG_STR, f"Running Coroutine - {mode}")
@@ -267,7 +288,6 @@ class Userge(_AbstractUserge):
         except (asyncio.exceptions.CancelledError, RuntimeError):
             pass
         finally:
-            self.loop.close()
-            _LOG.info(_LOG_STR, "Loop Closed !")
+            _close_loop()
             if _SEND_SIGNAL:
                 os.kill(os.getpid(), signal.SIGUSR1)
