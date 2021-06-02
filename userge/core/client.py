@@ -186,7 +186,7 @@ class Userge(_AbstractUserge):
         """ start client and bot """
         counter = 0
         timeout = 30  # 30 sec
-        max_ = 3600  # 1 hour
+        max_ = 1800  # 30 min
 
         while True:
             if await _is_running():
