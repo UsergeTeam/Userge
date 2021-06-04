@@ -48,9 +48,10 @@ async def _set_running(is_running: bool) -> None:
 
 
 async def _is_running() -> bool:
-    data = await _USERGE_STATUS.find_one({'_id': 'USERGE_STATUS'})
-    if data:
-        return bool(data['is_running'])
+    if Config.ASSERT_SINGLE_INSTANCE:
+        data = await _USERGE_STATUS.find_one({'_id': 'USERGE_STATUS'})
+        if data:
+            return bool(data['is_running'])
     return False
 
 
@@ -188,18 +189,15 @@ class Userge(_AbstractUserge):
         timeout = 30  # 30 sec
         max_ = 1800  # 30 min
 
-        while True:
-            if await _is_running():
-                _LOG.info(_LOG_STR, "Waiting for the Termination of "
-                                    f"previous Userge instance ... [{timeout} sec]")
-                time.sleep(timeout)
+        while await _is_running():
+            _LOG.info(_LOG_STR, "Waiting for the Termination of "
+                                f"previous Userge instance ... [{timeout} sec]")
+            time.sleep(timeout)
 
-                counter += timeout
-                if counter < max_:
-                    continue
-
+            counter += timeout
+            if counter >= max_:
                 _LOG.info(_LOG_STR, f"Max timeout reached ! [{max_} sec]")
-            break
+                break
 
         _LOG.info(_LOG_STR, "Starting Userge")
         await _set_running(True)

@@ -35,7 +35,6 @@ initUserge() {
 startUserge() {
     startLogBotPolling
     runPythonModule userge "$@"
-    waitProc
 }
 
 stopUserge() {
