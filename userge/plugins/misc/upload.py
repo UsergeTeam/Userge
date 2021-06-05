@@ -150,7 +150,7 @@ async def upload(message: Message, path: Path, del_path: bool = False,
     if 'wt' in message.flags:
         with_thumb = False
     if path.name.lower().endswith(
-            (".mkv", ".mp4", ".webm")) and ('d' not in message.flags):
+            (".mkv", ".mp4", ".webm", ".m4v")) and ('d' not in message.flags):
         await vid_upload(message, path, del_path, extra, with_thumb)
     elif path.name.lower().endswith(
             (".mp3", ".flac", ".wav", ".m4a")) and ('d' not in message.flags):
