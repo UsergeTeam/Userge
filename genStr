@@ -8,4 +8,4 @@
 #
 # All rights reserved.
 
-python3 tools/genStrSession.py
+exec python3 tools/genStrSession.py

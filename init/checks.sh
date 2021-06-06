@@ -53,6 +53,7 @@ _checkDefaultVars() {
         [UPSTREAM_REMOTE]="upstream"
         [UPSTREAM_REPO]="https://github.com/UsergeTeam/Userge"
         [LOAD_UNOFFICIAL_PLUGINS]=false
+        [ASSERT_SINGLE_INSTANCE]=false
         [CUSTOM_PLUGINS_REPO]=""
         [G_DRIVE_IS_TD]=true
         [CMD_TRIGGER]="."
@@ -83,7 +84,7 @@ except Exception as e:
     print(e)')
         [[ $herokuErr ]] && quit "heroku response > $herokuErr"
     fi
-    for var in G_DRIVE_IS_TD LOAD_UNOFFICIAL_PLUGINS; do
+    for var in G_DRIVE_IS_TD LOAD_UNOFFICIAL_PLUGINS ASSERT_SINGLE_INSTANCE; do
         eval $var=$(tr "[:upper:]" "[:lower:]" <<< ${!var})
     done
     local uNameAndPass=$(grep -oP "(?<=\/\/)(.+)(?=\@cluster)" <<< $DATABASE_URL)
