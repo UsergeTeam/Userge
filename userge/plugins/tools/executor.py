@@ -38,8 +38,8 @@ async def eval_(message: Message):
         return
     silent_mode = False
     if message.reply_to_message:
-        cmd_flag = message.input_str
-        if "-s" in cmd_flag:
+        cmd_flag = message.input_str or message.flags
+        if cmd_flag and "-s" in cmd_flag:
             silent_mode = True
     if cmd.startswith('-s'):
         silent_mode = True
