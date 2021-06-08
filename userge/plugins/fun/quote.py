@@ -35,7 +35,7 @@ async def quotecmd(message: Message):
             return
         quote = await conv.get_response(mark_read=True)
         if not quote.sticker:
-            await message.err('something went wrong!')
+            await message.edit('something went wrong!, see here: @QuotlyBot')
         else:
             message_id = replied.message_id if replied else None
             await userge.send_sticker(chat_id=message.chat.id,

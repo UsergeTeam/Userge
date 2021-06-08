@@ -88,7 +88,7 @@ async def dictionary(message: Message):
         return out
 
     if not input_:
-        await message.edit("`❌Plz enter word to search‼️`", del_in=5)
+        await message.err("❌Plz enter word to search‼️")
     else:
         word = input_
         async with aiohttp.ClientSession() as ses:

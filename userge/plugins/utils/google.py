@@ -27,13 +27,13 @@ async def gsearch(message: Message):
     if message.reply_to_message:
         query = message.reply_to_message.text
     if not query:
-        await message.err(text="Give a query or reply to a message to google!")
+        await message.err("Give a query or reply to a message to google!")
         return
     try:
         g_search = GoogleSearch()
         gresults = await g_search.async_search(query, page)
     except Exception as e:
-        await message.err(text=e)
+        await message.err(e)
         return
     output = ""
     for i in range(limit):

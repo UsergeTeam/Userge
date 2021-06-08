@@ -22,12 +22,12 @@ async def urban_dict(message: Message):
     await message.edit("Processing...")
     query = message.filtered_input_str
     if not query:
-        await message.err(text="No found any query!")
+        await message.err("No found any query!")
         return
     try:
         mean = urbandict.define(query)
     except HTTPError:
-        await message.err(text=f"Sorry, couldn't find any results for: `{query}``")
+        await message.edit(f"Sorry, couldn't find any results for: `{query}`", del_in=5)
         return
     output = ''
     limit = int(message.flags.get('-l', 1))
@@ -37,7 +37,7 @@ async def urban_dict(message: Message):
         if limit <= i:
             break
     if not output:
-        await message.err(text=f"No result found for **{query}**")
+        await message.edit(f"No result found for **{query}**", del_in=5)
         return
     output = f"**Query:** `{query}`\n**Limit:** `{limit}`\n\n{output}"
     await message.edit_or_send_as_file(text=output, caption=query)

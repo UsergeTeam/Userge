@@ -373,9 +373,9 @@ async def load(message: Message) -> None:
                 else:
                     await message.edit(f"`Loaded {plugin}`", del_in=3, log=__name__)
             else:
-                await message.edit("`Plugin Not Found`")
+                await message.err("`Plugin Not Found`")
         else:
-            await message.edit(f"pls check `{Config.CMD_TRIGGER}help load` !")
+            await message.err("Plugin not found to load!")
 
 
 @userge.on_cmd('unload', about={

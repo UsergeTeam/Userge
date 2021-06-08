@@ -40,7 +40,7 @@ async def cur_conv(message: Message):
     if len(curcon) == 3:
         amount, currency_to, currency_from = curcon
     else:
-        await message.edit("`something went wrong!! do .help cr`")
+        await message.err("you entered invalid data")
         return
 
     if amount.isdigit():
@@ -53,7 +53,7 @@ async def cur_conv(message: Message):
             result = data[f'{currency_from}_{currency_to}']
         except KeyError:
             LOG.info(data)
-            await message.err("invalid response from api !")
+            await message.edit("`invalid response from api !`", del_in=5)
             return
         result = float(amount) / float(result)
         result = round(result, 5)

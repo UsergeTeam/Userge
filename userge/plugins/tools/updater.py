@@ -42,7 +42,7 @@ async def check_update(message: Message):
         flags.remove("pull")
     if "push" in flags:
         if not Config.HEROKU_APP:
-            await message.err("HEROKU APP : could not be found !")
+            await message.edit("HEROKU APP : could not be found !", del_in=5)
             return
         await message.err("Still Not Tested !")
         return
