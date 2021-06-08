@@ -91,9 +91,9 @@ async def dictionary(message: Message):
         await message.err("❌Plz enter word to search‼️")
     else:
         word = input_
-        async with aiohttp.ClientSession() as ses:
-            async with ses.get(f"https://api.dictionaryapi.dev/api/v1/entries/en/{word}") as res:
-                r_dec = await res.json()
+        url = f"https://api.dictionaryapi.dev/api/v1/entries/en/{word}"
+        async with aiohttp.ClientSession() as ses, ses.get(url) as res:
+            r_dec = await res.json()
         v_word = input_
         if isinstance(r_dec, list):
             r_dec = r_dec[0]

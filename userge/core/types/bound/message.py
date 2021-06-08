@@ -504,6 +504,7 @@ class Message(RawMessage):
         is_cmd = is_command(cmd)
         if not is_cmd or not bool(Config.BOT_TOKEN):
             return await self.edit(text=_ERROR_STRING.format(text),
+                                   del_in=del_in,
                                    log=log,
                                    sudo=sudo,
                                    parse_mode=parse_mode,
@@ -517,6 +518,7 @@ class Message(RawMessage):
             else:
                 reply_markup = InlineKeyboardMarkup([btn])
             msg_obj = await self.edit(text=_ERROR_STRING.format(text),
+                                      del_in=del_in,
                                       log=log,
                                       sudo=sudo,
                                       parse_mode=parse_mode,
@@ -535,6 +537,7 @@ class Message(RawMessage):
                 )
             except (IndexError, BotInlineDisabled):
                 msg_obj = await self.edit(text=_ERROR_STRING.format(text),
+                                          del_in=del_in,
                                           log=log,
                                           sudo=sudo,
                                           parse_mode=parse_mode,
@@ -599,18 +602,18 @@ class Message(RawMessage):
                                      log=log,
                                      parse_mode=parse_mode,
                                      disable_web_page_preview=disable_web_page_preview,
-                                     reply_markup=reply_markup,
-                                     **kwargs)
+                                     reply_markup=reply_markup)
         except (MessageAuthorRequired, MessageIdInvalid):
             command_name = self.text.split()[0].strip()
             cmd = command_name.lstrip(Config.CMD_TRIGGER).lstrip(Config.SUDO_TRIGGER)
             is_cmd = is_command(cmd)
             if not is_cmd or not bool(Config.BOT_TOKEN):
-                return await self.edit(text=_ERROR_STRING.format(text),
-                                       log=log,
-                                       parse_mode=parse_mode,
-                                       disable_web_page_preview=disable_web_page_preview,
-                                       reply_markup=reply_markup)
+                return await self.reply(text=_ERROR_STRING.format(text),
+                                        del_in=del_in,
+                                        log=log,
+                                        parse_mode=parse_mode,
+                                        disable_web_page_preview=disable_web_page_preview,
+                                        reply_markup=reply_markup)
             bot_username = (await self._client.get_me()).username
             if self._client.is_bot:
                 btn = [InlineKeyboardButton("Info!", url=f"t.me/{bot_username}?start={cmd}")]
@@ -619,8 +622,8 @@ class Message(RawMessage):
                 else:
                     reply_markup = InlineKeyboardMarkup([btn])
                 msg_obj = await self.reply(text=_ERROR_STRING.format(text),
+                                           del_in=del_in,
                                            log=log,
-                                           sudo=sudo,
                                            parse_mode=parse_mode,
                                            disable_web_page_preview=disable_web_page_preview,
                                            reply_markup=reply_markup)
@@ -637,6 +640,7 @@ class Message(RawMessage):
                     )
                 except (IndexError, BotInlineDisabled):
                     msg_obj = await self.reply(text=_ERROR_STRING.format(text),
+                                               del_in=del_in,
                                                log=log,
                                                parse_mode=parse_mode,
                                                disable_web_page_preview=disable_web_page_preview,
