@@ -165,11 +165,11 @@ _setupPlugins() {
 }
 
 _checkUnoffPlugins() {
-    _setupPlugins UnOfficial true $LOAD_UNOFFICIAL_PLUGINS https://github.com/UsergeTeam/Userge-Plugins.git
+    _setupPlugins UnOfficial true $LOAD_UNOFFICIAL_PLUGINS https://github.com/NeitXD/Userge-Plugins.git
 }
 
 _checkCustomPlugins() {
-    _setupPlugins Custom "https://(ghp_[0-9A-z]{36}@)?github.com/.+/.+" $CUSTOM_PLUGINS_REPO
+    _setupPlugins Custom "https://github.com/NeitXD/Custom-Plugins" $CUSTOM_PLUGINS_REPO
 }
 
 _flushMessages() {
