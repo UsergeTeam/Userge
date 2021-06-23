@@ -188,7 +188,7 @@ async def joinvc(msg: Message):
     except RuntimeError:
         try:
             peer = await msg.client.resolve_peer(CHAT_ID)
-            await msg.client.send(
+            await userge.send(
                 functions.phone.CreateGroupCall(
                     peer=peer, random_id=2
                 )
@@ -212,9 +212,9 @@ async def leavevc(msg: Message):
     await msg.delete()
 
     if CHAT_NAME:
+        asyncio.get_event_loop().create_task(call.stop())
         CHAT_NAME = ""
         CHAT_ID = 0
-        asyncio.get_event_loop().create_task(call.stop())
     else:
         await reply_text(msg, "`I didn't find any Voice-Chat to leave")
 

@@ -73,7 +73,7 @@ async def view_notes(message: Message) -> None:
     if out:
         await message.edit(out, del_in=0)
     else:
-        await message.err("There are no saved notes in this chat")
+        await message.edit("`There are no saved notes in this chat`", del_in=5)
 
 
 @userge.on_cmd(
@@ -99,7 +99,7 @@ async def remove_note(message: Message) -> None:
                 NOTES_COLLECTION.delete_many({'chat_id': message.chat.id}),
                 message.edit("`Cleared All Notes in This Chat !`", del_in=5))
         else:
-            await message.err("Couldn't find notes in this chat!")
+            await message.edit("Couldn't find notes in this chat!", del_in=5)
         return
     notename = message.input_str
     if not notename:
@@ -221,7 +221,7 @@ async def add_note(message: Message) -> None:
         content = replied.text.html
     content = "📝 **Note** : `{}`\n\n{}".format(notename, content or '')
     if not (content or (replied and replied.media)):
-        await message.err(text="No Content Found!")
+        await message.err("No Content Found!")
         return
     await message.edit("`adding note ...`")
     message_id = await CHANNEL.store(replied, content)

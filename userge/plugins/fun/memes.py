@@ -253,7 +253,7 @@ async def clap_(message: Message):
     """clap"""
     input_str = message.input_or_reply_str
     if not input_str:
-        await message.edit("`Hah, I don't clap pointlessly!`")
+        await message.err("`Hah, I don't clap pointlessly!`")
         return
     reply_text = "👏 "
     reply_text += input_str.replace(" ", " 👏 ")
@@ -401,7 +401,7 @@ async def vapor_(message: Message):
     """vapor"""
     input_str = message.input_or_reply_str
     if not input_str:
-        await message.edit("`Ｇｉｖｅ ｓｏｍｅ ｔｅｘｔ ｆｏｒ ｖａｐｏｒ！`")
+        await message.err("`Ｇｉｖｅ ｓｏｍｅ ｔｅｘｔ ｆｏｒ ｖａｐｏｒ！`")
         return
     reply_text = []
     for charac in input_str:
@@ -421,7 +421,7 @@ async def stretch(message: Message):
     """stretch"""
     input_str = message.input_or_reply_str
     if not input_str:
-        await message.edit("`GiiiiiiiB sooooooomeeeeeee teeeeeeext!`")
+        await message.err("`GiiiiiiiB sooooooomeeeeeee teeeeeeext!`")
         return
     await message.edit(
         sub(r"([aeiouAEIOUａｅｉｏｕＡＥＩＯＵаеиоуюяыэё])", (r"\1" * randint(3, 10)), input_str))
@@ -434,7 +434,7 @@ async def zal_(message: Message):
     """zal"""
     input_str = message.input_or_reply_str
     if not input_str:
-        await message.edit("`gͫ ̆ i̛ ̺ v͇̆ ȅͅ   a̢ͦ   s̴̪ c̸̢ ä̸ rͩͣ y͖͞   t̨͚ é̠ x̢͖  t͔͛`")
+        await message.err("`gͫ ̆ i̛ ̺ v͇̆ ȅͅ   a̢ͦ   s̴̪ c̸̢ ä̸ rͩͣ y͖͞   t̨͚ é̠ x̢͖  t͔͛`")
         return
     reply_text = []
     for charac in input_str:
@@ -460,7 +460,7 @@ async def owo_(message: Message):
     """owo"""
     input_str = message.input_or_reply_str
     if not input_str:
-        await message.edit("` UwU no text given! `")
+        await message.err("` UwU no text given! `")
         return
     reply_text = sub(r"([rl])", "w", input_str)
     reply_text = sub(r"([RL])", "W", reply_text)
@@ -479,7 +479,7 @@ async def mock_(message: Message):
     """mock"""
     input_str = message.input_or_reply_str
     if not input_str:
-        await message.edit("`gIvE sOMEtHInG tO MoCk!`")
+        await message.err("`gIvE sOMEtHInG tO MoCk!`")
         return
     reply_text = []
     for charac in input_str:
@@ -498,7 +498,7 @@ async def lfy_(message: Message):
     """lfy_"""
     query = message.input_or_reply_str
     if not query:
-        await message.edit("`gIvE sOMEtHInG tO lFy!`")
+        await message.err("`gIvE sOMEtHInG tO lFy!`")
         return
     query_encoded = query.replace(" ", "+")
     lfy_url = f"http://lmgtfy.com/?s=g&iie=1&q={query_encoded}"
@@ -536,7 +536,7 @@ async def scam_(message: Message):
         scam_action = str(args[0]).lower()
         scam_time = int(args[1])
     else:
-        await message.edit("`Invalid Syntax !!`")
+        await message.err("`Invalid Syntax !!`")
         return
     try:
         if scam_time > 0:

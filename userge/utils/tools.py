@@ -189,3 +189,18 @@ def parse_buttons(markdown_note: str) -> Tuple[str, Optional[InlineKeyboardMarku
         else:
             keyb.append([InlineKeyboardButton(btn[0], url=btn[1])])
     return note_data.strip(), InlineKeyboardMarkup(keyb) if keyb else None
+
+
+def is_command(cmd: str) -> bool:
+    commands = userge.userge.manager.enabled_commands
+    key = userge.Config.CMD_TRIGGER + cmd
+    _key = userge.Config.SUDO_TRIGGER + cmd
+
+    is_cmd = False
+    if cmd in commands:
+        is_cmd = True
+    elif key in commands:
+        is_cmd = True
+    elif _key in commands:
+        is_cmd = True
+    return is_cmd
