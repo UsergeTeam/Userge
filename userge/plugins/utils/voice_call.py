@@ -694,10 +694,6 @@ def mp3_down(url: str):
 @pool.run_in_thread
 def _transcode(input_: str) -> str:
     output = "output.raw"
-    if os.path.isfile(output):
-        os.remove(output)
-    # https://t.me/c/1480232458/6825
-    os.mkfifo(output)
     ffmpeg.input(input_).output(
         output,
         format='s16le',
