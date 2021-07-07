@@ -15,7 +15,7 @@ from aiohttp import ClientResponseError, ServerTimeoutError, TooManyRedirects
 
 from userge import userge, Message, Config
 
-DOGBIN_URL = "https://del.dog/"
+DOGBIN_URL = "https://dogbin.up.railway.app/"
 NEKOBIN_URL = "https://nekobin.com/"
 
 
