@@ -40,20 +40,20 @@ async def cur_conv(message: Message):
     if len(curcon) == 3:
         amount, currency_to, currency_from = curcon
     else:
-        await message.edit("`something went wrong!! do .help cr`")
+        await message.err("you entered invalid data")
         return
 
     if amount.isdigit():
-        async with aiohttp.ClientSession() as ses:
-            async with ses.get("https://free.currconv.com/api/v7/convert?"
-                               f"apiKey={Config.CURRENCY_API}&q="
-                               f"{currency_from}_{currency_to}&compact=ultra") as res:
-                data = json.loads(await res.text())
+        url = ("https://free.currconv.com/api/v7/convert?"
+               f"apiKey={Config.CURRENCY_API}&q="
+               f"{currency_from}_{currency_to}&compact=ultra")
+        async with aiohttp.ClientSession() as ses, ses.get(url) as res:
+            data = json.loads(await res.text())
         try:
             result = data[f'{currency_from}_{currency_to}']
         except KeyError:
             LOG.info(data)
-            await message.err("invalid response from api !")
+            await message.edit("`invalid response from api !`", del_in=5)
             return
         result = float(amount) / float(result)
         result = round(result, 5)

@@ -83,4 +83,4 @@ async def get_thumb_nail(message: Message):
         await CHANNEL.fwd_msg(msg)
         await message.delete()
     else:
-        await message.err("Custom Thumbnail Not Found!")
+        await message.edit("`Custom Thumbnail Not Found!`", del_in=5)

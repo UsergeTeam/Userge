@@ -30,7 +30,7 @@ async def wiki_pedia(message: Message):
         wikipedia.set_lang("en")
         results = wikipedia.search(query)
     except Exception as e:
-        await message.err(text=e)
+        await message.err(e)
         return
     output = ""
     for i, s in enumerate(results, start=1):

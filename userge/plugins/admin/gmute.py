@@ -34,10 +34,7 @@ async def gmute_user(msg: Message):
     await msg.edit("`Globally Muting this User...`")
     user_id, reason = msg.extract_user_and_text
     if not user_id:
-        await msg.edit(
-            "`no valid user_id or message specified,`"
-            "`don't do .help gmute for more info. "
-            "Coz no one's gonna help ya`(｡ŏ_ŏ) ⚠")
+        await msg.err("no valid user_id or message specified")
         return
     get_mem = await msg.client.get_user_dict(user_id)
     firstname = get_mem['fname']
@@ -48,7 +45,7 @@ async def gmute_user(msg: Message):
         return
     user_id = get_mem['id']
     if user_id == msg.from_user.id:
-        await msg.err(r"LoL. Why would I GMuting myself ¯\(°_o)/¯")
+        await msg.edit(r"LoL. Why would I GMuting myself ¯\(°_o)/¯", del_in=5)
         return
     if user_id in Config.SUDO_USERS:
         await msg.edit(
@@ -104,7 +101,7 @@ async def ungmute_user(msg: Message):
     user_id = get_mem['id']
     found = await GMUTE_USER_BASE.find_one({'user_id': user_id})
     if not found:
-        await msg.err("User Not Found in My GMute List")
+        await msg.edit("`User Not Found in My GMute List`", del_in=5)
         return
     await asyncio.gather(
         GMUTE_USER_BASE.delete_one({'firstname': firstname, 'user_id': user_id}),

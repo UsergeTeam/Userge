@@ -48,7 +48,7 @@ async def rename_(message: Message):
     if message.reply_to_message and message.reply_to_message.media:
         await _handle_message(message)
     else:
-        await message.edit("Please read `.help rename`", del_in=5)
+        await message.err("reply to media to rename it")
 
 
 @userge.on_cmd("convert", about={
@@ -61,7 +61,7 @@ async def convert_(message: Message):
         message.text = '' if message.reply_to_message.document else ". -d"
         await _handle_message(message)
     else:
-        await message.edit("Please read `.help convert`", del_in=5)
+        await message.err("reply to media to convert it")
 
 
 @userge.on_cmd("upload", about={
@@ -77,7 +77,7 @@ async def upload_to_tg(message: Message):
     """ upload to telegram """
     path_ = message.filtered_input_str
     if not path_:
-        await message.edit("invalid input!, check `.help .upload`", del_in=5)
+        await message.err("Input not foud!")
         return
     is_url = re.search(r"(?:https?|ftp)://[^|\s]+\.[^|\s]+", path_)
     del_path = False
@@ -101,7 +101,7 @@ async def upload_to_tg(message: Message):
     try:
         string = Path(path_)
     except IndexError:
-        await message.edit("wrong syntax\n`.upload [path]`")
+        await message.err("wrong syntax")
     else:
         await message.delete()
         await upload_path(message, string, del_path)

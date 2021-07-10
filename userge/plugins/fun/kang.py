@@ -63,7 +63,7 @@ async def kang_(message: Message):
         photo = await userge.download_media(message=replied,
                                             file_name=Config.DOWN_PATH)
     else:
-        await message.edit("`I can't kang that...`")
+        await message.err("`I can't kang that...`")
         return
     if photo:
         args = message.filtered_input_str.split(' ')
@@ -213,10 +213,10 @@ async def sticker_pack_info_(message: Message):
     """ get sticker pack info """
     replied = message.reply_to_message
     if not replied:
-        await message.edit("`I can't fetch info from nothing, can I ?!`")
+        await message.err("`I can't fetch info from nothing, can I ?!`")
         return
     if not replied.sticker:
-        await message.edit("`Reply to a sticker to get the pack details`")
+        await message.err("`Reply to a sticker to get the pack details`")
         return
     await message.edit("`Fetching details of the sticker pack, please wait..`")
     get_stickerset = await message.client.send(

@@ -80,10 +80,9 @@ async def weather_get(message: Message):
             CITY = newcity[0].strip() + "," + countrycode.strip()
 
     url = f'https://api.openweathermap.org/data/2.5/weather?q={CITY}&appid={APPID}'
-    async with aiohttp.ClientSession() as ses:
-        async with ses.get(url) as res:
-            req_status = res.status
-            res_text = await res.text()
+    async with aiohttp.ClientSession() as ses, ses.get(url) as res:
+        req_status = res.status
+        res_text = await res.text()
     result = json.loads(res_text)
 
     if req_status != 200:

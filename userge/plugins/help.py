@@ -20,6 +20,7 @@ from pyrogram.types import (
 from pyrogram.errors.exceptions.bad_request_400 import MessageNotModified, MessageIdInvalid
 
 from userge import userge, Message, Config, get_collection
+from userge.utils import is_command
 
 _CATEGORY = {
     'admin': '👨‍✈️',
@@ -99,6 +100,26 @@ if userge.has_bot:
                     f"Only {user_dict['flname']} Can Access this...! Build Your Own @TheUserge 🤘",
                     show_alert=True)
         return wrapper
+
+    @userge.bot.on_message(
+        filters.private & filters.user(list(Config.OWNER_ID)) & filters.command("start")
+    )
+    async def pm_help_handler(_, msg: Message):
+        cmd = msg.command[1] if len(msg.command) > 1 else ''
+        if not cmd:
+            return
+        commands = userge.manager.enabled_commands
+        key = Config.CMD_TRIGGER + cmd
+        key_ = Config.SUDO_TRIGGER + cmd
+        if cmd in commands:
+            out_str = f"<code>{cmd}</code>\n\n{commands[cmd].about}"
+        if key in commands:
+            out_str = f"<code>{key}</code>\n\n{commands[key].about}"
+        elif key_ in commands:
+            out_str = f"<code>{key_}</code>\n\n{commands[key_].about}"
+        else:
+            out_str = f"<i>No Command Found for</i>: <code>{cmd}</code>"
+        await msg.reply(out_str, parse_mode='html', disable_web_page_preview=True)
 
     @userge.bot.on_callback_query(filters=filters.regex(pattern=r"\((.+)\)(next|prev)\((\d+)\)"))
     @check_owner
@@ -435,4 +456,27 @@ if userge.has_bot:
                         reply_markup=InlineKeyboardMarkup(buttons)
                     )
                 )
+            elif "msg.err" in inline_query.query:
+                if ' ' in inline_query.query:
+                    _, cmd, err_text = inline_query.query.split(' ', maxsplit=2)
+                if cmd and err_text and is_command(cmd):
+                    bot_username = (await userge.bot.get_me()).username
+                    button = [
+                        [
+                            InlineKeyboardButton(
+                                "Info!", url=f"t.me/{bot_username}?start={cmd}"
+                            )
+                        ]
+                    ]
+                    results.append(
+                        InlineQueryResultArticle(
+                            id=uuid4(),
+                            title="Inline Error Text",
+                            input_message_content=InputTextMessageContent(err_text),
+                            description="Inline Error text with help support button.",
+                            thumb_url="https://imgur.com/download/Inyeb1S",
+                            reply_markup=InlineKeyboardMarkup(button)
+                        )
+                    )
+
         await inline_query.answer(results=results, cache_time=3)
