@@ -36,7 +36,8 @@ async def translateme(message: Message):
     if message.reply_to_message:
         text = message.reply_to_message.text or message.reply_to_message.caption
     if not text:
-        await message.err("Give a text or reply to a message to translate!")
+        await message.err(
+            text="Give a text or reply to a message to translate!\nuse `.help tr`")
         return
     if len(flags) == 2:
         src, dest = list(flags)
@@ -49,7 +50,7 @@ async def translateme(message: Message):
     try:
         reply_text = await _translate_this(text, dest, src)
     except ValueError:
-        await message.err("Invalid destination language.")
+        await message.err(text="Invalid destination language.\nuse `.help tr`")
         return
     source_lan = LANGUAGES[f'{reply_text.src.lower()}']
     transl_lan = LANGUAGES[f'{reply_text.dest.lower()}']

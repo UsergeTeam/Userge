@@ -94,5 +94,5 @@ async def ocr_gen(message: Message):
             return
 
     else:
-        await message.err(r"i can't read nothing (°ー°〃)")
+        await message.edit(r"`i can't read nothing (°ー°〃) , do .help ocr`", del_in=0)
         return
