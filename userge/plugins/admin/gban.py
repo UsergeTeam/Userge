@@ -33,7 +33,10 @@ async def gban_user(message: Message):
     await message.edit("`GBanning...`")
     user_id, reason = message.extract_user_and_text
     if not user_id:
-        await message.err("no valid user_id or message specified")
+        await message.edit(
+            "`no valid user_id or message specified,`"
+            "`don't do .help gban for more info. "
+            "Coz no one's gonna help ya`(｡ŏ_ŏ) ⚠", del_in=0)
         return
     get_mem = await message.client.get_user_dict(user_id)
     firstname = get_mem['fname']
@@ -106,7 +109,7 @@ async def ungban_user(message: Message):
     user_id = get_mem['id']
     found = await GBAN_USER_BASE.find_one({'user_id': user_id})
     if not found:
-        await message.edit("`User Not Found in My Gban List`", del_in=5)
+        await message.err("User Not Found in My Gban List")
         return
     if 'chat_ids' in found:
         for chat_id in found['chat_ids']:
@@ -158,7 +161,7 @@ async def whitelist(message: Message):
     user_id = get_mem['id']
     found = await WHITELIST.find_one({'user_id': user_id})
     if found:
-        await message.edit("`User Already in My WhiteList`", del_in=5)
+        await message.err("User Already in My WhiteList")
         return
     await asyncio.gather(
         WHITELIST.insert_one({'firstname': firstname, 'user_id': user_id}),
@@ -193,7 +196,7 @@ async def rmwhitelist(message: Message):
     user_id = get_mem['id']
     found = await WHITELIST.find_one({'user_id': user_id})
     if not found:
-        await message.edit("`User Not Found in My WhiteList`", del_in=5)
+        await message.err("User Not Found in My WhiteList")
         return
     await asyncio.gather(
         WHITELIST.delete_one({'firstname': firstname, 'user_id': user_id}),

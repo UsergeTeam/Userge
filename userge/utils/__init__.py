@@ -18,5 +18,4 @@ from .tools import (sort_file_name_key, # noqa
                     post_to_telegraph,
                     runcmd,
                     take_screen_shot,
-                    parse_buttons,
-                    is_command)
+                    parse_buttons)
