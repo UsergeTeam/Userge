@@ -44,13 +44,14 @@ _U_ID_F_M_ID: Dict[int, int] = {}
 _STATS: Dict[str, int] = {"incoming": 0, "outgoing": 0}
 
 START_TEXT = " Hello {mention}, you can contact me using this Bot."
+START_MEDIA = os.environ.get("START_MEDIA", None)
 
 botPmFilter = filters.create(lambda _, __, ___: BOT_PM)
 bannedFilter = filters.create(lambda _, __, ___: filters.user(_BANNED_USERS))
 
 
 async def _init():
-    global _BANNED_USERS, START_TEXT, _USERS, _HAVE_BLOCKED, BOT_PM  # noqa
+    global START_TEXT, BOT_PM  # noqa
     async for a in HAVE_BLOCKED.find():
         _HAVE_BLOCKED.append(a['user_id'])
     async for b in BANNED_USERS.find():
@@ -105,8 +106,6 @@ if userge.has_bot:
         ~bannedFilter & ~filters.edited & filters.private & filters.command("start")
     )
     async def start(_, msg: PyroMessage):
-        global _HAVE_BLOCKED, _USERS  # pylint: disable=global-statement
-        START_MEDIA = os.environ.get("START_MEDIA", None)
         user_id = msg.from_user.id
         user_dict = await bot.get_user_dict(user_id)
         text = START_TEXT.format_map(SafeDict(**user_dict))
@@ -114,11 +113,11 @@ if userge.has_bot:
         if START_MEDIA:
             pattern = r"^https://telegra\.ph/file/\w+\.\w+$"
             if not re.match(pattern, START_MEDIA):
-                await CHANNEL.log("Your `START_MEDIA` var is Invalid.", "ERROR")
+                await CHANNEL.log("Your `START_MEDIA` var is Invalid.")
             else:
-                path = os.path.join(Config.DOWN_PATH, os.path.split(Config.START_MEDIA)[1])
+                path = os.path.join(Config.DOWN_PATH, os.path.split(START_MEDIA)[1])
                 if not os.path.exists(path):
-                    await pool.run_in_thread(wget.download)(Config.START_MEDIA, path)
+                    await pool.run_in_thread(wget.download)(START_MEDIA, path)
         if user_id != userge_id:
             if user_id in _HAVE_BLOCKED:
                 _HAVE_BLOCKED.remove(user_id)
@@ -148,7 +147,7 @@ if userge.has_bot:
             key_ = Config.SUDO_TRIGGER + cmd
             if cmd in commands:
                 out_str = f"<code>{cmd}</code>\n\n{commands[cmd].about}"
-            if key in commands:
+            elif key in commands:
                 out_str = f"<code>{key}</code>\n\n{commands[key].about}"
             elif key_ in commands:
                 out_str = f"<code>{key_}</code>\n\n{commands[key_].about}"
@@ -189,6 +188,7 @@ if userge.has_bot:
                         return await msg.reply("You can't reply old message of this user.")
                     user_id = _U_ID_F_M_ID.get(replied.message_id)
             else:
+                # noinspection PyBroadException
                 try:
                     user = await bot.get_users(int(user_id))
                 except Exception:
@@ -202,6 +202,7 @@ if userge.has_bot:
             _BANNED_USERS.append(user_id)
             await BANNED_USERS.insert_one({"user_id": user_id})
             await msg.reply("User banned forever.")
+            # noinspection PyBroadException
             try:
                 await bot.send_message(user_id, "You have been Banned Forever.")
             except Exception:
@@ -213,9 +214,9 @@ if userge.has_bot:
         replied = msg.reply_to_message
         user_id = msg.text.split(' ', maxsplit=1)[1] if ' ' in msg.text else ''
         if not (replied or user_id):
-            await msg.reply("reply to user message or give id to Ban.")
+            await msg.reply("reply to user message or give id to UnBan.")
         elif replied and replied.from_user.id == userge_id:
-            await msg.reply("You are trying to Ban yourself!")
+            await msg.reply("You are trying to UnBan yourself!")
         else:
             if replied:
                 if replied.forward_from:
@@ -225,6 +226,7 @@ if userge.has_bot:
                         return await msg.reply("You can't reply old message of this user.")
                     user_id = _U_ID_F_M_ID.get(replied.message_id)
             else:
+                # noinspection PyBroadException
                 try:
                     user = await bot.get_users(int(user_id))
                 except Exception:
@@ -238,6 +240,7 @@ if userge.has_bot:
             _BANNED_USERS.remove(user_id)
             await BANNED_USERS.delete_one({"user_id": user_id})
             await msg.reply("User Unbanned.")
+            # noinspection PyBroadException
             try:
                 await bot.send_message(user_id, "You have been Unbanned.")
             except Exception:
@@ -253,13 +256,34 @@ if userge.has_bot:
         else:
             await handle_incoming_message(msg)
 
+    SETTINGS_TEXT = """ **Here are the Settings:** What do you want to do ?"""
+
+    MISC_TEXT = "Click on the below button to change Bot Start Text or Start Media."
+
+    SET_MEDIA_TEXT = """You can set Custom Start Media by Adding a Config Var named `START_MEDIA`.
+Your var value should only contain telegraph link of any media.
+
+After Adding a var, you can see your media when you start your Bot.
+"""
+
+    SET_CUSTOM_TEXT = """You can set Custom Start text which you will see when you start Bot by /settext command.
+"""
+
+    HELP_TEXT = """**Here are the available commands for Bot PM:**
+
+/start - Start the bot
+/help -See this text again
+/settext [text | reply to text] - Set Custom Start Text
+/pmban [user_id | reply to user] - Ban User from Doing Pms
+/pmunban [user_id | reply to user] - UnBan Banned user
+"""
+
     @bot.on_callback_query(
         filters.regex("startcq|stngs|bothelp|misc|setmedia|settext|broadcast|stats|en_dis_bot_pm")
     )
     async def cq_handler(_, cq: CallbackQuery):
         global BOT_PM, IN_CONVO  # pylint: disable=global-statement
-        SETTINGS_TEXT = """ **Here are the Settings:** What do you want to do ?"""
-        SETTINGS_MARKUP = InlineKeyboardMarkup(
+        settings_markup = InlineKeyboardMarkup(
             [
                 [
                     InlineKeyboardButton("Broadcast", callback_data="broadcast"),
@@ -272,29 +296,10 @@ if userge.has_bot:
                 [InlineKeyboardButton("Back", callback_data="startcq")]
             ]
         )
-        MISC_TEXT = "Click on the below button to change Bot Start Text or Start Media."
-        SET_MEDIA_TEXT = """
-You can set Custom Start Media by Adding a Config Var named `START_MEDIA`.
-Your var value should only contain telegraph link of any media.
-
-After Adding a var, you can see your media when you start your Bot.
-        """
-        SET_CUSTOM_TEXT = """
-You can set Custom Start text which you will see when you start Bot by /settext command.
-        """
-        HELP_TEXT = """
-**Here are the available commands for Bot PM:**
-
-/start - Start the bot
-/help -See this text again
-/settext [text | reply to text] - Set Custom Start Text
-/pmban [user_id | reply to user] - Ban User from Doing Pms
-/pmunban [user_id | reply to user] - UnBan Banned user
-        """
         if cq.data == "stngs":
             text = f"Bot Pm - {'Disabled ❌' if not BOT_PM else 'Enabled ✅'}"
             btn = [InlineKeyboardButton(text, callback_data="en_dis_bot_pm")]
-            mp = SETTINGS_MARKUP
+            mp = settings_markup
             mp.inline_keyboard.insert(0, btn)
             await cq.edit_message_text(
                 SETTINGS_TEXT,
@@ -311,7 +316,7 @@ You can set Custom Start text which you will see when you start Bot by /settext 
             )
             text = f"Bot Pm - {'Disabled ❌' if not BOT_PM else 'Enabled ✅'}"
             btn = [InlineKeyboardButton(text, callback_data=cq.data)]
-            mp = SETTINGS_MARKUP
+            mp = settings_markup
             mp.inline_keyboard.insert(0, btn)
             await cq.edit_message_reply_markup(
                 reply_markup=mp
@@ -326,8 +331,7 @@ You can set Custom Start text which you will see when you start Bot by /settext 
         elif cq.data == "stats":
             mp = InlineKeyboardMarkup([[InlineKeyboardButton("Back", callback_data="stngs")]])
 
-            out_str = f"""
-**Statistics:**
+            out_str = f"""**Statistics:**
 
 **Users:**
 **All Users:** `{len(_BANNED_USERS + _HAVE_BLOCKED + _USERS)}`
@@ -339,7 +343,7 @@ You can set Custom Start text which you will see when you start Bot by /settext 
 **All Messages:** `{_STATS["incoming"] + _STATS["outgoing"]}`
 **Incoming:** `{_STATS["incoming"]}`
 **Outgoing:** `{_STATS["outgoing"]}`
-            """
+"""
             await cq.edit_message_text(
                 out_str,
                 disable_web_page_preview=True,
@@ -437,7 +441,6 @@ You can set Custom Start text which you will see when you start Bot by /settext 
             )
 
     async def handle_incoming_message(msg: PyroMessage):
-        global _USERS, _HAVE_BLOCKED  # pylint: disable=global-statement
         user_id = msg.from_user.id
         if user_id in _HAVE_BLOCKED:
             _HAVE_BLOCKED.remove(user_id)
@@ -450,13 +453,13 @@ You can set Custom Start text which you will see when you start Bot by /settext 
                 await bot.send_message(userge_id, f"{msg.from_user.mention} sent you a sticker.")
             m = await msg.forward(userge_id)
             if m.forward_from or m.forward_sender_name or m.forward_date:
-                id = 0
+                id_ = 0
                 for a, b in _U_ID_F_M_ID.items():
                     if b == user_id:
-                        id = a
+                        id_ = a
                         break
-                if id:
-                    del _U_ID_F_M_ID[id]
+                if id_:
+                    del _U_ID_F_M_ID[id_]
                     await U_ID_F_M_ID.delete_one({"user_id": user_id})
 
                 await U_ID_F_M_ID.insert_one(
@@ -465,12 +468,11 @@ You can set Custom Start text which you will see when you start Bot by /settext 
                 _U_ID_F_M_ID[m.message_id] = user_id
         except Exception as err:
             await CHANNEL.log(err, "INCOMING_HANDLER")
-            await msg.reply("Your message is not recieved, try to send it again after some time.")
+            await msg.reply("Your message is not received, try to send it again after some time.")
         else:
             await increment_stats(True)
 
     async def handle_reply(msg: PyroMessage):
-        global _USERS, _HAVE_BLOCKED  # pylint: disable=global-statement
         if IN_CONVO:
             return
         replied = msg.reply_to_message
@@ -499,38 +501,44 @@ You can set Custom Start text which you will see when you start Bot by /settext 
                 await USERS.delete_one({"user_id": reply_id})
                 await HAVE_BLOCKED.insert_one({"user_id": reply_id})
             except Exception as err:
-                await msg.reply(err)
+                await msg.reply(str(err))
             else:
                 await increment_stats(False)
+
+    MESSAGE = f"""A broadcast post will be sent to {len(_USERS)} users.
+
+Send one or multiple messages you want to include in the post.
+It can be anything — a text, photo, video, even a sticker.
+
+Type /cancel to cancel the operation.
+"""
+
+    NEXT_MESSAGE = "This message has been added to the post."
+    PREVIEW_MESSAGE = "The post preview sent above."
+
+    CONTINUE_MESSAGE = """{} You can continue to send messages. Type /done to send this broadcast post.
+
+/preview — preview the broadcast post
+/cancel - cancel the current operation
+"""
+
+    CONFIRM_TEXT = """Are you sure you want to send {} in broadcast post?
+
+Type /send to confirm or /cancel to exit.
+"""
 
     async def broadcast(msg: PyroMessage):
         global IN_CONVO  # pylint: disable=global-statement
         if len(_USERS) < 1:
             return await bot.send_message(msg.chat.id, "No one Started your bot. 🤭")
         IN_CONVO = True
-        MESSAGE = f"""
-A broadcast post will be sent to {len(_USERS)} users.
-
-Send one or multiple messages you want to include in the post.
-It can be anything — a text, photo, video, even a sticker.
-
-Type /cancel to cancel the operation.
-        """
-        NEXT_MESSAGE = "This message has been added to the post."
-        PREVIEW_MESSAGE = "The post preview sent above."
-        CONTINUE_MESSAGE = (
-            """{} You can continue to send messages. Type /done to send this broadcast post.
-            
-/preview — preview the broadcast post
-/cancel - cancel the current operation """
-        )
         temp_msgs = []
         async with userge.bot.conversation(
                 msg.chat.id, timeout=30, limit=7) as conv:  # 5 post msgs and 2 command msgs
             await conv.send_message(MESSAGE)
-            filter = filters.create(lambda _, __, ___: filters.incoming & ~filters.edited)
+            filter_ = filters.create(lambda _, __, ___: filters.incoming & ~filters.edited)
             while True:
-                response = await conv.get_response(filters=filter)
+                response = await conv.get_response(filters=filter_)
                 if response.text.startswith("/cancel"):
                     IN_CONVO = False
                     return await msg.reply("Broadcast process Cancelled.")
@@ -552,13 +560,9 @@ Type /cancel to cancel the operation.
                 temp_msgs.append(response)
                 await response.copy(conv.chat_id)
                 await conv.send_message(CONTINUE_MESSAGE.format(NEXT_MESSAGE))
-            COFIRM_TEXT = f"""
-Are you sure you want to send {len(temp_msgs)} in broadcast post?
-
-Type /send to confirm or /cancel to exit.
-            """
-            await conv.send_message(COFIRM_TEXT)
-            response = await conv.get_response(filters=filter)
+            confirm_text = CONFIRM_TEXT.format(len(temp_msgs))
+            await conv.send_message(confirm_text)
+            response = await conv.get_response(filters=filter_)
             while True:
                 if response.text == "/send":
                     await send_broadcast_post(msg, temp_msgs)
@@ -570,8 +574,8 @@ Type /send to confirm or /cancel to exit.
                     return
                 conv._count -= 1
                 await conv.send_message("Invalid Arguments!")
-                await conv.send_message(COFIRM_TEXT)
-                response = await conv.get_response(filters=filter)
+                await conv.send_message(confirm_text)
+                response = await conv.get_response(filters=filter_)
 
     async def send_broadcast_post(msg: PyroMessage, to_send_messages: List[PyroMessage]):
         sending_text: str = f"🕒 Sending of the broadcast post to {len(_USERS)} users is started!"
@@ -579,12 +583,13 @@ Type /send to confirm or /cancel to exit.
         blocked_users: List[int] = []
         count: int = 0
         success: int = 0
-        sent: PyroMessage = None
+        sent: Optional[PyroMessage] = None
         start_time = time.time()
         for chat_id in _USERS:
             error: bool = False
             count += 1
             for message in to_send_messages:
+                # noinspection PyBroadException
                 try:
                     await message.copy(chat_id)
                 except FloodWait as e:

@@ -42,7 +42,6 @@ _U_NM_CHT: Dict[int, ChatMember] = {}
 
 _CH_LKS: Dict[str, asyncio.Lock] = {}
 _CH_LKS_LK = asyncio.Lock()
-_INIT_LK = asyncio.Lock()
 
 
 async def _update_u_cht(r_m: RawMessage) -> Optional[ChatMember]:
@@ -91,30 +90,12 @@ def _clear_cht() -> None:
     _TASK_1_START_TO = time.time()
 
 
-async def _init(r_c: Union['_client.Userge', '_client.UsergeBot'],
-                r_m: RawMessage, is_bot: bool) -> None:
+async def _init(r_m: RawMessage) -> None:
     if r_m.from_user and (
         r_m.from_user.is_self or (
             r_m.from_user.id in Config.SUDO_USERS) or (
                 r_m.from_user.id in Config.OWNER_ID)):
         RawClient.LAST_OUTGOING_TIME = time.time()
-    async with _INIT_LK:
-        if RawClient.DUAL_MODE:
-            if RawClient.USER_ID and RawClient.BOT_ID:
-                return
-        else:
-            if RawClient.USER_ID or RawClient.BOT_ID:
-                return
-        if is_bot:
-            if not RawClient.BOT_ID:
-                RawClient.BOT_ID = (await r_c.get_me()).id
-            if RawClient.DUAL_MODE and not RawClient.USER_ID:
-                RawClient.USER_ID = (await r_c.ubot.get_me()).id
-        else:
-            if not RawClient.USER_ID:
-                RawClient.USER_ID = (await r_c.get_me()).id
-            if RawClient.DUAL_MODE and not RawClient.BOT_ID:
-                RawClient.BOT_ID = (await r_c.bot.get_me()).id
 
 
 async def _raise_func(r_c: Union['_client.Userge', '_client.UsergeBot'],
@@ -245,13 +226,13 @@ class RawDecorator(RawClient):
                     return
                 if r_m.chat and r_m.chat.id in Config.DISABLED_CHATS:
                     return
-                is_bot = r_c.is_bot
-                await _init(r_c, r_m, is_bot)
+                await _init(r_m)
                 _raise = partial(_raise_func, r_c, r_m)
                 if r_m.chat and r_m.chat.type not in flt.scope:
                     if isinstance(flt, types.raw.Command):
                         await _raise(f"`invalid chat type [{r_m.chat.type}]`")
                     return
+                is_bot = r_c.is_bot
                 if r_m.chat and flt.only_admins and not await _is_admin(r_m, is_bot):
                     if isinstance(flt, types.raw.Command):
                         await _raise("`chat admin required`")

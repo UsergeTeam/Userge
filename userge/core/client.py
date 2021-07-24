@@ -19,6 +19,7 @@ from types import ModuleType
 from typing import List, Awaitable, Any, Optional, Union
 
 from pyrogram import idle
+from pyrogram.types import User
 
 from userge import logging, Config, logbot
 from userge.utils import time_formatter
@@ -26,7 +27,7 @@ from userge.utils.exceptions import UsergeBotNotFound
 from userge.plugins import get_all_plugins
 from .methods import Methods
 from .ext import RawClient, pool
-from .database import get_collection, _close_db
+from .database import get_collection
 
 _LOG = logging.getLogger(__name__)
 _LOG_STR = "<<<!  #####  %s  #####  !>>>"
@@ -63,8 +64,13 @@ async def _complete_init_tasks() -> None:
 
 
 class _AbstractUserge(Methods, RawClient):
+    def __init__(self, **kwargs) -> None:
+        self._me: Optional[User] = None
+        super().__init__(**kwargs)
+
     @property
     def id(self) -> int:
+        """ returns client id """
         if self.is_bot:
             return RawClient.BOT_ID
         return RawClient.USER_ID
@@ -129,6 +135,19 @@ class _AbstractUserge(Methods, RawClient):
         await self.finalize_load()
         return len(reloaded)
 
+    async def get_me(self, cached: bool = True) -> User:
+        if not cached or self._me is None:
+            self._me = await super().get_me()
+        return self._me
+
+    async def start(self):
+        await super().start()
+        self._me = await self.get_me()
+        if self.is_bot:
+            RawClient.BOT_ID = self._me.id
+        else:
+            RawClient.USER_ID = self._me.id
+
     def __eq__(self, o: object) -> bool:
         return isinstance(o, _AbstractUserge) and self.id == o.id
 
@@ -167,8 +186,6 @@ class Userge(_AbstractUserge):
             kwargs['bot'] = UsergeBot(bot=self, **kwargs)
         kwargs['session_name'] = Config.HU_STRING_SESSION or ":memory:"
         super().__init__(**kwargs)
-        self.executor.shutdown()
-        self.executor = pool._get()  # pylint: disable=protected-access
 
     @property
     def dual_mode(self) -> bool:
@@ -215,7 +232,6 @@ class Userge(_AbstractUserge):
         _LOG.info(_LOG_STR, "Stopping Userge")
         await super().stop()
         await _set_running(False)
-        _close_db()
         pool._stop()  # pylint: disable=protected-access
 
     def begin(self, coro: Optional[Awaitable[Any]] = None) -> None:
@@ -237,7 +253,6 @@ class Userge(_AbstractUserge):
                 if self.is_initialized:
                     await self.stop()
                 else:
-                    _close_db()
                     pool._stop()  # pylint: disable=protected-access
             # pylint: disable=expression-not-assigned
             [t.cancel() for t in asyncio.all_tasks() if t is not asyncio.current_task()]
