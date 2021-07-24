@@ -68,7 +68,8 @@ async def convert_(message: Message):
     'header': "Upload files to telegram",
     'flags': {
         '-d': "upload as document",
-        '-wt': "without thumb"},
+        '-wt': "without thumb",
+        '-r': "remove file after upload"},
     'usage': "{tr}upload [flags] [file or folder path | link]",
     'examples': [
         "{tr}upload -d https://speed.hetzner.de/100MB.bin | test.bin",
@@ -149,6 +150,8 @@ async def upload(message: Message, path: Path, del_path: bool = False,
                  extra: str = '', with_thumb: bool = True):
     if 'wt' in message.flags:
         with_thumb = False
+    if 'r' in message.flags:
+        del_path = True
     if path.name.lower().endswith(
             (".mkv", ".mp4", ".webm", ".m4v")) and ('d' not in message.flags):
         await vid_upload(message, path, del_path, extra, with_thumb)
