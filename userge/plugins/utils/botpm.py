@@ -51,7 +51,7 @@ bannedFilter = filters.create(lambda _, __, ___: filters.user(_BANNED_USERS))
 
 
 async def _init():
-    global START_TEXT, BOT_PM  # noqa
+    global START_TEXT, BOT_PM  # pylint: disable=global-statement
     async for a in HAVE_BLOCKED.find():
         _HAVE_BLOCKED.append(a['user_id'])
     async for b in BANNED_USERS.find():
