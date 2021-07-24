@@ -271,6 +271,8 @@ async def play_music(msg: Message):
                 await mesg.edit("No results found.")
     elif msg.reply_to_message and msg.reply_to_message.audio:
         replied = msg.reply_to_message
+        if not hasattr(replied, '_client'):
+            replied._client = msg.client  # pylint: disable=protected-access
         QUEUE.append(replied)
         if PLAYING:
             await reply_text(msg, _get_scheduled_text(replied.audio.title, replied.link))
