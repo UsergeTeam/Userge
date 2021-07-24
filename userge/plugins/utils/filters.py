@@ -82,7 +82,7 @@ async def filters_active(message: Message) -> None:
     if out:
         await message.edit(out, del_in=0)
     else:
-        await message.err("There are no saved filters in this chat")
+        await message.edit("`There are no saved filters in this chat`", del_in=5)
 
 
 @userge.on_cmd(

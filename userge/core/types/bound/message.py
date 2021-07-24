@@ -14,16 +14,17 @@ import re
 import asyncio
 from typing import List, Dict, Tuple, Union, Optional, Sequence
 
-from pyrogram.types import InlineKeyboardMarkup, Message as RawMessage
-from pyrogram.errors.exceptions import MessageAuthorRequired, MessageTooLong
-from pyrogram.errors.exceptions.bad_request_400 import MessageNotModified, MessageIdInvalid
-from pyrogram.errors.exceptions.forbidden_403 import MessageDeleteForbidden
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message as RawMessage
+from pyrogram.errors import (
+    MessageAuthorRequired, MessageTooLong, MessageNotModified,
+    MessageIdInvalid, MessageDeleteForbidden, BotInlineDisabled
+)
 
-from userge import logging
+from userge import logging, Config
+from userge.utils import is_command
 from ... import client as _client  # pylint: disable=unused-import
 
 _CANCEL_LIST: List[int] = []
-_ERROR_MSG_DELETE_TIMEOUT = 5
 _ERROR_STRING = "**ERROR**: `{}`"
 
 _LOG = logging.getLogger(__name__)
@@ -457,7 +458,7 @@ class Message(RawMessage):
                   parse_mode: Union[str, object] = object,
                   disable_web_page_preview: Optional[bool] = None,
                   reply_markup: InlineKeyboardMarkup = None) -> Union['Message', bool]:
-        """\nYou can send error messages using this method
+        """\nYou can send error messages with command info button using this method
 
         Example:
                 message.err(text='error', del_in=3)
@@ -492,18 +493,57 @@ class Message(RawMessage):
                 An InlineKeyboardMarkup object.
 
         Returns:
-            On success, the edited
-            :obj:`Message` or True is returned.
+            On success,
+            If Client of message is Userge:
+                the sent :obj:`Message` or True is returned.
+            if Client of message is UsergeBot:
+                the edited :obj:`Message` or True is returned.
         """
-        del_in = del_in if del_in > 0 \
-            else _ERROR_MSG_DELETE_TIMEOUT
-        return await self.edit(text=_ERROR_STRING.format(text),
-                               del_in=del_in,
-                               log=log,
-                               sudo=sudo,
-                               parse_mode=parse_mode,
-                               disable_web_page_preview=disable_web_page_preview,
-                               reply_markup=reply_markup)
+        command_name = self.text.split()[0].strip()
+        cmd = command_name.lstrip(Config.CMD_TRIGGER).lstrip(Config.SUDO_TRIGGER)
+        is_cmd = is_command(cmd)
+        if not is_cmd or not bool(Config.BOT_TOKEN):
+            return await self.edit(text=_ERROR_STRING.format(text),
+                                   del_in=del_in,
+                                   log=log,
+                                   sudo=sudo,
+                                   parse_mode=parse_mode,
+                                   disable_web_page_preview=disable_web_page_preview,
+                                   reply_markup=reply_markup)
+        bot_username = (await self._client.get_me()).username
+        if self._client.is_bot:
+            btn = [InlineKeyboardButton("Info!", url=f"t.me/{bot_username}?start={cmd}")]
+            if reply_markup:
+                reply_markup.inline_keyboard.append(btn)
+            else:
+                reply_markup = InlineKeyboardMarkup([btn])
+            msg_obj = await self.edit(text=_ERROR_STRING.format(text),
+                                      del_in=del_in,
+                                      log=log,
+                                      sudo=sudo,
+                                      parse_mode=parse_mode,
+                                      disable_web_page_preview=disable_web_page_preview,
+                                      reply_markup=reply_markup)
+        else:
+            bot_username = (await self._client.bot.get_me()).username
+            try:
+                k = await self._client.get_inline_bot_results(
+                    bot_username, f"msg.err {cmd} {_ERROR_STRING.format(text)}"
+                )
+                await self.delete()
+                msg_obj = await self._client.send_inline_bot_result(
+                    self.chat.id, query_id=k.query_id,
+                    result_id=k.results[2].id, hide_via=True
+                )
+            except (IndexError, BotInlineDisabled):
+                msg_obj = await self.edit(text=_ERROR_STRING.format(text),
+                                          del_in=del_in,
+                                          log=log,
+                                          sudo=sudo,
+                                          parse_mode=parse_mode,
+                                          disable_web_page_preview=disable_web_page_preview,
+                                          reply_markup=reply_markup)
+        return msg_obj
 
     async def force_err(self,
                         text: str,
@@ -513,7 +553,7 @@ class Message(RawMessage):
                         disable_web_page_preview: Optional[bool] = None,
                         reply_markup: InlineKeyboardMarkup = None,
                         **kwargs) -> Union['Message', bool]:
-        """\nThis will first try to message.edit.
+        """\nThis will first try to message.err.
         If it raise MessageAuthorRequired or
         MessageIdInvalid error, run message.reply.
 
@@ -550,18 +590,62 @@ class Message(RawMessage):
             **kwargs (for message.reply)
 
         Returns:
-            On success, the edited or replied
-            :obj:`Message` or True is returned.
+            On success,
+            If Client of message is Userge:
+                the sent :obj:`Message` or True is returned.
+            if Client of message is UsergeBot:
+                the edited or replied :obj:`Message` or True is returned.
         """
-        del_in = del_in if del_in > 0 \
-            else _ERROR_MSG_DELETE_TIMEOUT
-        return await self.force_edit(text=_ERROR_STRING.format(text),
+        try:
+            msg_obj = await self.err(text=_ERROR_STRING.format(text),
                                      del_in=del_in,
                                      log=log,
                                      parse_mode=parse_mode,
                                      disable_web_page_preview=disable_web_page_preview,
-                                     reply_markup=reply_markup,
-                                     **kwargs)
+                                     reply_markup=reply_markup)
+        except (MessageAuthorRequired, MessageIdInvalid):
+            command_name = self.text.split()[0].strip()
+            cmd = command_name.lstrip(Config.CMD_TRIGGER).lstrip(Config.SUDO_TRIGGER)
+            is_cmd = is_command(cmd)
+            if not is_cmd or not bool(Config.BOT_TOKEN):
+                return await self.reply(text=_ERROR_STRING.format(text),
+                                        del_in=del_in,
+                                        log=log,
+                                        parse_mode=parse_mode,
+                                        disable_web_page_preview=disable_web_page_preview,
+                                        reply_markup=reply_markup)
+            bot_username = (await self._client.get_me()).username
+            if self._client.is_bot:
+                btn = [InlineKeyboardButton("Info!", url=f"t.me/{bot_username}?start={cmd}")]
+                if reply_markup:
+                    reply_markup.inline_keyboard.append(btn)
+                else:
+                    reply_markup = InlineKeyboardMarkup([btn])
+                msg_obj = await self.reply(text=_ERROR_STRING.format(text),
+                                           del_in=del_in,
+                                           log=log,
+                                           parse_mode=parse_mode,
+                                           disable_web_page_preview=disable_web_page_preview,
+                                           reply_markup=reply_markup)
+            else:
+                bot_username = (await self._client.bot.get_me()).username
+                try:
+                    k = await self._client.get_inline_bot_results(
+                        bot_username, f"msg.err {cmd} {_ERROR_STRING.format(text)}"
+                    )
+                    await self.delete()
+                    msg_obj = await self._client.send_inline_bot_result(
+                        self.chat.id, query_id=k.query_id,
+                        result_id=k.results[2].id, hide_via=True
+                    )
+                except (IndexError, BotInlineDisabled):
+                    msg_obj = await self.reply(text=_ERROR_STRING.format(text),
+                                               del_in=del_in,
+                                               log=log,
+                                               parse_mode=parse_mode,
+                                               disable_web_page_preview=disable_web_page_preview,
+                                               reply_markup=reply_markup)
+        return msg_obj
 
     async def edit_or_send_as_file(self,
                                    text: str,

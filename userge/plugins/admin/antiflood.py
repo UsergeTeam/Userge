@@ -51,11 +51,11 @@ async def set_flood(msg: Message):
     """ Set flood on/off and flood limit """
     args = msg.input_str
     if not args:
-        await msg.err("read .help setflood")
+        await msg.err("Input not found!")
         return
     if 'on' in args.lower():
         if msg.chat.id in ANTIFLOOD_DATA and ANTIFLOOD_DATA[msg.chat.id].get("data") == "on":
-            return await msg.err("Antiflood Already enabled for this chat.")
+            return await msg.edit("Antiflood Already enabled for this chat.", del_in=5)
         chat_limit = 5
         chat_mode = "Ban"
         if ANTIFLOOD_DATA.get(msg.chat.id):
@@ -80,7 +80,7 @@ async def set_flood(msg: Message):
         if msg.chat.id not in ANTIFLOOD_DATA or (
             msg.chat.id in ANTIFLOOD_DATA and ANTIFLOOD_DATA[msg.chat.id].get("data") == "off"
         ):
-            return await msg.err("Antiflood Already Disabled for this chat.")
+            return await msg.edit("Antiflood Already Disabled for this chat.", del_in=5)
         ANTIFLOOD_DATA[msg.chat.id]["data"] = "off"
         await ANTI_FLOOD.update_one(
             {'chat_id': msg.chat.id}, {"$set": {'data': 'off'}}, upsert=True)
@@ -89,7 +89,7 @@ async def set_flood(msg: Message):
         if msg.chat.id not in ANTIFLOOD_DATA or (
             msg.chat.id in ANTIFLOOD_DATA and ANTIFLOOD_DATA[msg.chat.id].get("data") == "off"
         ):
-            return await msg.err("First turn ON ANTIFLOOD then set Limit.")
+            return await msg.edit("First turn ON ANTIFLOOD then set Limit.", del_in=5)
         input_ = int(args)
         if input_ < 3:
             await msg.err("Can't set Antiflood Limit less then 3")
@@ -102,7 +102,7 @@ async def set_flood(msg: Message):
             log=__name__, del_in=5
         )
     else:
-        await msg.err("Invalid argument, read .help setflood")
+        await msg.err("Invalid argument!")
 
 
 @userge.on_cmd("setmode", about={
@@ -114,12 +114,12 @@ async def set_mode(msg: Message):
     """ Set flood mode to take action """
     mode = msg.input_str
     if not mode:
-        await msg.err("read .help setmode")
+        await msg.err("Input not found!")
         return
     if msg.chat.id not in ANTIFLOOD_DATA or (
         msg.chat.id in ANTIFLOOD_DATA and ANTIFLOOD_DATA[msg.chat.id].get("data") == "off"
     ):
-        return await msg.err("First turn ON ANTIFLOOD then set Mode.")
+        return await msg.edit("First turn ON ANTIFLOOD then set Mode.", del_in=5)
     if mode.lower() in ('ban', 'kick', 'mute'):
         ANTIFLOOD_DATA[msg.chat.id]["mode"] = mode.lower()
         await ANTI_FLOOD.update_one(
@@ -129,7 +129,7 @@ async def set_mode(msg: Message):
             log=__name__, del_in=5
         )
     else:
-        await msg.err("Invalid argument, read .help setmode")
+        await msg.err("Invalid argument!")
 
 
 @userge.on_cmd("vflood", about={
@@ -139,7 +139,7 @@ async def view_flood_settings(msg: Message):
     """ view Current Flood Settings """
     chat_data = ANTIFLOOD_DATA.get(msg.chat.id)
     if not chat_data or (chat_data and chat_data.get("data") == "off"):
-        return await msg.err("Anti-Flood Disabled in this chat.")
+        return await msg.edit("`Anti-Flood Disabled in this chat.`")
     limit = chat_data["limit"]
     mode = chat_data["mode"]
     await msg.edit(

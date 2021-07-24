@@ -59,7 +59,7 @@ async def paste_(message: Message) -> None:
                     reply_text = f"**Nekobin** [URL]({final_url})"
                     await message.edit(reply_text, disable_web_page_preview=True)
                 else:
-                    await message.err("Failed to reach Nekobin")
+                    await message.edit("`Failed to reach Nekobin`", del_in=5)
         else:
             async with ses.post(DOGBIN_URL + "documents", data=text.encode('utf-8')) as resp:
                 if resp.status == 200:
@@ -73,7 +73,7 @@ async def paste_(message: Message) -> None:
                         reply_text = f"**Dogbin** [URL]({final_url}{file_ext})"
                     await message.edit(reply_text, disable_web_page_preview=True)
                 else:
-                    await message.err("Failed to reach Dogbin")
+                    await message.edit("`Failed to reach Dogbin`", del_in=5)
 
 
 @userge.on_cmd("getpaste", about={
