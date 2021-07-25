@@ -247,7 +247,7 @@ if userge.has_bot:
                 pass
 
     @bot.on_message(
-        botPmFilter & ~bannedFilter & ~filters.edited & filters.private & filters.incoming
+        botPmFilter & ~bannedFilter & ~filters.edited & filters.private & filters.incoming, group=2
     )
     async def bot_pm_handler(_, msg: PyroMessage):
         user = msg.from_user
@@ -554,9 +554,7 @@ Type /send to confirm or /cancel to exit.
                     await conv.send_message(CONTINUE_MESSAGE.format(PREVIEW_MESSAGE))
                     continue
                 if len(temp_msgs) >= 5:
-                    return await conv.send_message(
-                        "You can only send 5 post message at once."
-                    )
+                    raise StopConversation("message limit reached!")
                 temp_msgs.append(response)
                 await response.copy(conv.chat_id)
                 await conv.send_message(CONTINUE_MESSAGE.format(NEXT_MESSAGE))
