@@ -250,6 +250,8 @@ if userge.has_bot:
         botPmFilter & ~bannedFilter & ~filters.edited & filters.private & filters.incoming, group=2
     )
     async def bot_pm_handler(_, msg: PyroMessage):
+        if not hasattr(msg, '_client'):
+            return
         user = msg.from_user
         if user.id == userge_id:
             await handle_reply(msg)
@@ -467,7 +469,7 @@ After Adding a var, you can see your media when you start your Bot.
                 )
                 _U_ID_F_M_ID[m.message_id] = user_id
         except Exception as err:
-            await CHANNEL.log(err, "INCOMING_HANDLER")
+            await CHANNEL.log(str(err), "INCOMING_HANDLER")
             await msg.reply("Your message is not received, try to send it again after some time.")
         else:
             await increment_stats(True)

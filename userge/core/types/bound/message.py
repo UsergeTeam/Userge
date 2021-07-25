@@ -164,7 +164,7 @@ class Message(RawMessage):
         prefix = str(self._kwargs.get('prefix', '-'))
         del_pre = bool(self._kwargs.get('del_pre', False))
         input_str = self.input_str
-        for i in input_str.strip().split():
+        for i in input_str.strip().split(" "):
             match = re.match(f"({prefix}[a-zA-Z]+)([0-9]*)$", i)
             if match:
                 items: Sequence[str] = match.groups()
