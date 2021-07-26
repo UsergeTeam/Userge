@@ -13,7 +13,6 @@ import re
 from typing import Optional, Dict
 
 import aiohttp
-from aiohttp import ClientResponseError, ServerTimeoutError, TooManyRedirects
 
 from userge import userge, Message, Config
 
@@ -21,7 +20,7 @@ from userge import userge, Message, Config
 class PasteService:
     def __init__(self, name: str, url: str) -> None:
         self._name = name
-        self._url = url
+        self._url = url.rstrip('/') + '/'
 
     def get_name(self) -> str:
         """ returns service name """
@@ -29,6 +28,8 @@ class PasteService:
 
     def is_supported(self, url: str) -> bool:
         """ returns True if url supports service """
+        if url.startswith((self._url, self._url.replace("https://", ""))):
+            return True
         return False
 
     async def paste(self, ses: aiohttp.ClientSession,
@@ -36,19 +37,22 @@ class PasteService:
         """ returns the success url or None if failed """
         return None
 
-    async def get_paste(self, ses: aiohttp.ClientSession, url: str) -> Optional[str]:
-        """ returns pasted text of this url or None if failed """
-        return None
+    async def get_paste(self, ses: aiohttp.ClientSession, code: str) -> Optional[str]:
+        """ returns pasted text using this code or None if failed """
+        async with ses.get(self._url + "raw/" + code) as resp:
+            if resp.status == 404:
+                async with ses.get(self._url + code + "/raw") as _resp:
+                    if _resp.status != 200:
+                        return None
+                    return await _resp.text()
+            elif resp.status != 200:
+                return None
+            return await resp.text()
 
 
 class NekoBin(PasteService):
     def __init__(self) -> None:
         super().__init__("nekobin", "https://nekobin.com/")
-
-    def is_supported(self, url: str) -> bool:
-        if url.startswith((self._url, "nekobin.com/")):
-            return True
-        return False
 
     async def paste(self, ses: aiohttp.ClientSession,
                     text: str, file_type: Optional[str]) -> Optional[str]:
@@ -62,10 +66,7 @@ class NekoBin(PasteService):
                 final_url += "." + file_type
             return final_url
 
-    async def get_paste(self, ses: aiohttp.ClientSession, url: str) -> Optional[str]:
-        code = url.split('/')[-1]
-        if not code:
-            return None
+    async def get_paste(self, ses: aiohttp.ClientSession, code: str) -> Optional[str]:
         async with ses.get(self._url + "api/documents/" + code) as resp:
             if resp.status != 200:
                 return None
@@ -76,11 +77,6 @@ class NekoBin(PasteService):
 class HasteBin(PasteService):
     def __init__(self) -> None:
         super().__init__("hastebin", "https://hastebin.com/")
-
-    def is_supported(self, url: str) -> bool:
-        if url.startswith((self._url, "hastebin.com/")):
-            return True
-        return False
 
     async def paste(self, ses: aiohttp.ClientSession,
                     text: str, file_type: Optional[str]) -> Optional[str]:
@@ -94,24 +90,10 @@ class HasteBin(PasteService):
                 final_url += "." + file_type
             return final_url
 
-    async def get_paste(self, ses: aiohttp.ClientSession, url: str) -> Optional[str]:
-        code = url.split('/')[-1]
-        if not code:
-            return None
-        async with ses.get(self._url + "raw/" + code) as resp:
-            if resp.status != 200:
-                return None
-            return await resp.text()
-
 
 class Rentry(PasteService):
     def __init__(self) -> None:
         super().__init__("rentry", "https://rentry.co/")
-
-    def is_supported(self, url: str) -> bool:
-        if url.startswith((self._url, "rentry.co/")):
-            return True
-        return False
 
     async def paste(self, ses: aiohttp.ClientSession,
                     text: str, file_type: Optional[str]) -> Optional[str]:
@@ -135,20 +117,61 @@ class Rentry(PasteService):
                 return None
             return str(resp.url)
 
-    async def get_paste(self, ses: aiohttp.ClientSession, url: str) -> Optional[str]:
-        if not url.endswith("/raw"):
-            url = url.rstrip('/') + "/raw"
-        async with ses.get(url) as resp:
+
+class Pasting(PasteService):
+    def __init__(self) -> None:
+        super().__init__("pasting", "https://pasting.ga/")
+
+    async def paste(self, ses: aiohttp.ClientSession,
+                    text: str, file_type: Optional[str]) -> Optional[str]:
+        data = {"content": text}
+        if file_type:
+            data['code'] = "true"
+        async with ses.post(self._url + "api", json=data) as resp:
             if resp.status != 200:
                 return None
-            return await resp.text()
+            code = await resp.text()
+            return self._url + code
 
 
-_SERVICES: Dict[str, PasteService] = {'-n': NekoBin(), '-h': HasteBin(), '-r': Rentry()}
+class PastyLus(PasteService):
+    def __init__(self) -> None:
+        super().__init__("pasty.lus", "https://pasty.lus.pm/")
+
+    async def paste(self, ses: aiohttp.ClientSession,
+                    text: str, file_type: Optional[str]) -> Optional[str]:
+        async with ses.post(self._url + "api/v2/pastes/", json={"content": text}) as resp:
+            if resp.status != 201:
+                return None
+            content = await resp.text()
+            code = ""
+            for i in re.finditer(r'"id":"(.+?)"', content):
+                code = i.group(1)
+                break
+            if not code:
+                return None
+            final_url = self._url + code
+            if file_type:
+                final_url += '.' + file_type
+            return final_url
+
+
+_SERVICES: Dict[str, PasteService] = {
+    '-n': NekoBin(), '-h': HasteBin(), '-r': Rentry(), '-p': Pasting(), '-pl': PastyLus()}
 _DEFAULT_SERVICE = '-n'
 
 _HEADERS = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 ('
                           'KHTML, like Gecko) Cafari/537.36'}
+
+
+def _get_code(url: str) -> Optional[str]:
+    parts = list(filter(None, url.split('/')))
+    if len(parts) < 2:
+        return None
+    code = parts.pop(-1)
+    if code.lower() == "raw":
+        code = parts.pop(-1)
+    return code.split('.')[0]
 
 
 @userge.on_cmd("paste", about={
@@ -214,24 +237,17 @@ async def get_paste_(message: Message):
 
     for service in _SERVICES.values():
         if service.is_supported(link):
-            async with aiohttp.ClientSession(headers=_HEADERS, raise_for_status=True) as ses:
-                await message.edit(f"`Getting paste content [{service.get_name().title()}] ...`")
-                try:
-                    text = await service.get_paste(ses, link)
-                except ServerTimeoutError as e_r:
-                    await message.err(f"Request timed out -> {e_r}")
-                except TooManyRedirects as e_r:
-                    await message.err("Request exceeded the configured "
-                                      f"number of maximum redirections -> {e_r}")
-                except ClientResponseError as e_r:
-                    await message.err(f"Request returned an unsuccessful status code -> {e_r}")
+            code = _get_code(link)
+            if code is None:
+                await message.err("Invalid Link !")
+                return
+            await message.edit(f"`Getting paste content [{service.get_name().title()}] ...`")
+            async with aiohttp.ClientSession(headers=_HEADERS) as ses:
+                text = await service.get_paste(ses, code)
+                if text is None:
+                    await message.edit(f"`Failed to reach {service.get_name().title()}`", del_in=5)
                 else:
-                    if text is None:
-                        await message.edit(f"`Failed to reach {service.get_name().title()}`",
-                                           del_in=5)
-                    else:
-                        await message.edit_or_send_as_file("--Fetched Content Successfully!--"
-                                                           f"\n\n**Content** :\n`{text}`")
+                    await message.edit_or_send_as_file(f"**Content** :\n`{text}`")
             return
 
     await message.err("Is that even a paste url?")
