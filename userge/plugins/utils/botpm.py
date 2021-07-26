@@ -77,7 +77,7 @@ async def _init():
     'header': "Bot Pm handlers like Livegram Bot.",
     'description': "You can use this command to enable/disable Bot Pm.\n"
                    "You can see all the settings of your bot after enabling "
-                   "bot pm and hit /start in your Bot DM."
+                   "bot pm and hit /start in your Bot DM.\n"
                    "Note: You have to us Bot mode or Dual mode if you want to enable Bot Pm.",
     'usage': "{tr}botpm"})
 async def bot_pm(msg: Message):
@@ -158,6 +158,7 @@ if userge.has_bot:
 
     @bot.on_message(filters.user(userge_id) & filters.private & filters.command("settext"))
     async def set_text(_, msg: PyroMessage):
+        global START_TEXT  # pylint: disable=global-statement
         text = msg.text.split(' ', maxsplit=1)[1] if ' ' in msg.text else ''
         replied = msg.reply_to_message
         if replied:
@@ -165,6 +166,7 @@ if userge.has_bot:
         if not text:
             await msg.reply("Text not found!")
         else:
+            START_TEXT = text
             await SAVED_SETTINGS.update_one(
                 {"_id": "BOT_START_TEXT"}, {"$set": {"data": text}}, upsert=True
             )
