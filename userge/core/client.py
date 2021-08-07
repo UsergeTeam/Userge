@@ -137,7 +137,9 @@ class _AbstractUserge(Methods, RawClient):
 
     async def get_me(self, cached: bool = True) -> User:
         if not cached or self._me is None:
-            self._me = await super().get_me()
+            self._me = super().get_me()
+            if asyncio.iscoroutine(self._me):
+                self._me = await self._me
         return self._me
 
     async def start(self):

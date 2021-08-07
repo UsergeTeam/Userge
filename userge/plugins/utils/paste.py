@@ -45,7 +45,7 @@ class PasteService:
                     if _resp.status != 200:
                         return None
                     return await _resp.text()
-            elif resp.status != 200:
+            if resp.status != 200:
                 return None
             return await resp.text()
 

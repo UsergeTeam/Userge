@@ -37,7 +37,7 @@ def run_in_thread(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
 
 
 def _stop():
-    _EXECUTOR.shutdown()
+    _EXECUTOR.shutdown(wait=False)
     # pylint: disable=protected-access
     _LOG.info(_LOG_STR, f"Stopped Pool : {_EXECUTOR._max_workers} Workers")
 
