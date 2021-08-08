@@ -113,7 +113,7 @@ if userge.has_bot:
         key_ = Config.SUDO_TRIGGER + cmd
         if cmd in commands:
             out_str = f"<code>{cmd}</code>\n\n{commands[cmd].about}"
-        if key in commands:
+        elif key in commands:
             out_str = f"<code>{key}</code>\n\n{commands[key].about}"
         elif key_ in commands:
             out_str = f"<code>{key_}</code>\n\n{commands[key_].about}"
@@ -457,8 +457,12 @@ if userge.has_bot:
                     )
                 )
             elif "msg.err" in inline_query.query:
-                if ' ' in inline_query.query:
-                    _, cmd, err_text = inline_query.query.split(' ', maxsplit=2)
+                if ' ' not in inline_query.query:
+                    return
+                tmp = inline_query.query.split(' ', maxsplit=2)
+                if len(tmp) != 3:
+                    return
+                _, cmd, err_text = tmp
                 if cmd and err_text and is_command(cmd):
                     bot_username = (await userge.bot.get_me()).username
                     button = [

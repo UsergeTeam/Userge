@@ -17,7 +17,7 @@ from pyrogram.errors.exceptions import FloodWait
 import userge
 from .tools import humanbytes, time_formatter
 
-_TASKS: Dict[str, Tuple[int, int]] = {}
+_TASKS: Dict[str, Tuple[float, float]] = {}
 
 
 async def progress(current: int,

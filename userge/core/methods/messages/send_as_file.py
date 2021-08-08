@@ -10,6 +10,7 @@
 
 __all__ = ['SendAsFile']
 
+import asyncio
 import os
 import inspect
 from typing import Union, Optional
@@ -71,11 +72,13 @@ class SendAsFile(RawClient):  # pylint: disable=missing-class-docstring
         async with aiofiles.open(filename, "w+", encoding="utf8") as out_file:
             await out_file.write(text)
         _LOG.debug(_LOG_STR, f"Uploading {filename} To Telegram")
-        msg = await self.send_document(chat_id=chat_id,
-                                       document=filename,
-                                       caption=caption[:1024],
-                                       disable_notification=True,
-                                       reply_to_message_id=reply_to_message_id)
+        msg = self.send_document(chat_id=chat_id,
+                                 document=filename,
+                                 caption=caption[:1024],
+                                 disable_notification=True,
+                                 reply_to_message_id=reply_to_message_id)
+        if asyncio.iscoroutine(msg):
+            msg = await msg
         os.remove(filename)
         module = inspect.currentframe().f_back.f_globals['__name__']
         if log:
