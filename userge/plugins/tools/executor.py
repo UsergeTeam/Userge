@@ -135,7 +135,7 @@ async def eval_(message: Message):
     silent_mode = '-s' in _flags
     if '-n' in _flags:
         context_type = _ContextType.NEW
-    elif '-p' in flags:
+    elif '-p' in _flags:
         context_type = _ContextType.PRIVATE
     else:
         context_type = _ContextType.GLOBAL
