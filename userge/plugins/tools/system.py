@@ -97,7 +97,7 @@ async def die_(message: Message) -> None:
     """ set offline timeout to die userge """
     global MAX_IDLE_TIME  # pylint: disable=global-statement
     if not Config.HEROKU_APP:
-        await message.err("`heroku app not detected !`")
+        await message.edit("`heroku app not detected !`", del_in=5)
         return
     await message.edit('`processing ...`')
     if Config.RUN_DYNO_SAVER:
@@ -128,7 +128,7 @@ async def die_(message: Message) -> None:
 async def setvar_(message: Message) -> None:
     """ set var (heroku) """
     if not Config.HEROKU_APP:
-        await message.err("`heroku app not detected !`")
+        await message.edit("`heroku app not detected !`", del_in=5)
         return
     if not message.input_str:
         await message.err("`input needed !`")
@@ -158,7 +158,7 @@ async def setvar_(message: Message) -> None:
 async def delvar_(message: Message) -> None:
     """ del var (heroku) """
     if not Config.HEROKU_APP:
-        await message.err("`heroku app not detected !`")
+        await message.edit("`heroku app not detected !`", del_in=5)
         return
     if not message.input_str:
         await message.err("`var name needed !`")
@@ -180,7 +180,7 @@ async def delvar_(message: Message) -> None:
 async def getvar_(message: Message) -> None:
     """ get var (heroku) """
     if not Config.HEROKU_APP:
-        await message.err("`heroku app not detected !`")
+        await message.edit("`heroku app not detected !`", del_in=5)
         return
     if not message.input_str:
         await message.err("`var name needed !`")

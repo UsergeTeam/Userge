@@ -19,11 +19,11 @@ from userge import userge, Message, Config
 @userge.on_cmd("webss", about={'header': "Get snapshot of a website"})
 async def webss(message: Message):
     if Config.GOOGLE_CHROME_BIN is None:
-        await message.err("need to install Google Chrome. Module Stopping")
+        await message.edit("`need to install Google Chrome. Module Stopping`", del_in=5)
         return
     link_match = match(r'\bhttps?://.*\.\S+', message.input_str)
     if not link_match:
-        await message.err("`I need a valid link to take screenshots from.`")
+        await message.err("I need a valid link to take screenshots from.")
         return
     link = link_match.group()
     await message.edit("`Processing ...`")

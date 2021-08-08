@@ -694,7 +694,7 @@ class Worker(_GDrive):
             await self._message.edit("First set parent path by `.gset`", del_in=5)
             return
         if not self._message.input_str:
-            await self._message.edit("Please give name for folder", del_in=5)
+            await self._message.err("Please give name for folder")
             return
         try:
             out = await self._create_drive_folder(self._message.input_str, self._parent_id)
@@ -961,7 +961,7 @@ async def gsetup_(message: Message):
         if message.chat.id in Config.AUTH_CHATS:
             await Worker(message).setup()
         else:
-            await message.err("try in log channel")
+            await message.edit("`try in log channel`", del_in=5)
     else:
         await message.edit(
             "`G_DRIVE_CLIENT_ID` and `G_DRIVE_CLIENT_SECRET` not found!\n"

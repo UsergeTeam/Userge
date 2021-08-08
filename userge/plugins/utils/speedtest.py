@@ -28,7 +28,7 @@ async def speedtst(message: Message):
         test.results.share()
         result = test.results.dict()
     except Exception as e:
-        await message.err(text=e)
+        await message.err(e)
         return
     path = await pool.run_in_thread(wget.download)(result['share'])
     output = f"""**--Started at {result['timestamp']}--

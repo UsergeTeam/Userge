@@ -25,14 +25,13 @@ async def who_is(message: Message):
             from_user = await message.client.get_users(user_id)
             from_chat = await message.client.get_chat(user_id)
         except Exception:  # pylint: disable=broad-except
-            await message.err(
-                "no valid user_id or message specified, do .help whois for more info")
+            await message.err("no valid user_id or message specified")
             return
     elif message.reply_to_message:
         from_user = await message.client.get_users(message.reply_to_message.from_user.id)
         from_chat = await message.client.get_chat(message.reply_to_message.from_user.id)
     else:
-        await message.err("no valid user_id or message specified, do .help whois for more info")
+        await message.err("no valid user_id or message specified")
         return
     if from_user or from_chat is not None:
         pp_c = await message.client.get_profile_photos_count(from_user.id)

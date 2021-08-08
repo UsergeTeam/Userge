@@ -147,7 +147,7 @@ async def add_rss_feed(msg: Message):
     if len(RSS_DICT) >= 10:
         return await msg.edit("`Sorry, but not allowing to add urls more than 10.`")
     if not msg.input_str:
-        return await msg.edit("Check `.help addfeed`")
+        return await msg.err("Feed url not found!")
     try:
         rss = await _parse(msg.input_str)
     except IndexError:
@@ -159,7 +159,7 @@ async def add_rss_feed(msg: Message):
 @userge.on_cmd("delfeed", about={
     'header': "Delete a existing Feed Url from Database.",
     'flags': {'-all': 'Delete All Urls.'},
-    'usage': "{tr}delfeed title"})
+    'usage': "{tr}delfeed url"})
 async def delete_rss_feed(msg: Message):
     """ Delete to a existing Feed Url """
     if msg.flags and '-all' in msg.flags:
@@ -167,7 +167,7 @@ async def delete_rss_feed(msg: Message):
         await RSS_COLLECTION.drop()
         return await msg.edit("`Deleted All feeds Successfully...`")
     if not msg.input_str:
-        return await msg.edit("check `.help delfeed`")
+        return await msg.err("Feed url not found!")
     out_str = await delete_feed(msg.input_str)
     await msg.edit(out_str, log=__name__)
 

@@ -36,7 +36,7 @@ async def down_load_media(message: Message):
     elif message.input_str:
         resource = message.input_str
     else:
-        await message.edit("Please read `.help download`", del_in=5)
+        await message.err("nothing found to download")
         return
     try:
         dl_loc, d_in = await handle_download(message, resource)
