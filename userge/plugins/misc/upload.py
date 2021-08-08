@@ -105,7 +105,8 @@ async def upload_to_tg(message: Message):
         await message.err("wrong syntax")
     else:
         await message.delete()
-        await upload_path(message, string, del_path)
+        with message.cancel_callback():
+            await upload_path(message, string, del_path)
 
 
 async def _handle_message(message: Message) -> None:
@@ -117,7 +118,8 @@ async def _handle_message(message: Message) -> None:
         await message.err(str(e_e))
     else:
         await message.delete()
-        await upload(message, Path(dl_loc), True)
+        with message.cancel_callback():
+            await upload(message, Path(dl_loc), True)
 
 
 async def upload_path(message: Message, path: Path, del_path: bool):

@@ -14,19 +14,19 @@ import asyncio
 import keyword
 import threading
 import traceback
-from concurrent.futures import Future
 from contextlib import contextmanager
 from enum import Enum
 from getpass import getuser
 from os import geteuid
-from typing import Awaitable, Any, Callable, Dict
+from typing import Awaitable, Any, Callable, Dict, Optional
+
+from pyrogram.types.messages_and_media.message import Str
 
 from userge import userge, Message, Config, pool
 from userge.utils import runcmd
 
-
 CHANNEL = userge.getCLogger()
-_EVAL_TASKS: Dict[Future, str] = {}
+_EVAL_TASKS: Dict[asyncio.Future, str] = {}
 
 
 @userge.on_cmd("exec", about={
@@ -140,40 +140,48 @@ async def eval_(message: Message):
     else:
         context_type = _ContextType.GLOBAL
 
-    async def _callback(output: str, errored: bool):
+    async def _callback(output: Optional[str], errored: bool):
         final = ""
         if not silent_mode:
             final += f"**>** ```{cmd}```\n\n"
+        if isinstance(output, str):
+            output = output.strip()
+            if output == '':
+                output = None
         if output is not None:
             final += f"**>>** ```{output}```"
         if errored and message.chat.type in ("group", "supergroup", "channel"):
             msg_id = await CHANNEL.log(final)
-            await message.edit(f"**Logs**: {CHANNEL.get_link(msg_id)}")
+            await msg.edit(f"**Logs**: {CHANNEL.get_link(msg_id)}")
         elif final:
-            await message.edit_or_send_as_file(text=final,
-                                               parse_mode='md',
-                                               filename="eval.txt",
-                                               caption=cmd)
+            await msg.edit_or_send_as_file(text=final,
+                                           parse_mode='md',
+                                           filename="eval.txt",
+                                           caption=cmd)
         else:
-            await message.delete()
+            await msg.delete()
 
-    await message.edit("`Executing eval ...`", parse_mode='md')
+    msg = message
+    replied = message.reply_to_message
+    if (replied and isinstance(replied.text, Str)
+            and str(replied.text.html).startswith("<b>></b> <pre>")):
+        msg = replied
+
+    await msg.edit("`Executing eval ...`", parse_mode='md')
 
     l_d = {}
     exec(_wrap_code(cmd), _context(  # nosec pylint: disable=W0122
         context_type, userge=userge, message=message, replied=message.reply_to_message), l_d)
-    future = Future()
+    future = asyncio.get_event_loop().create_future()
     pool.submit_thread(_run_coro, future, l_d['__aexec'](), _callback)
     hint = cmd.split('\n')[0]
     _EVAL_TASKS[future] = hint[:20] + "..." if len(hint) > 20 else hint
 
-    while not future.done():
-        await asyncio.sleep(5)
-        if message.process_is_canceled:
-            future.cancel()
-        if future.cancelled():
-            await message.edit("`process canceled!`")
-            return
+    with msg.cancel_callback(future.cancel):
+        try:
+            await future
+        except asyncio.CancelledError:
+            await msg.edit("`process canceled!`")
 
 
 @userge.on_cmd("term", about={
@@ -200,18 +208,22 @@ async def term_(message: Message):
         uid = 1
     output = f"{cur_user}:~# {cmd}\n" if uid == 0 else f"{cur_user}:~$ {cmd}\n"
 
-    count = 0
-    while not t_obj.finished:
-        count += 1
-        if message.process_is_canceled:
-            t_obj.cancel()
+    async def _worker():
+        while not t_obj.finished:
+            await message.edit(f"<pre>{output}{await t_obj.read_line()}</pre>", parse_mode='html')
+            await asyncio.sleep(Config.EDIT_SLEEP_TIMEOUT)
+
+    def _on_cancel():
+        t_obj.cancel()
+        task.cancel()
+
+    task = asyncio.create_task(_worker())
+    with message.cancel_callback(_on_cancel):
+        try:
+            await task
+        except asyncio.CancelledError:
             await message.reply("`process canceled!`")
             return
-        await asyncio.sleep(0.5)
-        if count >= Config.EDIT_SLEEP_TIMEOUT * 2:
-            count = 0
-            out_data = f"<pre>{output}{await t_obj.read_line()}</pre>"
-            await message.try_to_edit(out_data, parse_mode='html')
 
     out_data = f"<pre>{output}{await t_obj.get_output()}</pre>"
     await message.edit_or_send_as_file(
@@ -294,42 +306,37 @@ def _context(context_type: _ContextType, **kwargs) -> dict:
     return _data
 
 
-def _run_coro(future: Future, coro: Awaitable[Any],
+def _run_coro(future: asyncio.Future, coro: Awaitable[Any],
               callback: Callable[[str, bool], Awaitable[Any]]):
     loop = asyncio.new_event_loop()
-
-    async def _runner():
-        task = asyncio.create_task(coro)
-        while True:
-            try:
-                return await asyncio.wait_for(asyncio.shield(task), 5)
-            except asyncio.TimeoutError:
-                pass
-            finally:
-                if future.cancelled():
-                    if not task.done():
-                        task.cancel()
-                    raise asyncio.CancelledError
-
+    task = loop.create_task(coro)
+    userge.loop.call_soon_threadsafe(
+        future.add_done_callback,
+        lambda _: loop.call_soon_threadsafe(task.cancel)
+        if loop.is_running() and future.cancelled() else None)
     try:
         ret, exc = None, None
         with redirect() as out:
             try:
-                ret = loop.run_until_complete(_runner())
+                ret = loop.run_until_complete(task)
             except asyncio.CancelledError:
                 return
             except Exception:  # pylint: disable=broad-except
                 exc = traceback.format_exc().strip()
-            output = exc or out.getvalue().strip() or ret
+            output = exc or out.getvalue()
+            if ret is not None:
+                output += str(ret)
         loop.run_until_complete(callback(output, exc is not None))
     finally:
         loop.run_until_complete(loop.shutdown_asyncgens())
         loop.close()
-        future.set_result(None)
+        userge.loop.call_soon_threadsafe(
+            lambda: future.set_result(None) if not future.done() else None)
 
 
 class Term:
     """ live update term class """
+
     def __init__(self, process: asyncio.subprocess.Process) -> None:
         self._process = process
         self._output = b''
@@ -339,6 +346,7 @@ class Term:
 
     def cancel(self) -> None:
         self._process.kill()
+        self._finished = True
 
     @property
     def finished(self) -> bool:

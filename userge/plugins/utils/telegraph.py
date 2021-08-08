@@ -8,6 +8,7 @@
 
 import os
 
+import aiofiles
 from PIL import Image
 from telegraph import upload_file
 
@@ -52,8 +53,8 @@ async def telegraph_(message: Message):
                 progress=progress,
                 progress_args=(message, "trying to download")
             )
-            with open(dl_loc, "r") as jv:
-                text = jv.read()
+            async with aiofiles.open(dl_loc, "r") as jv:
+                text = await jv.read()
             header = message.input_str
             if not header:
                 header = "Pasted content by @theuserge"
