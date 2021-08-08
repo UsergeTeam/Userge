@@ -155,7 +155,7 @@ class _AbstractUserge(Methods, RawClient):
     def __eq__(self, o: object) -> bool:
         return isinstance(o, _AbstractUserge) and self.id == o.id
 
-    def __hash__(self) -> int:
+    def __hash__(self) -> int:  # pylint: disable=W0235
         return super().__hash__()
 
 
@@ -332,7 +332,8 @@ def _un_wrap(source):
         if name.startswith("_"):
             continue
         wrapped = getattr(getattr(source, name), '__wrapped__', None)
-        if wrapped and (inspect.iscoroutinefunction(wrapped) or inspect.isasyncgenfunction(wrapped)):
+        if wrapped and (inspect.iscoroutinefunction(wrapped)
+                        or inspect.isasyncgenfunction(wrapped)):
             _un_wrapper(source, name, wrapped)
 
 
