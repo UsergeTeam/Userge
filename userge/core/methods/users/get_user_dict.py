@@ -22,9 +22,7 @@ class GetUserDict(RawClient):  # pylint: disable=missing-class-docstring
         `id`(chat id), `fname`(first name), `lname`(last name),
         `flname`(full name), `uname`(username) and `mention`.
         """
-        user_obj = self.get_users(user_id)
-        if asyncio.iscoroutine(user_obj):
-            user_obj = await user_obj
+        user_obj = await self.get_users(user_id)
         fname = (user_obj.first_name or '').strip()
         lname = (user_obj.last_name or '').strip()
         username = (user_obj.username or '').strip()

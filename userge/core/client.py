@@ -10,7 +10,10 @@
 
 __all__ = ['Userge']
 
+import functools
+import inspect
 import os
+import threading
 import time
 import signal
 import asyncio
@@ -18,8 +21,9 @@ import importlib
 from types import ModuleType
 from typing import List, Awaitable, Any, Optional, Union
 
-from pyrogram import idle
+from pyrogram import idle, types
 from pyrogram.types import User
+from pyrogram.methods import Methods as RawMethods
 
 from userge import logging, Config, logbot
 from userge.utils import time_formatter
@@ -137,9 +141,7 @@ class _AbstractUserge(Methods, RawClient):
 
     async def get_me(self, cached: bool = True) -> User:
         if not cached or self._me is None:
-            self._me = super().get_me()
-            if asyncio.iscoroutine(self._me):
-                self._me = await self._me
+            self._me = await super().get_me()
         return self._me
 
     async def start(self):
@@ -306,3 +308,36 @@ class Userge(_AbstractUserge):
             _close_loop()
             if _SEND_SIGNAL:
                 os.kill(os.getpid(), signal.SIGUSR1)
+
+
+def _un_wrapper(obj, name, function):
+    loop = asyncio.get_event_loop()
+
+    @functools.wraps(function)
+    async def _wrapper(*args, **kwargs):
+        coroutine = function(*args, **kwargs)
+        if threading.current_thread() is threading.main_thread():
+            return await coroutine
+        if inspect.iscoroutine(coroutine):
+            return asyncio.run_coroutine_threadsafe(coroutine, loop).result()
+        if inspect.isasyncgen(coroutine):
+            return asyncio.run_coroutine_threadsafe(
+                types.List([_ async for _ in coroutine]), loop).result()
+
+    setattr(obj, name, _wrapper)
+
+
+def _un_wrap(source):
+    for name in dir(source):
+        if name.startswith("_"):
+            continue
+        wrapped = getattr(getattr(source, name), '__wrapped__', None)
+        if wrapped and (inspect.iscoroutinefunction(wrapped) or inspect.isasyncgenfunction(wrapped)):
+            _un_wrapper(source, name, wrapped)
+
+
+_un_wrap(RawMethods)
+for class_name in dir(types):
+    cls = getattr(types, class_name)
+    if inspect.isclass(cls):
+        _un_wrap(cls)

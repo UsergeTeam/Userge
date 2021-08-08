@@ -87,15 +87,13 @@ class EditMessageText(RawClient):  # pylint: disable=missing-class-docstring
         """
         if text and chat_id not in Config.AUTH_CHATS:
             text = secure_text(str(text))
-        msg = super().edit_message_text(chat_id=chat_id,
-                                        message_id=message_id,
-                                        text=text,
-                                        parse_mode=parse_mode,
-                                        entities=entities,
-                                        disable_web_page_preview=disable_web_page_preview,
-                                        reply_markup=reply_markup)
-        if asyncio.iscoroutine(msg):
-            msg = await msg
+        msg = await super().edit_message_text(chat_id=chat_id,
+                                              message_id=message_id,
+                                              text=text,
+                                              parse_mode=parse_mode,
+                                              entities=entities,
+                                              disable_web_page_preview=disable_web_page_preview,
+                                              reply_markup=reply_markup)
         module = inspect.currentframe().f_back.f_globals['__name__']
         if log:
             await self._channel.fwd_msg(msg, module if isinstance(log, bool) else log)

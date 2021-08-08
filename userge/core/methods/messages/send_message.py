@@ -99,17 +99,15 @@ class SendMessage(RawClient):  # pylint: disable=missing-class-docstring
         """
         if text and chat_id not in Config.AUTH_CHATS:
             text = secure_text(str(text))
-        msg = super().send_message(chat_id=chat_id,
-                                   text=text,
-                                   parse_mode=parse_mode,
-                                   entities=entities,
-                                   disable_web_page_preview=disable_web_page_preview,
-                                   disable_notification=disable_notification,
-                                   reply_to_message_id=reply_to_message_id,
-                                   schedule_date=schedule_date,
-                                   reply_markup=reply_markup)
-        if asyncio.iscoroutine(msg):
-            msg = await msg
+        msg = await super().send_message(chat_id=chat_id,
+                                         text=text,
+                                         parse_mode=parse_mode,
+                                         entities=entities,
+                                         disable_web_page_preview=disable_web_page_preview,
+                                         disable_notification=disable_notification,
+                                         reply_to_message_id=reply_to_message_id,
+                                         schedule_date=schedule_date,
+                                         reply_markup=reply_markup)
         module = inspect.currentframe().f_back.f_globals['__name__']
         if log:
             await self._channel.fwd_msg(msg, module if isinstance(log, bool) else log)

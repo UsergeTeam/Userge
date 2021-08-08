@@ -104,7 +104,7 @@ async def eval_(message: Message):
         return
     if '-c' in flags:
         t_id = int(flags.get('-c', -1))
-        if 0 > t_id or t_id >= size:
+        if t_id < 0 or t_id >= size:
             await message.edit(f"Invalid eval task id [{t_id}] !", del_in=5)
             return
         list(_EVAL_TASKS)[t_id].cancel()
@@ -163,7 +163,7 @@ async def eval_(message: Message):
     exec(_wrap_code(cmd), _context(  # nosec pylint: disable=W0122
         context_type, userge=userge, message=message, replied=message.reply_to_message), l_d)
     future = Future()
-    pool.submit_thread(_run_coro, asyncio.get_event_loop(), future, l_d['__aexec'](), _callback)
+    pool.submit_thread(_run_coro, future, l_d['__aexec'](), _callback)
     hint = cmd.split('\n')[0]
     _EVAL_TASKS[future] = hint[:20] + "..." if len(hint) > 20 else hint
 
@@ -294,10 +294,9 @@ def _context(context_type: _ContextType, **kwargs) -> dict:
     return _data
 
 
-def _run_coro(loop: asyncio.AbstractEventLoop, future: Future, coro: Awaitable[Any],
+def _run_coro(future: Future, coro: Awaitable[Any],
               callback: Callable[[str, bool], Awaitable[Any]]):
-    new_loop = asyncio.new_event_loop()
-    asyncio.get_event_loop = lambda: loop
+    loop = asyncio.new_event_loop()
 
     async def _runner():
         task = asyncio.create_task(coro)
@@ -316,16 +315,16 @@ def _run_coro(loop: asyncio.AbstractEventLoop, future: Future, coro: Awaitable[A
         ret, exc = None, None
         with redirect() as out:
             try:
-                ret = new_loop.run_until_complete(_runner())
+                ret = loop.run_until_complete(_runner())
             except asyncio.CancelledError:
                 return
             except Exception:  # pylint: disable=broad-except
                 exc = traceback.format_exc().strip()
             output = exc or out.getvalue().strip() or ret
-        new_loop.run_until_complete(callback(output, exc is not None))
+        loop.run_until_complete(callback(output, exc is not None))
     finally:
-        new_loop.run_until_complete(new_loop.shutdown_asyncgens())
-        new_loop.close()
+        loop.run_until_complete(loop.shutdown_asyncgens())
+        loop.close()
         future.set_result(None)
 
 
