@@ -181,12 +181,14 @@ class PackLib(_BaseLib):
         chunked_file_names = []
         temp_file_names = []
         temp_size = 0
-        min_chunk_size = 1024 * 1024 * 10
+        min_chunk_size = 1048576 * 200
+        max_chunk_size = 1048576 * 1024
         for f_n, f_s in self.get_info():
             self._total += 1
             temp_size += f_s
             temp_file_names.append(f_n)
-            if temp_size >= min_chunk_size:
+            if temp_size >= max_chunk_size or (temp_size >= min_chunk_size
+                                               and len(temp_file_names) >= 10):
                 temp_size = 0
                 chunked_file_names.append(temp_file_names)
                 temp_file_names = []
@@ -502,7 +504,8 @@ async def split_(message: Message) -> None:
         try:
             await task
         except asyncio.CancelledError:
-            pass
+            await message.edit("`process canceled!`")
+            return
 
     if s_obj.output:
         await message.err(s_obj.output, show_help=False)
@@ -569,7 +572,8 @@ async def combine_(message: Message) -> None:
         try:
             await task
         except asyncio.CancelledError:
-            pass
+            await message.edit("`process canceled!`")
+            return
 
     if c_obj.output:
         await message.err(c_obj.output, show_help=False)
@@ -635,7 +639,8 @@ async def _pack_helper(message: Message, tar: bool = False) -> None:
         try:
             await task
         except asyncio.CancelledError:
-            pass
+            await message.edit("`process canceled!`")
+            return
 
     if p_obj.output:
         await message.err(p_obj.output, show_help=False)
@@ -693,7 +698,8 @@ async def unpack_(message: Message) -> None:
         try:
             await task
         except asyncio.CancelledError:
-            pass
+            await message.edit("`process canceled!`")
+            return
 
     if p_obj.output:
         await message.err(p_obj.output, show_help=False)
