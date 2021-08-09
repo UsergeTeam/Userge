@@ -192,6 +192,7 @@ class Message(RawMessage):
             for callback in callbacks:
                 callback()
                 i += 1
+        _CANCEL_CALLBACKS.clear()
         return i
 
     @contextmanager

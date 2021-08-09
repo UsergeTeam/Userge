@@ -170,8 +170,12 @@ async def eval_(message: Message):
     await msg.edit("`Executing eval ...`", parse_mode='md')
 
     l_d = {}
-    exec(_wrap_code(cmd), _context(  # nosec pylint: disable=W0122
-        context_type, userge=userge, message=message, replied=message.reply_to_message), l_d)
+    try:
+        exec(_wrap_code(cmd), _context(  # nosec pylint: disable=W0122
+            context_type, userge=userge, message=message, replied=message.reply_to_message), l_d)
+    except Exception:  # pylint: disable=broad-except
+        await _callback(traceback.format_exc(), True)
+        return
     future = asyncio.get_event_loop().create_future()
     pool.submit_thread(_run_coro, future, l_d['__aexec'](), _callback)
     hint = cmd.split('\n')[0]
