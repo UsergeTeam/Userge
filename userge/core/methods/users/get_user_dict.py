@@ -10,7 +10,6 @@
 
 __all__ = ['GetUserDict']
 
-import asyncio
 from typing import Dict, Union
 
 from ...ext import RawClient

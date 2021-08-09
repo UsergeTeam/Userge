@@ -186,6 +186,8 @@ async def eval_(message: Message):
             await future
         except asyncio.CancelledError:
             await msg.edit("`process canceled!`")
+        finally:
+            _EVAL_TASKS.pop(future, None)
 
 
 @userge.on_cmd("term", about={

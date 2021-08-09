@@ -12,9 +12,8 @@ import aiofiles
 from PIL import Image
 from telegraph import upload_file
 
-from userge.utils import post_to_telegraph
 from userge import userge, Message, Config, pool
-from userge.utils import progress
+from userge.utils import post_to_telegraph, progress
 
 _T_LIMIT = 5242880
 

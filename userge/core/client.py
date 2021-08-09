@@ -10,28 +10,27 @@
 
 __all__ = ['Userge']
 
+import asyncio
 import functools
+import importlib
 import inspect
 import os
+import signal
 import threading
 import time
-import signal
-import asyncio
-import importlib
 from types import ModuleType
 from typing import List, Awaitable, Any, Optional, Union
 
 from pyrogram import idle, types
-from pyrogram.types import User
 from pyrogram.methods import Methods as RawMethods
 
 from userge import logging, Config, logbot
+from userge.plugins import get_all_plugins
 from userge.utils import time_formatter
 from userge.utils.exceptions import UsergeBotNotFound
-from userge.plugins import get_all_plugins
-from .methods import Methods
-from .ext import RawClient, pool
 from .database import get_collection
+from .ext import RawClient, pool
+from .methods import Methods
 
 _LOG = logging.getLogger(__name__)
 _LOG_STR = "<<<!  #####  %s  #####  !>>>"
@@ -69,7 +68,7 @@ async def _complete_init_tasks() -> None:
 
 class _AbstractUserge(Methods, RawClient):
     def __init__(self, **kwargs) -> None:
-        self._me: Optional[User] = None
+        self._me: Optional[types.User] = None
         super().__init__(**kwargs)
 
     @property
@@ -139,7 +138,7 @@ class _AbstractUserge(Methods, RawClient):
         await self.finalize_load()
         return len(reloaded)
 
-    async def get_me(self, cached: bool = True) -> User:
+    async def get_me(self, cached: bool = True) -> types.User:
         if not cached or self._me is None:
             self._me = await super().get_me()
         return self._me
