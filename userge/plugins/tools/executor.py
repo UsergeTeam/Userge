@@ -215,6 +215,7 @@ async def term_(message: Message):
     output = f"{cur_user}:~# {cmd}\n" if uid == 0 else f"{cur_user}:~$ {cmd}\n"
 
     async def _worker():
+        await t_obj.wait()
         while not t_obj.finished:
             await message.edit(f"<pre>{output}{await t_obj.read_line()}</pre>", parse_mode='html')
             await asyncio.sleep(Config.EDIT_SLEEP_TIMEOUT)
@@ -348,15 +349,21 @@ class Term:
         self._output = b''
         self._output_line = b''
         self._lock = asyncio.Lock()
+        self._event = asyncio.Event()
+        self._loop = asyncio.get_event_loop()
         self._finished = False
 
     def cancel(self) -> None:
         self._process.kill()
+        self._event.set()
         self._finished = True
 
     @property
     def finished(self) -> bool:
         return self._finished
+
+    async def wait(self) -> None:
+        await self._event.wait()
 
     async def read_line(self) -> str:
         async with self._lock:
@@ -370,6 +377,8 @@ class Term:
         async with self._lock:
             self._output_line = line
             self._output += line
+        if not self._event.is_set():
+            self._loop.call_later(1, self._event.set)
 
     async def _read_stdout(self) -> None:
         while True:
@@ -388,6 +397,7 @@ class Term:
     async def worker(self) -> None:
         await asyncio.wait([self._read_stdout(), self._read_stderr()])
         await self._process.wait()
+        self._event.set()
         self._finished = True
 
     @classmethod
