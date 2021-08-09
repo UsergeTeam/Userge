@@ -125,7 +125,7 @@ async def eval_(message: Message):
                 cmd = cmd[len(f):].strip()
                 if not cmd:
                     break
-        if not _found:
+        if not _found or not cmd:
             break
 
     if not cmd:

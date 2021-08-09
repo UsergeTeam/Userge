@@ -316,18 +316,12 @@ def _un_wrapper(obj, name, function):
     @functools.wraps(function)
     def _wrapper(*args, **kwargs):
         coroutine = function(*args, **kwargs)
-        if threading.current_thread() is threading.main_thread():
-            return coroutine
-        if inspect.iscoroutine(coroutine):
+        if (threading.current_thread() is not threading.main_thread()
+                and inspect.iscoroutine(coroutine)):
             async def _():
                 return asyncio.run_coroutine_threadsafe(coroutine, loop).result()
             return _()
-        if inspect.isasyncgen(coroutine):
-            async def _():
-                for _ in asyncio.run_coroutine_threadsafe(
-                        types.List([_ async for _ in coroutine]), loop).result():
-                    yield _
-            return _()
+        return coroutine
 
     setattr(obj, name, _wrapper)
 
