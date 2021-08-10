@@ -163,7 +163,7 @@ async def eval_(message: Message):
 
     msg = message
     replied = message.reply_to_message
-    if (replied and isinstance(replied.text, Str)
+    if (replied and replied.from_user.is_self and isinstance(replied.text, Str)
             and str(replied.text.html).startswith("<b>></b> <pre>")):
         msg = replied
 
