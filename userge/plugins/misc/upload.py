@@ -87,7 +87,7 @@ async def upload_to_tg(message: Message):
         try:
             path_, _ = await url_download(message, path_)
         except ProcessCanceled:
-            await message.edit("`Process Canceled!`", del_in=5)
+            await message.canceled()
             return
         except Exception as e_e:  # pylint: disable=broad-except
             await message.err(str(e_e))
@@ -113,7 +113,7 @@ async def _handle_message(message: Message) -> None:
     try:
         dl_loc, _ = await tg_download(message, message.reply_to_message)
     except ProcessCanceled:
-        await message.edit("`Process Canceled!`", del_in=5)
+        await message.canceled()
     except Exception as e_e:  # pylint: disable=broad-except
         await message.err(str(e_e))
     else:
@@ -374,7 +374,7 @@ async def finalize(message: Message, msg: Message, start_t):
     await CHANNEL.fwd_msg(msg)
     await message.client.send_chat_action(message.chat.id, "cancel")
     if message.process_is_canceled:
-        await message.edit("`Process Canceled!`", del_in=5)
+        await message.canceled()
     else:
         end_t = datetime.now()
         m_s = (end_t - start_t).seconds

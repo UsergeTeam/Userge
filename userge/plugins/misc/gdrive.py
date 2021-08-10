@@ -737,7 +737,7 @@ class Worker(_GDrive):
             try:
                 dl_loc, _ = await tg_download(self._message, replied)
             except ProcessCanceled:
-                await self._message.edit("`Process Canceled!`", del_in=5)
+                await self._message.canceled()
                 return
             except Exception as e_e:
                 await self._message.err(str(e_e))
@@ -746,7 +746,7 @@ class Worker(_GDrive):
             try:
                 dl_loc, _ = await url_download(self._message, self._message.input_str)
             except ProcessCanceled:
-                await self._message.edit("`Process Canceled!`", del_in=5)
+                await self._message.canceled()
                 return
             except Exception as e_e:
                 await self._message.err(str(e_e))

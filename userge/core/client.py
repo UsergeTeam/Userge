@@ -276,7 +276,10 @@ class Userge(_AbstractUserge):
                 sig, lambda _sig=sig: self.loop.create_task(_shutdown(_sig)))
 
         def _close_loop() -> None:
-            self.loop.run_until_complete(_waiter())
+            try:
+                self.loop.run_until_complete(_waiter())
+            except RuntimeError:
+                pass
             self.loop.close()
             _LOG.info(_LOG_STR, "Loop Closed !")
 
@@ -318,21 +321,7 @@ def _un_wrapper(obj, name, function):
         if (threading.current_thread() is not threading.main_thread()
                 and inspect.iscoroutine(coroutine)):
             async def _():
-                fut = asyncio.run_coroutine_threadsafe(coroutine, loop)
-                _loop = asyncio.get_running_loop()
-                _fut = _loop.create_future()
-
-                def _on_done(_):
-                    try:
-                        res = fut.result()
-                    except Exception as e:  # pylint: disable=broad-except
-                        _loop.call_soon_threadsafe(
-                            lambda _e=e: None if _fut.done() else _fut.set_exception(_e))
-                    else:
-                        _loop.call_soon_threadsafe(
-                            lambda _res=res: None if _fut.done() else _fut.set_result(_res))
-                fut.add_done_callback(_on_done)
-                return await _fut
+                return await asyncio.wrap_future(asyncio.run_coroutine_threadsafe(coroutine, loop))
             return _()
         return coroutine
 

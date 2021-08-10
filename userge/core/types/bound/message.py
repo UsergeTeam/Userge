@@ -219,6 +219,19 @@ class Message(RawMessage):
             except (KeyError, ValueError):
                 pass
 
+    async def canceled(self, reply=False) -> None:
+        """\nedit or reply that process canceled
+
+        Parameters:
+            reply (``bool``):
+                reply msg if True, else edit
+        """
+        if reply:
+            func = self.reply
+        else:
+            func = self.edit
+        await func("`Process Canceled!`", del_in=5)
+
     async def send_as_file(self,
                            text: str,
                            filename: str = "output.txt",

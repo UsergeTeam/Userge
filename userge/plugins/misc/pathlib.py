@@ -120,7 +120,7 @@ class PackLib(_BaseLib):
                         p_f.add(file_, relpath(file_, root))
                     self._current += 1
             except ProcessCanceled:
-                self._output = "`process canceled!`"
+                self._output = "`Process Canceled!`"
             except Exception as z_e:
                 _LOG.exception(z_e)
                 self._output = str(z_e)
@@ -138,7 +138,7 @@ class PackLib(_BaseLib):
             for file_name in file_names:
                 if self._is_canceled:
                     if not self._output:
-                        self._output = "`process canceled!`"
+                        self._output = "`Process Canceled!`"
                     if not self._is_finished:
                         self._is_finished = True
                     break
@@ -284,7 +284,7 @@ class SCLib(_BaseLib):
                             s_f.write(chunk)
                             self._cmp_size += len(chunk)
         except ProcessCanceled:
-            self._output = "`process canceled!`"
+            self._output = "`Process Canceled!`"
         except Exception as s_e:
             _LOG.exception(s_e)
             self._output = str(s_e)
@@ -308,7 +308,7 @@ class SCLib(_BaseLib):
                             self._cmp_size += len(chunk)
                     self._current += 1
         except ProcessCanceled:
-            self._output = "`process canceled!`"
+            self._output = "`Process Canceled!`"
         except Exception as c_e:
             _LOG.exception(c_e)
             self._output = str(c_e)
@@ -504,7 +504,7 @@ async def split_(message: Message) -> None:
         try:
             await task
         except asyncio.CancelledError:
-            await message.edit("`process canceled!`")
+            await message.canceled()
             return
 
     if s_obj.output:
@@ -572,7 +572,7 @@ async def combine_(message: Message) -> None:
         try:
             await task
         except asyncio.CancelledError:
-            await message.edit("`process canceled!`")
+            await message.canceled()
             return
 
     if c_obj.output:
@@ -639,7 +639,7 @@ async def _pack_helper(message: Message, tar: bool = False) -> None:
         try:
             await task
         except asyncio.CancelledError:
-            await message.edit("`process canceled!`")
+            await message.canceled()
             return
 
     if p_obj.output:
@@ -698,7 +698,7 @@ async def unpack_(message: Message) -> None:
         try:
             await task
         except asyncio.CancelledError:
-            await message.edit("`process canceled!`")
+            await message.canceled()
             return
 
     if p_obj.output:

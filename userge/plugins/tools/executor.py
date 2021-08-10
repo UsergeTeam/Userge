@@ -18,7 +18,7 @@ from contextlib import contextmanager
 from enum import Enum
 from getpass import getuser
 from os import geteuid
-from typing import Awaitable, Any, Callable, Dict, Optional
+from typing import Awaitable, Any, Callable, Dict, Optional, Tuple, Iterable
 
 from pyrogram.types.messages_and_media.message import Str
 
@@ -26,7 +26,6 @@ from userge import userge, Message, Config, pool
 from userge.utils import runcmd
 
 CHANNEL = userge.getCLogger()
-_EVAL_TASKS: Dict[asyncio.Future, str] = {}
 
 
 @userge.on_cmd("exec", about={
@@ -56,6 +55,10 @@ __Command:__\n`{cmd}`\n__PID:__\n`{pid}`\n__RETURN:__\n`{ret}`\n\n\
                                        parse_mode='md',
                                        filename="exec.txt",
                                        caption=cmd)
+
+
+_KEY = '_OLD'
+_EVAL_TASKS: Dict[asyncio.Future, str] = {}
 
 
 @userge.on_cmd("eval", about={
@@ -169,23 +172,25 @@ async def eval_(message: Message):
 
     await msg.edit("`Executing eval ...`", parse_mode='md')
 
+    _g, _l = _context(
+        context_type, userge=userge, message=message, replied=message.reply_to_message)
     l_d = {}
     try:
-        exec(_wrap_code(cmd), _context(  # nosec pylint: disable=W0122
-            context_type, userge=userge, message=message, replied=message.reply_to_message), l_d)
+        exec(_wrap_code(cmd, _l.keys()), _g, l_d)  # nosec pylint: disable=W0122
     except Exception:  # pylint: disable=broad-except
+        _g[_KEY] = _l
         await _callback(traceback.format_exc(), True)
         return
     future = asyncio.get_event_loop().create_future()
-    pool.submit_thread(_run_coro, future, l_d['__aexec'](), _callback)
+    pool.submit_thread(_run_coro, future, l_d['__aexec'](*_l.values()), _callback)
     hint = cmd.split('\n')[0]
-    _EVAL_TASKS[future] = hint[:20] + "..." if len(hint) > 20 else hint
+    _EVAL_TASKS[future] = hint[:25] + "..." if len(hint) > 25 else hint
 
     with msg.cancel_callback(future.cancel):
         try:
             await future
         except asyncio.CancelledError:
-            await msg.edit("`process canceled!`")
+            await msg.canceled()
         finally:
             _EVAL_TASKS.pop(future, None)
 
@@ -229,7 +234,7 @@ async def term_(message: Message):
         try:
             await task
         except asyncio.CancelledError:
-            await message.reply("`process canceled!`")
+            await message.canceled(reply=True)
             return
 
     out_data = f"<pre>{output}{await t_obj.get_output()}</pre>"
@@ -246,6 +251,68 @@ async def init_func(message: Message):
         await message.edit("`That's a dangerous operation! Not Permitted!`")
         return None
     return cmd
+
+
+class _ContextType(Enum):
+    GLOBAL = 0
+    PRIVATE = 1
+    NEW = 2
+
+
+def _context(context_type: _ContextType, **kwargs) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    if context_type == _ContextType.NEW:
+        try:
+            del globals()[_KEY]
+        except KeyError:
+            pass
+    if _KEY not in globals():
+        globals()[_KEY] = globals().copy()
+    _g = globals()[_KEY]
+    if context_type == _ContextType.PRIVATE:
+        _g = _g.copy()
+    _l = _g.pop(_KEY, {})
+    _l.update(kwargs)
+    return _g, _l
+
+
+def _wrap_code(code: str, args: Iterable[str]) -> str:
+    head = "async def __aexec(" + ', '.join(args) + "):\n try:\n  "
+    tail = "\n finally: globals()['" + _KEY + "'] = locals()"
+    if '\n' in code:
+        code = code.replace('\n', '\n  ')
+    elif (any(True for k_ in keyword.kwlist if k_ not in (
+            'True', 'False', 'None', 'lambda', 'await') and code.startswith(f"{k_} "))
+          or ('=' in code and '==' not in code)):
+        code = f"\n  {code}"
+    else:
+        code = f"\n  return {code}"
+    return head + code + tail
+
+
+def _run_coro(future: asyncio.Future, coro: Awaitable[Any],
+              callback: Callable[[str, bool], Awaitable[Any]]) -> None:
+    loop = asyncio.new_event_loop()
+    task = loop.create_task(coro)
+    userge.loop.call_soon_threadsafe(future.add_done_callback,
+                                     lambda _: (loop.is_running() and future.cancelled()
+                                                and loop.call_soon_threadsafe(task.cancel)))
+    try:
+        ret, exc = None, None
+        with redirect() as out:
+            try:
+                ret = loop.run_until_complete(task)
+            except asyncio.CancelledError:
+                return
+            except Exception:  # pylint: disable=broad-except
+                exc = traceback.format_exc().strip()
+            output = exc or out.getvalue()
+            if ret is not None:
+                output += str(ret)
+        loop.run_until_complete(callback(output, exc is not None))
+    finally:
+        loop.run_until_complete(loop.shutdown_asyncgens())
+        loop.close()
+        userge.loop.call_soon_threadsafe(lambda: future.done() or future.set_result(None))
 
 
 _PROXIES = {}
@@ -275,70 +342,6 @@ def redirect() -> io.StringIO:
     finally:
         del _PROXIES[ident]
         source.close()
-
-
-def _wrap_code(code: str) -> str:
-    head = "async def __aexec():\n try:\n  "
-    tail = "\n finally: globals()['_OLD'] = locals()"
-    if '\n' in code:
-        code = '\n  '.join(iter(code.split('\n')))
-    elif (any(True for k_ in keyword.kwlist
-              if k_ not in ('True', 'False', 'None', 'await') and code.startswith(f"{k_} "))
-          or ('=' in code and '==' not in code)):
-        code = f"\n  {code}"
-    else:
-        code = f"\n  return {code}"
-    return head + code + tail
-
-
-class _ContextType(Enum):
-    GLOBAL = 0
-    PRIVATE = 1
-    NEW = 2
-
-
-def _context(context_type: _ContextType, **kwargs) -> dict:
-    if context_type == _ContextType.NEW:
-        try:
-            del globals()['_OLD']
-        except KeyError:
-            pass
-    if '_OLD' not in globals():
-        globals()['_OLD'] = globals().copy()
-    _data = globals()['_OLD']
-    if context_type == _ContextType.PRIVATE:
-        _data = _data.copy()
-    _data.update(_data.pop('_OLD', {}))
-    _data.update(kwargs)
-    return _data
-
-
-def _run_coro(future: asyncio.Future, coro: Awaitable[Any],
-              callback: Callable[[str, bool], Awaitable[Any]]):
-    loop = asyncio.new_event_loop()
-    task = loop.create_task(coro)
-    userge.loop.call_soon_threadsafe(
-        future.add_done_callback,
-        lambda _: loop.call_soon_threadsafe(task.cancel)
-        if loop.is_running() and future.cancelled() else None)
-    try:
-        ret, exc = None, None
-        with redirect() as out:
-            try:
-                ret = loop.run_until_complete(task)
-            except asyncio.CancelledError:
-                return
-            except Exception:  # pylint: disable=broad-except
-                exc = traceback.format_exc().strip()
-            output = exc or out.getvalue()
-            if ret is not None:
-                output += str(ret)
-        loop.run_until_complete(callback(output, exc is not None))
-    finally:
-        loop.run_until_complete(loop.shutdown_asyncgens())
-        loop.close()
-        userge.loop.call_soon_threadsafe(
-            lambda: future.set_result(None) if not future.done() else None)
 
 
 class Term:
