@@ -100,7 +100,7 @@ async def eval_(message: Message):
     if '-ca' in flags:
         for t in _EVAL_TASKS:
             t.cancel()
-        await message.edit("Canceled all running eval tasks !", del_in=5)
+        await message.edit(f"Canceled all running eval tasks [{size}] !", del_in=5)
         return
     if '-c' in flags:
         t_id = int(flags.get('-c', -1))
@@ -351,6 +351,7 @@ class Term:
         self._lock = asyncio.Lock()
         self._event = asyncio.Event()
         self._loop = asyncio.get_event_loop()
+        self._flag = False
         self._finished = False
 
     def cancel(self) -> None:
@@ -377,8 +378,9 @@ class Term:
         async with self._lock:
             self._output_line = line
             self._output += line
-        if not self._event.is_set():
+        if not self._flag:
             self._loop.call_later(1, self._event.set)
+            self._flag = True
 
     async def _read_stdout(self) -> None:
         while True:

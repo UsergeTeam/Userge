@@ -33,7 +33,8 @@ class PasteService:
             return True
         return False
 
-    async def paste(self, ses: aiohttp.ClientSession,  # pylint: disable=W0613
+    # pylint: disable=W0613
+    async def paste(self, ses: aiohttp.ClientSession,
                     text: str, file_type: Optional[str]) -> Optional[str]:
         """ returns the success url or None if failed """
         return None
