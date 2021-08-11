@@ -45,12 +45,9 @@ async def exec_(message: Message):
         await message.err(str(t_e))
         return
 
-    out = out or "no output"
-    err = err or "no error"
-    out = "\n".join(out.split("\n"))
     output = f"**EXEC**:\n\n\
 __Command:__\n`{cmd}`\n__PID:__\n`{pid}`\n__RETURN:__\n`{ret}`\n\n\
-**stderr:**\n`{err}`\n\n**stdout:**\n``{out}`` "
+**stderr:**\n`{err or 'no error'}`\n\n**stdout:**\n``{out or 'no output'}`` "
     await message.edit_or_send_as_file(text=output,
                                        parse_mode='md',
                                        filename="exec.txt",
