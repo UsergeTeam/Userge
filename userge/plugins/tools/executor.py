@@ -187,7 +187,8 @@ async def eval_(message: Message):
         try:
             await future
         except asyncio.CancelledError:
-            await msg.canceled()
+            await asyncio.gather(msg.canceled(),
+                                 CHANNEL.log(f"**EVAL Process Canceled!**\n\n```{cmd}```"))
         finally:
             _EVAL_TASKS.pop(future, None)
 

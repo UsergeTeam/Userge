@@ -69,7 +69,8 @@ async def convert_(message: Message):
     'flags': {
         '-d': "upload as document",
         '-wt': "without thumb",
-        '-r': "remove file after upload"},
+        '-r': "remove file after upload",
+        '-df': "don't forward to log channel"},
     'usage': "{tr}upload [flags] [file or folder path | link]",
     'examples': [
         "{tr}upload -d https://speed.hetzner.de/100MB.bin | test.bin",
@@ -371,7 +372,8 @@ async def remove_thumb(thumb: str) -> None:
 
 
 async def finalize(message: Message, msg: Message, start_t):
-    await CHANNEL.fwd_msg(msg)
+    if '-df' not in message.flags:
+        await CHANNEL.fwd_msg(msg)
     await message.client.send_chat_action(message.chat.id, "cancel")
     if message.process_is_canceled:
         await message.canceled()
