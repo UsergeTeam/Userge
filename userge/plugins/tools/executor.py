@@ -12,6 +12,8 @@ import io
 import sys
 import asyncio
 import keyword
+import re
+import shlex
 import threading
 import traceback
 from contextlib import contextmanager
@@ -163,7 +165,8 @@ async def eval_(message: Message):
 
     msg = message
     replied = message.reply_to_message
-    if(replied and replied.from_user and replied.from_user.is_self and isinstance(replied.text, Str)
+    if (replied and replied.from_user
+            and replied.from_user.is_self and isinstance(replied.text, Str)
             and str(replied.text.html).startswith("<b>></b> <pre>")):
         msg = replied
 
@@ -205,7 +208,13 @@ async def term_(message: Message):
 
     await message.edit("`Executing terminal ...`")
     try:
-        t_obj = await Term.execute(cmd)  # type: Term
+        parsed_cmd = parse_py_template(cmd, message)
+    except Exception as e:  # pylint: disable=broad-except
+        await message.err(str(e))
+        await CHANNEL.log(f"**Exception**: {type(e).__name__}\n**Message**: " + str(e))
+        return
+    try:
+        t_obj = await Term.execute(parsed_cmd)  # type: Term
     except Exception as t_e:  # pylint: disable=broad-except
         await message.err(str(t_e))
         return
@@ -249,6 +258,14 @@ async def init_func(message: Message):
         await message.edit("`That's a dangerous operation! Not Permitted!`")
         return None
     return cmd
+
+
+def parse_py_template(cmd: str, msg: Message):
+    glo, loc = _context(_ContextType.PRIVATE, message=msg, replied=msg.reply_to_message)
+
+    def replacer(mobj):
+        return shlex.quote(str(eval(mobj.expand(r"\1"), glo, loc)))  # nosec pylint: disable=W0123
+    return re.sub(r"{{(.+?)}}", replacer, cmd)
 
 
 class _ContextType(Enum):
