@@ -261,6 +261,7 @@ async def init_func(message: Message):
 
 def parse_py_template(cmd: str, msg: Message):
     glo, loc = _context(_ContextType.PRIVATE, message=msg, replied=msg.reply_to_message)
+
     def replacer(mobj):
         return shlex.quote(str(eval(mobj.expand(r"\1"), glo, loc)))
     return re.sub(r"{{(.+?)}}", replacer, cmd)
