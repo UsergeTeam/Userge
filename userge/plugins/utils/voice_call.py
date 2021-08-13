@@ -347,6 +347,8 @@ async def force_play_music(msg: Message):
                 return
     elif msg.reply_to_message and msg.reply_to_message.audio:
         replied = msg.reply_to_message
+        if not hasattr(replied, '_client'):
+            replied._client = msg.client  # pylint: disable=protected-access
         QUEUE.insert(0, replied)
     else:
         return await reply_text(msg, "Input not found")
