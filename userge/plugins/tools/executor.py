@@ -230,7 +230,10 @@ async def term_(message: Message):
         await t_obj.wait()
         while not t_obj.finished:
             await message.edit(f"<pre>{output}{await t_obj.read_line()}</pre>", parse_mode='html')
-            await asyncio.sleep(Config.EDIT_SLEEP_TIMEOUT)
+            try:
+                await asyncio.wait_for(t_obj.finish_listener, Config.EDIT_SLEEP_TIMEOUT)
+            except asyncio.TimeoutError:
+                pass
 
     def _on_cancel():
         t_obj.cancel()
@@ -371,15 +374,27 @@ class Term:
         self._loop = asyncio.get_event_loop()
         self._flag = False
         self._finished = False
+        self._finish_listener = self._loop.create_future()
+
+    def _finish(self) -> None:
+        self._finished = True
+        if not self._finish_listener.done():
+            self._finish_listener.set_result(None)
 
     def cancel(self) -> None:
         self._process.kill()
         self._event.set()
-        self._finished = True
+        self._finish()
 
     @property
     def finished(self) -> bool:
         return self._finished
+
+    @property
+    def finish_listener(self) -> asyncio.Future:
+        if self._finish_listener.done():
+            self._finish_listener = self._loop.create_future()
+        return self._finish_listener
 
     async def wait(self) -> None:
         await self._event.wait()
@@ -418,7 +433,7 @@ class Term:
         await asyncio.wait([self._read_stdout(), self._read_stderr()])
         await self._process.wait()
         self._event.set()
-        self._finished = True
+        self._finish()
 
     @classmethod
     async def execute(cls, cmd: str) -> 'Term':
