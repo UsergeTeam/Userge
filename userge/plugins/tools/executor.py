@@ -165,7 +165,8 @@ async def eval_(message: Message):
 
     msg = message
     replied = message.reply_to_message
-    if(replied and replied.from_user and replied.from_user.is_self and isinstance(replied.text, Str)
+    if (replied and replied.from_user
+            and replied.from_user.is_self and isinstance(replied.text, Str)
             and str(replied.text.html).startswith("<b>></b> <pre>")):
         msg = replied
 
@@ -263,7 +264,7 @@ def parse_py_template(cmd: str, msg: Message):
     glo, loc = _context(_ContextType.PRIVATE, message=msg, replied=msg.reply_to_message)
 
     def replacer(mobj):
-        return shlex.quote(str(eval(mobj.expand(r"\1"), glo, loc)))
+        return shlex.quote(str(eval(mobj.expand(r"\1"), glo, loc)))  # nosec pylint: disable=W0123
     return re.sub(r"{{(.+?)}}", replacer, cmd)
 
 
