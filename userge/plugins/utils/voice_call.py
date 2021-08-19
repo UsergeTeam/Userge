@@ -84,8 +84,7 @@ def check_enable_for_all(func):
             (
                 msg.from_user and
                 msg.from_user.id == userge.id
-            ) or
-            CMDS_FOR_ALL
+            ) or CMDS_FOR_ALL
         ):
             await func(msg)
 
