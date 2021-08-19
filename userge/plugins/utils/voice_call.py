@@ -68,7 +68,7 @@ def vc_chat(func):
     async def checker(msg: Message):
         if CHAT_ID and msg.chat.id == CHAT_ID:
             await func(msg)
-        elif msg.from_user.is_self:
+        elif msg.outgoing:
             await msg.edit("`Haven't join any Voice-Call...`")
 
     checker.__doc__ = func.__doc__
@@ -80,7 +80,12 @@ def check_enable_for_all(func):
     """ decorator to check cmd is_enable for others """
 
     async def checker(msg: Message):
-        if msg.from_user.id == userge.id or CMDS_FOR_ALL:
+        if (
+            (
+                msg.from_user
+                and msg.from_user.id == userge.id
+            ) or CMDS_FOR_ALL
+        ):
             await func(msg)
 
     checker.__doc__ = func.__doc__
