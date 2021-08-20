@@ -7,9 +7,9 @@
 # All rights reserved.
 
 import json
-from emoji import get_emoji_regexp
 
 import aiohttp
+from emoji import get_emoji_regexp
 
 from userge import userge, Message, Config
 

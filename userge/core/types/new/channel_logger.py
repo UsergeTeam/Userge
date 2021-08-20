@@ -104,7 +104,7 @@ class ChannelLogger:
             _LOG_STR, f"forwarding msg : {message} to channel : {self._id}")
         if isinstance(message, RawMessage):
             if message.media:
-                asyncio.get_event_loop().create_task(self.log("**Forwarding Message...**", name))
+                await self.log("**Forwarding Message...**", name)
                 try:
                     if as_copy:
                         await message.copy(chat_id=self._id)

@@ -13,6 +13,7 @@ import re
 from typing import Optional, Dict
 
 import aiohttp
+import aiofiles
 
 from userge import userge, Message, Config
 
@@ -32,6 +33,7 @@ class PasteService:
             return True
         return False
 
+    # pylint: disable=W0613
     async def paste(self, ses: aiohttp.ClientSession,
                     text: str, file_type: Optional[str]) -> Optional[str]:
         """ returns the success url or None if failed """
@@ -188,8 +190,8 @@ async def paste_(message: Message) -> None:
     if not text and replied and replied.document and replied.document.file_size < 2 ** 20 * 10:
         file_type = os.path.splitext(replied.document.file_name)[1].lstrip('.')
         path = await replied.download(Config.DOWN_PATH)
-        with open(path, 'r') as d_f:
-            text = d_f.read()
+        async with aiofiles.open(path, 'r') as d_f:
+            text = await d_f.read()
         os.remove(path)
     elif not text and replied and replied.text:
         text = replied.text
