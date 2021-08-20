@@ -8,22 +8,21 @@
 #
 # All rights reserved.
 
+import asyncio
 import os
+from datetime import datetime, timedelta
 from typing import Dict, List, Tuple
 
-import wget
-import asyncio
 import feedparser
-from datetime import datetime, timedelta
+import wget
 from dateutil import parser
-
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.errors import (
     ChatWriteForbidden, ChannelPrivate, UserNotParticipant, ChatIdInvalid
 )
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from userge.utils.exceptions import UsergeBotNotFound
 from userge import userge, Message, Config, logging, get_collection, pool
+from userge.utils.exceptions import UsergeBotNotFound
 
 RSS_CHAT_ID = [int(x) for x in os.environ.get("RSS_CHAT_ID", str(Config.LOG_CHANNEL_ID)).split()]
 _LOG = logging.getLogger(__name__)
@@ -208,9 +207,10 @@ async def rss_worker():
                     RSS_DICT[url][1] = now
                     continue
                 await send_new_post(entry)
+                if url not in RSS_DICT:
+                    break
                 RSS_DICT[url] = [pub, now]
-                await RSS_COLLECTION.update_one(
-                    {'url': url}, {"$set": {'published': pub}}, upsert=True)
+                await RSS_COLLECTION.update_one({'url': url}, {"$set": {'published': pub}})
                 await asyncio.sleep(1)
             await asyncio.sleep(5)
         await asyncio.sleep(60)

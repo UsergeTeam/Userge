@@ -7,8 +7,10 @@
 # All rights reserved.
 
 import os
-import wget
+
 import speedtest
+import wget
+
 from userge import userge, Message, pool
 from userge.utils import humanbytes
 

@@ -20,7 +20,6 @@ from pyrogram import filters
 from userge import logging, logbot
 from . import versions
 
-_REPO = Repo()
 _LOG = logging.getLogger(__name__)
 logbot.reply_last_msg("Setting Configs ...")
 
@@ -91,14 +90,15 @@ class Config:
 
 def get_version() -> str:
     """ get userge version """
+    repo = Repo()
     ver = f"{versions.__major__}.{versions.__minor__}.{versions.__micro__}"
     if "/usergeteam/userge" in Config.UPSTREAM_REPO.lower():
-        diff = list(_REPO.iter_commits(f'v{ver}..HEAD'))
+        diff = list(repo.iter_commits(f'v{ver}..HEAD'))
         if diff:
             ver = f"{ver}-patch.{len(diff)}"
     else:
-        diff = list(_REPO.iter_commits(
+        diff = list(repo.iter_commits(
             f'{Config.UPSTREAM_REMOTE}/master..HEAD'))
         if diff:
             ver = f"{ver}-custom.{len(diff)}"
-    return ver + '@' + _REPO.active_branch.name
+    return ver + '@' + repo.active_branch.name

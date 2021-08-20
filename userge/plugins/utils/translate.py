@@ -8,8 +8,8 @@
 
 import time
 from json import dumps
-from emoji import get_emoji_regexp
 
+from emoji import get_emoji_regexp
 from googletrans import Translator, LANGUAGES
 
 from userge import userge, Message, Config, pool
