@@ -138,7 +138,7 @@ if userge.has_bot:
             ])
             await send_start_text(msg, text, path, markup)
             return
-        text="Hey, you can configure me here."
+        text = "Hey, you can configure me here."
         markup = InlineKeyboardMarkup([[InlineKeyboardButton("Settings", callback_data="stngs")]])
         cmd = msg.command[1] if len(msg.command) > 1 else ''
         if cmd and ' ' not in msg.text:
