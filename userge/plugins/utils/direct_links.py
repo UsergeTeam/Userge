@@ -60,7 +60,7 @@ async def direct_(message: Message):
             reply += f" 👉 {await onedrive(link)}\n"
         else:
             reply += f" 👀 {link} is not supported!\n"
-    await message.edit(reply, parse_mode="html")
+    await message.edit(reply, parse_mode="md")
 
 
 @pool.run_in_thread
