@@ -26,6 +26,7 @@ from pyrogram.types import (
 )
 from pyrogram.types.messages_and_media.message import Str
 from pytgcalls import GroupCall
+from pytgcalls.exceptions import GroupCallNotFoundError
 from youtubesearchpython import VideosSearch
 
 from userge import userge, Message, pool, filters, get_collection, Config
@@ -189,7 +190,7 @@ async def joinvc(msg: Message):
     CHAT_NAME = msg.chat.title
     try:
         await call.start(CHAT_ID)
-    except RuntimeError:
+    except GroupCallNotFoundError:
         try:
             peer = await msg.client.resolve_peer(CHAT_ID)
             await userge.send(
