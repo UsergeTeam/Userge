@@ -16,6 +16,9 @@ RUN apt -qq install -y --no-install-recommends \
     unzip \
     wget \
     ffmpeg \
+    libgconf2-4 \
+    libnss3-1d \
+    libxss1 \
     jq
 
 # install chrome
