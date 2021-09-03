@@ -160,7 +160,11 @@ class PastyLus(PasteService):
 
 _SERVICES: Dict[str, PasteService] = {
     '-n': NekoBin(), '-h': HasteBin(), '-r': Rentry(), '-p': Pasting(), '-pl': PastyLus()}
-_DEFAULT_SERVICE = '-n'
+
+if Config.HEROKU_ENV:
+    _DEFAULT_SERVICE = '-pl'
+else:
+    _DEFAULT_SERVICE = '-n'
 
 _HEADERS = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 ('
                           'KHTML, like Gecko) Cafari/537.36'}
