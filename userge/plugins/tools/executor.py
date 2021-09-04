@@ -224,12 +224,13 @@ async def term_(message: Message):
         uid = geteuid()
     except ImportError:
         uid = 1
-    output = f"{cur_user}:~# {cmd}\n" if uid == 0 else f"{cur_user}:~$ {cmd}\n"
+    prefix = f"<b>{cur_user}:~#</b>" if uid == 0 else f"<b>{cur_user}:~$</b>"
+    output = f"{prefix} <pre>{cmd}</pre>\n"
 
     async def _worker():
         await t_obj.wait()
         while not t_obj.finished:
-            await message.edit(f"<pre>{output}{await t_obj.read_line()}</pre>", parse_mode='html')
+            await message.edit(f"{output}<pre>{await t_obj.read_line()}</pre>", parse_mode='html')
             try:
                 await asyncio.wait_for(t_obj.finish_listener, Config.EDIT_SLEEP_TIMEOUT)
             except asyncio.TimeoutError:
@@ -247,7 +248,7 @@ async def term_(message: Message):
             await message.canceled(reply=True)
             return
 
-    out_data = f"<pre>{output}{await t_obj.get_output()}</pre>"
+    out_data = f"{output}<pre>{await t_obj.get_output()}</pre>\n{prefix}"
     await message.edit_or_send_as_file(
         out_data, parse_mode='html', filename="term.txt", caption=cmd)
 

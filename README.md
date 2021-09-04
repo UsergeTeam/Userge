@@ -5,13 +5,11 @@
     <br>
     <b>Pluggable Telegram UserBot</b>
     <br>
-    <a href="https://github.com/UsergeTeam/Userge#documentation-">Documentation</a>
-    &nbsp•&nbsp
     <a href="https://github.com/UsergeTeam/Userge#inspiration-">Inspiration</a>
     &nbsp•&nbsp
-    <a href="https://github.com/UsergeTeam/Userge#features-">Features</a>
+    <a href="https://github.com/UsergeTeam/Userge#documentation-">Documentation</a>
     &nbsp•&nbsp
-    <a href="https://github.com/UsergeTeam/Userge#example-plugin-">Example</a>
+    <a href="https://github.com/UsergeTeam/Userge#deployment-">Deployment</a>
     &nbsp•&nbsp
     <a href="https://github.com/UsergeTeam/Userge#project-credits-">Project Credits</a>
     &nbsp•&nbsp
@@ -40,10 +38,6 @@
 
 > **Userge** is a Powerful , _Pluggable_ Telegram UserBot written in _Python_ using [Pyrogram](https://github.com/pyrogram/pyrogram).
 
-## Documentation 📘
-
-> you can find full documentation [**here**](https://theuserge.github.io)
-
 ## Inspiration 😇
 
 > This project is inspired by the following projects :)
@@ -55,18 +49,11 @@
 
 > Special Thanks to all of you !!!.
 
-## How To Deploy 👷
+## [Documentation](http://theuserge.tech) 📘
 
+## [Deployment](http://theuserge.tech/deployment) 👷
 
-* [**With Docker 🐳**](https://theuserge.github.io/deployment#deploying-with-docker-)
-
-* [**With Git, Python and pip 🔧**](https://theuserge.github.io/deployment#deploying-with-legacy-method)
-
-* [**With Zeet ☻**](https://theuserge.github.io/deployment.html#deploying-on-zeet)
-
-### Video Tutorial 🎥
-
-  [![Tutorial](resources/tutorial.jpg)](https://youtu.be/M4T_BJvFqkc "Tutorial")
+## [Plugins](https://github.com/UsergeTeam/Userge-Plugins) 🔌
 
 ### Support & Discussions 👥
 

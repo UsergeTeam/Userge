@@ -26,6 +26,7 @@ from pyrogram.types import (
 )
 from pyrogram.types.messages_and_media.message import Str
 from pytgcalls import GroupCall
+from pytgcalls.exceptions import GroupCallNotFoundError
 from youtubesearchpython import VideosSearch
 
 from userge import userge, Message, pool, filters, get_collection, Config
@@ -189,7 +190,7 @@ async def joinvc(msg: Message):
     CHAT_NAME = msg.chat.title
     try:
         await call.start(CHAT_ID)
-    except RuntimeError:
+    except GroupCallNotFoundError:
         try:
             peer = await msg.client.resolve_peer(CHAT_ID)
             await userge.send(
@@ -275,8 +276,7 @@ async def play_music(msg: Message):
                 await mesg.edit("No results found.")
     elif msg.reply_to_message and msg.reply_to_message.audio:
         replied = msg.reply_to_message
-        if not hasattr(replied, '_client'):
-            replied._client = msg.client  # pylint: disable=protected-access
+        setattr(replied, '_client', msg.client)
         QUEUE.append(replied)
         if PLAYING:
             await reply_text(msg, _get_scheduled_text(replied.audio.title, replied.link))
@@ -352,8 +352,7 @@ async def force_play_music(msg: Message):
                 return
     elif msg.reply_to_message and msg.reply_to_message.audio:
         replied = msg.reply_to_message
-        if not hasattr(replied, '_client'):
-            replied._client = msg.client  # pylint: disable=protected-access
+        setattr(replied, '_client', msg.client)
         QUEUE.insert(0, replied)
     else:
         return await reply_text(msg, "Input not found")
