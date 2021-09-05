@@ -53,7 +53,7 @@ async def handle_download(message: Message, resource: Union[Message, str]) -> Tu
     """ download from resource """
     if isinstance(resource, Message):
         if resource.media_group_id:
-            resources = await message._client.get_media_group(
+            resources = await message.client.get_media_group(
                 message.chat.id,
                 resource.message_id
             )
@@ -66,8 +66,7 @@ async def handle_download(message: Message, resource: Union[Message, str]) -> Tu
                 din = din + d_in
                 dlloc.append(dl_loc)
             return dumps(dlloc), din
-        else:
-            return await tg_download(message, resource)
+        return await tg_download(message, resource)
     return await url_download(message, resource)
 
 
