@@ -1,17 +1,13 @@
 # set base image (host OS)
-FROM python:3.9-slim-buster
+FROM python:3.9
 
 # set the working directory in the container
 WORKDIR /app/
 
-RUN echo deb http://http.us.debian.org/debian/ testing non-free contrib main > /etc/apt/sources.list && \
-    apt -qq update
+RUN apt -qq update
 RUN apt -qq install -y --no-install-recommends \
     curl \
     git \
-    gcc \
-    g++ \
-    build-essential \ 
     gnupg2 \
     unzip \
     wget \
@@ -59,4 +55,3 @@ COPY . .
 
 # command to run on container start
 CMD [ "bash", "./run" ]
-.
