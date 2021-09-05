@@ -11,7 +11,7 @@ RUN apt -qq install -y --no-install-recommends \
     git \
     gcc \
     g++ \
-    build-essential \
+    build-essential \ 
     gnupg2 \
     unzip \
     wget \
@@ -59,3 +59,4 @@ COPY . .
 
 # command to run on container start
 CMD [ "bash", "./run" ]
+.
