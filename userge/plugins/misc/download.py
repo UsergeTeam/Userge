@@ -13,6 +13,7 @@ import math
 import asyncio
 from typing import Tuple, Union
 from datetime import datetime
+from json import dumps
 from urllib.parse import unquote_plus
 
 from pySmartDL import SmartDL
@@ -51,7 +52,22 @@ async def down_load_media(message: Message):
 async def handle_download(message: Message, resource: Union[Message, str]) -> Tuple[str, int]:
     """ download from resource """
     if isinstance(resource, Message):
-        return await tg_download(message, resource)
+        if resource.media_group_id:
+            resources = await message._client.get_media_group(
+                message.chat.id,
+                resource.message_id
+            )
+            dlloc, din = [], 0
+            for res in resources:
+                dl_loc, d_in = await tg_download(
+                    message,
+                    res
+                )
+                din = din + d_in
+                dlloc.append(dl_loc)
+            return dumps(dlloc), din
+        else:
+            return await tg_download(message, resource)
     return await url_download(message, resource)
 
 
