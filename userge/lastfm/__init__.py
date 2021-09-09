@@ -1,6 +1,6 @@
 import aiohttp, pylast
 from userge import get_collection, userge
-from userge.utils import rand_array
+from random import choice as rand_array
 
 
 class Config:
