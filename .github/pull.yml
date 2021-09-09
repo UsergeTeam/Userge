@@ -3,7 +3,7 @@ rules:
   - base: alpha
     upstream: UsergeTeam:alpha
     mergeMethod: rebase
-    mergeUnstable: false
+    mergeUnstable: true
   - base: beta
     upstream: UsergeTeam:beta
     mergeMethod: rebase
