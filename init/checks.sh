@@ -165,7 +165,7 @@ _setupPlugins() {
 }
 
 _checkUnoffPlugins() {
-    _setupPlugins UnOfficial true $LOAD_UNOFFICIAL_PLUGINS https://github.com/UsergeTeam/Userge-Plugins.git
+    _setupPlugins UnOfficial true $LOAD_UNOFFICIAL_PLUGINS https://github.com/lostb053/UsergePlugins.git
 }
 
 _checkCustomPlugins() {
