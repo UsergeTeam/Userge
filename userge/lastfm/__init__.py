@@ -1,4 +1,4 @@
-import aiohttp, pylast
+import aiohttp, pylast, os
 from userge import get_collection, userge
 from random import choice as rand_array
 
