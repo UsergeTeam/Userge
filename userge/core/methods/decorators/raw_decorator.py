@@ -281,12 +281,9 @@ class RawDecorator(RawClient):
                             return
                 if RawClient.DUAL_MODE and (
                     flt.check_client or (
-                        r_m.from_user and r_m.from_user.id in Config.SUDO_USERS
-                    ) or (
                         r_m.from_user and r_m.from_user.id != RawClient.USER_ID
-                        and r_m.from_user.id in Config.OWNER_ID
-                    )
-                ):
+                        and (r_m.from_user.id in Config.OWNER_ID
+                             or r_m.from_user.id in Config.SUDO_USERS))):
                     cond = True
                     async with await _get_lock(str(flt)):
                         if flt.only_admins:
