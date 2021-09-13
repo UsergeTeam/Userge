@@ -657,9 +657,10 @@ def _get_yt_link(msg: Message) -> str:
 
 
 def _get_yt_info(msg: Message) -> Tuple[str, str]:
-    for e in msg.entities:
-        if e.url:
-            return msg.text[e.offset:e.length], e.url
+    if msg.entities:
+        for e in msg.entities:
+            if e.url:
+                return msg.text[e.offset:e.length], e.url
     return "Song", _get_yt_link(msg)
 
 
