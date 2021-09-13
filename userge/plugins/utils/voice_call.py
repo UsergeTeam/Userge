@@ -269,7 +269,7 @@ async def play_music(msg: Message):
                 if PLAYING:
                     msg = await reply_text(msg, _get_scheduled_text(title, link))
                 else:
-                    msg = await msg.edit(f"[{title}]({link})")
+                    msg = await msg.edit(f"[{title}]({link})", disable_web_page_preview=True)
                 await mesg.delete()
                 QUEUE.append(msg)
             else:
