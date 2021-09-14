@@ -1,6 +1,9 @@
 aiofiles
 aiohttp
 bs4
+gitpython
+heroku3
+html_telegraph_poster
 covid
 cowpy
 dnspython
