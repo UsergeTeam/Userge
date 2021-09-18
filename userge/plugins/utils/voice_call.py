@@ -593,8 +593,12 @@ async def yt_down(msg: Message):
     await message.delete()
 
     def requester():
+        if not msg.from_user:
+            return None
         replied = msg.reply_to_message
         if replied and msg.client.id == msg.from_user.id:
+            if not replied.from_user:
+                return None
             return replied.from_user.mention
         return msg.from_user.mention
 
