@@ -81,6 +81,7 @@ class Config:
     DISABLED_ALL = False
     DISABLED_CHATS: Set[int] = set()
     ALLOWED_COMMANDS: Set[str] = set()
+    IGNORE_VERIFIED_CHATS = True
     ANTISPAM_SENTRY = False
     RUN_DYNO_SAVER = False
     HEROKU_APP = heroku3.from_key(HEROKU_API_KEY).apps()[HEROKU_APP_NAME] \

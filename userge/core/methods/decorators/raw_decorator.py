@@ -226,6 +226,8 @@ class RawDecorator(RawClient):
                     return
                 if r_m.chat and r_m.chat.id in Config.DISABLED_CHATS:
                     return
+                if Config.IGNORE_VERIFIED_CHATS and r_m.from_user and r_m.from_user.is_verified:
+                    return
                 await _init(r_m)
                 _raise = partial(_raise_func, r_c, r_m)
                 if r_m.chat and r_m.chat.type not in flt.scope:
