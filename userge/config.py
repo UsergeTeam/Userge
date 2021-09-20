@@ -94,7 +94,7 @@ def get_version() -> str:
     repo = Repo()
     repo.remote(Config.UPSTREAM_REMOTE).fetch()
     ver = f"{versions.__major__}.{versions.__minor__}.{versions.__micro__}"
-    if "/usergeteam/userge" in Config.UPSTREAM_REPO.lower():
+    if "/lostb053/userge" in Config.UPSTREAM_REPO.lower():
         diff = list(repo.iter_commits(f'v{ver}..HEAD'))
         if diff:
             ver = f"{ver}-patch.{len(diff)}"
@@ -103,4 +103,4 @@ def get_version() -> str:
             f'{Config.UPSTREAM_REMOTE}/master..HEAD'))
         if diff:
             ver = f"{ver}-custom.{len(diff)}"
-    return ver + '@' + repo.active_branch.name
+    return ver
