@@ -11,7 +11,6 @@ import os
 import aiofiles
 from PIL import Image
 from telegraph import upload_file
-from markdown import markdown
 from userge import userge, Message, Config, pool
 from userge.utils import post_to_telegraph, progress
 
@@ -59,7 +58,7 @@ async def telegraph_(message: Message):
                 header = "Pasted content by @theuserge"
             os.remove(dl_loc)
         else:
-            content = markdown(message.reply_to_message.text.markdown)
+            content = message.reply_to_message.text.html
             if "|" in content:
                 content = content.split("|", maxsplit=1)
                 header = content[0]
