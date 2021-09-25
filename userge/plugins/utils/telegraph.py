@@ -59,7 +59,7 @@ async def telegraph_(message: Message):
             os.remove(dl_loc)
         else:
             content = message.reply_to_message.text.html
-            if "|" in content:
+            if "|" in content and not content.startswith("<"):
                 content = content.split("|", maxsplit=1)
                 header = content[0]
                 text = content[1]
