@@ -158,8 +158,34 @@ class PastyLus(PasteService):
             return final_url
 
 
+class Katbin(PasteService):
+    def __init__(self) -> None:
+        self._api_url = "https://api.katb.in/api/paste/"
+        super().__init__("katbin", "https://katb.in/")
+
+    async def paste(self, ses: aiohttp.ClientSession,
+                    text: str, file_type: Optional[str]) -> Optional[str]:
+        async with ses.post(self._api_url, json={"content": text}) as resp:
+            if resp.status != 201:
+                return None
+            response = await resp.json()
+            key = response['paste_id']
+            final_url = self._url + key
+            if file_type:
+                final_url += "." + file_type
+            return final_url
+
+    async def get_paste(self, ses: aiohttp.ClientSession, code: str) -> Optional[str]:
+        async with ses.get(self._api_url + code) as resp:
+            if resp.status != 200:
+                return None
+            response = await resp.json()
+            return response['content']
+
+
 _SERVICES: Dict[str, PasteService] = {
-    '-n': NekoBin(), '-h': HasteBin(), '-r': Rentry(), '-p': Pasting(), '-pl': PastyLus()}
+    '-n': NekoBin(), '-h': HasteBin(), '-r': Rentry(),
+    '-p': Pasting(), '-pl': PastyLus(), '-k': Katbin()}
 
 if Config.HEROKU_ENV:
     _DEFAULT_SERVICE = '-pl'

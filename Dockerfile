@@ -1,24 +1,17 @@
 # set base image (host OS)
-FROM python:3.9-slim-buster
+FROM python:3.9
 
 # set the working directory in the container
 WORKDIR /app/
 
-RUN echo deb http://http.us.debian.org/debian/ testing non-free contrib main > /etc/apt/sources.list && \
-    apt -qq update
+RUN apt -qq update
 RUN apt -qq install -y --no-install-recommends \
     curl \
     git \
-    gcc \
-    g++ \
-    build-essential \
     gnupg2 \
     unzip \
     wget \
     ffmpeg \
-    libgconf2-4 \
-    libnss3-1d \
-    libxss1 \
     jq
 
 # install chrome
@@ -51,14 +44,11 @@ RUN mkdir -p /tmp/ && \
     # clean up
     rm -rf /tmp/rar*
 
-# copy the dependencies file to the working directory
-COPY requirements.txt .
+# clone repository
+RUN git clone https://github.com/UsergeTeam/Userge /app
 
 # install dependencies
 RUN pip install -r requirements.txt
-
-# copy the content of the local src directory to the working directory
-COPY . .
 
 # command to run on container start
 CMD [ "bash", "./run" ]

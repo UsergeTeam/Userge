@@ -269,7 +269,7 @@ async def play_music(msg: Message):
                 if PLAYING:
                     msg = await reply_text(msg, _get_scheduled_text(title, link))
                 else:
-                    msg = await msg.edit(f"[{title}]({link})")
+                    msg = await msg.edit(f"[{title}]({link})", disable_web_page_preview=True)
                 await mesg.delete()
                 QUEUE.append(msg)
             else:
@@ -593,8 +593,12 @@ async def yt_down(msg: Message):
     await message.delete()
 
     def requester():
+        if not msg.from_user:
+            return None
         replied = msg.reply_to_message
         if replied and msg.client.id == msg.from_user.id:
+            if not replied.from_user:
+                return None
             return replied.from_user.mention
         return msg.from_user.mention
 
@@ -657,9 +661,10 @@ def _get_yt_link(msg: Message) -> str:
 
 
 def _get_yt_info(msg: Message) -> Tuple[str, str]:
-    for e in msg.entities:
-        if e.url:
-            return msg.text[e.offset:e.length], e.url
+    if msg.entities:
+        for e in msg.entities:
+            if e.url:
+                return msg.text[e.offset:e.length], e.url
     return "Song", _get_yt_link(msg)
 
 

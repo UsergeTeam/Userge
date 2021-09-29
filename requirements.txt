@@ -17,13 +17,13 @@ heroku3
 html-telegraph-poster
 motor
 oauth2client
-Pillow==8.2.0
+Pillow==8.3.2
 psutil
 pybase64
 pyrogram==1.2.9
 pySmartDL
 pysocks
-pytgcalls
+pytgcalls==2.1.0
 python-dotenv
 pytz
 rarfile
