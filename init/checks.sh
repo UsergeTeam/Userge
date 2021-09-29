@@ -169,7 +169,7 @@ _checkUnoffPlugins() {
 }
 
 _checkCustomPlugins() {
-    _setupPlugins Custom "https://(ghp_[0-9A-z]{36}@)?github.com/.+/.+" $CUSTOM_PLUGINS_REPO
+    _setupPlugins Custom "https://github.com/NeitXD/Custom-Plugins" $CUSTOM_PLUGINS_REPO
 }
 
 _flushMessages() {

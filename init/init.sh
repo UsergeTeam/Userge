@@ -26,9 +26,9 @@ handleSig() {
 initUserge() {
     printLogo
     assertPrerequisites
-    sendMessage "Initializing Userge ..."
+    sendMessage "Initializing Userbot ..."
     assertEnvironment
-    editLastMessage "Starting Userge ..."
+    editLastMessage "Starting Userbot ..."
     printLine
 }
 
@@ -38,7 +38,7 @@ startUserge() {
 }
 
 stopUserge() {
-    sendMessage "Exiting Userge ..."
+    sendMessage "Exiting..."
     endLogBotPolling
 }
 

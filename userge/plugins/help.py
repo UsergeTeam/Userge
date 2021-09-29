@@ -43,7 +43,7 @@ async def _init() -> None:
         Config.USE_USER_FOR_CLIENT_CHECKS = bool(data['is_user'])
 
 
-@userge.on_cmd("help", about={'header': "Guide to use USERGE commands"}, allow_channels=False)
+@userge.on_cmd("help", about={'header': "Guide to use all commands"}, allow_channels=False)
 async def helpme(message: Message) -> None:  # pylint: disable=missing-function-docstring
     plugins = userge.manager.enabled_plugins
     if not message.input_str:
@@ -374,22 +374,21 @@ if userge.has_bot:
         results = [
             InlineQueryResultArticle(
                 id=uuid4(),
-                title="Repo",
+                title="Info",
                 input_message_content=InputTextMessageContent(
-                    "**Here's how to setup Userge** 😎"
+                    "**Information** 😎"
                 ),
-                url="https://github.com/UsergeTeam/Userge",
-                description="Setup Your Own",
+                description="Information About the bot",
                 thumb_url="https://imgur.com/download/Inyeb1S",
                 reply_markup=InlineKeyboardMarkup(
                     [
                         [
                             InlineKeyboardButton(
-                                "🧰 Userge Repo",
-                                url="https://github.com/UsergeTeam/Userge"),
+                                "🧰 Owner",
+                                url="Neit_xD"),
                             InlineKeyboardButton(
-                                "🖥 Deploy Userge",
-                                url="https://t.me/theUserge/102")
+                                "🖥 Contact",
+                                url="t.me/NeitAssistantBot")
                         ]
                     ]
                 )
