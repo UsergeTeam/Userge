@@ -141,6 +141,7 @@ def anonfiles(url: str) -> str:
     reply += f'[{name}]({dl_url})\n'
     return reply
 
+
 @pool.run_in_thread
 def cm_ru(url: str) -> str:
     """cloud.mail.ru direct links generator
