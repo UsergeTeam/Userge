@@ -129,14 +129,15 @@ def yandex_disk(url: str) -> str:
         return reply
     return reply
 
+
 @pool.run_in_thread
 def anonfiles(url: str) -> str:
     reply = ''
     html_s = requests.get(url).content
-    soup = BeautifulSoup(html_s, "html.parser") 
+    soup = BeautifulSoup(html_s, "html.parser")
     _url = soup.find("a", attrs={"class": "btn-primary"})["href"]
-    name = _url.rsplit("/",1)[1]
-    dl_url = _url.replace(" ","%20")
+    name = _url.rsplit("/", 1)[1]
+    dl_url = _url.replace(" ", "%20")
     reply += f'[{name}]({dl_url})\n'
     return reply
 
