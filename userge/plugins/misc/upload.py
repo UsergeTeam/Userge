@@ -372,7 +372,7 @@ async def remove_thumb(thumb: str) -> None:
 
 
 async def finalize(message: Message, msg: Message, start_t):
-    if '-df' not in message.flags:
+    if 'df' not in message.flags:
         await CHANNEL.fwd_msg(msg)
     await message.client.send_chat_action(message.chat.id, "cancel")
     if message.process_is_canceled:

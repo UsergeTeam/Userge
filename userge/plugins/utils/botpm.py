@@ -47,7 +47,7 @@ START_TEXT = " Hello {mention}, you can contact me using this Bot."
 START_MEDIA = os.environ.get("START_MEDIA", None)
 
 botPmFilter = filters.create(lambda _, __, ___: BOT_PM)
-bannedFilter = filters.create(lambda _, __, ___: filters.user(_BANNED_USERS))
+bannedFilter = filters.create(lambda _, __, ___: ___.chat.id in _BANNED_USERS)
 
 
 async def _init():
@@ -138,6 +138,7 @@ if userge.has_bot:
             ])
             await send_start_text(msg, text, path, markup)
             return
+        text = "Hey, you can configure me here."
         markup = InlineKeyboardMarkup([[InlineKeyboardButton("Settings", callback_data="stngs")]])
         cmd = msg.command[1] if len(msg.command) > 1 else ''
         if cmd and ' ' not in msg.text:

@@ -204,7 +204,7 @@ async def _both_have_perm(flt: Union['types.raw.Command', 'types.raw.Filter'],
 
 
 class RawDecorator(RawClient):
-    """ userge raw decoretor """
+    """ userge raw decorator """
     _PYRORETTYPE = Callable[[_PYROFUNC], _PYROFUNC]
 
     def __init__(self, **kwargs) -> None:
@@ -225,6 +225,8 @@ class RawDecorator(RawClient):
                 if Config.DISABLED_ALL and r_m.chat.id != Config.LOG_CHANNEL_ID:
                     return
                 if r_m.chat and r_m.chat.id in Config.DISABLED_CHATS:
+                    return
+                if Config.IGNORE_VERIFIED_CHATS and r_m.from_user and r_m.from_user.is_verified:
                     return
                 await _init(r_m)
                 _raise = partial(_raise_func, r_c, r_m)
@@ -247,48 +249,43 @@ class RawDecorator(RawClient):
                     if c_m.status != "creator":
                         if flt.check_change_info_perm and not c_m.can_change_info:
                             if isinstance(flt, types.raw.Command):
-                                await _raise("`required permisson [change_info]`")
+                                await _raise("`required permission [change_info]`")
                             return
                         if flt.check_edit_perm and not c_m.can_edit_messages:
                             if isinstance(flt, types.raw.Command):
-                                await _raise("`required permisson [edit_messages]`")
+                                await _raise("`required permission [edit_messages]`")
                             return
                         if flt.check_delete_perm and not c_m.can_delete_messages:
                             if isinstance(flt, types.raw.Command):
-                                await _raise("`required permisson [delete_messages]`")
+                                await _raise("`required permission [delete_messages]`")
                             return
                         if flt.check_restrict_perm and not c_m.can_restrict_members:
                             if isinstance(flt, types.raw.Command):
                                 if is_admin:
-                                    await _raise("`required permisson [restrict_members]`")
+                                    await _raise("`required permission [restrict_members]`")
                                 else:
                                     await _raise("`chat admin required`")
                             return
                         if flt.check_promote_perm and not c_m.can_promote_members:
                             if isinstance(flt, types.raw.Command):
                                 if is_admin:
-                                    await _raise("`required permisson [promote_members]`")
+                                    await _raise("`required permission [promote_members]`")
                                 else:
                                     await _raise("`chat admin required`")
                             return
                         if flt.check_invite_perm and not c_m.can_invite_users:
                             if isinstance(flt, types.raw.Command):
-                                await _raise("`required permisson [invite_users]`")
+                                await _raise("`required permission [invite_users]`")
                             return
                         if flt.check_pin_perm and not c_m.can_pin_messages:
                             if isinstance(flt, types.raw.Command):
-                                await _raise("`required permisson [pin_messages]`")
+                                await _raise("`required permission [pin_messages]`")
                             return
                 if RawClient.DUAL_MODE and (
                     flt.check_client or (
-                        r_m.from_user and r_m.from_user.id in Config.SUDO_USERS
-                    ) or (
-                        r_m.from_user
-                        and len(Config.OWNER_ID) > 1
-                        and r_m.from_user.id in Config.OWNER_ID[1:]
-                        # TODO: hmm
-                    )
-                ):
+                        r_m.from_user and r_m.from_user.id != RawClient.USER_ID
+                        and (r_m.from_user.id in Config.OWNER_ID
+                             or r_m.from_user.id in Config.SUDO_USERS))):
                     cond = True
                     async with await _get_lock(str(flt)):
                         if flt.only_admins:

@@ -81,6 +81,7 @@ class Config:
     DISABLED_ALL = False
     DISABLED_CHATS: Set[int] = set()
     ALLOWED_COMMANDS: Set[str] = set()
+    IGNORE_VERIFIED_CHATS = True
     ANTISPAM_SENTRY = False
     RUN_DYNO_SAVER = False
     HEROKU_APP = heroku3.from_key(HEROKU_API_KEY).apps()[HEROKU_APP_NAME] \
@@ -91,6 +92,7 @@ class Config:
 def get_version() -> str:
     """ get userge version """
     repo = Repo()
+    repo.remote(Config.UPSTREAM_REMOTE).fetch()
     ver = f"{versions.__major__}.{versions.__minor__}.{versions.__micro__}"
     if "/usergeteam/userge" in Config.UPSTREAM_REPO.lower():
         diff = list(repo.iter_commits(f'v{ver}..HEAD'))

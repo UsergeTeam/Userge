@@ -26,6 +26,7 @@ from pyrogram.types import (
 )
 from pyrogram.types.messages_and_media.message import Str
 from pytgcalls import GroupCall
+from pytgcalls.exceptions import GroupCallNotFoundError
 from youtubesearchpython import VideosSearch
 
 from userge import userge, Message, pool, filters, get_collection, Config
@@ -68,7 +69,7 @@ def vc_chat(func):
     async def checker(msg: Message):
         if CHAT_ID and msg.chat.id == CHAT_ID:
             await func(msg)
-        elif msg.from_user.is_self:
+        elif msg.outgoing:
             await msg.edit("`Haven't join any Voice-Call...`")
 
     checker.__doc__ = func.__doc__
@@ -80,7 +81,12 @@ def check_enable_for_all(func):
     """ decorator to check cmd is_enable for others """
 
     async def checker(msg: Message):
-        if msg.from_user.id == userge.id or CMDS_FOR_ALL:
+        if (
+            (
+                msg.from_user
+                and msg.from_user.id == userge.id
+            ) or CMDS_FOR_ALL
+        ):
             await func(msg)
 
     checker.__doc__ = func.__doc__
@@ -184,7 +190,7 @@ async def joinvc(msg: Message):
     CHAT_NAME = msg.chat.title
     try:
         await call.start(CHAT_ID)
-    except RuntimeError:
+    except GroupCallNotFoundError:
         try:
             peer = await msg.client.resolve_peer(CHAT_ID)
             await userge.send(
@@ -263,15 +269,14 @@ async def play_music(msg: Message):
                 if PLAYING:
                     msg = await reply_text(msg, _get_scheduled_text(title, link))
                 else:
-                    msg = await msg.edit(f"[{title}]({link})")
+                    msg = await msg.edit(f"[{title}]({link})", disable_web_page_preview=True)
                 await mesg.delete()
                 QUEUE.append(msg)
             else:
                 await mesg.edit("No results found.")
     elif msg.reply_to_message and msg.reply_to_message.audio:
         replied = msg.reply_to_message
-        if not hasattr(replied, '_client'):
-            replied._client = msg.client  # pylint: disable=protected-access
+        setattr(replied, '_client', msg.client)
         QUEUE.append(replied)
         if PLAYING:
             await reply_text(msg, _get_scheduled_text(replied.audio.title, replied.link))
@@ -347,8 +352,7 @@ async def force_play_music(msg: Message):
                 return
     elif msg.reply_to_message and msg.reply_to_message.audio:
         replied = msg.reply_to_message
-        if not hasattr(replied, '_client'):
-            replied._client = msg.client  # pylint: disable=protected-access
+        setattr(replied, '_client', msg.client)
         QUEUE.insert(0, replied)
     else:
         return await reply_text(msg, "Input not found")
@@ -589,8 +593,12 @@ async def yt_down(msg: Message):
     await message.delete()
 
     def requester():
+        if not msg.from_user:
+            return None
         replied = msg.reply_to_message
         if replied and msg.client.id == msg.from_user.id:
+            if not replied.from_user:
+                return None
             return replied.from_user.mention
         return msg.from_user.mention
 
@@ -653,9 +661,10 @@ def _get_yt_link(msg: Message) -> str:
 
 
 def _get_yt_info(msg: Message) -> Tuple[str, str]:
-    for e in msg.entities:
-        if e.url:
-            return msg.text[e.offset:e.length], e.url
+    if msg.entities:
+        for e in msg.entities:
+            if e.url:
+                return msg.text[e.offset:e.length], e.url
     return "Song", _get_yt_link(msg)
 
 
