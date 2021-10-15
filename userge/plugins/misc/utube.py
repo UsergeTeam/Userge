@@ -30,7 +30,7 @@ try:
 except ModuleNotFoundError:
     LOGGER.info("please fix your requirements.txt file")
 else:
-    globals()["ytdl"] = importlib.import_module(reqd_module) 
+    globals()["ytdl"] = importlib.import_module(reqd_module)
 
 
 @userge.on_cmd("ytinfo", about={'header': "Get info from ytdl",
