@@ -26,12 +26,10 @@ LOGGER = userge.getLogger(__name__)
 
 reqd_module = os.environ.get("YOUTUBE-DL-PATH", "youtube_dl")
 try:
-    importlib.import_module(reqd_module)
+    globals()["ytdl"] = importlib.import_module(reqd_module)
 except ModuleNotFoundError:
     LOGGER.info("please fix your requirements.txt file")
     raise
-else:
-    globals()["ytdl"] = importlib.import_module(reqd_module)
 
 
 @userge.on_cmd("ytinfo", about={'header': "Get info from ytdl",
