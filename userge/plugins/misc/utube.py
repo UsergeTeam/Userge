@@ -15,7 +15,14 @@ from time import time
 from math import floor
 
 import wget
-import youtube_dl as ytdl
+import importlib
+reqd_module = os.environ.get("YOUTUBE-DL-PATH", "youtube_dl")
+try:
+    importlib.import_module(reqd_module)
+except ModuleNotFoundError:
+    print("please fix your requirements.txt file")
+else:
+    globals()["ytdl"] = importlib.import_module(reqd_module)
 
 from userge import userge, Message, Config, pool
 from userge.utils import time_formatter, humanbytes
