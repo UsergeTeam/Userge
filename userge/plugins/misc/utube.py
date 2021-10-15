@@ -10,12 +10,12 @@
 
 import os
 import glob
+import importlib
 from pathlib import Path
 from time import time
 from math import floor
 
 import wget
-import importlib
 
 from userge import userge, Message, Config, pool
 from userge.utils import time_formatter, humanbytes
@@ -29,6 +29,7 @@ try:
     importlib.import_module(reqd_module)
 except ModuleNotFoundError:
     LOGGER.info("please fix your requirements.txt file")
+    raise
 else:
     globals()["ytdl"] = importlib.import_module(reqd_module)
 
