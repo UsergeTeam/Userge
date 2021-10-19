@@ -24,7 +24,7 @@ from .upload import upload
 LOGGER = userge.getLogger(__name__)
 
 
-reqd_module = os.environ.get("YOUTUBE-DL-PATH", "youtube_dl")
+reqd_module = os.environ.get("YOUTUBE_DL_PATH", "youtube_dl")
 try:
     ytdl = importlib.import_module(reqd_module)
 except ModuleNotFoundError:
