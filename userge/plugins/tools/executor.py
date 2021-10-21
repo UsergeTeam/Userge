@@ -8,18 +8,20 @@
 #
 # All rights reserved.
 
-import io
-import sys
 import asyncio
+import io
 import keyword
 import re
 import shlex
+import sys
 import threading
 import traceback
+from asyncio import StreamReader
 from contextlib import contextmanager
 from enum import Enum
 from getpass import getuser
-from os import geteuid
+from os import geteuid, setsid, getpgid, killpg
+from signal import SIGKILL
 from typing import Awaitable, Any, Callable, Dict, Optional, Tuple, Iterable
 
 from pyrogram.types.messages_and_media.message import Str
@@ -181,7 +183,8 @@ async def eval_(message: Message):
         _g[_KEY] = _l
         await _callback(traceback.format_exc(), True)
         return
-    future = asyncio.get_event_loop().create_future()
+
+    future = asyncio.get_running_loop().create_future()
     pool.submit_thread(_run_coro, future, l_d['__aexec'](*_l.values()), _callback)
     hint = cmd.split('\n')[0]
     _EVAL_TASKS[future] = hint[:25] + "..." if len(hint) > 25 else hint
@@ -227,28 +230,16 @@ async def term_(message: Message):
     prefix = f"<b>{cur_user}:~#</b>" if uid == 0 else f"<b>{cur_user}:~$</b>"
     output = f"{prefix} <pre>{cmd}</pre>\n"
 
-    async def _worker():
-        await t_obj.wait()
+    with message.cancel_callback(t_obj.cancel):
+        await t_obj.init()
         while not t_obj.finished:
-            await message.edit(f"{output}<pre>{await t_obj.read_line()}</pre>", parse_mode='html')
-            try:
-                await asyncio.wait_for(t_obj.finish_listener, Config.EDIT_SLEEP_TIMEOUT)
-            except asyncio.TimeoutError:
-                pass
-
-    def _on_cancel():
-        t_obj.cancel()
-        task.cancel()
-
-    task = asyncio.create_task(_worker())
-    with message.cancel_callback(_on_cancel):
-        try:
-            await task
-        except asyncio.CancelledError:
+            await message.edit(f"{output}<pre>{t_obj.line}</pre>", parse_mode='html')
+            await t_obj.wait(Config.EDIT_SLEEP_TIMEOUT)
+        if t_obj.cancelled:
             await message.canceled(reply=True)
             return
 
-    out_data = f"{output}<pre>{await t_obj.get_output()}</pre>\n{prefix}"
+    out_data = f"{output}<pre>{t_obj.output}</pre>\n{prefix}"
     await message.edit_or_send_as_file(
         out_data, parse_mode='html', filename="term.txt", caption=cmd)
 
@@ -368,78 +359,101 @@ class Term:
 
     def __init__(self, process: asyncio.subprocess.Process) -> None:
         self._process = process
+        self._line = b''
         self._output = b''
-        self._output_line = b''
-        self._lock = asyncio.Lock()
-        self._event = asyncio.Event()
-        self._loop = asyncio.get_event_loop()
-        self._flag = False
+        self._init = asyncio.Event()
+        self._is_init = False
+        self._cancelled = False
         self._finished = False
-        self._finish_listener = self._loop.create_future()
+        self._loop = asyncio.get_running_loop()
+        self._listener = self._loop.create_future()
 
-    def _finish(self) -> None:
-        self._finished = True
-        if not self._finish_listener.done():
-            self._finish_listener.set_result(None)
+    @property
+    def line(self) -> str:
+        return self._by_to_str(self._line)
 
-    def cancel(self) -> None:
-        self._process.kill()
-        self._event.set()
-        self._finish()
+    @property
+    def output(self) -> str:
+        return self._by_to_str(self._output)
+
+    @staticmethod
+    def _by_to_str(data: bytes) -> str:
+        return data.decode('utf-8', 'replace').strip()
+
+    @property
+    def cancelled(self) -> bool:
+        return self._cancelled
 
     @property
     def finished(self) -> bool:
         return self._finished
 
-    @property
-    def finish_listener(self) -> asyncio.Future:
-        if self._finish_listener.done():
-            self._finish_listener = self._loop.create_future()
-        return self._finish_listener
+    async def init(self) -> None:
+        await self._init.wait()
 
-    async def wait(self) -> None:
-        await self._event.wait()
+    async def wait(self, timeout: int) -> None:
+        self._check_listener()
+        try:
+            await asyncio.wait_for(self._listener, timeout)
+        except asyncio.TimeoutError:
+            pass
 
-    async def read_line(self) -> str:
-        async with self._lock:
-            return self._output_line.decode('utf-8', 'replace').strip()
+    def _check_listener(self) -> None:
+        if self._listener.done():
+            self._listener = self._loop.create_future()
 
-    async def get_output(self) -> str:
-        async with self._lock:
-            return self._output.decode('utf-8', 'replace').strip()
-
-    async def _append(self, line: bytes) -> None:
-        async with self._lock:
-            self._output_line = line
-            self._output += line
-        if not self._flag:
-            self._loop.call_later(1, self._event.set)
-            self._flag = True
-
-    async def _read_stdout(self) -> None:
-        while True:
-            line = await self._process.stdout.readline()
-            if not line:
-                break
-            await self._append(line)
-
-    async def _read_stderr(self) -> None:
-        while True:
-            line = await self._process.stderr.readline()
-            if not line:
-                break
-            await self._append(line)
-
-    async def worker(self) -> None:
-        await asyncio.wait([self._read_stdout(), self._read_stderr()])
-        await self._process.wait()
-        self._event.set()
-        self._finish()
+    def cancel(self) -> None:
+        if self._cancelled or self._finished:
+            return
+        killpg(getpgid(self._process.pid), SIGKILL)
+        self._cancelled = True
 
     @classmethod
     async def execute(cls, cmd: str) -> 'Term':
         process = await asyncio.create_subprocess_shell(
-            cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+            cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, preexec_fn=setsid)
         t_obj = cls(process)
-        asyncio.get_event_loop().create_task(t_obj.worker())
+        t_obj._start()
         return t_obj
+
+    def _start(self) -> None:
+        self._loop.create_task(self._worker())
+
+    async def _worker(self) -> None:
+        if self._cancelled or self._finished:
+            return
+        await asyncio.wait([self._read_stdout(), self._read_stderr()])
+        await self._process.wait()
+        self._finish()
+
+    async def _read_stdout(self) -> None:
+        await self._read(self._process.stdout)
+
+    async def _read_stderr(self) -> None:
+        await self._read(self._process.stderr)
+
+    async def _read(self, reader: StreamReader) -> None:
+        while True:
+            line = await reader.readline()
+            if not line:
+                break
+            self._append(line)
+
+    def _append(self, line: bytes) -> None:
+        self._line = line
+        self._output += line
+        self._check_init()
+
+    def _check_init(self) -> None:
+        if self._is_init:
+            return
+        self._loop.call_later(1, self._init.set)
+        self._is_init = True
+
+    def _finish(self) -> None:
+        if self._finished:
+            return
+        self._init.set()
+        self._finished = True
+        if not self._listener.done():
+            self._listener.set_result(None)
