@@ -24,10 +24,7 @@ _types = [
 
 
 def _get_chat_lock(message: Message, lock_type: str, should_lock: bool) -> Sequence[str]:
-    if should_lock is True:
-        lock = False
-    else:
-        lock = True
+    lock = not should_lock
     msg = message.chat.permissions.can_send_messages
     media = message.chat.permissions.can_send_media_messages
     stickers = message.chat.permissions.can_send_stickers

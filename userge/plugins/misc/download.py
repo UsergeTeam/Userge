@@ -51,23 +51,23 @@ async def down_load_media(message: Message):
 
 async def handle_download(message: Message, resource: Union[Message, str]) -> Tuple[str, int]:
     """ download from resource """
-    if isinstance(resource, Message):
-        if resource.media_group_id:
-            resources = await message.client.get_media_group(
-                message.chat.id,
-                resource.message_id
+    if not isinstance(resource, Message):
+        return await url_download(message, resource)
+    if resource.media_group_id:
+        resources = await message.client.get_media_group(
+            message.chat.id,
+            resource.message_id
+        )
+        dlloc, din = [], 0
+        for res in resources:
+            dl_loc, d_in = await tg_download(
+                message,
+                res
             )
-            dlloc, din = [], 0
-            for res in resources:
-                dl_loc, d_in = await tg_download(
-                    message,
-                    res
-                )
-                din = din + d_in
-                dlloc.append(dl_loc)
-            return dumps(dlloc), din
-        return await tg_download(message, resource)
-    return await url_download(message, resource)
+            din += d_in
+            dlloc.append(dl_loc)
+        return dumps(dlloc), din
+    return await tg_download(message, resource)
 
 
 async def url_download(message: Message, url: str) -> Tuple[str, int]:

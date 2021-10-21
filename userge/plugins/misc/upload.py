@@ -174,9 +174,7 @@ async def doc_upload(message: Message, path, del_path: bool = False,
     sent: Message = await message.client.send_message(
         message.chat.id, f"`Uploading {str_path} as a doc ... {extra}`")
     start_t = datetime.now()
-    thumb = None
-    if with_thumb:
-        thumb = await get_thumb(str_path)
+    thumb = await get_thumb(str_path) if with_thumb else None
     await message.client.send_chat_action(message.chat.id, "upload_document")
     try:
         msg = await message.client.send_document(
@@ -204,9 +202,7 @@ async def doc_upload(message: Message, path, del_path: bool = False,
 async def vid_upload(message: Message, path, del_path: bool = False,
                      extra: str = '', with_thumb: bool = True):
     str_path = str(path)
-    thumb = None
-    if with_thumb:
-        thumb = await get_thumb(str_path)
+    thumb = await get_thumb(str_path) if with_thumb else None
     duration = 0
     metadata = extractMetadata(createParser(str_path))
     if metadata and metadata.has("duration"):
