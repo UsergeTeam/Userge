@@ -16,7 +16,6 @@ import shlex
 import sys
 import threading
 import traceback
-from asyncio import StreamReader
 from contextlib import contextmanager
 from enum import Enum
 from getpass import getuser
@@ -432,7 +431,7 @@ class Term:
     async def _read_stderr(self) -> None:
         await self._read(self._process.stderr)
 
-    async def _read(self, reader: StreamReader) -> None:
+    async def _read(self, reader: asyncio.StreamReader) -> None:
         while True:
             line = await reader.readline()
             if not line:
