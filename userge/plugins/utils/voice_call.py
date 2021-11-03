@@ -12,7 +12,6 @@
 
 import asyncio
 import glob
-import importlib
 import os
 import re
 import shutil
@@ -30,18 +29,10 @@ from pytgcalls.exceptions import GroupCallNotFoundError
 from youtubesearchpython import VideosSearch
 
 from userge import userge, Message, pool, filters, get_collection, Config
-from userge.utils import time_formatter
+from userge.utils import time_formatter, import_ytdl
 from userge.utils.exceptions import StopConversation
 
 CHANNEL = userge.getCLogger(__name__)
-LOGGER = userge.getLogger(__name__)
-
-reqd_module = os.environ.get("YOUTUBE_DL_PATH", "youtube_dl")
-try:
-    ytdl = importlib.import_module(reqd_module)
-except ModuleNotFoundError:
-    LOGGER.info("please fix your requirements.txt file")
-    raise
 
 VC_DB = get_collection("VC_CMDS_TOGGLE")
 CMDS_FOR_ALL = False
@@ -58,6 +49,7 @@ BACK_BUTTON_TEXT = ""
 CQ_MSG: List[RawMessage] = []
 
 call = GroupCall(userge, play_on_repeat=False)
+ytdl = import_ytdl()
 
 yt_regex = re.compile(
     r'(https?://)?(www\.)?'

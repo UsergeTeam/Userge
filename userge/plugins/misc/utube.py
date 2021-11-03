@@ -10,7 +10,6 @@
 
 import os
 import glob
-import importlib
 from pathlib import Path
 from time import time
 from math import floor
@@ -18,18 +17,11 @@ from math import floor
 import wget
 
 from userge import userge, Message, Config, pool
-from userge.utils import time_formatter, humanbytes
+from userge.utils import time_formatter, humanbytes, import_ytdl
 from .upload import upload
 
 LOGGER = userge.getLogger(__name__)
-
-
-reqd_module = os.environ.get("YOUTUBE_DL_PATH", "youtube_dl")
-try:
-    ytdl = importlib.import_module(reqd_module)
-except ModuleNotFoundError:
-    LOGGER.info("please fix your requirements.txt file")
-    raise
+ytdl = import_ytdl()
 
 
 @userge.on_cmd("ytinfo", about={'header': "Get info from ytdl",
