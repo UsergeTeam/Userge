@@ -12,6 +12,7 @@
 
 import asyncio
 import glob
+import importlib
 import os
 import re
 import shutil
@@ -19,7 +20,6 @@ from traceback import format_exc
 from typing import List, Tuple
 
 import ffmpeg
-import youtube_dl as ytdl
 from pyrogram.raw import functions
 from pyrogram.types import (
     InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, Message as RawMessage
@@ -34,6 +34,14 @@ from userge.utils import time_formatter
 from userge.utils.exceptions import StopConversation
 
 CHANNEL = userge.getCLogger(__name__)
+LOGGER = userge.getLogger(__name__)
+
+reqd_module = os.environ.get("YOUTUBE_DL_PATH", "youtube_dl")
+try:
+    ytdl = importlib.import_module(reqd_module)
+except ModuleNotFoundError:
+    LOGGER.info("please fix your requirements.txt file")
+    raise
 
 VC_DB = get_collection("VC_CMDS_TOGGLE")
 CMDS_FOR_ALL = False
