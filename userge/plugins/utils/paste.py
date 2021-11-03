@@ -30,9 +30,7 @@ class PasteService:
 
     def is_supported(self, url: str) -> bool:
         """ returns True if url supports service """
-        if url.startswith((self._url, self._url.replace("https://", ""))):
-            return True
-        return False
+        return bool(url.startswith((self._url, self._url.replace("https://", ""))))
 
     async def _get_token(self, ses: aiohttp.ClientSession, ptn: str) -> Optional[str]:
         token = None
@@ -191,11 +189,7 @@ _SERVICES: Dict[str, PasteService] = {
     '-n': NekoBin(), '-h': HasteBin(), '-r': Rentry(), '-p': Pasting(),
     '-pl': PastyLus(), '-k': KatBin(), '-s': SpaceBin()}
 
-if Config.HEROKU_ENV:
-    _DEFAULT_SERVICE = '-k'
-else:
-    _DEFAULT_SERVICE = '-n'
-
+_DEFAULT_SERVICE = '-k' if Config.HEROKU_ENV else '-n'
 _HEADERS = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 ('
                           'KHTML, like Gecko) Cafari/537.36'}
 
@@ -235,14 +229,15 @@ async def paste_(message: Message) -> None:
     text = message.filtered_input_str
     replied = message.reply_to_message
     file_type = None
-    if not text and replied and replied.document and replied.document.file_size < 2 ** 20 * 10:
-        file_type = os.path.splitext(replied.document.file_name)[1].lstrip('.')
-        path = await replied.download(Config.DOWN_PATH)
-        async with aiofiles.open(path, 'r') as d_f:
-            text = await d_f.read()
-        os.remove(path)
-    elif not text and replied and replied.text:
-        text = replied.text
+    if not text and replied:
+        if replied.document and replied.document.file_size < 2 ** 20 * 10:
+            file_type = os.path.splitext(replied.document.file_name)[1].lstrip('.')
+            path = await replied.download(Config.DOWN_PATH)
+            async with aiofiles.open(path, 'r') as d_f:
+                text = await d_f.read()
+            os.remove(path)
+        elif replied.text:
+            text = replied.text
     if not text:
         await message.err("input not found!")
         return
@@ -253,13 +248,13 @@ async def paste_(message: Message) -> None:
         return
 
     service: Optional[PasteService] = None
-    if size == 2:
-        service = _SERVICES.get(flags[0])
-        file_type = flags[1].lstrip('-')
-    elif size == 1:
+    if size == 1:
         service = _SERVICES.get(flags[0])
         if not service:
             file_type = flags[0].lstrip('-')
+    elif size == 2:
+        service = _SERVICES.get(flags[0])
+        file_type = flags[1].lstrip('-')
     if not service:
         service = _SERVICES[_DEFAULT_SERVICE]
 

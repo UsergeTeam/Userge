@@ -71,8 +71,6 @@ async def who_is(message: Message):
             os.remove(local_user_photo)
             await message.delete()
         else:
-            cuz = "NO DP Found"
-            if not s_perm:
-                cuz = "Chat Send Media Forbidden"
+            cuz = "Chat Send Media Forbidden" if not s_perm else "NO DP Found"
             message_out_str = "<b>📷 " + cuz + " 📷</b>\n\n" + message_out_str
             await message.edit(message_out_str)
