@@ -34,6 +34,7 @@ from userge.utils import time_formatter
 from userge.utils.exceptions import StopConversation
 
 CHANNEL = userge.getCLogger(__name__)
+LOGGER = userge.getLogger(__name__)
 
 reqd_module = os.environ.get("YOUTUBE_DL_PATH", "youtube_dl")
 try:
