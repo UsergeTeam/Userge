@@ -37,9 +37,10 @@ async def _init() -> None:
     s_o = await SAVED_SETTINGS.find_one(_ID)
     if s_o:
         Config.ANTISPAM_SENTRY = s_o['data']
-    _re_init_handler()
+    await _re_init_handler()
 
 
+@pool.run_in_thread
 def _re_init_handler():
     global HANDLER  # pylint: disable=global-statement
     handler = GBanHandler()
@@ -60,7 +61,7 @@ async def antispam_(message: Message):
     Config.ANTISPAM_SENTRY = not Config.ANTISPAM_SENTRY
     text = f"`antispam {'enabled' if Config.ANTISPAM_SENTRY else 'disabled'} !`"
     await message.edit(text, del_in=3)
-    _re_init_handler()
+    await _re_init_handler()
     await SAVED_SETTINGS.update_one(_ID, {"$set": {'data': Config.ANTISPAM_SENTRY}}, upsert=True)
 
 
