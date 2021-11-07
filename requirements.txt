@@ -15,6 +15,7 @@ googletrans==3.1.0a0
 hachoir
 heroku3
 html-telegraph-poster
+httpx>=0.14.2
 motor
 oauth2client
 Pillow==8.3.2
