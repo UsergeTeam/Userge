@@ -71,21 +71,20 @@ async def check_update(message: Message):
             await CHANNEL.log(f"`Moved HEAD from [{active}] >>> [{branch}] !`")
             await message.edit('`Now restarting... Wait for a while!`', del_in=3)
             asyncio.get_event_loop().create_task(userge.restart())
+    elif out:
+        change_log = f'**New UPDATE available for [{branch}]:\n\n📄 CHANGELOG 📄**\n\n'
+        await message.edit_or_send_as_file(change_log + out, disable_web_page_preview=True)
     else:
-        if out:
-            change_log = f'**New UPDATE available for [{branch}]:\n\n📄 CHANGELOG 📄**\n\n'
-            await message.edit_or_send_as_file(change_log + out, disable_web_page_preview=True)
-        else:
-            await message.edit(f'**Userge is up-to-date with [{branch}]**', del_in=5)
+        await message.edit(f'**Userge is up-to-date with [{branch}]**', del_in=5)
 
 
 def _get_updates(repo: Repo, branch: str) -> str:
     repo.remote(Config.UPSTREAM_REMOTE).fetch(branch)
-    out = ''
     upst = Config.UPSTREAM_REPO.rstrip('/')
-    for i in repo.iter_commits(f'HEAD..{Config.UPSTREAM_REMOTE}/{branch}'):
-        out += f"🔨 **#{i.count()}** : [{i.summary}]({upst}/commit/{i}) 👷 __{i.author}__\n\n"
-    return out
+    return ''.join(
+        f"🔨 **#{i.count()}** : [{i.summary}]({upst}/commit/{i}) 👷 __{i.author}__\n\n"
+        for i in repo.iter_commits(f'HEAD..{Config.UPSTREAM_REMOTE}/{branch}')
+    )
 
 
 async def _pull_from_repo(repo: Repo, branch: str) -> None:

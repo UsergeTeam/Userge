@@ -85,10 +85,7 @@ async def bot_pm(msg: Message):
     global BOT_PM  # pylint: disable=global-statement
     if not userge.has_bot:
         return await msg.err("You have to us Bot mode or Dual mode if you want to enable Bot Pm.")
-    if BOT_PM:
-        BOT_PM = False
-    else:
-        BOT_PM = True
+    BOT_PM = not BOT_PM
     await SAVED_SETTINGS.update_one(
         {"_id": "BOT_PM"}, {"$set": {"data": BOT_PM}}, upsert=True
     )
@@ -186,9 +183,9 @@ if userge.has_bot:
             if replied:
                 if replied.forward_from:
                     user_id = replied.forward_from.id
+                elif replied.message_id not in _U_ID_F_M_ID:
+                    return await msg.reply("You can't reply old message of this user.")
                 else:
-                    if replied.message_id not in _U_ID_F_M_ID:
-                        return await msg.reply("You can't reply old message of this user.")
                     user_id = _U_ID_F_M_ID.get(replied.message_id)
             else:
                 # noinspection PyBroadException
@@ -225,9 +222,9 @@ if userge.has_bot:
             if replied:
                 if replied.forward_from:
                     user_id = replied.forward_from.id
+                elif replied.message_id not in _U_ID_F_M_ID:
+                    return await msg.reply("You can't reply old message of this user.")
                 else:
-                    if replied.message_id not in _U_ID_F_M_ID:
-                        return await msg.reply("You can't reply old message of this user.")
                     user_id = _U_ID_F_M_ID.get(replied.message_id)
             else:
                 # noinspection PyBroadException
@@ -313,10 +310,7 @@ After Adding a var, you can see your media when you start your Bot.
                 reply_markup=mp
             )
         elif cq.data == "en_dis_bot_pm":
-            if BOT_PM:
-                BOT_PM = False
-            else:
-                BOT_PM = True
+            BOT_PM = not BOT_PM
             await SAVED_SETTINGS.update_one(
                 {"_id": "BOT_PM"}, {"$set": {"data": BOT_PM}}, upsert=True
             )
@@ -491,9 +485,9 @@ After Adding a var, you can see your media when you start your Bot.
         else:
             if replied.forward_from:
                 reply_id = replied.forward_from.id
+            elif replied.message_id not in _U_ID_F_M_ID:
+                return await msg.reply("You can't reply old message of this user.")
             else:
-                if replied.message_id not in _U_ID_F_M_ID:
-                    return await msg.reply("You can't reply old message of this user.")
                 reply_id = _U_ID_F_M_ID.get(replied.message_id)
             try:
                 if msg.text:
