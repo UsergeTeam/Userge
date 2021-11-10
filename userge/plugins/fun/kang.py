@@ -52,7 +52,9 @@ async def kang_(message: Message):
             if not replied.sticker.file_name:
                 await message.edit("`Sticker has no Name!`")
                 return
-            emoji_ = replied.sticker.emoji
+            _ = replied.sticker.emoji
+            if _:
+                emoji_ = _
             is_anim = replied.sticker.is_animated
             if not replied.sticker.file_name.endswith('.tgs'):
                 resize = True
