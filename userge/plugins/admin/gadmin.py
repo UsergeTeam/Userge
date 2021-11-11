@@ -138,12 +138,12 @@ async def ban_user(message: Message):
         _time = f"{days}d"
 
     try:
-        get_mem = await message.client.get_chat_member(chat_id, user_id)
+        get_mem = await message.client.get_users(user_id)
         await message.client.kick_chat_member(chat_id, user_id, int(ban_period))
         await message.edit(
             "#BAN\n\n"
-            f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
-            f"(`{get_mem.user.id}`)\n"
+            f"USER: [{get_mem.first_name}](tg://user?id={get_mem.id}) "
+            f"(`{get_mem.id}`)\n"
             f"CHAT: `{message.chat.title}` (`{chat_id}`)\n"
             f"TIME: `{_time}`\n"
             f"REASON: `{reason}`", log=__name__)
@@ -172,13 +172,13 @@ async def unban_usr(message: Message):
         await message.err("no valid user_id or message specified")
         return
     try:
-        get_mem = await message.client.get_chat_member(chat_id, user_id)
+        get_mem = await message.client.get_users(user_id)
         await message.client.unban_chat_member(chat_id, user_id)
         await message.edit("`🛡 Successfully Unbanned..`", del_in=5)
         await CHANNEL.log(
             "#UNBAN\n\n"
-            f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
-            f"(`{get_mem.user.id}`)\n"
+            f"USER: [{get_mem.first_name}](tg://user?id={get_mem.id}) "
+            f"(`{get_mem.id}`)\n"
             f"CHAT: `{message.chat.title}` (`{chat_id}`)")
     except UsernameInvalid:
         await message.err("invalid username, try again with valid info ⚠")
@@ -204,16 +204,13 @@ async def kick_usr(message: Message):
     if not user_id:
         return await message.err("no valid user_id or message specified")
     try:
-        get_mem = await chat.get_member(user_id)
-        await chat.kick_member(user_id)
+        get_mem = await message.client.get_users(user_id)
+        await chat.kick_member(user_id, until_date=time() + 39)
         await message.edit(
             "#KICK\n\n"
-            f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
-            f"(`{get_mem.user.id}`)\n"
+            f"USER: [{get_mem.first_name}](tg://user?id={get_mem.id}) "
+            f"(`{get_mem.id}`)\n"
             f"CHAT: `{chat.title}` (`{chat.id}`)", log=__name__)
-        # add delay prevent overlaping script
-        await asyncio.sleep(1)
-        await chat.unban_member(user_id)
     except UsernameInvalid:
         await message.err("invalid username, try again with valid info ⚠")
     except PeerIdInvalid:
@@ -261,15 +258,15 @@ async def mute_usr(message: Message):
         _time = f"{int(days)}d"
     if flags:
         try:
-            get_mem = await message.client.get_chat_member(chat_id, user_id)
+            get_mem = await message.client.get_users(user_id)
             await message.client.restrict_chat_member(
                 chat_id, user_id,
                 ChatPermissions(),
                 int(time.time() + mute_period))
             await message.edit(
                 "#MUTE\n\n"
-                f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
-                f"(`{get_mem.user.id}`)\n"
+                f"USER: [{get_mem.first_name}](tg://user?id={get_mem.id}) "
+                f"(`{get_mem.id}`)\n"
                 f"CHAT: `{message.chat.title}` (`{chat_id}`)\n"
                 f"MUTE UNTIL: `{_time}`\n"
                 f"REASON: `{reason}`", log=__name__)
@@ -283,12 +280,12 @@ async def mute_usr(message: Message):
             await message.err(f"something went wrong 🤔\n\n{e_f}")
     else:
         try:
-            get_mem = await message.client.get_chat_member(chat_id, user_id)
+            get_mem = await message.client.get_users(user_id)
             await message.client.restrict_chat_member(chat_id, user_id, ChatPermissions())
             await message.edit(
                 "#MUTE\n\n"
-                f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
-                f"(`{get_mem.user.id}`)\n"
+                f"USER: [{get_mem.first_name}](tg://user?id={get_mem.id}) "
+                f"(`{get_mem.id}`)\n"
                 f"CHAT: `{message.chat.title}` (`{chat_id}`)\n"
                 f"MUTE UNTIL: `forever`\n"
                 f"REASON: `{reason}`", log=__name__)
@@ -317,13 +314,13 @@ async def unmute_usr(message: Message):
         await message.err("no valid user_id or message specified")
         return
     try:
-        get_mem = await message.client.get_chat_member(chat_id, user_id)
+        get_mem = await message.client.get_users(user_id)
         await message.client.unban_chat_member(chat_id, user_id)
         await message.edit("`🛡 Successfully Unmuted..`", del_in=5)
         await CHANNEL.log(
             "#UNMUTE\n\n"
-            f"USER: [{get_mem.user.first_name}](tg://user?id={get_mem.user.id}) "
-            f"(`{get_mem.user.id}`)\n"
+            f"USER: [{get_mem.first_name}](tg://user?id={get_mem.id}) "
+            f"(`{get_mem.id}`)\n"
             f"CHAT: `{message.chat.title}` (`{chat_id}`)")
     except UsernameInvalid:
         await message.err("invalid username, try again with valid info ⚠")
