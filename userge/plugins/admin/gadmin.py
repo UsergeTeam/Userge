@@ -205,7 +205,7 @@ async def kick_usr(message: Message):
         return await message.err("no valid user_id or message specified")
     try:
         get_mem = await message.client.get_users(user_id)
-        await chat.kick_member(user_id, until_date=time() + 39)
+        await chat.kick_member(user_id, until_date=time.time() + 39)
         await message.edit(
             "#KICK\n\n"
             f"USER: [{get_mem.first_name}](tg://user?id={get_mem.id}) "
