@@ -11,7 +11,7 @@ gitpython
 google-api-python-client
 google-auth-httplib2
 google-auth-oauthlib
-googletrans==3.0.0
+googletrans==0.13.3
 hachoir
 heroku3
 html-telegraph-poster
