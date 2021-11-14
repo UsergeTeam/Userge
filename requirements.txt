@@ -15,7 +15,6 @@ googletrans==4.0.0rc1
 hachoir
 heroku3
 html-telegraph-poster
-httpx==0.13.3
 motor
 oauth2client
 Pillow==8.3.2
@@ -43,4 +42,4 @@ UsergeAntiSpamApi==0.1.7
 wget
 wikipedia
 youtube_dl>=2021.1.8
-youtube-search-python
+youtube-search-python==1.4.9
