@@ -8,22 +8,21 @@
 #
 # All rights reserved.
 
+import asyncio
 import os
+from datetime import datetime, timedelta
 from typing import Dict, List, Tuple
 
-import wget
-import asyncio
 import feedparser
-from datetime import datetime, timedelta
+import wget
 from dateutil import parser
-
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram.errors import (
     ChatWriteForbidden, ChannelPrivate, UserNotParticipant, ChatIdInvalid
 )
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from userge.utils.exceptions import UsergeBotNotFound
 from userge import userge, Message, Config, logging, get_collection, pool
+from userge.utils.exceptions import UsergeBotNotFound
 
 RSS_CHAT_ID = [int(x) for x in os.environ.get("RSS_CHAT_ID", str(Config.LOG_CHANNEL_ID)).split()]
 _LOG = logging.getLogger(__name__)
@@ -147,7 +146,7 @@ async def add_rss_feed(msg: Message):
     if len(RSS_DICT) >= 10:
         return await msg.edit("`Sorry, but not allowing to add urls more than 10.`")
     if not msg.input_str:
-        return await msg.edit("Check `.help addfeed`")
+        return await msg.err("Feed url not found!")
     try:
         rss = await _parse(msg.input_str)
     except IndexError:
@@ -159,7 +158,7 @@ async def add_rss_feed(msg: Message):
 @userge.on_cmd("delfeed", about={
     'header': "Delete a existing Feed Url from Database.",
     'flags': {'-all': 'Delete All Urls.'},
-    'usage': "{tr}delfeed title"})
+    'usage': "{tr}delfeed url"})
 async def delete_rss_feed(msg: Message):
     """ Delete to a existing Feed Url """
     if msg.flags and '-all' in msg.flags:
@@ -167,7 +166,7 @@ async def delete_rss_feed(msg: Message):
         await RSS_COLLECTION.drop()
         return await msg.edit("`Deleted All feeds Successfully...`")
     if not msg.input_str:
-        return await msg.edit("check `.help delfeed`")
+        return await msg.err("Feed url not found!")
     out_str = await delete_feed(msg.input_str)
     await msg.edit(out_str, log=__name__)
 
@@ -208,9 +207,10 @@ async def rss_worker():
                     RSS_DICT[url][1] = now
                     continue
                 await send_new_post(entry)
+                if url not in RSS_DICT:
+                    break
                 RSS_DICT[url] = [pub, now]
-                await RSS_COLLECTION.update_one(
-                    {'url': url}, {"$set": {'published': pub}}, upsert=True)
+                await RSS_COLLECTION.update_one({'url': url}, {"$set": {'published': pub}})
                 await asyncio.sleep(1)
             await asyncio.sleep(5)
         await asyncio.sleep(60)

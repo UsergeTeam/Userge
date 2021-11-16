@@ -27,7 +27,7 @@ async def req_head(message: Message):
     stm = '-s' in flags
     tout = int(flags.get('-t', 3))
     if not link:
-        await message.err(text="Please give me a link link!")
+        await message.err("Please give me a link link!")
         return
     try:
         cd = requests.head(url=link,

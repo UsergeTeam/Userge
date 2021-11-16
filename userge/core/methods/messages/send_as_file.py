@@ -10,16 +10,16 @@
 
 __all__ = ['SendAsFile']
 
-import os
 import inspect
+import os
 from typing import Union, Optional
 
 import aiofiles
 
 from userge import logging, Config
 from userge.utils import secure_text
-from ...ext import RawClient
 from ... import types
+from ...ext import RawClient
 
 _LOG = logging.getLogger(__name__)
 _LOG_STR = "<<<!  :::::  %s  :::::  !>>>"

@@ -8,82 +8,27 @@
 #
 # All rights reserved.
 
-import io
-import sys
 import asyncio
+import io
 import keyword
+import re
+import shlex
+import sys
+import threading
 import traceback
+from contextlib import contextmanager
+from enum import Enum
 from getpass import getuser
-from os import geteuid
+from os import geteuid, setsid, getpgid, killpg
+from signal import SIGKILL
+from typing import Awaitable, Any, Callable, Dict, Optional, Tuple, Iterable
 
-from userge import userge, Message, Config
+from pyrogram.types.messages_and_media.message import Str
+
+from userge import userge, Message, Config, pool
 from userge.utils import runcmd
 
 CHANNEL = userge.getCLogger()
-
-
-@userge.on_cmd("eval", about={
-    'header': "run python code line | lines",
-    'flags': {'-s': "silent mode (hide STDIN)"},
-    'usage': "{tr}eval [flag] [code lines]",
-    'examples': [
-        "{tr}eval print('Userge')", "{tr}eval -s print('Userge')",
-        "{tr}eval 5 + 6", "{tr}eval -s 5 + 6"]}, allow_channels=False)
-async def eval_(message: Message):
-    """ run python code """
-    cmd = await init_func(message)
-    if cmd is None:
-        return
-    silent_mode = False
-    if cmd.startswith('-s'):
-        silent_mode = True
-        cmd = cmd[2:].strip()
-    if not cmd:
-        await message.err("Unable to Parse Input!")
-        return
-    await message.edit("`Executing eval ...`", parse_mode='md')
-    old_stderr = sys.stderr
-    old_stdout = sys.stdout
-    redirected_output = sys.stdout = io.StringIO()
-    redirected_error = sys.stderr = io.StringIO()
-    ret_val, stdout, stderr, exc = None, None, None, None
-
-    async def aexec(code):
-        head = "async def __aexec(userge, message):\n "
-        if '\n' in code:
-            rest_code = '\n '.join(iter(code.split('\n')))
-        elif (any(True for k_ in keyword.kwlist
-                  if k_ not in ('True', 'False', 'None') and code.startswith(f"{k_} "))
-              or '=' in code):
-            rest_code = f"\n {code}"
-        else:
-            rest_code = f"\n return {code}"
-        exec(head + rest_code)  # nosec pylint: disable=W0122
-        return await locals()['__aexec'](userge, message)
-    try:
-        ret_val = await aexec(cmd)
-    except Exception:  # pylint: disable=broad-except
-        exc = traceback.format_exc().strip()
-    stdout = redirected_output.getvalue().strip()
-    stderr = redirected_error.getvalue().strip()
-    sys.stdout = old_stdout
-    sys.stderr = old_stderr
-    evaluation = exc or stderr or stdout or ret_val
-    output = ""
-    if not silent_mode:
-        output += f"**>** ```{cmd}```\n\n"
-    if evaluation is not None:
-        output += f"**>>** ```{evaluation}```"
-    if (exc or stderr) and message.chat.type in ("group", "supergroup", "channel"):
-        msg_id = await CHANNEL.log(output)
-        await message.edit(f"**Logs**: {CHANNEL.get_link(msg_id)}")
-    elif output:
-        await message.edit_or_send_as_file(text=output,
-                                           parse_mode='md',
-                                           filename="eval.txt",
-                                           caption=cmd)
-    else:
-        await message.delete()
 
 
 @userge.on_cmd("exec", about={
@@ -95,22 +40,162 @@ async def exec_(message: Message):
     cmd = await init_func(message)
     if cmd is None:
         return
+
     await message.edit("`Executing exec ...`")
     try:
         out, err, ret, pid = await runcmd(cmd)
     except Exception as t_e:  # pylint: disable=broad-except
         await message.err(str(t_e))
         return
-    out = out or "no output"
-    err = err or "no error"
-    out = "\n".join(out.split("\n"))
+
     output = f"**EXEC**:\n\n\
 __Command:__\n`{cmd}`\n__PID:__\n`{pid}`\n__RETURN:__\n`{ret}`\n\n\
-**stderr:**\n`{err}`\n\n**stdout:**\n``{out}`` "
+**stderr:**\n`{err or 'no error'}`\n\n**stdout:**\n``{out or 'no output'}`` "
     await message.edit_or_send_as_file(text=output,
                                        parse_mode='md',
                                        filename="exec.txt",
                                        caption=cmd)
+
+
+_KEY = '_OLD'
+_EVAL_TASKS: Dict[asyncio.Future, str] = {}
+
+
+@userge.on_cmd("eval", about={
+    'header': "run python code line | lines",
+    'flags': {
+        '-s': "silent mode (hide STDIN)",
+        '-p': "run in a private session",
+        '-n': "spawn new main session and run",
+        '-l': "list all running eval tasks",
+        '-c': "cancel specific running eval task",
+        '-ca': "cancel all running eval tasks"
+    },
+    'usage': "{tr}eval [flag] [code lines]",
+    'examples': [
+        "{tr}eval print('Userge')", "{tr}eval -s print('Userge')",
+        "{tr}eval 5 + 6", "{tr}eval -s 5 + 6",
+        "{tr}eval -p x = 'private_value'", "{tr}eval -n y = 'new_value'",
+        "{tr}eval -c2", "{tr}eval -ca", "{tr}eval -l"]}, allow_channels=False)
+async def eval_(message: Message):
+    """ run python code """
+    for t in tuple(_EVAL_TASKS):
+        if t.done():
+            del _EVAL_TASKS[t]
+
+    flags = message.flags
+    size = len(_EVAL_TASKS)
+    if '-l' in flags:
+        if _EVAL_TASKS:
+            out = "**Eval Tasks**\n\n"
+            i = 0
+            for c in _EVAL_TASKS.values():
+                out += f"**{i}** - `{c}`\n"
+                i += 1
+            out += f"\nuse `{Config.CMD_TRIGGER}eval -c[id]` to Cancel"
+            await message.edit(out)
+        else:
+            await message.edit("No running eval tasks !", del_in=5)
+        return
+    if ('-c' in flags or '-ca' in flags) and size == 0:
+        await message.edit("No running eval tasks !", del_in=5)
+        return
+    if '-ca' in flags:
+        for t in _EVAL_TASKS:
+            t.cancel()
+        await message.edit(f"Canceled all running eval tasks [{size}] !", del_in=5)
+        return
+    if '-c' in flags:
+        t_id = int(flags.get('-c', -1))
+        if t_id < 0 or t_id >= size:
+            await message.edit(f"Invalid eval task id [{t_id}] !", del_in=5)
+            return
+        list(_EVAL_TASKS)[t_id].cancel()
+        await message.edit(f"Canceled eval task [{t_id}] !", del_in=5)
+        return
+
+    cmd = await init_func(message)
+    if cmd is None:
+        return
+
+    _flags = []
+    for _ in range(3):
+        _found = False
+        for f in ('-s', '-p', '-n'):
+            if cmd.startswith(f):
+                _found = True
+                _flags.append(f)
+                cmd = cmd[len(f):].strip()
+                if not cmd:
+                    break
+        if not _found or not cmd:
+            break
+
+    if not cmd:
+        await message.err("Unable to Parse Input!")
+        return
+
+    silent_mode = '-s' in _flags
+    if '-n' in _flags:
+        context_type = _ContextType.NEW
+    elif '-p' in _flags:
+        context_type = _ContextType.PRIVATE
+    else:
+        context_type = _ContextType.GLOBAL
+
+    async def _callback(output: Optional[str], errored: bool):
+        final = ""
+        if not silent_mode:
+            final += f"**>** ```{cmd}```\n\n"
+        if isinstance(output, str):
+            output = output.strip()
+            if output == '':
+                output = None
+        if output is not None:
+            final += f"**>>** ```{output}```"
+        if errored and message.chat.type in ("group", "supergroup", "channel"):
+            msg_id = await CHANNEL.log(final)
+            await msg.edit(f"**Logs**: {CHANNEL.get_link(msg_id)}")
+        elif final:
+            await msg.edit_or_send_as_file(text=final,
+                                           parse_mode='md',
+                                           filename="eval.txt",
+                                           caption=cmd)
+        else:
+            await msg.delete()
+
+    msg = message
+    replied = message.reply_to_message
+    if (replied and replied.from_user
+            and replied.from_user.is_self and isinstance(replied.text, Str)
+            and str(replied.text.html).startswith("<b>></b> <pre>")):
+        msg = replied
+
+    await msg.edit("`Executing eval ...`", parse_mode='md')
+
+    _g, _l = _context(
+        context_type, userge=userge, message=message, replied=message.reply_to_message)
+    l_d = {}
+    try:
+        exec(_wrap_code(cmd, _l.keys()), _g, l_d)  # nosec pylint: disable=W0122
+    except Exception:  # pylint: disable=broad-except
+        _g[_KEY] = _l
+        await _callback(traceback.format_exc(), True)
+        return
+
+    future = asyncio.get_running_loop().create_future()
+    pool.submit_thread(_run_coro, future, l_d['__aexec'](*_l.values()), _callback)
+    hint = cmd.split('\n')[0]
+    _EVAL_TASKS[future] = hint[:25] + "..." if len(hint) > 25 else hint
+
+    with msg.cancel_callback(future.cancel):
+        try:
+            await future
+        except asyncio.CancelledError:
+            await asyncio.gather(msg.canceled(),
+                                 CHANNEL.log(f"**EVAL Process Canceled!**\n\n```{cmd}```"))
+        finally:
+            _EVAL_TASKS.pop(future, None)
 
 
 @userge.on_cmd("term", about={
@@ -122,31 +207,38 @@ async def term_(message: Message):
     cmd = await init_func(message)
     if cmd is None:
         return
+
     await message.edit("`Executing terminal ...`")
     try:
-        t_obj = await Term.execute(cmd)  # type: Term
+        parsed_cmd = parse_py_template(cmd, message)
+    except Exception as e:  # pylint: disable=broad-except
+        await message.err(str(e))
+        await CHANNEL.log(f"**Exception**: {type(e).__name__}\n**Message**: " + str(e))
+        return
+    try:
+        t_obj = await Term.execute(parsed_cmd)  # type: Term
     except Exception as t_e:  # pylint: disable=broad-except
         await message.err(str(t_e))
         return
-    curruser = getuser()
+
+    cur_user = getuser()
     try:
         uid = geteuid()
     except ImportError:
         uid = 1
-    output = f"{curruser}:~# {cmd}\n" if uid == 0 else f"{curruser}:~$ {cmd}\n"
-    count = 0
-    while not t_obj.finished:
-        count += 1
-        if message.process_is_canceled:
-            t_obj.cancel()
-            await message.reply("`process canceled!`")
+    prefix = f"<b>{cur_user}:~#</b>" if uid == 0 else f"<b>{cur_user}:~$</b>"
+    output = f"{prefix} <pre>{cmd}</pre>\n"
+
+    with message.cancel_callback(t_obj.cancel):
+        await t_obj.init()
+        while not t_obj.finished:
+            await message.edit(f"{output}<pre>{t_obj.line}</pre>", parse_mode='html')
+            await t_obj.wait(Config.EDIT_SLEEP_TIMEOUT)
+        if t_obj.cancelled:
+            await message.canceled(reply=True)
             return
-        await asyncio.sleep(0.5)
-        if count >= Config.EDIT_SLEEP_TIMEOUT * 2:
-            count = 0
-            out_data = f"<pre>{output}{t_obj.read_line}</pre>"
-            await message.try_to_edit(out_data, parse_mode='html')
-    out_data = f"<pre>{output}{t_obj.get_output}</pre>"
+
+    out_data = f"{output}<pre>{t_obj.output}</pre>\n{prefix}"
     await message.edit_or_send_as_file(
         out_data, parse_mode='html', filename="term.txt", caption=cmd)
 
@@ -157,63 +249,210 @@ async def init_func(message: Message):
         await message.err("No Command Found!")
         return None
     if "config.env" in cmd:
-        await message.err("That's a dangerous operation! Not Permitted!")
+        await message.edit("`That's a dangerous operation! Not Permitted!`")
         return None
     return cmd
 
 
+def parse_py_template(cmd: str, msg: Message):
+    glo, loc = _context(_ContextType.PRIVATE, message=msg, replied=msg.reply_to_message)
+
+    def replacer(mobj):
+        return shlex.quote(str(eval(mobj.expand(r"\1"), glo, loc)))  # nosec pylint: disable=W0123
+    return re.sub(r"{{(.+?)}}", replacer, cmd)
+
+
+class _ContextType(Enum):
+    GLOBAL = 0
+    PRIVATE = 1
+    NEW = 2
+
+
+def _context(context_type: _ContextType, **kwargs) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    if context_type == _ContextType.NEW:
+        try:
+            del globals()[_KEY]
+        except KeyError:
+            pass
+    if _KEY not in globals():
+        globals()[_KEY] = globals().copy()
+    _g = globals()[_KEY]
+    if context_type == _ContextType.PRIVATE:
+        _g = _g.copy()
+    _l = _g.pop(_KEY, {})
+    _l.update(kwargs)
+    return _g, _l
+
+
+def _wrap_code(code: str, args: Iterable[str]) -> str:
+    head = "async def __aexec(" + ', '.join(args) + "):\n try:\n  "
+    tail = "\n finally: globals()['" + _KEY + "'] = locals()"
+    if '\n' in code:
+        code = code.replace('\n', '\n  ')
+    elif (any(True for k_ in keyword.kwlist if k_ not in (
+            'True', 'False', 'None', 'lambda', 'await') and code.startswith(f"{k_} "))
+          or ('=' in code and '==' not in code)):
+        code = f"\n  {code}"
+    else:
+        code = f"\n  return {code}"
+    return head + code + tail
+
+
+def _run_coro(future: asyncio.Future, coro: Awaitable[Any],
+              callback: Callable[[str, bool], Awaitable[Any]]) -> None:
+    loop = asyncio.new_event_loop()
+    task = loop.create_task(coro)
+    userge.loop.call_soon_threadsafe(future.add_done_callback,
+                                     lambda _: (loop.is_running() and future.cancelled()
+                                                and loop.call_soon_threadsafe(task.cancel)))
+    try:
+        ret, exc = None, None
+        with redirect() as out:
+            try:
+                ret = loop.run_until_complete(task)
+            except asyncio.CancelledError:
+                return
+            except Exception:  # pylint: disable=broad-except
+                exc = traceback.format_exc().strip()
+            output = exc or out.getvalue()
+            if ret is not None:
+                output += str(ret)
+        loop.run_until_complete(callback(output, exc is not None))
+    finally:
+        loop.run_until_complete(loop.shutdown_asyncgens())
+        loop.close()
+        userge.loop.call_soon_threadsafe(lambda: future.done() or future.set_result(None))
+
+
+_PROXIES = {}
+
+
+class _Wrapper:
+    def __init__(self, original):
+        self._original = original
+
+    def __getattr__(self, name: str):
+        return getattr(_PROXIES.get(threading.currentThread().ident, self._original), name)
+
+
+sys.stdout = _Wrapper(sys.stdout)
+sys.__stdout__ = _Wrapper(sys.__stdout__)
+sys.stderr = _Wrapper(sys.stderr)
+sys.__stderr__ = _Wrapper(sys.__stderr__)
+
+
+@contextmanager
+def redirect() -> io.StringIO:
+    ident = threading.currentThread().ident
+    source = io.StringIO()
+    _PROXIES[ident] = source
+    try:
+        yield source
+    finally:
+        del _PROXIES[ident]
+        source.close()
+
+
 class Term:
     """ live update term class """
+
     def __init__(self, process: asyncio.subprocess.Process) -> None:
         self._process = process
-        self._stdout = b''
-        self._stderr = b''
-        self._stdout_line = b''
-        self._stderr_line = b''
+        self._line = b''
+        self._output = b''
+        self._init = asyncio.Event()
+        self._is_init = False
+        self._cancelled = False
         self._finished = False
+        self._loop = asyncio.get_running_loop()
+        self._listener = self._loop.create_future()
 
-    def cancel(self) -> None:
-        self._process.kill()
+    @property
+    def line(self) -> str:
+        return self._by_to_str(self._line)
+
+    @property
+    def output(self) -> str:
+        return self._by_to_str(self._output)
+
+    @staticmethod
+    def _by_to_str(data: bytes) -> str:
+        return data.decode('utf-8', 'replace').strip()
+
+    @property
+    def cancelled(self) -> bool:
+        return self._cancelled
 
     @property
     def finished(self) -> bool:
         return self._finished
 
-    @property
-    def read_line(self) -> str:
-        return (self._stdout_line + self._stderr_line).decode('utf-8', 'replace').strip()
+    async def init(self) -> None:
+        await self._init.wait()
 
-    @property
-    def get_output(self) -> str:
-        return (self._stdout + self._stderr).decode('utf-8', 'replace').strip()
+    async def wait(self, timeout: int) -> None:
+        self._check_listener()
+        try:
+            await asyncio.wait_for(self._listener, timeout)
+        except asyncio.TimeoutError:
+            pass
 
-    async def _read_stdout(self) -> None:
-        while True:
-            line = await self._process.stdout.readline()
-            if line:
-                self._stdout_line = line
-                self._stdout += line
-            else:
-                break
+    def _check_listener(self) -> None:
+        if self._listener.done():
+            self._listener = self._loop.create_future()
 
-    async def _read_stderr(self) -> None:
-        while True:
-            line = await self._process.stderr.readline()
-            if line:
-                self._stderr_line = line
-                self._stderr += line
-            else:
-                break
-
-    async def worker(self) -> None:
-        await asyncio.wait([self._read_stdout(), self._read_stderr()])
-        await self._process.wait()
-        self._finished = True
+    def cancel(self) -> None:
+        if self._cancelled or self._finished:
+            return
+        killpg(getpgid(self._process.pid), SIGKILL)
+        self._cancelled = True
 
     @classmethod
     async def execute(cls, cmd: str) -> 'Term':
         process = await asyncio.create_subprocess_shell(
-            cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+            cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, preexec_fn=setsid)
         t_obj = cls(process)
-        asyncio.get_event_loop().create_task(t_obj.worker())
+        t_obj._start()
         return t_obj
+
+    def _start(self) -> None:
+        self._loop.create_task(self._worker())
+
+    async def _worker(self) -> None:
+        if self._cancelled or self._finished:
+            return
+        await asyncio.wait([self._read_stdout(), self._read_stderr()])
+        await self._process.wait()
+        self._finish()
+
+    async def _read_stdout(self) -> None:
+        await self._read(self._process.stdout)
+
+    async def _read_stderr(self) -> None:
+        await self._read(self._process.stderr)
+
+    async def _read(self, reader: asyncio.StreamReader) -> None:
+        while True:
+            line = await reader.readline()
+            if not line:
+                break
+            self._append(line)
+
+    def _append(self, line: bytes) -> None:
+        self._line = line
+        self._output += line
+        self._check_init()
+
+    def _check_init(self) -> None:
+        if self._is_init:
+            return
+        self._loop.call_later(1, self._init.set)
+        self._is_init = True
+
+    def _finish(self) -> None:
+        if self._finished:
+            return
+        self._init.set()
+        self._finished = True
+        if not self._listener.done():
+            self._listener.set_result(None)

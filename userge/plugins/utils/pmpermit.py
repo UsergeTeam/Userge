@@ -10,8 +10,9 @@
 
 import asyncio
 from typing import Dict
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
+
 from pyrogram.errors import BotInlineDisabled
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery
 
 from userge import userge, filters, Message, Config, get_collection
 from userge.utils import SafeDict

@@ -45,7 +45,9 @@ runPythonCode() {
 }
 
 runPythonModule() {
-    python${pVer%.*} -m "$@"
+    python${pVer%.*} -m "$@" &
+    setProc $!
+    waitProc
 }
 
 gitInit() {

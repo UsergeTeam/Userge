@@ -17,7 +17,7 @@ from pyrogram.errors.exceptions import FloodWait
 import userge
 from .tools import humanbytes, time_formatter
 
-_TASKS: Dict[str, Tuple[int, int]] = {}
+_TASKS: Dict[str, Tuple[float, float]] = {}
 
 
 async def progress(current: int,
@@ -35,7 +35,7 @@ async def progress(current: int,
             return
         del _TASKS[task_id]
         try:
-            await message.try_to_edit("`finalizing process ...`")
+            await message.edit("`finalizing process ...`")
         except FloodWait as f_e:
             time.sleep(f_e.x)
         return
@@ -70,6 +70,6 @@ async def progress(current: int,
             humanbytes(speed),
             time_to_completion if time_to_completion else "0 s")
         try:
-            await message.try_to_edit(progress_str)
+            await message.edit(progress_str)
         except FloodWait as f_e:
             time.sleep(f_e.x)

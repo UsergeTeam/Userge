@@ -24,12 +24,14 @@ from pyrogram.raw.core import TLObject
 import userge  # pylint: disable=unused-import
 
 _LOG = userge.logging.getLogger(__name__)
-_LOG_STR = "<<<!  {  (FLOOD CONTROL) sleeping %.2fs in %d  }  !>>>"
+_LOG_STR = "<<<!  FLOOD CONTROL : sleeping %.2fs in %d  !>>>"
 
 
 class RawClient(Client):
     """ userge raw client """
     DUAL_MODE = False
+    USER_ID = 0
+    BOT_ID = 0
     LAST_OUTGOING_TIME = time()
     REQ_LOGS: Dict[int, 'ChatReq'] = {}
     REQ_LOCK = asyncio.Lock()

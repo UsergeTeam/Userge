@@ -8,33 +8,13 @@
 #
 # All rights reserved.
 
-trap joinProc INT TERM
+. init/proc.sh
 
-declare -i bgProc
 declare -ir usr1=138
 declare -r cmd='. init/init.sh; runUserge "$@"'
 
-setProc() {
-    bgProc=$1
-}
-
-waitProc() {
-    wait $bgProc
-}
-
-killProc() {
-    kill $bgProc &> /dev/null
-}
-
-joinProc() {
-    if test $bgProc; then
-        killProc
-        waitProc
-    fi
-}
-
 run() {
-    joinProc
+    reInitProc
     bash -c "$cmd" $0 "$@" &
     setProc $!
     waitProc

@@ -20,7 +20,6 @@ from pyrogram import filters
 from userge import logging, logbot
 from . import versions
 
-_REPO = Repo()
 _LOG = logging.getLogger(__name__)
 logbot.reply_last_msg("Setting Configs ...")
 
@@ -46,6 +45,7 @@ class Config:
     CUSTOM_PACK_NAME = os.environ.get("CUSTOM_PACK_NAME")
     UPSTREAM_REPO = os.environ.get("UPSTREAM_REPO")
     UPSTREAM_REMOTE = os.environ.get("UPSTREAM_REMOTE")
+    USERGE_ANTISPAM_API = os.environ.get("USERGE_ANTISPAM_API")
     SPAM_WATCH_API = os.environ.get("SPAM_WATCH_API")
     CURRENCY_API = os.environ.get("CURRENCY_API")
     OCR_SPACE_API_KEY = os.environ.get("OCR_SPACE_API_KEY")
@@ -53,6 +53,7 @@ class Config:
     REMOVE_BG_API_KEY = os.environ.get("REMOVE_BG_API_KEY")
     WEATHER_DEFCITY = os.environ.get("WEATHER_DEFCITY")
     TZ_NUMBER = os.environ.get("TZ_NUMBER", 1)
+    MAX_DURATION = int(os.environ.get("MAX_DURATION", 900))
     G_DRIVE_CLIENT_ID = os.environ.get("G_DRIVE_CLIENT_ID")
     G_DRIVE_CLIENT_SECRET = os.environ.get("G_DRIVE_CLIENT_SECRET")
     G_DRIVE_PARENT_ID = os.environ.get("G_DRIVE_PARENT_ID")
@@ -64,6 +65,7 @@ class Config:
     HEROKU_APP_NAME = os.environ.get("HEROKU_APP_NAME")
     G_DRIVE_IS_TD = os.environ.get("G_DRIVE_IS_TD") == "true"
     LOAD_UNOFFICIAL_PLUGINS = os.environ.get("LOAD_UNOFFICIAL_PLUGINS") == "true"
+    ASSERT_SINGLE_INSTANCE = os.environ.get("ASSERT_SINGLE_INSTANCE") == "true"
     THUMB_PATH = DOWN_PATH + "thumb_image.jpg"
     TMP_PATH = "userge/plugins/temp/"
     MAX_MESSAGE_LENGTH = 4096
@@ -79,6 +81,7 @@ class Config:
     DISABLED_ALL = False
     DISABLED_CHATS: Set[int] = set()
     ALLOWED_COMMANDS: Set[str] = set()
+    IGNORE_VERIFIED_CHATS = True
     ANTISPAM_SENTRY = False
     RUN_DYNO_SAVER = False
     HEROKU_APP = heroku3.from_key(HEROKU_API_KEY).apps()[HEROKU_APP_NAME] \
@@ -88,14 +91,16 @@ class Config:
 
 def get_version() -> str:
     """ get userge version """
+    repo = Repo()
+    repo.remote(Config.UPSTREAM_REMOTE).fetch()
     ver = f"{versions.__major__}.{versions.__minor__}.{versions.__micro__}"
     if "/usergeteam/userge" in Config.UPSTREAM_REPO.lower():
-        diff = list(_REPO.iter_commits(f'v{ver}..HEAD'))
+        diff = list(repo.iter_commits(f'v{ver}..HEAD'))
         if diff:
             ver = f"{ver}-patch.{len(diff)}"
     else:
-        diff = list(_REPO.iter_commits(
+        diff = list(repo.iter_commits(
             f'{Config.UPSTREAM_REMOTE}/master..HEAD'))
         if diff:
             ver = f"{ver}-custom.{len(diff)}"
-    return ver + '@' + _REPO.active_branch.name
+    return ver + '@' + repo.active_branch.name

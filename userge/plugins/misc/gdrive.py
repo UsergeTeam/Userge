@@ -694,7 +694,7 @@ class Worker(_GDrive):
             await self._message.edit("First set parent path by `.gset`", del_in=5)
             return
         if not self._message.input_str:
-            await self._message.edit("Please give name for folder", del_in=5)
+            await self._message.err("Please give name for folder")
             return
         try:
             out = await self._create_drive_folder(self._message.input_str, self._parent_id)
@@ -737,7 +737,7 @@ class Worker(_GDrive):
             try:
                 dl_loc, _ = await tg_download(self._message, replied)
             except ProcessCanceled:
-                await self._message.edit("`Process Canceled!`", del_in=5)
+                await self._message.canceled()
                 return
             except Exception as e_e:
                 await self._message.err(str(e_e))
@@ -746,7 +746,7 @@ class Worker(_GDrive):
             try:
                 dl_loc, _ = await url_download(self._message, self._message.input_str)
             except ProcessCanceled:
-                await self._message.edit("`Process Canceled!`", del_in=5)
+                await self._message.canceled()
                 return
             except Exception as e_e:
                 await self._message.err(str(e_e))
@@ -763,15 +763,11 @@ class Worker(_GDrive):
         await self._message.try_to_edit("`Loading GDrive Upload...`")
         pool.submit_thread(self._upload, file_path)
         start_t = datetime.now()
-        count = 0
-        while not self._is_finished:
-            count += 1
-            if self._message.process_is_canceled:
-                self._cancel()
-            if self._progress is not None and count >= Config.EDIT_SLEEP_TIMEOUT:
-                count = 0
-                await self._message.try_to_edit(self._progress)
-            await asyncio.sleep(1)
+        with self._message.cancel_callback(self._cancel):
+            while not self._is_finished:
+                if self._progress is not None:
+                    await self._message.edit(self._progress)
+                await asyncio.sleep(Config.EDIT_SLEEP_TIMEOUT)
         if dl_loc and os.path.exists(dl_loc):
             os.remove(dl_loc)
         end_t = datetime.now()
@@ -793,15 +789,11 @@ class Worker(_GDrive):
         file_id, _ = self._get_file_id()
         pool.submit_thread(self._download, file_id)
         start_t = datetime.now()
-        count = 0
-        while not self._is_finished:
-            count += 1
-            if self._message.process_is_canceled:
-                self._cancel()
-            if self._progress is not None and count >= Config.EDIT_SLEEP_TIMEOUT:
-                count = 0
-                await self._message.try_to_edit(self._progress)
-            await asyncio.sleep(1)
+        with self._message.cancel_callback(self._cancel):
+            while not self._is_finished:
+                if self._progress is not None:
+                    await self._message.edit(self._progress)
+                await asyncio.sleep(Config.EDIT_SLEEP_TIMEOUT)
         end_t = datetime.now()
         m_s = (end_t - start_t).seconds
         if isinstance(self._output, HttpError):
@@ -824,15 +816,11 @@ class Worker(_GDrive):
         file_id, _ = self._get_file_id()
         pool.submit_thread(self._copy, file_id)
         start_t = datetime.now()
-        count = 0
-        while not self._is_finished:
-            count += 1
-            if self._message.process_is_canceled:
-                self._cancel()
-            if self._progress is not None and count >= Config.EDIT_SLEEP_TIMEOUT:
-                count = 0
-                await self._message.try_to_edit(self._progress)
-            await asyncio.sleep(1)
+        with self._message.cancel_callback(self._cancel):
+            while not self._is_finished:
+                if self._progress is not None:
+                    await self._message.edit(self._progress)
+                await asyncio.sleep(Config.EDIT_SLEEP_TIMEOUT)
         end_t = datetime.now()
         m_s = (end_t - start_t).seconds
         if isinstance(self._output, HttpError):
@@ -956,12 +944,12 @@ class Worker(_GDrive):
     'header': "Setup GDrive Creds"})
 async def gsetup_(message: Message):
     """ setup creds """
-    link = "https://theuserge.github.io/deployment.html#3-g_drive_client_id--g_drive_client_secret"
+    link = "https://theuserge.github.io/deployment.html#6-g_drive_client_id--g_drive_client_secret"
     if Config.G_DRIVE_CLIENT_ID and Config.G_DRIVE_CLIENT_SECRET:
         if message.chat.id in Config.AUTH_CHATS:
             await Worker(message).setup()
         else:
-            await message.err("try in log channel")
+            await message.edit("`try in log channel`", del_in=5)
     else:
         await message.edit(
             "`G_DRIVE_CLIENT_ID` and `G_DRIVE_CLIENT_SECRET` not found!\n"

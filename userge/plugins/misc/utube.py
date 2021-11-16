@@ -15,13 +15,13 @@ from time import time
 from math import floor
 
 import wget
-import youtube_dl as ytdl
 
 from userge import userge, Message, Config, pool
-from userge.utils import time_formatter, humanbytes
+from userge.utils import time_formatter, humanbytes, import_ytdl
 from .upload import upload
 
 LOGGER = userge.getLogger(__name__)
+ytdl = import_ytdl()
 
 
 @userge.on_cmd("ytinfo", about={'header': "Get info from ytdl",

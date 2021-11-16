@@ -104,7 +104,7 @@ class ChannelLogger:
             _LOG_STR, f"forwarding msg : {message} to channel : {self._id}")
         if isinstance(message, RawMessage):
             if message.media:
-                asyncio.get_event_loop().create_task(self.log("**Forwarding Message...**", name))
+                await self.log("**Forwarding Message...**", name)
                 try:
                     if as_copy:
                         await message.copy(chat_id=self._id)
@@ -131,12 +131,12 @@ class ChannelLogger:
         Returns:
             message_id on success or None
         """
-        caption = caption or ''
         file_id = None
-        if message and message.caption:
-            caption = caption + message.caption.html
+        caption = caption or ''
         if message:
             file_id = get_file_id_of_media(message)
+            if not caption and message.caption:
+                caption = message.caption.html
         if message and message.media and file_id:
             if caption:
                 caption = self._string.format(caption.strip())

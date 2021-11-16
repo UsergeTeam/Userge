@@ -15,20 +15,19 @@ from typing import Any, Callable
 from concurrent.futures import ThreadPoolExecutor, Future
 from functools import wraps, partial
 
-from motor.frameworks.asyncio import _EXECUTOR  # pylint: disable=protected-access
-
-from userge import logging
+from userge import logging, Config
 
 _LOG = logging.getLogger(__name__)
 _LOG_STR = "<<<!  ||||  %s  ||||  !>>>"
+_EXECUTOR = ThreadPoolExecutor(Config.WORKERS)
 
 
-def submit_thread(func: Callable[[Any], Any], *args: Any, **kwargs: Any) -> Future:
+def submit_thread(func: Callable[..., Any], *args: Any, **kwargs: Any) -> Future:
     """ submit thread to thread pool """
     return _EXECUTOR.submit(func, *args, **kwargs)
 
 
-def run_in_thread(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
+def run_in_thread(func: Callable[..., Any]) -> Callable[..., Any]:
     """ run in a thread """
     @wraps(func)
     async def wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -37,12 +36,8 @@ def run_in_thread(func: Callable[[Any], Any]) -> Callable[[Any], Any]:
     return wrapper
 
 
-def _get() -> ThreadPoolExecutor:
-    return _EXECUTOR
-
-
 def _stop():
-    _EXECUTOR.shutdown()
+    _EXECUTOR.shutdown(wait=False)
     # pylint: disable=protected-access
     _LOG.info(_LOG_STR, f"Stopped Pool : {_EXECUTOR._max_workers} Workers")
 
