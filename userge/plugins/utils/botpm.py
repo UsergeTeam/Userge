@@ -44,7 +44,7 @@ _U_ID_F_M_ID: Dict[int, int] = {}
 _STATS: Dict[str, int] = {"incoming": 0, "outgoing": 0}
 
 START_TEXT = " Hello {mention}, you can contact me using this Bot."
-START_MEDIA = os.environ.get("START_MEDIA", None)
+START_MEDIA = os.environ.get("START_MEDIA")
 
 botPmFilter = filters.create(lambda _, __, ___: BOT_PM)
 bannedFilter = filters.create(lambda _, __, ___: ___.chat.id in _BANNED_USERS)
@@ -172,7 +172,6 @@ if userge.has_bot:
 
     @bot.on_message(filters.user(userge_id) & filters.private & filters.command("pmban"), group=1)
     async def pm_ban(_, msg: PyroMessage):
-        global _BANNED_USERS  # pylint: disable=global-statement
         replied = msg.reply_to_message
         user_id = msg.text.split(' ', maxsplit=1)[1] if ' ' in msg.text else ''
         if not (replied or user_id):
@@ -211,7 +210,6 @@ if userge.has_bot:
     @bot.on_message(
         filters.user(userge_id) & filters.private & filters.command("pmunban"), group=1)
     async def pm_unban(_, msg: PyroMessage):
-        global _BANNED_USERS  # pylint: disable=global-statement
         replied = msg.reply_to_message
         user_id = msg.text.split(' ', maxsplit=1)[1] if ' ' in msg.text else ''
         if not (replied or user_id):
