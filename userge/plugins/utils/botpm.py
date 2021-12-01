@@ -275,7 +275,6 @@ After Adding a var, you can see your media when you start your Bot.
     HELP_TEXT = """**Here are the available commands for Bot PM:**
 
 /start - Start the bot
-/help -See this text again
 /settext [text | reply to text] - Set Custom Start Text
 /pmban [user_id | reply to user] - Ban User from Doing Pms
 /pmunban [user_id | reply to user] - UnBan Banned user
