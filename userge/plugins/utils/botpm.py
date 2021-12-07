@@ -539,7 +539,7 @@ Type /send to confirm or /cancel to exit.
             filter_ = filters.create(lambda _, __, ___: filters.incoming & ~filters.edited)
             while True:
                 response = await conv.get_response(filters=filter_)
-                if response.text.startswith("/cancel"):
+                if response.text and response.text.startswith("/cancel"):
                     IN_CONVO = False
                     return await msg.reply("Broadcast process Cancelled.")
                 if len(temp_msgs) >= 1 and response.text == "/done":
