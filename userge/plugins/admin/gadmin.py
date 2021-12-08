@@ -38,7 +38,8 @@ async def _init() -> None:
                 BAN_CHANNELS.append(chat['chat_id'])
         ALLOWED[chat['chat_id']] = chat['allowed']
 
-channel_delete = filters.create(lambda _, __, query: query.chat and query.chat.id in ENABLED_CHATS)
+channel_delete = filters.create(
+    lambda _, __, query: query.chat and query.chat.id in ENABLED_CHATS)
 
 
 @userge.on_cmd("promote", about={
@@ -161,7 +162,8 @@ async def ban_user(message: Message):
 
     try:
         get_mem = await message.client.get_users(user_id)
-    except IndexError:  # pyrogram raises an indexerror if a channel id / username is passed.
+    # pyrogram raises an indexerror if a channel id / username is passed.
+    except IndexError:
         get_mem = None
     except UsernameInvalid:
         return await message.err("invalid username, try again with valid info ⚠")
@@ -219,7 +221,8 @@ async def unban_usr(message: Message):
             return await message.err("no valid user_id or channel_id or message specified")
     try:
         get_mem = await message.client.get_users(user_id)
-    except IndexError:  # pyrogram raise a inexerror if a channel id / username is passed.
+    # pyrogram raise a inexerror if a channel id / username is passed.
+    except IndexError:
         get_mem = None
     except UsernameInvalid:
         return await message.err("invalid username, try again with valid info ⚠")
@@ -700,7 +703,7 @@ async def enable_ban(message: Message):
     'header': "Whitelist a channel to from send_as channel.",
     'description': "To allow the replied channel or given channel id / username "
                    "to chat as channel, even if restriction is enabled."},
-    allow_channels=False, check_restrict_perm=True)
+               allow_channels=False, check_restrict_perm=True)
 async def allow_a_channel(message: Message):
     """ add a channel to whitelist """
     replied = message.reply_to_message
@@ -741,7 +744,7 @@ async def allow_a_channel(message: Message):
     'header': "Remove an already whitelisted channel from allowed list.",
     'description': "To disallow the replied channel or given channel id / username "
                    "to chat as channel, if the channel is already whitelisted"},
-    allow_channels=False, check_restrict_perm=True)
+               allow_channels=False, check_restrict_perm=True)
 async def disallow_a_channel(message: Message):
     """ remove a channel from whitelist """
     replied = message.reply_to_message
@@ -782,11 +785,11 @@ async def disallow_a_channel(message: Message):
 @userge.on_filters(filters.group & channel_delete, group=2)
 async def ban_spammers(message: Message):
     if message.sender_chat and \
-        message.sender_chat.id not in ALLOWED.get(message.chat.id, [message.chat.id]):
-            await message.delete()
-            if message.chat.id in BAN_CHANNELS:
-                await userge.kick_chat_member(message.chat.id, message.sender_chat.id)
-                await CHANNEL.log(
-                    "#BAN_CHANNEL\n\n"
-                    f"CHANNEL: {message.sender_chat.username} ( `{message.sender_chat.id}` ) "
-                    f"CHAT: `{message.chat.title}` (`{message.chat.id}`)")
+            message.sender_chat.id not in ALLOWED.get(message.chat.id, [message.chat.id]):
+        await message.delete()
+        if message.chat.id in BAN_CHANNELS:
+            await userge.kick_chat_member(message.chat.id, message.sender_chat.id)
+            await CHANNEL.log(
+                "#BAN_CHANNEL\n\n"
+                f"CHANNEL: {message.sender_chat.username} ( `{message.sender_chat.id}` ) "
+                f"CHAT: `{message.chat.title}` (`{message.chat.id}`)")
