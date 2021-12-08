@@ -36,7 +36,7 @@ async def _init() -> None:
             ENABLED_CHATS.append(chat['chat_id'])
             if chat['ban']:
                 BAN_CHANNELS.append(chat['chat_id'])
-    ALLOWED[chat['chat_id']] = chat['allowed']
+        ALLOWED[chat['chat_id']] = chat['allowed']
 
 channel_delete = filters.create(lambda _, __, query: query.chat and query.chat.id in ENABLED_CHATS)
 
@@ -643,7 +643,7 @@ async def smode_switch(message: Message):
     'examples': [
         "{tr}no_channels : To restrict members chating as channels (Deletes the message)",
         "{tr}no_channels -b : To restrict members chating as channels "
-                              "(Deletes the message and bans the user from doing the same.)",
+        "(Deletes the message and bans the user from doing the same.)",
         "{tr}no_channels -d : To Disable the plugin in an enabled chat."]},
     allow_channels=False, check_restrict_perm=True)
 async def enable_ban(message: Message):
@@ -699,7 +699,7 @@ async def enable_ban(message: Message):
 @userge.on_cmd("allow_channel", about={
     'header': "Whitelist a channel to from send_as channel.",
     'description': "To allow the replied channel or given channel id / username "
-                   "to chat as channel, even if restriction is enabled.",},
+                   "to chat as channel, even if restriction is enabled."},
     allow_channels=False, check_restrict_perm=True)
 async def allow_a_channel(message: Message):
     """ add a channel to whitelist """
@@ -721,7 +721,7 @@ async def allow_a_channel(message: Message):
         return await message.edit('No input given', del_in=5)
     chat_id = message.chat.id
     allowed = ALLOWED.get(chat_id)
-    channel_id = channel.id        
+    channel_id = channel.id
     if channel_id in allowed:
         return await message.edit("This channel is already whitelisted", del_in=5)
     allowed.append(channel_id)
@@ -729,8 +729,8 @@ async def allow_a_channel(message: Message):
     if not await DB.find_one({'chat_id': chat_id}):
         await DB.insert_one({
             'chat_id': chat_id,
-            'ban':  False,
-            'enabled':False,
+            'ban': False,
+            'enabled': False,
             'allowed': allowed})
     else:
         await DB.update_one({'chat_id': chat_id}, {'$set': {'allowed': allowed}})
@@ -740,7 +740,7 @@ async def allow_a_channel(message: Message):
 @userge.on_cmd("disallow_channel", about={
     'header': "Remove an already whitelisted channel from allowed list.",
     'description': "To disallow the replied channel or given channel id / username "
-                   "to chat as channel, if the channel is already whitelisted",},
+                   "to chat as channel, if the channel is already whitelisted"},
     allow_channels=False, check_restrict_perm=True)
 async def disallow_a_channel(message: Message):
     """ remove a channel from whitelist """
@@ -777,15 +777,16 @@ async def disallow_a_channel(message: Message):
         await DB.update_one({'chat_id': chat_id}, {'$set': {'allowed': allowed}})
     await message.edit(f'Succesfully removed {channel.title} (`{channel.id}`) from whitelist')
 
+
 # filter to handle new messages in enabled chats
 @userge.on_filters(filters.group & channel_delete, group=2)
 async def ban_spammers(message: Message):
     if message.sender_chat and \
         message.sender_chat.id not in ALLOWED.get(message.chat.id, [message.chat.id]):
-        await message.delete()
-        if message.chat.id in BAN_CHANNELS:
-            await userge.kick_chat_member(message.chat.id, message.sender_chat.id)
-            await CHANNEL.log(
-                "#BAN_CHANNEL\n\n"
-                f"CHANNEL: {message.sender_chat.username} ( `{message.sender_chat.id}` ) "
-                f"CHAT: `{message.chat.title}` (`{message.chat.id}`)")
+            await message.delete()
+            if message.chat.id in BAN_CHANNELS:
+                await userge.kick_chat_member(message.chat.id, message.sender_chat.id)
+                await CHANNEL.log(
+                    "#BAN_CHANNEL\n\n"
+                    f"CHANNEL: {message.sender_chat.username} ( `{message.sender_chat.id}` ) "
+                    f"CHAT: `{message.chat.title}` (`{message.chat.id}`)")
