@@ -20,7 +20,7 @@ oauth2client
 Pillow==8.3.2
 psutil
 pybase64
-pyrogram==1.2.9
+pyrogram==1.2.19
 pySmartDL
 pysocks
 pytgcalls==2.1.0
