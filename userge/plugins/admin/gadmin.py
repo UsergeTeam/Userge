@@ -23,8 +23,9 @@ CHANNEL = userge.getCLogger(__name__)
 
 DB = get_collection("BAN_CHANNELS")
 ENABLED_CHATS = []
-ALLOWED = {} # dict to store chat ids which are allowed to chat as channels
-BAN_CHANNELS = [] # list of chats which enabled ban_mode
+ALLOWED = {}  # dict to store chat ids which are allowed to chat as channels
+BAN_CHANNELS = []  # list of chats which enabled ban_mode
+
 
 async def _init() -> None:
     data = DB.find({})
@@ -160,7 +161,7 @@ async def ban_user(message: Message):
 
     try:
         get_mem = await message.client.get_users(user_id)
-    except IndexError: # pyrogram raises an indexerror if a channel id / username is passed.
+    except IndexError:  # pyrogram raises an indexerror if a channel id / username is passed.
         get_mem = None
     except UsernameInvalid:
         return await message.err("invalid username, try again with valid info ⚠")
@@ -218,7 +219,7 @@ async def unban_usr(message: Message):
             return await message.err("no valid user_id or channel_id or message specified")
     try:
         get_mem = await message.client.get_users(user_id)
-    except IndexError: # pyrogram raise a inexerror if a channel id / username is passed.
+    except IndexError:  # pyrogram raise a inexerror if a channel id / username is passed.
         get_mem = None
     except UsernameInvalid:
         return await message.err("invalid username, try again with valid info ⚠")
@@ -634,14 +635,15 @@ async def smode_switch(message: Message):
 
 @userge.on_cmd("no_channels", about={
     'header': "Enable to delete messages from channels.",
-    'description': "Restrict the users from chatting in group as ther channels.\nUse appropriate flags to toggle between ban and delete_only.",
+    'description': "Restrict the users from chatting in group as ther channels.\n"
+                   "Use appropriate flags to toggle between ban and delete_only.",
     'flags': {
         '-b': "Ban the channel.",
-        '-d': "Disable restriction"
-        },
+        '-d': "Disable restriction"},
     'examples': [
         "{tr}no_channels : To restrict members chating as channels (Deletes the message)",
-        "{tr}no_channels -b : To restrict members chating as channels (Deletes the message and bans the user from doing the same.)",
+        "{tr}no_channels -b : To restrict members chating as channels "
+                              "(Deletes the message and bans the user from doing the same.)",
         "{tr}no_channels -d : To Disable the plugin in an enabled chat."]},
     allow_channels=False, check_restrict_perm=True)
 async def enable_ban(message: Message):
@@ -655,14 +657,16 @@ async def enable_ban(message: Message):
             return await message.edit("Not enabled for this chat.", del_in=5)
         ENABLED_CHATS.remove(chat_id)
         await DB.update_one({'chat_id': chat_id}, {'$set': {'enabled': False}})
-        return await message.edit("Disabled deletion / banning send_as channels.\nMembers are allowed to chat as channel.")
+        return await message.edit("Disabled deletion / banning send_as channels.\n"
+                                  "Members are allowed to chat as channel.")
     if chat_id in ENABLED_CHATS:
         if is_ban and chat_id in BAN_CHANNELS:
-            await message.edit("Already enabled in this chat, No changes applied.", del_in = 5)
+            await message.edit("Already enabled in this chat, No changes applied.", del_in=5)
         elif chat_id in BAN_CHANNELS:
             await DB.update_one({'chat_id': chat_id}, {'$set': {'ban': False}})
             BAN_CHANNELS.remove(chat_id)
-            await message.edit('Changed to delete only mode.\nMessages send on behalf of channels will be deleted.')
+            await message.edit("Changed to delete only mode.\n"
+                               "Messages send on behalf of channels will be deleted.")
         elif is_ban:
             await DB.update_one({'chat_id': chat_id}, {'$set': {'ban': True}})
             BAN_CHANNELS.append(chat_id)
@@ -671,28 +675,31 @@ async def enable_ban(message: Message):
             await message.edit("Already Delete only Mode", del_in=5)
     else:
         ENABLED_CHATS.append(chat_id)
-        if not await DB.find_one({'chat_id':chat_id}):
+        if not await DB.find_one({'chat_id': chat_id}):
             allowed = [chat_id]
             chat_info = await message.client.get_chat(chat_id)
             if chat_info.linked_chat:
                 allowed.append(chat_info.linked_chat.id)
-            await DB.insert_one({'chat_id':chat_id, 'ban':is_ban, 'enabled':True, 'allowed':allowed})
+            await DB.insert_one({
+                'chat_id': chat_id,
+                'ban': is_ban,
+                'enabled': True,
+                'allowed': allowed})
         if is_ban:
             BAN_CHANNELS.append(chat_id)
-            await DB.update_one({'chat_id': chat_id}, {'$set': {'enabled':True, 'ban': True}})
+            await DB.update_one({'chat_id': chat_id}, {'$set': {'enabled': True, 'ban': True}})
             await message.edit("Enabled with ban mode")
         else:
-            await DB.update_one({'chat_id': chat_id}, {'$set': {'enabled':True, 'ban': False}})
+            await DB.update_one({'chat_id': chat_id}, {'$set': {'enabled': True, 'ban': False}})
             await message.edit('Enabled with delete mode')
-        allowed = await DB.find_one({'chat_id':chat_id})
+        allowed = await DB.find_one({'chat_id': chat_id})
         ALLOWED[chat_id] = allowed['allowed']
-
 
 
 @userge.on_cmd("allow_channel", about={
     'header': "Whitelist a channel to from send_as channel.",
-    'description': "To allow the replied channel or given channel id / username to chat as channel, even if restriction is enabled.",
-    },
+    'description': "To allow the replied channel or given channel id / username "
+                   "to chat as channel, even if restriction is enabled.",},
     allow_channels=False, check_restrict_perm=True)
 async def allow_a_channel(message: Message):
     """ add a channel to whitelist """
@@ -705,7 +712,7 @@ async def allow_a_channel(message: Message):
         try:
             channel_id = int(input_str)
             channel = await userge.get_chat(channel_id)
-        except:
+        except BaseException:
             if input_str.startswith("@"):
                 channel = await userge.get_chat(input_str)
             elif not channel:
@@ -713,24 +720,27 @@ async def allow_a_channel(message: Message):
     if not channel:
         return await message.edit('No input given', del_in=5)
     chat_id = message.chat.id
-    allowed = ALLOWED.get(chat_id)    
-    channel_id = channel.id            
+    allowed = ALLOWED.get(chat_id)
+    channel_id = channel.id        
     if channel_id in allowed:
-        return await message.edit("This channel is already whitelisted", del_in = 5)
+        return await message.edit("This channel is already whitelisted", del_in=5)
     allowed.append(channel_id)
     ALLOWED[chat_id] = allowed
-    if not await DB.find_one({'chat_id':chat_id}):
-        await DB.insert_one({'chat_id':chat_id, 'ban':False, 'enabled':False, 'allowed':allowed})
+    if not await DB.find_one({'chat_id': chat_id}):
+        await DB.insert_one({
+            'chat_id': chat_id,
+            'ban':  False,
+            'enabled':False,
+            'allowed': allowed})
     else:
         await DB.update_one({'chat_id': chat_id}, {'$set': {'allowed': allowed}})
     await message.edit(f'Succesfully Whitelisted {channel.title} (`{channel.id}`)')
 
 
-
 @userge.on_cmd("disallow_channel", about={
     'header': "Remove an already whitelisted channel from allowed list.",
-    'description': "To disallow the replied channel or given channel id / username to chat as channel, if the channel is already whitelisted",
-    },
+    'description': "To disallow the replied channel or given channel id / username "
+                   "to chat as channel, if the channel is already whitelisted",},
     allow_channels=False, check_restrict_perm=True)
 async def disallow_a_channel(message: Message):
     """ remove a channel from whitelist """
@@ -743,7 +753,7 @@ async def disallow_a_channel(message: Message):
         try:
             channel_id = int(input_str)
             channel = await userge.get_chat(channel_id)
-        except:
+        except BaseException:
             if input_str.startswith("@"):
                 channel = await userge.get_chat(input_str)
             elif not channel:
@@ -754,19 +764,24 @@ async def disallow_a_channel(message: Message):
     allowed = ALLOWED.get(chat_id)
     channel_id = channel.id
     if channel_id not in allowed:
-        return await message.edit("This channel is not yet whitelisted", del_in = 5)
+        return await message.edit("This channel is not yet whitelisted", del_in=5)
     allowed.remove(channel_id)
     ALLOWED[chat_id] = allowed
-    if not await DB.find_one({'chat_id':chat_id}):
-        await DB.insert_one({'chat_id':chat_id, 'ban':False, 'enabled':False, 'allowed':allowed})
+    if not await DB.find_one({'chat_id': chat_id}):
+        await DB.insert_one({
+            'chat_id': chat_id,
+            'ban': False,
+            'enabled': False,
+            'allowed': allowed})
     else:
         await DB.update_one({'chat_id': chat_id}, {'$set': {'allowed': allowed}})
     await message.edit(f'Succesfully removed {channel.title} (`{channel.id}`) from whitelist')
 
-
-@userge.on_filters(filters.group & channel_delete, group=2) #filter to handle new messages in enabled chats
+# filter to handle new messages in enabled chats
+@userge.on_filters(filters.group & channel_delete, group=2)
 async def ban_spammers(message: Message):
-    if message.sender_chat and message.sender_chat.id not in ALLOWED.get(message.chat.id, [message.chat.id]):
+    if message.sender_chat and \
+        message.sender_chat.id not in ALLOWED.get(message.chat.id, [message.chat.id]):
         await message.delete()
         if message.chat.id in BAN_CHANNELS:
             await userge.kick_chat_member(message.chat.id, message.sender_chat.id)
