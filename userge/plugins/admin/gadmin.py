@@ -638,7 +638,7 @@ async def smode_switch(message: Message):
 
 @userge.on_cmd("no_channels", about={
     'header': "Enable to delete messages from channels.",
-    'description': "Restrict the users from chatting in group as ther channels.\n"
+    'description': "Restrict the users from chatting in group as their channels.\n"
                    "Use appropriate flags to toggle between ban and delete_only.",
     'flags': {
         '-b': "Ban the channel.",
@@ -760,9 +760,9 @@ async def disallow_a_channel(message: Message):
             if input_str.startswith("@"):
                 channel = await userge.get_chat(input_str)
             elif not channel:
-                return await message.edit("Invalid chat", del_in=5)
+                return await message.err("Invalid chat")
     if not channel:
-        return await message.edit('No input given', del_in=5)
+        return await message.err('No input given')
     chat_id = message.chat.id
     allowed = ALLOWED.get(chat_id)
     channel_id = channel.id
@@ -789,7 +789,8 @@ async def ban_spammers(message: Message):
         await message.delete()
         if message.chat.id in BAN_CHANNELS:
             await userge.kick_chat_member(message.chat.id, message.sender_chat.id)
-            await CHANNEL.log(
+            await message.reply(
                 "#BAN_CHANNEL\n\n"
-                f"CHANNEL: {message.sender_chat.username} ( `{message.sender_chat.id}` ) "
-                f"CHAT: `{message.chat.title}` (`{message.chat.id}`)")
+                "Message from channel detected and banned\n"
+                f"CHANNEL: {message.sender_chat.username} ( `{message.sender_chat.id}` )\n"
+                f"CHAT: `{message.chat.title}` (`{message.chat.id}`)", del_in=10, log=__name__)
