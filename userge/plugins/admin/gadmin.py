@@ -729,14 +729,15 @@ async def allow_a_channel(message: Message):
         return await message.edit("This channel is already whitelisted", del_in=5)
     allowed.append(channel_id)
     ALLOWED[chat_id] = allowed
-    if not await DB.find_one({'chat_id': chat_id}):
-        await DB.insert_one({
+    ban = chat_id in BAN_CHANNELS
+    enabled = chat_id in ENABLED_CHATS
+    await DB.update_one({
+        'chat_id': chat_id},
+        {'$set': {
             'chat_id': chat_id,
-            'ban': False,
-            'enabled': False,
-            'allowed': allowed})
-    else:
-        await DB.update_one({'chat_id': chat_id}, {'$set': {'allowed': allowed}})
+            'ban': ban,
+            'enabled': enabled,
+            'allowed': allowed}}, upsert=True)
     await message.edit(f'Succesfully Whitelisted {channel.title} (`{channel.id}`)')
 
 
@@ -770,14 +771,15 @@ async def disallow_a_channel(message: Message):
         return await message.edit("This channel is not yet whitelisted", del_in=5)
     allowed.remove(channel_id)
     ALLOWED[chat_id] = allowed
-    if not await DB.find_one({'chat_id': chat_id}):
-        await DB.insert_one({
+    ban = chat_id in BAN_CHANNELS
+    enabled = chat_id in ENABLED_CHATS
+    await DB.update_one({
+        'chat_id': chat_id},
+        {'$set': {
             'chat_id': chat_id,
-            'ban': False,
-            'enabled': False,
-            'allowed': allowed})
-    else:
-        await DB.update_one({'chat_id': chat_id}, {'$set': {'allowed': allowed}})
+            'ban': ban,
+            'enabled': enabled,
+            'allowed': allowed}}, upsert=True)
     await message.edit(f'Succesfully removed {channel.title} (`{channel.id}`) from whitelist')
 
 
