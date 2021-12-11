@@ -34,10 +34,10 @@ async def sudo_(message: Message):
     """ enable / disable sudo access """
     if Config.SUDO_ENABLED:
         Config.SUDO_ENABLED = False
-        await message.edit("`sudo disabled !`", del_in=3)
+        await message.edit("`Sudo disabled!`", del_in=3)
     else:
         Config.SUDO_ENABLED = True
-        await message.edit("`sudo enabled !`", del_in=3)
+        await message.edit("`Sudo enabled!`", del_in=3)
     await SAVED_SETTINGS.update_one(
         {'_id': 'SUDO_ENABLED'}, {"$set": {'data': Config.SUDO_ENABLED}}, upsert=True)
 
@@ -134,7 +134,7 @@ async def add_sudo_cmd(message: Message):
         return
     cmd = message.input_str
     if not cmd:
-        await message.err('input not found!')
+        await message.err('Input not found!')
         return
     cmd = cmd.lstrip(Config.CMD_TRIGGER)
     if cmd in Config.ALLOWED_COMMANDS:
