@@ -23,7 +23,7 @@ from userge import userge, Message, Config
 
 @userge.on_cmd(
     "kang", about={
-        'header': "kangs stickers or creates new ones",
+        'header': "Kangs stickers or creates new ones",
         'flags': {
             '-s': "without link",
             '-d': "without trace"},
@@ -33,7 +33,7 @@ from userge import userge, Message, Config
                      "{tr}kang 🤔😎", "{tr}kang 2", "{tr}kang 🤔🤣😂 2"]},
     allow_channels=False, allow_via_bot=False)
 async def kang_(message: Message):
-    """ kang a sticker """
+    """ kangs a sticker """
     user = await userge.get_me()
     replied = message.reply_to_message
     photo = None
@@ -210,7 +210,7 @@ async def kang_(message: Message):
 
 @userge.on_cmd("stkrinfo", about={
     'header': "get sticker pack info",
-    'usage': "reply {tr}stkrinfo to any sticker"})
+    'usage': "reply {tr}stkrinfo to any sticker to get info of pack"})
 async def sticker_pack_info_(message: Message):
     """ get sticker pack info """
     replied = message.reply_to_message
