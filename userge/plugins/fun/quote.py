@@ -1,3 +1,4 @@
+""" get quote from message (using @QuotLyBot) """
 # Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -14,7 +15,7 @@ from userge import userge, Message
 
 
 @userge.on_cmd("quote", about={
-    'header': "Quote a message",
+    'header': "Quote a message using @QuotLyBot",
     'usage': "{tr}quote [text or reply to msg]"}, allow_via_bot=False)
 async def quotecmd(message: Message):
     """quotecmd"""
@@ -35,7 +36,7 @@ async def quotecmd(message: Message):
             return
         quote = await conv.get_response(mark_read=True)
         if not quote.sticker:
-            await message.edit('something went wrong!, see here: @QuotlyBot')
+            await message.edit('Something went wrong!, see the chat with @QuotlyBot')
         else:
             message_id = replied.message_id if replied else None
             await userge.send_sticker(chat_id=message.chat.id,
