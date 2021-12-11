@@ -14,7 +14,7 @@ from userge import userge, Message
 
 
 @userge.on_cmd("whois", about={
-    'header': "use this to get any user details",
+    'header': "Use this to get any user details",
     'usage': "just reply to any user message or add user_id or username",
     'examples': "{tr}whois [user_id | username]"}, allow_channels=False)
 async def who_is(message: Message):
@@ -39,7 +39,7 @@ async def who_is(message: Message):
         message_out_str += f"<b>🗣 First Name:</b> <code>{from_user.first_name}</code>\n"
         message_out_str += f"<b>🗣 Last Name:</b> <code>{from_user.last_name}</code>\n"
         message_out_str += f"<b>👤 Username:</b> @{from_user.username}\n"
-        message_out_str += f"<b>🏢 DC ID:</b> <code>{from_user.dc_id}</code>\n"
+        message_out_str += f"<b>🏢 Data Centre:</b> <code>{from_user.dc_id}</code>\n"
         message_out_str += f"<b>🤖 Is Bot:</b> <code>{from_user.is_bot}</code>\n"
         message_out_str += f"<b>🚫 Is Restricted:</b> <code>{from_user.is_scam}</code>\n"
         message_out_str += "<b>✅ Is Verified by Telegram:</b> "
