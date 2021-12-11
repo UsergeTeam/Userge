@@ -1,3 +1,4 @@
+""" check the bot is alive """
 # Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -65,6 +66,7 @@ def _get_mode() -> str:
 def _get_alive_text_and_markup(message: Message) -> Tuple[str, Optional[InlineKeyboardMarkup]]:
     markup = None
     output = f"""
+**I'm alive!**
 **⏱ Uptime** : `{userge.uptime}`
 **💡 Version** : `{get_version()}`
 **⚙️ Mode** : `{_get_mode().upper()}`
