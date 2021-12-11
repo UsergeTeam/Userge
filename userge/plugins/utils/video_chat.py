@@ -1,4 +1,4 @@
-""" Userge Voice-Call Plugin """
+""" Userge Video-Chat Plugin """
 
 # Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
@@ -64,13 +64,13 @@ def _get_scheduled_text(title: str, link: str) -> str:
 
 
 def vc_chat(func):
-    """ decorator for Voice-Call chat """
+    """ decorator for Video-Chat """
 
     async def checker(msg: Message):
         if CHAT_ID and msg.chat.id == CHAT_ID:
             await func(msg)
         elif msg.outgoing:
-            await msg.edit("`Haven't join any Voice-Call...`")
+            await msg.edit("`Not joined any Video-Chat.`")
 
     checker.__doc__ = func.__doc__
 
@@ -172,7 +172,7 @@ async def _init():
 
 
 @userge.on_cmd("joinvc", about={
-    'header': "Join Voice-Call",
+    'header': "Join Video-Chat",
     'usage': "{tr}joinvc"},
     allow_private=False)
 async def joinvc(msg: Message):
@@ -205,7 +205,7 @@ async def joinvc(msg: Message):
 
 
 @userge.on_cmd("leavevc", about={
-    'header': "Leave Voice-Call",
+    'header': "Leave Video-Chat",
     'usage': "{tr}leavevc"},
     allow_private=False)
 @vc_chat
@@ -220,7 +220,7 @@ async def leavevc(msg: Message):
         CHAT_NAME = ""
         CHAT_ID = 0
     else:
-        await reply_text(msg, "`I didn't find any Voice-Chat to leave")
+        await reply_text(msg, "`I didn't find any Video Chat to leave.")
 
 
 @userge.on_cmd("vcmode", about={
@@ -251,7 +251,7 @@ async def toggle_vc(msg: Message):
 @vc_chat
 @check_enable_for_all
 async def play_music(msg: Message):
-    """ play music in voice call """
+    """ play music in video chat """
 
     if msg.input_str:
         if yt_regex.match(msg.input_str):
@@ -259,7 +259,7 @@ async def play_music(msg: Message):
                 msg = await reply_text(msg, _get_scheduled_text("Song", msg.input_str))
             QUEUE.append(msg)
         else:
-            mesg = await reply_text(msg, f"Searching `{msg.input_str}` on YouTube")
+            mesg = await reply_text(msg, f"Searching for `{msg.input_str}` on YouTube")
             title, link = await _get_song(msg.input_str)
             if link:
                 if PLAYING:
@@ -283,7 +283,7 @@ async def play_music(msg: Message):
         await handle_queue()
 
 
-@userge.on_cmd("helpvc", about={'header': "help for voice_call plugin"},
+@userge.on_cmd("helpvc", about={'header': "Help for video_chat plugin"},
                trigger=Config.SUDO_TRIGGER, allow_private=False, check_client=True,
                filter_me=False, allow_bots=False)
 @vc_chat
@@ -291,7 +291,7 @@ async def play_music(msg: Message):
 async def _help(msg: Message):
     """ help commands of this plugin for others """
 
-    commands = userge.manager.enabled_plugins["voice_call"].enabled_commands
+    commands = userge.manager.enabled_plugins["video-chat"].enabled_commands
     cmds = []
     raw_cmds = []
 
@@ -304,7 +304,7 @@ async def _help(msg: Message):
         out_str = f"""⚔ <b><u>(<code>{len(cmds)}</code>) Command(s) Available</u></b>
 
 🔧 <b>Plugin:</b>  <code>voice_call</code>
-📘 <b>Doc:</b>  <code>Userge Voice-Call Plugin</code>\n\n"""
+📘 <b>Doc:</b>  <code>Userge Video-Chat Plugin</code>\n\n"""
         for i, cmd in enumerate(cmds, start=1):
             out_str += (f"    🤖 <b>cmd(<code>{i}</code>):</b>  <code>{cmd.name}</code>\n"
                         f"    📚 <b>info:</b>  <i>{cmd.doc}</i>\n\n")
@@ -327,7 +327,7 @@ async def _help(msg: Message):
     allow_private=False)
 @vc_chat
 async def force_play_music(msg: Message):
-    """ Force play music in voice call """
+    """ Force play music in video chat """
 
     if not PLAYING:
         return await play_music(msg)
@@ -336,7 +336,7 @@ async def force_play_music(msg: Message):
         if yt_regex.match(msg.input_str):
             QUEUE.insert(0, msg)
         else:
-            mesg = await reply_text(msg, f"Searching `{msg.input_str}` on YouTube")
+            mesg = await reply_text(msg, f"Searching for `{msg.input_str}` on YouTube")
             title, link = await _get_song(msg.input_str)
             if link:
                 await mesg.delete()
