@@ -1,4 +1,4 @@
-""" manage your userge :) """
+""" Manage your Userge 🙂 """
 
 # Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
@@ -102,7 +102,7 @@ async def status(message: Message) -> None:
             elif n_name_ in userge.manager.commands:
                 cmd = userge.manager.commands[n_name_]
             else:
-                await message.err(f"command : {name_} not found!")
+                await message.err(f"Command : {name_} not found!")
                 return
             out_str = f"""⚔ **--Command Status--** ⚔
 
@@ -136,7 +136,7 @@ async def status(message: Message) -> None:
 ➕ **Enabled** : `{flt.is_enabled}`
 """
             else:
-                await message.err(f"filter : {name_} not found!")
+                await message.err(f"Filter : {name_} not found!")
                 return
         else:
             out_str = f"""⚖ **--Filters Status--** ⚖
@@ -151,13 +151,13 @@ async def status(message: Message) -> None:
         `{'`,    `'.join((flt.name for flt in userge.manager.unloaded_filters))}`
 """
     else:
-        await message.err("invalid input flag!")
+        await message.err("Invalid input flag!")
         return
     await message.edit(out_str.replace("        ``\n", ''), del_in=0)
 
 
 @userge.on_cmd("enable", about={
-    'header': "enable plugins, commands, filters",
+    'header': "Enable plugins, commands, filters",
     'flags': {
         '-p': "plugin",
         '-c': "command",
@@ -168,10 +168,10 @@ async def status(message: Message) -> None:
 async def enable(message: Message) -> None:
     """ enable plugins, commands, filters """
     if not message.flags:
-        await message.err("flag required!")
+        await message.err("Flag required!")
         return
     if not message.filtered_input_str:
-        await message.err("name required!")
+        await message.err("Name required!")
         return
     await message.edit("`Enabling...`")
     names_ = message.filtered_input_str.split(' ')
@@ -202,7 +202,7 @@ async def enable(message: Message) -> None:
             else:
                 out_str = f"already enabled! : `{'`,    `'.join(names_)}`"
         else:
-            await message.err(f"commands : {', '.join(names_)} not found!")
+            await message.err(f"Commands : {', '.join(names_)} not found!")
             return
     elif 'f' in type_:
         found = set(names_).intersection(set(userge.manager.filters))
@@ -214,16 +214,16 @@ async def enable(message: Message) -> None:
             else:
                 out_str = f"already enabled! : `{'`,    `'.join(names_)}`"
         else:
-            await message.err(f"filters : {', '.join(names_)} not found!")
+            await message.err(f"Filters : {', '.join(names_)} not found!")
             return
     else:
-        await message.err("invalid input flag!")
+        await message.err("Invalid input flag!")
         return
     await message.edit(out_str, del_in=0, log=__name__)
 
 
 @userge.on_cmd("disable", about={
-    'header': "disable plugins, commands, filters",
+    'header': "Disable plugins, commands, filters",
     'flags': {
         '-p': "plugin",
         '-c': "command",
@@ -234,10 +234,10 @@ async def enable(message: Message) -> None:
 async def disable(message: Message) -> None:
     """ disable plugins, commands, filters """
     if not message.flags:
-        await message.err("flag required!")
+        await message.err("Flag required!")
         return
     if not message.filtered_input_str:
-        await message.err("name required!")
+        await message.err("Name required!")
         return
     await message.edit("`Disabling...`")
     names_ = message.filtered_input_str.split(' ')
@@ -253,7 +253,7 @@ async def disable(message: Message) -> None:
             else:
                 out_str = f"already disabled! : `{'`,    `'.join(names_)}`"
         else:
-            await message.err(f"plugins : {', '.join(names_)} not found!")
+            await message.err(f"Plugins : {', '.join(names_)} not found!")
             return
     elif 'c' in type_ and names_:
         for t_name in names_:
@@ -268,7 +268,7 @@ async def disable(message: Message) -> None:
             else:
                 out_str = f"already disabled! : `{'`,    `'.join(names_)}`"
         else:
-            await message.err(f"commands : {', '.join(names_)} not found!")
+            await message.err(f"Commands : {', '.join(names_)} not found!")
             return
     elif 'f' in type_ and names_:
         found = set(names_).intersection(set(userge.manager.filters))
@@ -283,13 +283,13 @@ async def disable(message: Message) -> None:
             await message.err(f"filters : {', '.join(names_)} not found!")
             return
     else:
-        await message.err("invalid input flag!")
+        await message.err("Invalid input flag!")
         return
     await message.edit(out_str, del_in=0, log=__name__)
 
 
 @userge.on_cmd('load', about={
-    'header': "load plugins, commands, filters",
+    'header': "Load plugins, commands, filters",
     'flags': {
         '-p': "plugin",
         '-c': "command",
@@ -318,7 +318,7 @@ async def load(message: Message) -> None:
                 else:
                     out_str = f"already loaded! : `{'`,    `'.join(names_)}`"
             else:
-                await message.err(f"plugins : {', '.join(names_)} not found!")
+                await message.err(f"Plugins : {', '.join(names_)} not found!")
                 return
         elif 'c' in type_:
             for t_name in names_:
@@ -343,12 +343,12 @@ async def load(message: Message) -> None:
                     out_str = "**--Loaded Filter(s)--**\n\n"
                     out_str += f"`{'`,    `'.join(out)}`"
                 else:
-                    out_str = f"already loaded! : `{'`,    `'.join(names_)}`"
+                    out_str = f"Already loaded! : `{'`,    `'.join(names_)}`"
             else:
-                await message.err(f"filters : {', '.join(names_)} not found!")
+                await message.err(f"Filters : {', '.join(names_)} not found!")
                 return
         else:
-            await message.err("invalid input flag!")
+            await message.err("Invalid input flag!")
             return
         await message.edit(out_str, del_in=0, log=__name__)
     else:
@@ -395,7 +395,7 @@ async def unload(message: Message) -> None:
     if not message.filtered_input_str:
         await message.err("name required!")
         return
-    await message.edit("`UnLoading...`")
+    await message.edit("`Unloading...`")
     names_ = message.filtered_input_str.split(' ')
     type_ = list(message.flags)
     if 'p' in type_ and names_:
@@ -407,9 +407,9 @@ async def unload(message: Message) -> None:
                 for plg_name, cmds in out.items():
                     out_str += f"**{plg_name}** : `{'`,    `'.join(cmds)}`\n"
             else:
-                out_str = f"already unloaded! : `{'`,    `'.join(names_)}`"
+                out_str = f"Already unloaded! : `{'`,    `'.join(names_)}`"
         else:
-            await message.err(f"plugins : {', '.join(names_)} not found!")
+            await message.err(f"Plugins : {', '.join(names_)} not found!")
             return
     elif 'c' in type_ and names_:
         for t_name in names_:
@@ -422,9 +422,9 @@ async def unload(message: Message) -> None:
                 out_str = "**--Unloaded Command(s)--**\n\n"
                 out_str += f"`{'`,    `'.join(out)}`"
             else:
-                out_str = f"already unloaded! : `{'`,    `'.join(names_)}`"
+                out_str = f"Already unloaded! : `{'`,    `'.join(names_)}`"
         else:
-            await message.err(f"commands : {', '.join(names_)} not found!")
+            await message.err(f"Commands : {', '.join(names_)} not found!")
             return
     elif 'f' in type_ and names_:
         found = set(names_).intersection(set(userge.manager.filters))
@@ -434,12 +434,12 @@ async def unload(message: Message) -> None:
                 out_str = "**--Unloaded Filter(s)--**\n\n"
                 out_str += f"`{'`,    `'.join(out)}`"
             else:
-                out_str = f"already unloaded! : `{'`,    `'.join(names_)}`"
+                out_str = f"Already unloaded! : `{'`,    `'.join(names_)}`"
         else:
-            await message.err(f"filters : {', '.join(names_)} not found!")
+            await message.err(f"Filters : {', '.join(names_)} not found!")
             return
     else:
-        await message.err("invalid input flag!")
+        await message.err("Invalid input flag!")
         return
     await message.edit(out_str, del_in=0, log=__name__)
 
