@@ -48,14 +48,15 @@ def ocr_space_file(filename,
 
 
 @userge.on_cmd("ocr", about={
-    'header': "use this to run ocr reader",
-    'description': "get ocr result for images (file size limit = 1MB)",
+    'header': "use this to run OCR reader",
+    'description': "Get OCR result for images (file size limit = 1MB)"
+                   "[**Note:** Requires `OCR_SPACE_API` var]",
     'examples': [
         "{tr}ocr [reply to image]",
         "{tr}ocr eng [reply to image] (get lang codes from 'https://ocr.space/ocrapi')"]})
 async def ocr_gen(message: Message):
     """
-    this function can generate ocr output for a image file
+    this function can generate OCR output for a image file
     """
     if Config.OCR_SPACE_API_KEY is None:
         await message.edit(
@@ -94,5 +95,5 @@ async def ocr_gen(message: Message):
             return
 
     else:
-        await message.err(r"i can't read nothing (°ー°〃)")
+        await message.err(r"I can't read nothing (°ー°〃)")
         return
