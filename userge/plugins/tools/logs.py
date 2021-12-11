@@ -1,3 +1,4 @@
+""" check logs or set logger levels """
 # Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -24,7 +25,7 @@ _LEVELS = {
         '-l': "heroku logs lines limit : default 100"}}, allow_channels=False)
 async def check_logs(message: Message):
     """ check logs """
-    await message.edit("`checking logs ...`")
+    await message.edit("`Checking logs ...`")
     if '-h' in message.flags and Config.HEROKU_APP:
         limit = int(message.flags.get('-l', 100))
         logs = await pool.run_in_thread(Config.HEROKU_APP.get_log)(lines=limit)
@@ -45,11 +46,11 @@ async def check_logs(message: Message):
     'usage': "{tr}setlvl [level]",
     'examples': ["{tr}setlvl info", "{tr}setlvl debug"]})
 async def set_level(message: Message):
-    """ set logger level """
-    await message.edit("`setting logger level ...`")
+    """ Set logger level """
+    await message.edit("`Setting logger level ...`")
     level = message.input_str.lower()
     if level not in _LEVELS:
-        await message.err("unknown level !")
+        await message.err("Unknown level!")
         return
     for logger in (logging.getLogger(name) for name in logging.root.manager.loggerDict):
         logger.setLevel(_LEVELS[level])
