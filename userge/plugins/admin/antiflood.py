@@ -43,7 +43,7 @@ async def cache_admins(msg):
 
 
 @userge.on_cmd("setflood", about={
-    'header': "Set Anti-Flood limit to take Action\n"
+    'header': "Set Anti-Flood limit to take action\n"
               "Pass <on/off> to turn Off and On.",
     'usage': "{tr}setflood 5\n"
              "{tr}setflood on (for ON)\n{tr}setflood off (for OFF)"}, allow_private=False)
@@ -55,7 +55,7 @@ async def set_flood(msg: Message):
         return
     if 'on' in args.lower():
         if msg.chat.id in ANTIFLOOD_DATA and ANTIFLOOD_DATA[msg.chat.id].get("data") == "on":
-            return await msg.edit("Antiflood Already enabled for this chat.", del_in=5)
+            return await msg.edit("Antiflood already enabled for this chat.", del_in=5)
         chat_limit = 5
         chat_mode = "Ban"
         if ANTIFLOOD_DATA.get(msg.chat.id):
@@ -75,16 +75,16 @@ async def set_flood(msg: Message):
             }},
             upsert=True
         )
-        await msg.edit("`Anti-Flood is Enabled Successfully...`", log=__name__, del_in=5)
+        await msg.edit("`Anti-Flood is enabled successfully...`", log=__name__, del_in=5)
     elif 'off' in args.lower():
         if msg.chat.id not in ANTIFLOOD_DATA or (
             msg.chat.id in ANTIFLOOD_DATA and ANTIFLOOD_DATA[msg.chat.id].get("data") == "off"
         ):
-            return await msg.edit("Antiflood Already Disabled for this chat.", del_in=5)
+            return await msg.edit("Antiflood already disabled for this chat.", del_in=5)
         ANTIFLOOD_DATA[msg.chat.id]["data"] = "off"
         await ANTI_FLOOD.update_one(
             {'chat_id': msg.chat.id}, {"$set": {'data': 'off'}}, upsert=True)
-        await msg.edit("`Anti-Flood is Disabled Successfully...`", log=__name__, del_in=5)
+        await msg.edit("`Anti-Flood is disabled successfully...`", log=__name__, del_in=5)
     elif args.isnumeric():
         if msg.chat.id not in ANTIFLOOD_DATA or (
             msg.chat.id in ANTIFLOOD_DATA and ANTIFLOOD_DATA[msg.chat.id].get("data") == "off"
@@ -92,7 +92,7 @@ async def set_flood(msg: Message):
             return await msg.edit("First turn ON ANTIFLOOD then set Limit.", del_in=5)
         input_ = int(args)
         if input_ < 3:
-            await msg.err("Can't set Antiflood Limit less then 3")
+            await msg.err("Can't set Anti-Flood Limit less than 3")
             return
         ANTIFLOOD_DATA[msg.chat.id]["limit"] = input_
         await ANTI_FLOOD.update_one(
@@ -107,8 +107,8 @@ async def set_flood(msg: Message):
 
 @userge.on_cmd("setmode", about={
     'header': "Set Anti-Flood Mode",
-    'description': "When User Reached Limit of Flooding "
-                   "He will Got Ban/Kick/Mute By Group Admins",
+    'description': "When User has reached the limit of flooding "
+                   "He will get Ban/Kick/Mute by Group Admins",
     'usage': "{tr}setmode Ban\n{tr}setmode Kick\n{tr}setmode Mute"}, allow_private=False)
 async def set_mode(msg: Message):
     """ Set flood mode to take action """
@@ -125,7 +125,7 @@ async def set_mode(msg: Message):
         await ANTI_FLOOD.update_one(
             {'chat_id': msg.chat.id}, {"$set": {'mode': mode.lower()}}, upsert=True)
         await msg.edit(
-            f"`Anti-Flood Mode is Successfully Updated to {mode.title()}`",
+            f"`Anti-Flood Mode is successfully updated to {mode.title()}`",
             log=__name__, del_in=5
         )
     else:
@@ -133,10 +133,10 @@ async def set_mode(msg: Message):
 
 
 @userge.on_cmd("vflood", about={
-    'header': "View Current Anti Flood Settings",
+    'header': "View current Anti-Flood Settings",
     'usage': "{tr}vflood"}, allow_private=False)
 async def view_flood_settings(msg: Message):
-    """ view Current Flood Settings """
+    """ view current Flood Settings """
     chat_data = ANTIFLOOD_DATA.get(msg.chat.id)
     if not chat_data or (chat_data and chat_data.get("data") == "off"):
         return await msg.edit("`Anti-Flood Disabled in this chat.`")
@@ -194,7 +194,7 @@ async def anti_flood_handler(msg: Message):
         await asyncio.gather(
             msg.reply(
                 r"\\**#Userge_AntiFlood**//"
-                "\n\nThis User Reached His Limit of Spamming\n\n"
+                "\n\nThis User has reached his limit of Spamming\n\n"
                 f"**User:** [{first_name}](tg://user?id={user_id})\n"
                 f"**ID:** `{user_id}`\n**Limit:** `{limit}`\n\n"
                 f"**Quick Action:** {exec_str}"),
