@@ -12,7 +12,7 @@ from userge import userge, Message
 
 
 @userge.on_cmd("head", about={
-    'header': "View headers in URL",
+    'header': "View headers in an URL",
     'flags': {
         '-r': "allow redirects",
         '-s': "allow streams",
@@ -27,7 +27,7 @@ async def req_head(message: Message):
     stm = '-s' in flags
     tout = int(flags.get('-t', 3))
     if not link:
-        await message.err("Please give me a link link!")
+        await message.err("Please give me a link!")
         return
     try:
         cd = requests.head(url=link,
