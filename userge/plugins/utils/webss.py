@@ -48,7 +48,7 @@ async def webss(message: Message):
         "document.documentElement.offsetWidth);")
     driver.set_window_size(width + 125, height + 125)
     wait_for = height / 1000
-    await message.edit(f"`Generating screenshot of page...`"
+    await message.edit(f"`Generating screenshot of the page...`"
                        f"\n`Height of page = {height}px`"
                        f"\n`Width of page = {width}px`"
                        f"\n`Waiting ({int(wait_for)}s) for the page to load.`")
