@@ -239,12 +239,12 @@ async def paste_(message: Message) -> None:
         elif replied.text:
             text = replied.text
     if not text:
-        await message.err("input not found!")
+        await message.err("Input not found!")
         return
     flags = list(message.flags)
     size = len(flags)
     if size > 2:
-        await message.err("too many args!")
+        await message.err("Too many args!")
         return
 
     service: Optional[PasteService] = None
@@ -276,7 +276,7 @@ async def get_paste_(message: Message):
     """ fetches the content of a paste URL """
     link = message.input_str
     if not link:
-        await message.err("input not found!")
+        await message.err("Input not found!")
         return
     await message.edit("`Finding Service...`")
 
@@ -284,7 +284,7 @@ async def get_paste_(message: Message):
         if service.is_supported(link):
             code = _get_code(link)
             if code is None:
-                await message.err("Invalid Link !")
+                await message.err("Invalid Link!")
                 return
             await message.edit(f"`Getting paste content [{service.get_name().title()}] ...`")
             async with aiohttp.ClientSession(headers=_HEADERS) as ses:
