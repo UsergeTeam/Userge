@@ -1,4 +1,4 @@
-""" Bot Pm """
+""" Bot PM """
 
 # Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
@@ -43,7 +43,7 @@ _BANNED_USERS: List[int] = []
 _U_ID_F_M_ID: Dict[int, int] = {}
 _STATS: Dict[str, int] = {"incoming": 0, "outgoing": 0}
 
-START_TEXT = " Hello {mention}, you can contact me using this Bot."
+START_TEXT = " Hello {mention}, you can contact me using this bot."
 START_MEDIA = os.environ.get("START_MEDIA")
 
 botPmFilter = filters.create(lambda _, __, ___: BOT_PM)
@@ -74,11 +74,11 @@ async def _init():
 
 
 @userge.on_cmd("botpm", about={
-    'header': "Bot Pm handlers like Livegram Bot.",
+    'header': PM Bot (Feedback Bot) handlers like Livegram Bot",
     'description': "You can use this command to enable/disable Bot Pm.\n"
                    "You can see all the settings of your bot after enabling "
                    "bot pm and hit /start in your Bot DM.\n"
-                   "Note: You have to us Bot mode or Dual mode if you want to enable Bot Pm.",
+                   "Note: You have to use `BOT MODE` or `DUAL MODE` if you want to enable Bot PM.",
     'usage': "{tr}botpm"})
 async def bot_pm(msg: Message):
     """ Toggle Bot Pm """
@@ -90,7 +90,7 @@ async def bot_pm(msg: Message):
         {"_id": "BOT_PM"}, {"$set": {"data": BOT_PM}}, upsert=True
     )
     await msg.edit(
-        f"Bot Pm `{'Disabled ❌' if not BOT_PM else 'Enabled ✅'}` Successully.",
+        f"Bot Pm `{'Disabled ❌' if not BOT_PM else 'Enabled ✅'}` Successfully.",
         del_in=5
     )
 
@@ -175,15 +175,15 @@ if userge.has_bot:
         replied = msg.reply_to_message
         user_id = msg.text.split(' ', maxsplit=1)[1] if ' ' in msg.text else ''
         if not (replied or user_id):
-            await msg.reply("reply to user message or give id to Ban.")
+            await msg.reply("Reply to user message or give ID to Ban.")
         elif replied and replied.from_user.id == userge_id:
-            await msg.reply("You are trying to Ban yourself!")
+            await msg.reply("You are trying to ban yourself!")
         else:
             if replied:
                 if replied.forward_from:
                     user_id = replied.forward_from.id
                 elif replied.message_id not in _U_ID_F_M_ID:
-                    return await msg.reply("You can't reply old message of this user.")
+                    return await msg.reply("You can't reply old message of the bot.")
                 else:
                     user_id = _U_ID_F_M_ID.get(replied.message_id)
             else:
@@ -213,15 +213,15 @@ if userge.has_bot:
         replied = msg.reply_to_message
         user_id = msg.text.split(' ', maxsplit=1)[1] if ' ' in msg.text else ''
         if not (replied or user_id):
-            await msg.reply("reply to user message or give id to UnBan.")
+            await msg.reply("Reply to user message or give ID to UnBan.")
         elif replied and replied.from_user.id == userge_id:
-            await msg.reply("You are trying to UnBan yourself!")
+            await msg.reply("You are trying to Unban yourself!")
         else:
             if replied:
                 if replied.forward_from:
                     user_id = replied.forward_from.id
                 elif replied.message_id not in _U_ID_F_M_ID:
-                    return await msg.reply("You can't reply old message of this user.")
+                    return await msg.reply("You can't reply old message of the bot.")
                 else:
                     user_id = _U_ID_F_M_ID.get(replied.message_id)
             else:
@@ -262,7 +262,7 @@ if userge.has_bot:
     MISC_TEXT = "Click on the below button to change Bot Start Text or Start Media."
 
     SET_MEDIA_TEXT = """You can set Custom Start Media by Adding a Config Var named `START_MEDIA`.
-Your var value should only contain telegraph link of any media.
+Your var value should only contain Telegraph link of any media.
 
 After Adding a var, you can see your media when you start your Bot.
 """
@@ -273,9 +273,9 @@ After Adding a var, you can see your media when you start your Bot.
     HELP_TEXT = """**Here are the available commands for Bot PM:**
 
 /start - Start the bot
-/settext [text | reply to text] - Set Custom Start Text
-/pmban [user_id | reply to user] - Ban User from Doing Pms
-/pmunban [user_id | reply to user] - UnBan Banned user
+/settext [text | reply to text] - Set custom start text
+/pmban [user_id | reply to user] - Ban User from using the bot
+/pmunban [user_id | reply to user] - Unban User who has been banned
 """
 
     @bot.on_callback_query(
@@ -352,13 +352,13 @@ After Adding a var, you can see your media when you start your Bot.
                 await broadcast(cq.message)
             except StopConversation as err:
                 IN_CONVO = False
-                if "message limit reached!" in str(err):
+                if "Message limit reached!" in str(err):
                     await cq.message.reply(
-                        "You can only send 5 post message at once."
+                        "You can only send 5 post messages at once."
                     )
                 else:
                     await cq.message.reply(
-                        "**Broadcast process cancelled:** You didnt replied in 30 seconds."
+                        "**Broadcast process cancelled:** You didn't replied in 30 seconds."
                     )
         elif cq.data == "misc":
             mp = InlineKeyboardMarkup(
@@ -474,7 +474,7 @@ After Adding a var, you can see your media when you start your Bot.
             return
         replied = msg.reply_to_message
         if not replied:
-            await msg.reply("reply to user message to send reply.")
+            await msg.reply("Reply to User's message to send reply.")
         elif replied.from_user.id == userge_id:
             await msg.reply("You are trying to reply yourself!")
         elif msg.forward_from or msg.forward_sender_name or msg.forward_date:
@@ -483,7 +483,7 @@ After Adding a var, you can see your media when you start your Bot.
             if replied.forward_from:
                 reply_id = replied.forward_from.id
             elif replied.message_id not in _U_ID_F_M_ID:
-                return await msg.reply("You can't reply old message of this user.")
+                return await msg.reply("You can't reply old message of the bot.")
             else:
                 reply_id = _U_ID_F_M_ID.get(replied.message_id)
             try:
@@ -492,7 +492,7 @@ After Adding a var, you can see your media when you start your Bot.
                 else:
                     await msg.copy(reply_id)
             except UserIsBlocked:
-                await msg.reply("Bot was Blocked by the user.")
+                await msg.reply("Bot was blocked by the user.")
                 _USERS.remove(reply_id)
                 _HAVE_BLOCKED.append(reply_id)
                 await USERS.delete_one({"user_id": reply_id})
@@ -527,7 +527,7 @@ Type /send to confirm or /cancel to exit.
     async def broadcast(msg: PyroMessage):
         global IN_CONVO  # pylint: disable=global-statement
         if len(_USERS) < 1:
-            return await bot.send_message(msg.chat.id, "No one Started your bot. 🤭")
+            return await bot.send_message(msg.chat.id, "No one started your bot. 🤭")
         IN_CONVO = True
         temp_msgs = []
         async with userge.bot.conversation(
@@ -551,7 +551,7 @@ Type /send to confirm or /cancel to exit.
                     await conv.send_message(CONTINUE_MESSAGE.format(PREVIEW_MESSAGE))
                     continue
                 if len(temp_msgs) >= 5:
-                    raise StopConversation("message limit reached!")
+                    raise StopConversation("Message limit reached!")
                 temp_msgs.append(response)
                 await response.copy(conv.chat_id)
                 await conv.send_message(CONTINUE_MESSAGE.format(NEXT_MESSAGE))
