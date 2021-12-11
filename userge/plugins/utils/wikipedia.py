@@ -12,7 +12,7 @@ from userge import userge, Message
 
 
 @userge.on_cmd("wiki", about={
-    'header': "do a Wikipedia search",
+    'header': "Search in Wikipedia",
     'flags': {'-l': "limit the number of returned results (defaults to 5)"},
     'usage': "{tr}wiki [flags] [query | reply to msg]",
     'examples': "{tr}wiki -l5 userge"})
@@ -24,7 +24,7 @@ async def wiki_pedia(message: Message):
     if message.reply_to_message:
         query = message.reply_to_message.text
     if not query:
-        await message.err(text="Give a query or reply to a message to wikipedia!")
+        await message.err(text="Give a query or reply to a message to search on Wikipedia!")
         return
     try:
         wikipedia.set_lang("en")
