@@ -19,7 +19,7 @@ from userge import userge, Message, pool
     'usage': "{tr}covid [flag | country]",
     'examples': ["{tr}covid -l", "{tr}covid", "{tr}covid india"]})
 async def covid(message: Message):
-    await message.edit("`fetching covid ...`")
+    await message.edit("`Fetching Covid ...`")
     covid_ = await pool.run_in_thread(Covid)("worldometers")
     country = message.input_str
     result = ""
@@ -31,7 +31,7 @@ async def covid(message: Message):
         try:
             data = covid_.get_status_by_country_name(country)
         except ValueError:
-            await message.err(f"invalid country name <{country}>!")
+            await message.err(f"Invalid country name <{country}>!")
             return
         result += f"<u>Covid Status for {data['country']}</u>\n\n"
         result += f"**new cases** : `{data['new_cases']}`\n"
