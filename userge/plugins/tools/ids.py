@@ -10,7 +10,7 @@ from userge import userge, Message
 
 
 @userge.on_cmd("ids", about={
-    'header': "display ids",
+    'header': "Display IDs of chat and message",
     'usage': "reply {tr}ids any message, file or just send this command"})
 async def getids(message: Message):
     msg = message.reply_to_message or message
