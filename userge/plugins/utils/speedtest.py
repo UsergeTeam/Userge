@@ -19,13 +19,13 @@ CHANNEL = userge.getCLogger(__name__)
 
 @userge.on_cmd("speedtest", about={'header': "test your server speed"})
 async def speedtst(message: Message):
-    await message.edit("`Running speed test . . .`")
+    await message.edit("`Running speed test...`")
     try:
         test = speedtest.Speedtest()
         test.get_best_server()
-        await message.try_to_edit("`Performing download test . . .`")
+        await message.try_to_edit("`Performing download test...`")
         test.download()
-        await message.try_to_edit("`Performing upload test . . .`")
+        await message.try_to_edit("`Performing upload test...`")
         test.upload()
         test.results.share()
         result = test.results.dict()
