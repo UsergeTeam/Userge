@@ -41,7 +41,7 @@ async def gmute_user(msg: Message):
     if not reason:
         await msg.edit(
             f"**#Aborted**\n\n**GMuting** of [{firstname}](tg://user?id={user_id}) "
-            "`Aborted coz No reason of GMute provided by User`", del_in=5)
+            "`Aborted. No reason of GMute provided by User`", del_in=5)
         return
     user_id = get_mem['id']
     if user_id == msg.from_user.id:
