@@ -22,9 +22,9 @@ LOG = userge.getLogger(__name__)
 
 
 @userge.on_cmd("gban", about={
-    'header': "Globally Ban A User",
+    'header': "Globally Bans A User",
     'description': "Adds User to your GBan List. "
-                   "Bans a Globally Banned user if they join or message. "
+                   "Bans a globally banned user if they join or message. "
                    "[NOTE: Works only in groups where you are admin.]",
     'examples': "{tr}gban [userid | reply] [reason for gban] (mandatory)"},
     allow_channels=False, allow_bots=False)
@@ -54,7 +54,7 @@ async def gban_user(message: Message):
     found = await GBAN_USER_BASE.find_one({'user_id': user_id})
     if found:
         await message.edit(
-            "**#Already_GBanned**\n\nUser Already Exists in My Gban List.\n"
+            "**#Already_GBanned**\n\nThis User Already Exists in My Gban List.\n"
             f"**Reason For GBan:** `{found['reason']}`", del_in=5)
         return
     await message.edit(r"\\**#GBanned_User**//"
@@ -92,7 +92,7 @@ async def gban_user(message: Message):
 
 
 @userge.on_cmd("ungban", about={
-    'header': "Globally Unban an User",
+    'header': "Globally Unbans an User",
     'description': "Removes an user from your Gban List",
     'examples': "{tr}ungban [userid | reply]"},
     allow_channels=False, allow_bots=False)
@@ -134,7 +134,7 @@ async def ungban_user(message: Message):
     'examples': "Lol. Just type {tr}glist"},
     allow_channels=False)
 async def list_gbanned(message: Message):
-    """ vies gbanned users """
+    """ shows the list of gbanned users """
     msg = ''
     async for c in GBAN_USER_BASE.find():
         msg += ("**User** : " + str(c['firstname']) + "-> with **User ID** -> "
@@ -144,7 +144,7 @@ async def list_gbanned(message: Message):
 
 
 @userge.on_cmd("whitelist", about={
-    'header': "Whitelist a User",
+    'header': "Whitelists a User",
     'description': "Use whitelist to add users to bypass API Bans",
     'usage': "{tr}whitelist [userid | reply to user]",
     'examples': "{tr}whitelist 5231147869"},
