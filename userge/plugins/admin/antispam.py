@@ -152,7 +152,7 @@ def _get_msg_and_log(chat: Chat, user: User,
 
     msg = (
         r"\\**#Userge_Antispam**//"
-        "\n\nGlobally Banned User Detected in this Chat.\n\n"
+        "\n\nGlobally banned User detected in this Chat.\n\n"
         f"{others}"
     )
 
