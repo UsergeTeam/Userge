@@ -139,10 +139,11 @@ async def send_rss_to_telegram(client, args: dict, path: str = None):
 
 
 @userge.on_cmd("addfeed", about={
-    'header': "Add new Feed Url to get regular Updates from it.",
+    'header': "Add new Feed URL",
+    'description': "Add new Feed URL to get regular updates from it.",
     'usage': "{tr}addfeed url"})
 async def add_rss_feed(msg: Message):
-    """ Add a New feed Url """
+    """ Add a New feed URL """
     if len(RSS_DICT) >= 10:
         return await msg.edit("`Sorry, but not allowing to add urls more than 10.`")
     if not msg.input_str:
@@ -156,7 +157,8 @@ async def add_rss_feed(msg: Message):
 
 
 @userge.on_cmd("delfeed", about={
-    'header': "Delete a existing Feed Url from Database.",
+    'header': "Delete an existing Feed Url",
+    'description': "Delete an existing Feed URL from Database."
     'flags': {'-all': 'Delete All Urls.'},
     'usage': "{tr}delfeed url"})
 async def delete_rss_feed(msg: Message):
