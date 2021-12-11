@@ -12,7 +12,7 @@ from userge import userge, Message
 
 
 @userge.on_cmd("google", about={
-    'header': "do a Google search",
+    'header': "Search in Google",
     'flags': {
         '-p': "page of results to return (default to 1)",
         '-l': "limit the number of returned results (defaults to 5)(max 10)"},
@@ -20,14 +20,14 @@ from userge import userge, Message
     'examples': "{tr}google -p4 -l10 github-userge"})
 async def gsearch(message: Message):
     query = message.filtered_input_str
-    await message.edit(f"**Googling** for `{query}` ...")
+    await message.edit(f"**Searching** for `{query}` on **Google**...")
     flags = message.flags
     page = int(flags.get('-p', 1))
     limit = int(flags.get('-l', 5))
     if message.reply_to_message:
         query = message.reply_to_message.text
     if not query:
-        await message.err("Give a query or reply to a message to google!")
+        await message.err("Give a query or reply to a message to search on Google!")
         return
     try:
         g_search = GoogleSearch()
