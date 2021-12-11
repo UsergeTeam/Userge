@@ -68,7 +68,7 @@ async def filters_active(message: Message) -> None:
     """ list filters in current chat """
     out = ''
     if '-all' in message.flags:
-        await message.edit("`getting filters ...`")
+        await message.edit("`Getting filters ...`")
         for chat_id in FILTERS_DATA:
             out += f"**{(await message.client.get_chat(chat_id)).title}**\n"
             out += _get_filters_for_chat(chat_id)
@@ -99,14 +99,14 @@ async def delete_filters(message: Message) -> None:
         FILTERS_DATA.clear()
         await asyncio.gather(
             FILTERS_COLLECTION.drop(),
-            message.edit("`Cleared All Filters in Every Chat !`", del_in=5))
+            message.edit("`Cleared all filters in every chat !`", del_in=5))
         return
     if '-all' in message.flags:
         if message.chat.id in FILTERS_DATA:
             del FILTERS_DATA[message.chat.id]
             await asyncio.gather(
                 FILTERS_COLLECTION.delete_many({'chat_id': message.chat.id}),
-                message.edit("`Cleared All Filters in This Chat !`", del_in=5))
+                message.edit("`Cleared all Filters in this chat !`", del_in=5))
         else:
             await message.err("Couldn't find filters in this chat!")
         return
@@ -147,13 +147,13 @@ async def add_filter(message: Message) -> None:
     if replied and replied.text:
         content = replied.text.html
     if not (content or (replied and replied.media)):
-        await message.err("No Content Found !")
+        await message.err("No Content Found!")
         return
     if (filter_.startswith(':') and filter_.endswith(':')
             and filter_ not in _SUPPORTED_TYPES):
-        await message.err(f"invalid media type [ {filter_} ] !")
+        await message.err(f"Invalid media type [ {filter_} ] !")
         return
-    await message.edit("`adding filter ...`")
+    await message.edit("`Adding filter ...`")
     message_id = await CHANNEL.store(replied, content)
     _filter_updater(message.chat.id, filter_, message_id)
     result = await FILTERS_COLLECTION.update_one(
