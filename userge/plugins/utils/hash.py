@@ -22,7 +22,7 @@ async def gethash(message: Message):
     """ find hash of text """
     input_ = message.input_or_reply_str
     if not input_:
-        await message.err("input not found!")
+        await message.err("Input not found!")
         return
     with open("hash.txt", "w+") as hashtxt:
         hashtxt.write(input_)
