@@ -80,7 +80,7 @@ def _get_chat_lock(message: Message, lock_type: str, should_lock: bool) -> Seque
 
 @userge.on_cmd(
     "lock", about={
-        'header': "use this to lock group permissions",
+        'header': "Use this to lock group permissions",
         'description': "Allows you to lock some common permission types in the chat.\n"
                        "[NOTE: Requires proper admin rights in the chat!!!]",
         'types': [
@@ -98,13 +98,13 @@ async def lock_perm(message: Message):
     if lock_type == "all":
         try:
             await message.client.set_chat_permissions(chat_id, ChatPermissions())
-            await message.edit("**🔒 Locked all permission from this Chat!**", del_in=5)
+            await message.edit("**🔒 Locked all permissions from this Chat!**", del_in=5)
             await CHANNEL.log(
                 f"#LOCK\n\nCHAT: `{message.chat.title}` (`{chat_id}`)\n"
                 f"PERMISSIONS: `All Permissions`")
         except Exception as e_f:
             await message.edit(
-                r"`i don't have permission to do that ＞︿＜`\n\n"
+                r"`I don't have permission to do this. ＞︿＜`\n\n"
                 f"**ERROR:** `{e_f}`", del_in=5)
         return
     if lock_type in _types:
@@ -140,7 +140,7 @@ async def lock_perm(message: Message):
 
 
 @userge.on_cmd("unlock", about={
-    'header': "use this to unlock group permissions",
+    'header': "Use this to unlock group permissions",
     'description': "Allows you to unlock some common permission types in the chat.\n"
                    "[NOTE: Requires proper admin rights in the chat!!!]",
     'types': [
@@ -149,7 +149,7 @@ async def lock_perm(message: Message):
     'examples': "{tr}unlock [all | type]"},
     allow_channels=False, check_restrict_perm=True)
 async def unlock_perm(message: Message):
-    """ unlock chat permissions from tg group """
+    """ Unlock chat permissions from tg group """
     unlock_type = message.input_str
     chat_id = message.chat.id
     if not unlock_type:
@@ -171,7 +171,7 @@ async def unlock_perm(message: Message):
                                 can_pin_messages=True,
                                 can_add_web_page_previews=True))
             await message.edit(
-                "**🔓 Unlocked all permission from this Chat!**", del_in=5)
+                "**🔓 Unlocked all permissions from this Chat!**", del_in=5)
             await CHANNEL.log(
                 f"#UNLOCK\n\nCHAT: `{message.chat.title}` (`{chat_id}`)\n"
                 f"PERMISSIONS: `All Permissions`")
@@ -213,8 +213,8 @@ async def unlock_perm(message: Message):
 
 
 @userge.on_cmd("vperm", about={
-    'header': "use this to view group permissions",
-    'description': "Allows you to view permission types on/off status in the chat."},
+    'header': "Use this to view group permissions",
+    'description': "Allows you to view permission types and it's on/off status in the chat."},
     allow_channels=False, allow_bots=False, allow_private=False)
 async def view_perm(message: Message):
     """ check chat permissions from tg group """
