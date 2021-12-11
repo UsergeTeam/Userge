@@ -1,3 +1,4 @@
+""" see repo of Userge """
 # Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -17,9 +18,9 @@ async def see_repo(message: Message):
 
     __Durable as a Serge__
 
-• **userge version** : `{get_version()}`
-• **license** : {versions.__license__}
-• **copyright** : {versions.__copyright__}
-• **repo** : [Userge]({Config.UPSTREAM_REPO})
+• **Userge Version** : `{get_version()}`
+• **License** : {versions.__license__}
+• **Copyright** : {versions.__copyright__}
+• **Repo** : [Userge]({Config.UPSTREAM_REPO})
 """
     await message.edit(output)
