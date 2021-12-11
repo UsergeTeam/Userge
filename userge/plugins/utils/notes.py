@@ -59,7 +59,7 @@ async def view_notes(message: Message) -> None:
     """ list notes in current chat """
     out = ''
     if '-all' in message.flags:
-        await message.edit("`getting notes ...`")
+        await message.edit("`Getting notes...`")
         for chat_id in NOTES_DATA:
             out += f"**{(await message.client.get_chat(chat_id)).title}**\n"
             out += _get_notes_for_chat(chat_id)
@@ -90,14 +90,14 @@ async def remove_note(message: Message) -> None:
         NOTES_DATA.clear()
         await asyncio.gather(
             NOTES_COLLECTION.drop(),
-            message.edit("`Cleared All Notes in Every Chat !`", del_in=5))
+            message.edit("`Cleared all Notes in Every Chat!`", del_in=5))
         return
     if '-all' in message.flags:
         if message.chat.id in NOTES_DATA:
             del NOTES_DATA[message.chat.id]
             await asyncio.gather(
                 NOTES_COLLECTION.delete_many({'chat_id': message.chat.id}),
-                message.edit("`Cleared All Notes in This Chat !`", del_in=5))
+                message.edit("`Cleared all Notes in This Chat!`", del_in=5))
         else:
             await message.edit("Couldn't find notes in this chat!", del_in=5)
         return
@@ -116,7 +116,8 @@ async def remove_note(message: Message) -> None:
 @userge.on_cmd(
     "gtlnote", about={
         'header': "global note to local note",
-        'description': "only sudos and owner can access local notes",
+        'description': "Use this command to change from global note to local note."
+                       "[**Note:** Only Sudo users and owner can access local notes.",
         'usage': "{tr}gtlnote [note name]"},
     allow_channels=False, allow_bots=False)
 async def mv_to_local_note(message: Message) -> None:
@@ -137,7 +138,8 @@ async def mv_to_local_note(message: Message) -> None:
 @userge.on_cmd(
     "ltgnote", about={
         'header': "local note to global note",
-        'description': "anyone can access global notes",
+        'description': "Use this command to change from local note to global note."
+                       "[**Note:** Anyone can access global notes.",
         'usage': "{tr}ltgnote [note name]"},
     allow_channels=False, allow_bots=False)
 async def mv_to_global_note(message: Message) -> None:
@@ -223,7 +225,7 @@ async def add_note(message: Message) -> None:
     if not (content or (replied and replied.media)):
         await message.err("No Content Found!")
         return
-    await message.edit("`adding note ...`")
+    await message.edit("`Adding note...`")
     message_id = await CHANNEL.store(replied, content)
     result = await NOTES_COLLECTION.update_one(
         {'chat_id': message.chat.id, 'name': notename},
