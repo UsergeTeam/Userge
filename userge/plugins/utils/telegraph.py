@@ -18,14 +18,14 @@ _T_LIMIT = 5242880
 
 
 @userge.on_cmd("telegraph", about={
-    'header': "Upload file to Telegra.ph's servers",
+    'header': "Upload file to Telegraph's servers",
     'types': ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.webp', '.html', '.txt', '.py'],
     'usage': "reply {tr}telegraph to media or text : limit 5MB for media",
     'examples': "reply {tr}telegraph to `header|content`\n(You can use html code)"})
 async def telegraph_(message: Message):
     replied = message.reply_to_message
     if not replied:
-        await message.err("reply to media or text")
+        await message.err("Reply to media or text")
         return
     if not ((replied.photo and replied.photo.file_size <= _T_LIMIT)
             or (replied.animation and replied.animation.file_size <= _T_LIMIT)
@@ -37,9 +37,9 @@ async def telegraph_(message: Message):
                 and replied.document.file_name.endswith(
                     ('.jpg', '.jpeg', '.png', '.gif', '.mp4', '.html', '.txt', '.py'))
                 and replied.document.file_size <= _T_LIMIT)):
-        await message.err("not supported!")
+        await message.err("File not supported!")
         return
-    await message.edit("`processing...`")
+    await message.edit("`Processing...`")
     if (replied.text
         or (replied.document
             and replied.document.file_name.endswith(
@@ -49,7 +49,7 @@ async def telegraph_(message: Message):
                 message=message.reply_to_message,
                 file_name=Config.DOWN_PATH,
                 progress=progress,
-                progress_args=(message, "trying to download")
+                progress_args=(message, "Trying to download")
             )
             async with aiofiles.open(dl_loc, "r") as jv:
                 text = await jv.read()
@@ -74,19 +74,19 @@ async def telegraph_(message: Message):
         message=message.reply_to_message,
         file_name=Config.DOWN_PATH,
         progress=progress,
-        progress_args=(message, "trying to download")
+        progress_args=(message, "Trying to download")
     )
     if replied.sticker:
         img = Image.open(dl_loc).convert('RGB')
         img.save(f'{Config.DOWN_PATH}/userge.png', 'png')
         os.remove(dl_loc)
         dl_loc = f'{Config.DOWN_PATH}/userge.png'
-    await message.edit("`uploading to telegraph...`")
+    await message.edit("`Uploading file to Telegraph...`")
     try:
         response = upload_file(dl_loc)
     except Exception as t_e:
         await message.err(t_e)
     else:
-        await message.edit(f"**[Here Your Telegra.ph Link!](https://telegra.ph{response[0]})**")
+        await message.edit(f"**[Here's Your Telegraph Link!](https://telegra.ph{response[0]})**")
     finally:
         os.remove(dl_loc)
