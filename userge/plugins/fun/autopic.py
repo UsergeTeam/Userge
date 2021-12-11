@@ -1,3 +1,4 @@
+""" manage your profile picture """
 # Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -37,7 +38,7 @@ async def _init() -> None:
 
 @userge.on_cmd(
     "autopic", about={
-        'header': "set profile picture",
+        'header': "Set profile picture",
         'usage': "{tr}autopic\n{tr}autopic [image path]\nset timeout using {tr}sapicto"},
     allow_channels=False, allow_via_bot=False)
 async def autopic(message: Message):
