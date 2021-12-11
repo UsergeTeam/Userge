@@ -1,3 +1,4 @@
+""" Purge messages in a chat """
 # Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -12,7 +13,7 @@ from userge import userge, Message
 
 
 @userge.on_cmd("purge", about={
-    'header': "purge messages from user",
+    'header': "Purge messages from user",
     'flags': {
         '-u': "get user_id from replied message",
         '-l': "message limit : max 100"},
@@ -21,7 +22,7 @@ from userge import userge, Message
     'examples': ['{tr}purge', '{tr}purge -u', '{tr}purge [user_id | user_name]']},
     allow_bots=False, del_pre=True)
 async def purge_(message: Message):
-    await message.edit("`purging ...`")
+    await message.edit("`Purging...`")
     from_user_id = None
     if message.filtered_input_str:
         from_user_id = (await message.client.get_users(message.filtered_input_str)).id
