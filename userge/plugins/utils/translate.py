@@ -45,7 +45,7 @@ async def translateme(message: Message):
     else:
         src, dest = 'auto', Config.LANG
     text = get_emoji_regexp().sub(u'', text)
-    await message.edit("`Translating ...`")
+    await message.edit("`Translating...`")
     try:
         reply_text = await _translate_this(text, dest, src)
     except ValueError:
