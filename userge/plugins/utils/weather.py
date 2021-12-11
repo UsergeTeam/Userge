@@ -32,8 +32,8 @@ async def get_tz(con):
 
 
 @userge.on_cmd("weather", about={
-    'header': "use this to get weather details",
-    'description': "get weather info for any city",
+    'header': "Use this to get weather details",
+    'description': "Get weather info for any city",
     'examples': [
         "{tr}weather (default city)",
         "{tr}weather colombo (city name)"]})
@@ -43,12 +43,11 @@ async def weather_get(message: Message):
     """
     OWM_API = Config.OPEN_WEATHER_MAP
     if not OWM_API:
-        await message.edit(
-            "<code>Oops!!get the API from</code> "
-            "<a href='https://openweathermap.org'>HERE</a> "
-            "<code>& add it to Heroku config vars</code> (<code>OPEN_WEATHER_MAP</code>)",
+        await msg.err(
+            "`Oops!! Get the API from` [HERE](https://openweathermap.org)" 
+            "`& add it to config vars` (`OPEN_WEATHER_MAP`)",
             disable_web_page_preview=True,
-            parse_mode="html", del_in=0)
+            parse_mode="html")
         return
 
     APPID = OWM_API
