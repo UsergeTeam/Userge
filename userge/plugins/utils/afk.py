@@ -39,11 +39,11 @@ async def _init() -> None:
 
 @userge.on_cmd("afk", about={
     'header': "Set to AFK mode",
-    'description': "Sets your status as AFK. Responds to anyone who tags/PM's.\n"
-                   "you telling you are AFK. Switches off AFK when you type back anything.",
+    'description': "Sets your status as AFK. Responds to anyone who tags/PM's you\n"
+                   "telling you are AFK. Switches off AFK when you type back anything.",
     'usage': "{tr}afk or {tr}afk [reason]"}, allow_channels=False)
 async def active_afk(message: Message) -> None:
-    """ turn on or off afk mode """
+    """ Turn on or off AFK mode """
     global REASON, IS_AFK, TIME  # pylint: disable=global-statement
     IS_AFK = True
     TIME = time.time()
