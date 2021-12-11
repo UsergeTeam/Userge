@@ -23,7 +23,7 @@ CHANNEL = userge.getCLogger(__name__)
 
 
 @userge.on_cmd("promote", about={
-    'header': "use this to promote group members",
+    'header': "Use this command to promote group members",
     'description': "Provides admin rights to the person in the supergroup.\n"
                    "you can also add custom title while promoting new admin.\n"
                    "[NOTE: Requires proper admin rights in the chat!!!]",
@@ -34,7 +34,7 @@ CHANNEL = userge.getCLogger(__name__)
 async def promote_usr(message: Message):
     """ promote members in tg group """
     chat_id = message.chat.id
-    await message.edit("`Trying to Promote User.. Hang on!! ⏳`")
+    await message.edit("`Trying to promote User.. Hang on!! ⏳`")
     user_id, custom_rank = message.extract_user_and_text
     if not user_id:
         await message.err("no valid user_id or message specified")
@@ -49,7 +49,7 @@ async def promote_usr(message: Message):
         if custom_rank:
             await asyncio.sleep(2)
             await message.client.set_administrator_title(chat_id, user_id, custom_rank)
-        await message.edit("`👑 Promoted Successfully..`", del_in=5)
+        await message.edit("`👑 Promoted {get_mem.first_name} Successfully..`", del_in=5)
         await CHANNEL.log(
             "#PROMOTE\n\n"
             f"USER: [{get_mem.first_name}](tg://user?id={get_mem.id}) "
@@ -67,13 +67,13 @@ async def promote_usr(message: Message):
 
 
 @userge.on_cmd("demote", about={
-    'header': "use this to demote group members",
+    'header': "Use this to demote group members",
     'description': "Remove admin rights from admin in the supergroup.\n"
                    "[NOTE: Requires proper admin rights in the chat!!!]",
     'examples': "{tr}demote [username | userid] or [reply to user]"},
     allow_channels=False, check_promote_perm=True)
 async def demote_usr(message: Message):
-    """ demote members in tg group """
+    """ Demote members in tg group """
     chat_id = message.chat.id
     await message.edit("`Trying to Demote User.. Hang on!! ⏳`")
     user_id, _ = message.extract_user_and_text
@@ -85,7 +85,7 @@ async def demote_usr(message: Message):
         await message.client.promote_chat_member(chat_id, user_id, can_change_info=False,
                                                  can_delete_messages=False,
                                                  can_restrict_members=False, can_invite_users=False)
-        await message.edit("`🛡 Demoted Successfully..`", del_in=5)
+        await message.edit("`🛡 Demoted {get_mem.first_name} Successfully..`", del_in=5)
         await CHANNEL.log(
             "#DEMOTE\n\n"
             f"USER: [{get_mem.first_name}](tg://user?id={get_mem.id}) "
@@ -102,7 +102,7 @@ async def demote_usr(message: Message):
 
 
 @userge.on_cmd("ban", about={
-    'header': "use this to ban group members",
+    'header': "Use this to ban group members",
     'description': "Ban member from supergroup.\n"
                    "[NOTE: Requires proper admin rights in the chat!!!]",
     'flags': {
@@ -158,7 +158,7 @@ async def ban_user(message: Message):
 
 
 @userge.on_cmd("unban", about={
-    'header': "use this to unban group members",
+    'header': "Use this to unban group members",
     'description': "Unban member from supergroup.\n"
                    "[NOTE: Requires proper admin rights in the chat!!!]",
     'examples': "{tr}unban [username | userid] or [reply to user]"},
@@ -174,7 +174,7 @@ async def unban_usr(message: Message):
     try:
         get_mem = await message.client.get_users(user_id)
         await message.client.unban_chat_member(chat_id, user_id)
-        await message.edit("`🛡 Successfully Unbanned..`", del_in=5)
+        await message.edit("`🛡 Successfully Unbanned {get_mem.first_name}.`", del_in=5)
         await CHANNEL.log(
             "#UNBAN\n\n"
             f"USER: [{get_mem.first_name}](tg://user?id={get_mem.id}) "
@@ -191,13 +191,13 @@ async def unban_usr(message: Message):
 
 
 @userge.on_cmd("kick", about={
-    'header': "use this to kick group members",
+    'header': "Use this to kick group members",
     'description': "Kick member from supergroup. member can rejoin the group again if they want.\n"
                    "[NOTE: Requires proper admin rights in the chat!!!]",
     'examples': "{tr}kick [username | userid] or [reply to user]"},
     allow_channels=False, check_restrict_perm=True)
 async def kick_usr(message: Message):
-    """ kick user from tg group """
+    """ Kick user from tg group """
     chat = message.chat
     await message.edit("`Trying to Kick User.. Hang on!! ⏳`")
     user_id, _ = message.extract_user_and_text
@@ -222,7 +222,7 @@ async def kick_usr(message: Message):
 
 
 @userge.on_cmd("mute", about={
-    'header': "use this to mute group members",
+    'header': "Use this to mute group members",
     'description': "Mute member in the supergroup. you can only use one flag for command.\n"
                    "[NOTE: Requires proper admin rights in the chat!!!]",
     'flags': {
@@ -234,7 +234,7 @@ async def kick_usr(message: Message):
         "{tr}mute -d1 @someusername/userid/replytouser SPAM (mute for one day:reason SPAM)"]},
     allow_channels=False, check_restrict_perm=True)
 async def mute_usr(message: Message):
-    """ mute user from tg group """
+    """ Mute user from tg group """
     chat_id = message.chat.id
     flags = message.flags
     minutes = flags.get('-m', 0)
@@ -298,7 +298,7 @@ async def mute_usr(message: Message):
 
 
 @userge.on_cmd("unmute", about={
-    'header': "use this to unmute group members",
+    'header': "Use this to unmute group members",
     'description': "Unmute member from supergroup.\n"
                    "[NOTE: Requires proper admin rights in the chat!!!]",
     'examples': "{tr}unmute [username | userid]  or [reply to user]"},
@@ -314,7 +314,7 @@ async def unmute_usr(message: Message):
     try:
         get_mem = await message.client.get_users(user_id)
         await message.client.unban_chat_member(chat_id, user_id)
-        await message.edit("`🛡 Successfully Unmuted..`", del_in=5)
+        await message.edit("`🛡 Successfully Unmuted {get_mem.first_name}`", del_in=5)
         await CHANNEL.log(
             "#UNMUTE\n\n"
             f"USER: [{get_mem.first_name}](tg://user?id={get_mem.id}) "
@@ -331,8 +331,8 @@ async def unmute_usr(message: Message):
 
 
 @userge.on_cmd("zombies", about={
-    'header': "use this to clean zombie accounts",
-    'description': "check & remove zombie (deleted) accounts from supergroup.\n"
+    'header': "Use this to clean zombie accounts",
+    'description': "Check & remove zombie (deleted) accounts from supergroup.\n"
                    "[NOTE: Requires proper admin rights in the chat!!!]",
     'flags': {'-c': "clean"},
     'examples': [
@@ -351,7 +351,7 @@ async def zombie_clean(message: Message):
         del_admins = 0
         del_total = 0
         if can_clean:
-            await message.edit("`Hang on!! cleaning zombie accounts from this chat..`")
+            await message.edit("`Hang on!! Cleaning zombie accounts from this chat..`")
             async for member in message.client.iter_chat_members(chat_id):
                 if member.user.is_deleted:
                     try:
@@ -380,10 +380,10 @@ async def zombie_clean(message: Message):
                 f"CLEANED ZOMBIE COUNT: `{del_users}`\n"
                 f"ZOMBIE ADMIN COUNT: `{del_admins}`")
         else:
-            await message.err(r"i don't have proper permission to do that! (* ￣︿￣)")
+            await message.err(r"I don't have proper permission to do that! (* ￣︿￣)")
     else:
         del_users = 0
-        del_stats = r"`Zero zombie accounts found in this chat... WOOHOO group is clean.. \^o^/`"
+        del_stats = r"`Zero zombie accounts found in this chat... WOOHOO! This group is clean! \^o^/`"
         await message.edit("`🔎 Searching for zombie accounts in this chat..`")
         async for member in message.client.iter_chat_members(chat_id):
             if member.user.is_deleted:
@@ -405,10 +405,10 @@ async def zombie_clean(message: Message):
 
 
 @userge.on_cmd("pin", about={
-    'header': "use this to pin & unpin messages",
+    'header': "Use this to pin & unpin messages",
     'description': "pin & unpin messages in groups with or without notify to members.",
     'flags': {
-        '-s': "silent",
+        '-s': "silent pin",
         '-u': "unpin",
         '-all': "unpin all messages (should be used with -u)"},
     'examples': [
@@ -417,7 +417,7 @@ async def zombie_clean(message: Message):
         "{tr}pin -u [send to chat]"]},
     allow_channels=False, check_pin_perm=True)
 async def pin_msgs(message: Message):
-    """ pin & unpin message in groups """
+    """ Pin & unpin messages in groups """
     chat_id = message.chat.id
     flags = message.flags
     disable_notification = False
@@ -449,7 +449,7 @@ async def pin_msgs(message: Message):
 
 
 @userge.on_cmd("gpic", about={
-    'header': "use this to set or delete chat photo",
+    'header': "Use this to set or delete chat photo",
     'description': "set new chat photo or delete current chat photo",
     'flags': {
         '-s': "set",
