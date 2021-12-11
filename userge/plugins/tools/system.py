@@ -1,4 +1,4 @@
-""" system commands """
+""" system commands of Userge """
 # Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -50,7 +50,7 @@ async def _init() -> None:
     'usage': "{tr}restart [flag | flags]",
     'examples': "{tr}restart -t -d"}, del_pre=True, allow_channels=False)
 async def restart_(message: Message):
-    """ restart userge """
+    """ restart Userge """
     await message.edit("`Restarting Userge Services`", log=__name__)
     LOG.info("USERGE Services - Restart initiated")
     if 't' in message.flags:
@@ -72,10 +72,10 @@ async def restart_(message: Message):
         asyncio.get_event_loop().create_task(userge.restart())
 
 
-@userge.on_cmd("shutdown", about={'header': "shutdown userge :)"}, allow_channels=False)
+@userge.on_cmd("shutdown", about={'header': "shutdown userge 🙂"}, allow_channels=False)
 async def shutdown_(message: Message) -> None:
     """ shutdown userge """
-    await message.edit("`shutting down ...`")
+    await message.edit("`Shutting down... `")
     if Config.HEROKU_APP:
         try:
             Config.HEROKU_APP.process_formation()['worker'].scale(0)
@@ -122,7 +122,7 @@ async def die_(message: Message) -> None:
 
 
 @userge.on_cmd("setvar", about={
-    'header': "set var in heroku",
+    'header': "Set var in heroku",
     'usage': "{tr}setvar [var_name] [var_data]",
     'examples': "{tr}setvar WORKERS 4"})
 async def setvar_(message: Message) -> None:
@@ -135,7 +135,7 @@ async def setvar_(message: Message) -> None:
         return
     var_name, var_data = message.input_str.split(maxsplit=1)
     if not var_data:
-        await message.err("`var data needed !`")
+        await message.err("`Var data unavailable!`")
         return
     var_name = var_name.strip()
     var_data = var_data.strip()
@@ -161,12 +161,12 @@ async def delvar_(message: Message) -> None:
         await message.edit("`heroku app not detected !`", del_in=5)
         return
     if not message.input_str:
-        await message.err("`var name needed !`")
+        await message.err("`Var name needed!`")
         return
     var_name = message.input_str.strip()
     heroku_vars = Config.HEROKU_APP.config()
     if var_name not in heroku_vars:
-        await message.err(f"`var {var_name} not found !`")
+        await message.err(f"`Var {var_name} not found !`")
         return
     await CHANNEL.log(f"#HEROKU_VAR #DEL\n\n`{var_name}` = `{heroku_vars[var_name]}`")
     await message.edit(f"`var {var_name} deleted and forwarded to log channel !`", del_in=3)
@@ -183,7 +183,7 @@ async def getvar_(message: Message) -> None:
         await message.edit("`heroku app not detected !`", del_in=5)
         return
     if not message.input_str:
-        await message.err("`var name needed !`")
+        await message.err("`var name needed!`")
         return
     var_name = message.input_str.strip()
     heroku_vars = Config.HEROKU_APP.config()
@@ -210,7 +210,7 @@ async def enable_userbot(message: Message):
                 ),
                 message.edit("**Enabled** all chats!", del_in=5))
         else:
-            await message.err("invalid flag!")
+            await message.err("Invalid flag!")
     elif message.input_str:
         try:
             chat = await message.client.get_chat(message.input_str)
@@ -287,7 +287,7 @@ async def view_disabled_chats_(message: Message):
 
 
 @userge.on_cmd("sleep (\\d+)", about={
-    'header': "sleep userge :P",
+    'header': "sleep userge 😴",
     'usage': "{tr}sleep [timeout in seconds]"}, allow_channels=False)
 async def sleep_(message: Message) -> None:
     """ sleep userge """
