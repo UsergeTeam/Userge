@@ -233,7 +233,7 @@ async def set_custom_blockpm_message(message: Message):
     """ setup custom blockpm message """
     global blocked_message  # pylint: disable=global-statement
     if '-r' in message.flags:
-        await message.edit('`Custom 'PM block' message reset`', del_in=3, log=True)
+        await message.edit('`Custom PM block message reset`', del_in=3, log=True)
         blocked_message = bk_blocked_message
         await SAVED_SETTINGS.find_one_and_delete({'_id': 'CUSTOM BLOCKPM MESSAGE'})
     else:
