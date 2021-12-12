@@ -155,7 +155,7 @@ async def pmguard(message: Message):
 @userge.on_cmd(
     "ipmguard", about={
         'header': "Switchs the Inline pm permiting module on",
-        'description': "This is switched off in default.
+        'description': "This is switched off in default."
                        "If you turn on Inline PM Permit module,"
                        "The Inline PM message is sent with"
                        "buttons **Contact me** and **Spam Here**.,
