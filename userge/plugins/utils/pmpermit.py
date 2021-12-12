@@ -158,7 +158,7 @@ async def pmguard(message: Message):
         'description': "This is switched off in default."
                        "If you turn on Inline PM Permit module,"
                        "The Inline PM message is sent with"
-                       "buttons **Contact me** and **Spam Here**.,
+                       "buttons **Contact me** and **Spam Here**.",
         'usage': "{tr}ipmguard"},
     allow_channels=False)
 async def ipmguard(message: Message):
