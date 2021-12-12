@@ -44,7 +44,7 @@ async def weather_get(message: Message):
     OWM_API = Config.OPEN_WEATHER_MAP
     if not OWM_API:
         await message.err(
-            "`Oops!! Get the API from` [HERE](https://openweathermap.org)" 
+            "`Oops!! Get the API from` [HERE](https://openweathermap.org) " 
             "`& add it to config vars` (`OPEN_WEATHER_MAP`)",
             disable_web_page_preview=True,
             parse_mode="html")
