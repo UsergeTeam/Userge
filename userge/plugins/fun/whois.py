@@ -27,7 +27,7 @@ async def who_is(message: Message):
         except Exception:  # pylint: disable=broad-except
             await message.err("no valid user_id or message specified")
             return
-    elif message.reply_to_message:
+    elif message.reply_to_message and message.reply_to_message.from_user:
         from_user = await message.client.get_users(message.reply_to_message.from_user.id)
         from_chat = await message.client.get_chat(message.reply_to_message.from_user.id)
     else:
