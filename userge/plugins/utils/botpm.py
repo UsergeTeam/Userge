@@ -74,10 +74,12 @@ async def _init():
 
 
 @userge.on_cmd("botpm", about={
-    'header': PM bot [Feedback Bot] handlers like Livegram Bot",
-    'description': "You can use this command to enable/disable Bot Pm.\n"
+    'header': "Turn on BotPM",
+    'description': "You can use this command to enable/disable Bot PM.\n"
                    "You can see all the settings of your bot after enabling "
                    "bot pm and hit /start in your Bot DM.\n"
+                   "When somone sends message to your bot,"
+                   "bot will forward their message to you."
                    "Note: You have to use `BOT MODE` or `DUAL MODE` if you want to enable Bot PM.",
     'usage': "{tr}botpm"})
 async def bot_pm(msg: Message):
