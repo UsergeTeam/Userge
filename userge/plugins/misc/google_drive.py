@@ -1069,7 +1069,7 @@ async def gmove_(message: Message):
 
 
 @userge.on_cmd("gdel", about={
-    'header': "Delete files in GDrive",
+    'header': "Delete files in Google Drive",
     'usage': "{tr}gdel [file_id | file/folder link]"})
 async def gdel_(message: Message):
     """ delete files in Google Drive """
