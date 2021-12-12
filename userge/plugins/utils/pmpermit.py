@@ -239,7 +239,7 @@ async def set_custom_blockpm_message(message: Message):
     else:
         string = message.input_or_reply_raw
         if string:
-            await message.edit('`Custom 'PM block' message saved`', del_in=3, log=True)
+            await message.edit('`Custom PM block message saved`', del_in=3, log=True)
             blocked_message = string
             await SAVED_SETTINGS.update_one(
                 {'_id': 'CUSTOM BLOCKPM MESSAGE'}, {"$set": {'data': string}}, upsert=True)
