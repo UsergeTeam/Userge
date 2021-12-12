@@ -383,7 +383,7 @@ async def zombie_clean(message: Message):
             await message.err(r"I don't have proper permission to do that! (* ￣︿￣)")
     else:
         del_users = 0
-        del_stats = r"`Zero zombie accounts found in this chat... WOOHOO! This group is clean! \^o^/`"
+        del_stats = r"`Zero zombie accounts found in this chat... This group is clean! \^o^/`"
         await message.edit("`🔎 Searching for zombie accounts in this chat..`")
         async for member in message.client.iter_chat_members(chat_id):
             if member.user.is_deleted:
