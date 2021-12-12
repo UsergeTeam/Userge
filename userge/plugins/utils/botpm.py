@@ -74,7 +74,7 @@ async def _init():
 
 
 @userge.on_cmd("botpm", about={
-    'header': PM Bot (Feedback Bot) handlers like Livegram Bot",
+    'header': PM bot [Feedback Bot] handlers like Livegram Bot",
     'description': "You can use this command to enable/disable Bot Pm.\n"
                    "You can see all the settings of your bot after enabling "
                    "bot pm and hit /start in your Bot DM.\n"
@@ -84,7 +84,7 @@ async def bot_pm(msg: Message):
     """ Toggle Bot Pm """
     global BOT_PM  # pylint: disable=global-statement
     if not userge.has_bot:
-        return await msg.err("You have to us Bot mode or Dual mode if you want to enable Bot Pm.")
+        return await msg.err("You have to use Bot mode or Dual mode if you want to enable Bot PM.")
     BOT_PM = not BOT_PM
     await SAVED_SETTINGS.update_one(
         {"_id": "BOT_PM"}, {"$set": {"data": BOT_PM}}, upsert=True
