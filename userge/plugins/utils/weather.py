@@ -44,8 +44,8 @@ async def weather_get(message: Message):
     OWM_API = Config.OPEN_WEATHER_MAP
     if not OWM_API:
         await message.err(
-            "`Oops!! Get the API from` [HERE](https://openweathermap.org) 
-             `& add it to config vars` (`OPEN_WEATHER_MAP`)",
+            """`Oops!! Get the API from` [HERE](https://openweathermap.org)
+             `& add it to config vars` (`OPEN_WEATHER_MAP`)""",
             disable_web_page_preview=True,
             parse_mode="html")
         return
@@ -55,7 +55,7 @@ async def weather_get(message: Message):
     if not message.input_str:
         CITY = Config.WEATHER_DEFCITY
         if not CITY:
-            await message.edit("`Please specify a city or set one as default!`", del_in=0)
+            await message.edit("`Please specify a city or set one as default!`")
             return
     else:
         CITY = message.input_str
