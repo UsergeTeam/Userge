@@ -158,7 +158,7 @@ async def add_rss_feed(msg: Message):
 
 @userge.on_cmd("delfeed", about={
     'header': "Delete an existing Feed URL",
-    'description': "Delete an existing Feed URL from Database."
+    'description': "Delete an existing Feed URL from Database.",
     'flags': {'-all': 'Delete All Urls'},
     'usage': "{tr}delfeed url"})
 async def delete_rss_feed(msg: Message):
