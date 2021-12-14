@@ -679,7 +679,7 @@ async def enable_ban(message: Message):
     else:
         ENABLED_CHATS.append(chat_id)
         if not await DB.find_one({'chat_id': chat_id}):
-            allowed = [chat_id]
+            allowed = ALLOWED.get(chat_id, [chat_id])
             chat_info = await message.client.get_chat(chat_id)
             if chat_info.linked_chat:
                 allowed.append(chat_info.linked_chat.id)
@@ -723,7 +723,7 @@ async def allow_a_channel(message: Message):
     if not channel:
         return await message.edit('No input given', del_in=5)
     chat_id = message.chat.id
-    allowed = ALLOWED.get(chat_id)
+    allowed = ALLOWED.get(chat_id, [])
     channel_id = channel.id
     if channel_id in allowed:
         return await message.edit("This channel is already whitelisted", del_in=5)
@@ -765,7 +765,7 @@ async def disallow_a_channel(message: Message):
     if not channel:
         return await message.err('No input given')
     chat_id = message.chat.id
-    allowed = ALLOWED.get(chat_id)
+    allowed = ALLOWED.get(chat_id, [])
     channel_id = channel.id
     if channel_id not in allowed:
         return await message.edit("This channel is not yet whitelisted", del_in=5)
