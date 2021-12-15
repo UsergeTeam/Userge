@@ -661,7 +661,7 @@ async def enable_ban(message: Message):
         ENABLED_CHATS.remove(chat_id)
         await DB.update_one({'chat_id': chat_id}, {'$set': {'enabled': False}})
         await message.edit("Disabled deletion / banning send_as channels.\n"
-                                  "Members are allowed to chat as channel.")
+                           "Members are allowed to chat as channel.")
     elif chat_id in ENABLED_CHATS:
         if is_ban and chat_id in BAN_CHANNELS:
             await message.edit("Already enabled in this chat, No changes applied.", del_in=5)
