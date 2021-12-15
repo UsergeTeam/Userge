@@ -27,7 +27,8 @@ _types = [
 ]
 
 
-def _get_chat_lock(permissions: ChatBannedRights, lock_type: str, should_lock: bool) -> Sequence[str]:
+def _get_chat_lock(permissions: ChatBannedRights, lock_type: str,
+                   should_lock: bool) -> Sequence[str]:
     lock = not should_lock
     msg = not permissions.send_messages
     media = not permissions.send_media
@@ -197,7 +198,9 @@ async def unlock_perm(message: Message):
                 f"#UNLOCK\n\nCHAT: `{message.chat.title}` (`{chat_id}`)\n"
                 f"PERMISSIONS: `All Permissions`")
         except ChatNotModified:
-            await message.edit("Nothing was changed, since currently no locks are applied here.", del_in=5)
+            await message.edit(
+                "Nothing was changed, since currently no locks are applied here.",
+                del_in=5)
         except Exception as e_f:
             await message.edit(
                 r"`i don't have permission to do that ＞︿＜`\n\n"
@@ -268,7 +271,7 @@ async def view_perm(message: Message):
     (vmsg, vmedia, vstickers,
      vanimations, vgames, vinlinebots,
      vwebprev, vpolls, vinfo, vinvite,
-     vpin, vperm) = _get_chat_lock(chat_perm, "_", False)
+     vpin, _) = _get_chat_lock(chat_perm, "_", False)
 
     def convert_to_emoji(val: bool):
         return "✅" if val else "❌"
