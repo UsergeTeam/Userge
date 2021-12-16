@@ -626,7 +626,7 @@ async def enable_ban(message: Message):
         allowed = ALLOWED.get(chat_id)
         if not allowed:
             allowed = [chat_id]
-            linked_chat = message.chat.linked_chat
+            linked_chat = await message.client.get_chat(chat_id)
             if linked_chat:
                 allowed.append(linked_chat.id)
             ALLOWED[chat_id] = allowed
