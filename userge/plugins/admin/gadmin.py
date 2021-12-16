@@ -11,15 +11,34 @@
 import os
 import time
 import asyncio
+from typing import List, Dict, Tuple, Optional
 
 from emoji import get_emoji_regexp
-from pyrogram.types import ChatPermissions
+from pyrogram.types import ChatPermissions, Chat
 from pyrogram.errors import (
     FloodWait, UserAdminInvalid, UsernameInvalid, PeerIdInvalid, UserIdInvalid)
 
-from userge import userge, Message
+from userge import userge, Message, get_collection, filters
 
 CHANNEL = userge.getCLogger(__name__)
+DB = get_collection("BAN_CHANNELS")
+
+ENABLED_CHATS: List[int] = []
+BAN_CHANNELS: List[int] = []  # list of chats which enabled ban_mode
+ALLOWED: Dict[int, List[int]] = {}  # dict to store chat ids which are allowed to chat as channels
+
+
+async def _init() -> None:
+    async for chat in DB.find():
+        chat_id = chat['chat_id']
+        if chat['enabled']:
+            ENABLED_CHATS.append(chat_id)
+            if chat['ban']:
+                BAN_CHANNELS.append(chat_id)
+        ALLOWED[chat_id] = chat['allowed']
+
+channel_delete = filters.create(
+    lambda _, __, query: query.chat and query.sender_chat and query.chat.id in ENABLED_CHATS)
 
 
 @userge.on_cmd("promote", about={
@@ -33,8 +52,6 @@ CHANNEL = userge.getCLogger(__name__)
     allow_channels=False, check_promote_perm=True)
 async def promote_usr(message: Message):
     """ promote members in tg group """
-    chat_id = message.chat.id
-    await message.edit("`Trying to Promote User.. Hang on!! ⏳`")
     user_id, custom_rank = message.extract_user_and_text
     if not user_id:
         await message.err("no valid user_id or message specified")
@@ -43,19 +60,15 @@ async def promote_usr(message: Message):
         custom_rank = get_emoji_regexp().sub(u'', custom_rank)
         if len(custom_rank) > 15:
             custom_rank = custom_rank[:15]
+
+    await message.edit("`Trying to Promote User.. Hang on!! ⏳`")
+    chat_id = message.chat.id
     try:
-        get_mem = await message.client.get_users(user_id)
-        await message.client.promote_chat_member(chat_id, user_id, can_pin_messages=True)
+        await message.client.promote_chat_member(chat_id, user_id,
+                                                 can_invite_users=True, can_pin_messages=True)
         if custom_rank:
             await asyncio.sleep(2)
             await message.client.set_administrator_title(chat_id, user_id, custom_rank)
-        await message.edit("`👑 Promoted Successfully..`", del_in=5)
-        await CHANNEL.log(
-            "#PROMOTE\n\n"
-            f"USER: [{get_mem.first_name}](tg://user?id={get_mem.id}) "
-            f"(`{get_mem.id}`)\n"
-            f"CUSTOM TITLE: `{custom_rank or None}`\n"
-            f"CHAT: `{message.chat.title}` (`{chat_id}`)")
     except UsernameInvalid:
         await message.err("`invalid username, try again with valid info ⚠`")
     except PeerIdInvalid:
@@ -64,6 +77,14 @@ async def promote_usr(message: Message):
         await message.err("invalid userid, try again with valid info ⚠")
     except Exception as e_f:
         await message.err(f"something went wrong! 🤔\n\n`{e_f}`")
+    else:
+        await message.edit("`👑 Promoted Successfully..`", del_in=5)
+        user = await message.client.get_users(user_id)
+        await CHANNEL.log(
+            "#PROMOTE\n\n"
+            f"USER: [{user.first_name}](tg://user?id={user_id}) (`{user_id}`)\n"
+            f"CUSTOM TITLE: `{custom_rank or None}`\n"
+            f"CHAT: `{message.chat.title}` (`{chat_id}`)")
 
 
 @userge.on_cmd("demote", about={
@@ -74,23 +95,15 @@ async def promote_usr(message: Message):
     allow_channels=False, check_promote_perm=True)
 async def demote_usr(message: Message):
     """ demote members in tg group """
-    chat_id = message.chat.id
-    await message.edit("`Trying to Demote User.. Hang on!! ⏳`")
     user_id, _ = message.extract_user_and_text
     if not user_id:
         await message.err("no valid user_id or message specified")
         return
+
+    await message.edit("`Trying to Demote User.. Hang on!! ⏳`")
+    chat_id = message.chat.id
     try:
-        get_mem = await message.client.get_users(user_id)
-        await message.client.promote_chat_member(chat_id, user_id, can_change_info=False,
-                                                 can_delete_messages=False,
-                                                 can_restrict_members=False, can_invite_users=False)
-        await message.edit("`🛡 Demoted Successfully..`", del_in=5)
-        await CHANNEL.log(
-            "#DEMOTE\n\n"
-            f"USER: [{get_mem.first_name}](tg://user?id={get_mem.id}) "
-            f"(`{get_mem.id}`)\n"
-            f"CHAT: `{message.chat.title}` (`{chat_id}`)")
+        await message.client.promote_chat_member(chat_id, user_id, can_manage_chat=False)
     except UsernameInvalid:
         await message.err("invalid username, try again with valid info ⚠")
     except PeerIdInvalid:
@@ -99,6 +112,14 @@ async def demote_usr(message: Message):
         await message.err("invalid userid, try again with valid info ⚠")
     except Exception as e_f:
         await message.err(f"something went wrong! 🤔`\n\n`{e_f}")
+    else:
+        await message.edit("`🛡 Demoted Successfully..`", del_in=5)
+        user = await message.client.get_users(user_id)
+        await CHANNEL.log(
+            "#DEMOTE\n\n"
+            f"USER: [{user.first_name}](tg://user?id={user_id}) "
+            f"(`{user_id}`)\n"
+            f"CHAT: `{message.chat.title}` (`{chat_id}`)")
 
 
 @userge.on_cmd("ban", about={
@@ -113,40 +134,19 @@ async def demote_usr(message: Message):
     allow_channels=False, check_restrict_perm=True)
 async def ban_user(message: Message):
     """ ban user from tg group """
-    await message.edit("`Trying to Ban User.. Hang on!! ⏳`")
     user_id, reason = message.extract_user_and_text
     if not user_id:
-        await message.err("no valid user_id or message specified")
-        return
+        if message.reply_to_message and message.reply_to_message.sender_chat:
+            user_id = message.reply_to_message.sender_chat.id
+        elif message.input_str:
+            user_id = message.input_str.strip()
+        else:
+            return await message.err("no valid user_id or channel_id or message specified")
 
-    chat_id = message.chat.id
-    flags = message.flags
-    minutes = int(flags.get('-m', 0))
-    hours = int(flags.get('-h', 0))
-    days = int(flags.get('-d', 0))
-
-    ban_period = 0
-    _time = "forever"
-    if minutes:
-        ban_period = time.time() + minutes * 60
-        _time = f"{minutes}m"
-    elif hours:
-        ban_period = time.time() + hours * 3600
-        _time = f"{hours}h"
-    elif days:
-        ban_period = time.time() + days * 86400
-        _time = f"{days}d"
-
+    await message.edit("`Trying to Ban User.. Hang on!! ⏳`")
+    _period, _time = _get_period_and_time(message.flags)
     try:
-        get_mem = await message.client.get_users(user_id)
-        await message.client.kick_chat_member(chat_id, user_id, int(ban_period))
-        await message.edit(
-            "#BAN\n\n"
-            f"USER: [{get_mem.first_name}](tg://user?id={get_mem.id}) "
-            f"(`{get_mem.id}`)\n"
-            f"CHAT: `{message.chat.title}` (`{chat_id}`)\n"
-            f"TIME: `{_time}`\n"
-            f"REASON: `{reason}`", log=__name__)
+        await message.chat.kick_member(user_id, _period)
     except UsernameInvalid:
         await message.err("invalid username, try again with valid info ⚠")
     except PeerIdInvalid:
@@ -155,6 +155,42 @@ async def ban_user(message: Message):
         await message.err("invalid userid, try again with valid info ⚠")
     except Exception as e_f:
         await message.err(f"something went wrong 🤔\n\n{e_f}`")
+    else:
+        try:
+            user = await message.client.get_users(user_id)
+            body = f"USER: [{user.first_name}](tg://user?id={user_id}) (`{user_id}`)"
+        # pyrogram raises an IndexError if a channel id / username is passed.
+        except IndexError:
+            channel = await message.client.get_chat(user_id)
+            body = f"CHANNEL: {channel.title} (`{channel.id}`)"
+
+        await message.edit(
+            f"#BAN\n\n{body}\n"
+            f"CHAT: `{message.chat.title}` (`{message.chat.id}`)\n"
+            f"TIME: `{_time}`\n"
+            f"REASON: `{reason}`", log=True)
+
+
+def _get_period_and_time(flags: Dict[str, str]) -> Tuple[int, str]:
+    minutes = int(flags.get('-m', 0))
+    hours = int(flags.get('-h', 0))
+    days = int(flags.get('-d', 0))
+
+    _period = 0
+    _time = "forever"
+    if minutes:
+        _period = minutes * 60
+        _time = f"{minutes}m"
+    elif hours:
+        _period = hours * 3600
+        _time = f"{hours}h"
+    elif days:
+        _period = days * 86400
+        _time = f"{days}d"
+    if _period:
+        _period += time.time()
+
+    return _period, _time
 
 
 @userge.on_cmd("unban", about={
@@ -165,21 +201,18 @@ async def ban_user(message: Message):
     allow_channels=False, check_restrict_perm=True)
 async def unban_usr(message: Message):
     """ unban user from tg group """
-    chat_id = message.chat.id
-    await message.edit("`Trying to Unban User.. Hang on!! ⏳`")
     user_id, _ = message.extract_user_and_text
     if not user_id:
-        await message.err("no valid user_id or message specified")
-        return
+        if message.reply_to_message and message.reply_to_message.sender_chat:
+            user_id = message.reply_to_message.sender_chat.id
+        elif message.input_str:
+            user_id = message.input_str.strip()
+        else:
+            return await message.err("no valid user_id or channel_id or message specified")
+
+    await message.edit("`Trying to Unban User.. Hang on!! ⏳`")
     try:
-        get_mem = await message.client.get_users(user_id)
-        await message.client.unban_chat_member(chat_id, user_id)
-        await message.edit("`🛡 Successfully Unbanned..`", del_in=5)
-        await CHANNEL.log(
-            "#UNBAN\n\n"
-            f"USER: [{get_mem.first_name}](tg://user?id={get_mem.id}) "
-            f"(`{get_mem.id}`)\n"
-            f"CHAT: `{message.chat.title}` (`{chat_id}`)")
+        await message.chat.unban_member(user_id)
     except UsernameInvalid:
         await message.err("invalid username, try again with valid info ⚠")
     except PeerIdInvalid:
@@ -188,6 +221,19 @@ async def unban_usr(message: Message):
         await message.err("invalid userid, try again with valid info ⚠")
     except Exception as e_f:
         await message.err(f"something went wrong! 🤔\n\n{e_f}")
+    else:
+        await message.edit("`🛡 Successfully Unbanned..`", del_in=5)
+        try:
+            user = await message.client.get_users(user_id)
+            body = f"USER: [{user.first_name}](tg://user?id={user_id}) (`{user_id}`)"
+        # pyrogram raises an IndexError if a channel id / username is passed.
+        except IndexError:
+            channel = await message.client.get_chat(user_id)
+            body = f"CHANNEL: {channel.title} (`{channel.id}`)"
+
+        await CHANNEL.log(
+            f"#UNBAN\n\n{body}\n"
+            f"CHAT: `{message.chat.title}` (`{message.chat.id}`)")
 
 
 @userge.on_cmd("kick", about={
@@ -198,19 +244,13 @@ async def unban_usr(message: Message):
     allow_channels=False, check_restrict_perm=True)
 async def kick_usr(message: Message):
     """ kick user from tg group """
-    chat = message.chat
-    await message.edit("`Trying to Kick User.. Hang on!! ⏳`")
     user_id, _ = message.extract_user_and_text
     if not user_id:
         return await message.err("no valid user_id or message specified")
+
+    await message.edit("`Trying to Kick User.. Hang on!! ⏳`")
     try:
-        get_mem = await message.client.get_users(user_id)
-        await chat.kick_member(user_id, until_date=time.time() + 59)
-        await message.edit(
-            "#KICK\n\n"
-            f"USER: [{get_mem.first_name}](tg://user?id={get_mem.id}) "
-            f"(`{get_mem.id}`)\n"
-            f"CHAT: `{chat.title}` (`{chat.id}`)", log=__name__)
+        await message.chat.kick_member(user_id, until_date=int(time.time() + 59))
     except UsernameInvalid:
         await message.err("invalid username, try again with valid info ⚠")
     except PeerIdInvalid:
@@ -219,6 +259,12 @@ async def kick_usr(message: Message):
         await message.err("invalid userid, try again with valid info ⚠")
     except Exception as e_f:
         await message.err(f"something went wrong! 🤔\n\n{e_f}")
+    else:
+        user = await message.client.get_users(user_id)
+        await message.edit(
+            "#KICK\n\n"
+            f"USER: [{user.first_name}](tg://user?id={user_id}) (`{user_id}`)\n"
+            f"CHAT: `{message.chat.title}` (`{message.chat.id}`)", log=True)
 
 
 @userge.on_cmd("mute", about={
@@ -235,66 +281,31 @@ async def kick_usr(message: Message):
     allow_channels=False, check_restrict_perm=True)
 async def mute_usr(message: Message):
     """ mute user from tg group """
-    chat_id = message.chat.id
-    flags = message.flags
-    minutes = flags.get('-m', 0)
-    hours = flags.get('-h', 0)
-    days = flags.get('-d', 0)
-    await message.edit("`Trying to Mute User.. Hang on!! ⏳`")
     user_id, reason = message.extract_user_and_text
     if not user_id:
         await message.err("no valid user_id or message specified")
         return
-    if minutes:
-        mute_period = int(minutes) * 60
-        _time = f"{int(minutes)}m"
-    elif hours:
-        mute_period = int(hours) * 3600
-        _time = f"{int(hours)}h"
-    elif days:
-        mute_period = int(days) * 86400
-        _time = f"{int(days)}d"
-    if flags:
-        try:
-            get_mem = await message.client.get_users(user_id)
-            await message.client.restrict_chat_member(
-                chat_id, user_id,
-                ChatPermissions(),
-                int(time.time() + mute_period))
-            await message.edit(
-                "#MUTE\n\n"
-                f"USER: [{get_mem.first_name}](tg://user?id={get_mem.id}) "
-                f"(`{get_mem.id}`)\n"
-                f"CHAT: `{message.chat.title}` (`{chat_id}`)\n"
-                f"MUTE UNTIL: `{_time}`\n"
-                f"REASON: `{reason}`", log=__name__)
-        except UsernameInvalid:
-            await message.err("invalid username, try again with valid info ⚠")
-        except PeerIdInvalid:
-            await message.err("invalid username or userid, try again with valid info ⚠")
-        except UserIdInvalid:
-            await message.err("invalid userid, try again with valid info ⚠")
-        except Exception as e_f:
-            await message.err(f"something went wrong 🤔\n\n{e_f}")
+
+    await message.edit("`Trying to Mute User.. Hang on!! ⏳`")
+    _period, _time = _get_period_and_time(message.flags)
+    try:
+        await message.chat.restrict_member(user_id, ChatPermissions(), _period)
+    except UsernameInvalid:
+        await message.err("invalid username, try again with valid info ⚠")
+    except PeerIdInvalid:
+        await message.err("invalid username or userid, try again with valid info ⚠")
+    except UserIdInvalid:
+        await message.err("invalid userid, try again with valid info ⚠")
+    except Exception as e_f:
+        await message.err(f"something went wrong 🤔\n\n{e_f}")
     else:
-        try:
-            get_mem = await message.client.get_users(user_id)
-            await message.client.restrict_chat_member(chat_id, user_id, ChatPermissions())
-            await message.edit(
-                "#MUTE\n\n"
-                f"USER: [{get_mem.first_name}](tg://user?id={get_mem.id}) "
-                f"(`{get_mem.id}`)\n"
-                f"CHAT: `{message.chat.title}` (`{chat_id}`)\n"
-                f"MUTE UNTIL: `forever`\n"
-                f"REASON: `{reason}`", log=__name__)
-        except UsernameInvalid:
-            await message.err("invalid username, try again with valid info ⚠")
-        except PeerIdInvalid:
-            await message.err("invalid username or userid, try again with valid info ⚠")
-        except UserIdInvalid:
-            await message.err("invalid userid, try again with valid info ⚠")
-        except Exception as e_f:
-            await message.err(f"something went wrong 🤔\n\n{e_f}")
+        user = await message.client.get_users(user_id)
+        await message.edit(
+            "#MUTE\n\n"
+            f"USER: [{user.first_name}](tg://user?id={user_id}) (`{user_id}`)\n"
+            f"CHAT: `{message.chat.title}` (`{message.chat.id}`)\n"
+            f"MUTE UNTIL: `{_time}`\n"
+            f"REASON: `{reason}`", log=True)
 
 
 @userge.on_cmd("unmute", about={
@@ -305,21 +316,14 @@ async def mute_usr(message: Message):
     allow_channels=False, check_restrict_perm=True)
 async def unmute_usr(message: Message):
     """ unmute user from tg group """
-    chat_id = message.chat.id
-    await message.edit("`Trying to Unmute User.. Hang on!! ⏳`")
     user_id, _ = message.extract_user_and_text
     if not user_id:
         await message.err("no valid user_id or message specified")
         return
+
+    await message.edit("`Trying to Unmute User.. Hang on!! ⏳`")
     try:
-        get_mem = await message.client.get_users(user_id)
-        await message.client.unban_chat_member(chat_id, user_id)
-        await message.edit("`🛡 Successfully Unmuted..`", del_in=5)
-        await CHANNEL.log(
-            "#UNMUTE\n\n"
-            f"USER: [{get_mem.first_name}](tg://user?id={get_mem.id}) "
-            f"(`{get_mem.id}`)\n"
-            f"CHAT: `{message.chat.title}` (`{chat_id}`)")
+        await message.chat.unban_member(user_id)
     except UsernameInvalid:
         await message.err("invalid username, try again with valid info ⚠")
     except PeerIdInvalid:
@@ -328,6 +332,13 @@ async def unmute_usr(message: Message):
         await message.err("invalid userid, try again with valid info ⚠")
     except Exception as e_f:
         await message.err(f"something went wrong 🤔\n\n{e_f}")
+    else:
+        await message.edit("`🛡 Successfully Unmuted..`", del_in=5)
+        user = await message.client.get_users(user_id)
+        await CHANNEL.log(
+            "#UNMUTE\n\n"
+            f"USER: [{user.first_name}](tg://user?id={user_id}) (`{user_id}`)\n"
+            f"CHAT: `{message.chat.title}` (`{message.chat.id}`)")
 
 
 @userge.on_cmd("zombies", about={
@@ -566,4 +577,166 @@ async def smode_switch(message: Message):
         except Exception as e_f:
             await message.err(str(e_f))
     else:
-        await message.err("inavlid flag type/mode..")
+        await message.err("invalid flag type/mode..")
+
+
+@userge.on_cmd("no_channels", about={
+    'header': "Enable to delete messages from channels.",
+    'description': "Restrict the users from chatting in group as their channels.\n"
+                   "Use appropriate flags to toggle between ban and delete_only.",
+    'flags': {
+        '-b': "Ban the channel.",
+        '-d': "Disable restriction"},
+    'examples': [
+        "{tr}no_channels : To restrict members chatting as channels (Deletes the message)",
+        "{tr}no_channels -b : To restrict members chatting as channels "
+        "(Deletes the message and bans the user from doing the same.)",
+        "{tr}no_channels -d : To Disable the plugin in an enabled chat."]},
+    allow_channels=False, check_restrict_perm=True)
+async def enable_ban(message: Message):
+    """ restrict members from chatting as channels. """
+    flags = message.flags
+    is_ban = '-b' in flags
+    is_disable = "-d" in flags
+    chat_id = message.chat.id
+
+    await message.edit("Setting up..")
+    if is_disable:
+        if chat_id not in ENABLED_CHATS:
+            return await message.edit("Not enabled for this chat.", del_in=5)
+        ENABLED_CHATS.remove(chat_id)
+        await DB.update_one({'chat_id': chat_id}, {'$set': {'enabled': False}})
+        await message.edit("Disabled deletion / banning send_as channels.\n"
+                           "Members are allowed to chat as channel.")
+    elif chat_id in ENABLED_CHATS:
+        if is_ban and chat_id in BAN_CHANNELS:
+            await message.edit("Already enabled in this chat, No changes applied.", del_in=5)
+        elif chat_id in BAN_CHANNELS:
+            await DB.update_one({'chat_id': chat_id}, {'$set': {'ban': False}})
+            BAN_CHANNELS.remove(chat_id)
+            await message.edit("Changed to delete only mode.\n"
+                               "Messages send on behalf of channels will be deleted.")
+        elif is_ban:
+            await DB.update_one({'chat_id': chat_id}, {'$set': {'ban': True}})
+            BAN_CHANNELS.append(chat_id)
+            await message.edit("Ban mode enabled.\nUsers sending as channel will be banned.")
+        else:
+            await message.edit("Already Delete only Mode", del_in=5)
+    else:
+        allowed = ALLOWED.get(chat_id)
+        if not allowed:
+            allowed = [chat_id]
+            linked_chat = (await message.client.get_chat(chat_id)).linked_chat
+            if linked_chat:
+                allowed.append(linked_chat.id)
+            ALLOWED[chat_id] = allowed
+
+        await DB.update_one({
+            'chat_id': chat_id},
+            {'$set': {
+                'chat_id': chat_id,
+                'ban': is_ban,
+                'enabled': True,
+                'allowed': allowed}}, upsert=True)
+
+        ENABLED_CHATS.append(chat_id)
+        if is_ban:
+            BAN_CHANNELS.append(chat_id)
+            await message.edit("Enabled with ban mode")
+        else:
+            await message.edit('Enabled with delete mode')
+
+
+@userge.on_cmd("allow_channel", about={
+    'header': "Whitelist a channel to from send_as channel.",
+    'description': "To allow the replied channel or given channel id / username "
+                   "to chat as channel, even if restriction is enabled."},
+               allow_channels=False, check_restrict_perm=True)
+async def allow_a_channel(message: Message):
+    """ add a channel to whitelist """
+    channel = await _get_channel(message)
+    if not channel:
+        return
+
+    chat_id = message.chat.id
+    allowed = ALLOWED.get(chat_id, [])
+    channel_id = channel.id
+    if channel_id in allowed:
+        return await message.edit("This channel is already whitelisted", del_in=5)
+    allowed.append(channel_id)
+    ALLOWED[chat_id] = allowed
+
+    await _update_chat_data(chat_id, allowed)
+    await message.edit(f'Successfully Whitelisted {channel.title} (`{channel_id}`)')
+
+
+@userge.on_cmd("disallow_channel", about={
+    'header': "Remove an already whitelisted channel from allowed list.",
+    'description': "To disallow the replied channel or given channel id / username "
+                   "to chat as channel, if the channel is already whitelisted"},
+               allow_channels=False, check_restrict_perm=True)
+async def disallow_a_channel(message: Message):
+    """ remove a channel from whitelist """
+    channel = await _get_channel(message)
+    if not channel:
+        return
+
+    chat_id = message.chat.id
+    allowed = ALLOWED.get(chat_id, [])
+    channel_id = channel.id
+    if channel_id not in allowed:
+        return await message.edit("This channel is not yet whitelisted", del_in=5)
+    allowed.remove(channel_id)
+
+    await _update_chat_data(chat_id, allowed)
+    await message.edit(f'Successfully removed {channel.title} (`{channel_id}`) from whitelist')
+
+
+async def _get_channel(message: Message) -> Optional[Chat]:
+    replied = message.reply_to_message
+    channel = None
+    if replied and replied.sender_chat:
+        channel = replied.sender_chat
+    channel_id = message.input_str
+    if channel_id:
+        try:
+            if not channel_id.startswith("@"):
+                channel_id = int(channel_id)
+            channel = await message.client.get_chat(channel_id)
+        except Exception:  # pylint: disable=broad-except
+            if not channel:
+                await message.edit("Invalid chat", del_in=5)
+                return
+    if not channel:
+        await message.edit('No input given', del_in=5)
+
+    return channel
+
+
+async def _update_chat_data(chat_id: int, allowed: List[int]) -> None:
+    ban = chat_id in BAN_CHANNELS
+    enabled = chat_id in ENABLED_CHATS
+    await DB.update_one({
+        'chat_id': chat_id},
+        {'$set': {
+            'chat_id': chat_id,
+            'ban': ban,
+            'enabled': enabled,
+            'allowed': allowed}}, upsert=True)
+
+
+# filter to handle new messages in enabled chats
+@userge.on_filters(filters.group & channel_delete, group=2,
+                   check_delete_perm=True, check_restrict_perm=True)
+async def ban_spammers(message: Message):
+    chat_id = message.chat.id
+    sender_chat_id = message.sender_chat.id
+    if sender_chat_id not in ALLOWED.get(chat_id, [chat_id]):
+        await message.delete()
+        if chat_id in BAN_CHANNELS:
+            await message.chat.kick_member(sender_chat_id)
+            await message.reply(
+                "#BAN_CHANNEL\n\n"
+                "Message from channel detected and banned\n"
+                f"CHANNEL: {message.sender_chat.username} ( `{sender_chat_id}` )\n"
+                f"CHAT: `{message.chat.title}` (`{chat_id}`)", del_in=10, log=True)
