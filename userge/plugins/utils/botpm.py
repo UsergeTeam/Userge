@@ -44,7 +44,7 @@ _U_ID_F_M_ID: Dict[int, int] = {}
 _STATS: Dict[str, int] = {"incoming": 0, "outgoing": 0}
 
 START_TEXT = " Hello {mention}, you can contact me using this Bot."
-START_MEDIA = os.environ.get("START_MEDIA", None)
+START_MEDIA = os.environ.get("START_MEDIA")
 
 botPmFilter = filters.create(lambda _, __, ___: BOT_PM)
 bannedFilter = filters.create(lambda _, __, ___: ___.chat.id in _BANNED_USERS)
@@ -85,10 +85,7 @@ async def bot_pm(msg: Message):
     global BOT_PM  # pylint: disable=global-statement
     if not userge.has_bot:
         return await msg.err("You have to us Bot mode or Dual mode if you want to enable Bot Pm.")
-    if BOT_PM:
-        BOT_PM = False
-    else:
-        BOT_PM = True
+    BOT_PM = not BOT_PM
     await SAVED_SETTINGS.update_one(
         {"_id": "BOT_PM"}, {"$set": {"data": BOT_PM}}, upsert=True
     )
@@ -175,7 +172,6 @@ if userge.has_bot:
 
     @bot.on_message(filters.user(userge_id) & filters.private & filters.command("pmban"), group=1)
     async def pm_ban(_, msg: PyroMessage):
-        global _BANNED_USERS  # pylint: disable=global-statement
         replied = msg.reply_to_message
         user_id = msg.text.split(' ', maxsplit=1)[1] if ' ' in msg.text else ''
         if not (replied or user_id):
@@ -186,9 +182,9 @@ if userge.has_bot:
             if replied:
                 if replied.forward_from:
                     user_id = replied.forward_from.id
+                elif replied.message_id not in _U_ID_F_M_ID:
+                    return await msg.reply("You can't reply old message of this user.")
                 else:
-                    if replied.message_id not in _U_ID_F_M_ID:
-                        return await msg.reply("You can't reply old message of this user.")
                     user_id = _U_ID_F_M_ID.get(replied.message_id)
             else:
                 # noinspection PyBroadException
@@ -214,7 +210,6 @@ if userge.has_bot:
     @bot.on_message(
         filters.user(userge_id) & filters.private & filters.command("pmunban"), group=1)
     async def pm_unban(_, msg: PyroMessage):
-        global _BANNED_USERS  # pylint: disable=global-statement
         replied = msg.reply_to_message
         user_id = msg.text.split(' ', maxsplit=1)[1] if ' ' in msg.text else ''
         if not (replied or user_id):
@@ -225,9 +220,9 @@ if userge.has_bot:
             if replied:
                 if replied.forward_from:
                     user_id = replied.forward_from.id
+                elif replied.message_id not in _U_ID_F_M_ID:
+                    return await msg.reply("You can't reply old message of this user.")
                 else:
-                    if replied.message_id not in _U_ID_F_M_ID:
-                        return await msg.reply("You can't reply old message of this user.")
                     user_id = _U_ID_F_M_ID.get(replied.message_id)
             else:
                 # noinspection PyBroadException
@@ -278,7 +273,6 @@ After Adding a var, you can see your media when you start your Bot.
     HELP_TEXT = """**Here are the available commands for Bot PM:**
 
 /start - Start the bot
-/help -See this text again
 /settext [text | reply to text] - Set Custom Start Text
 /pmban [user_id | reply to user] - Ban User from Doing Pms
 /pmunban [user_id | reply to user] - UnBan Banned user
@@ -313,10 +307,7 @@ After Adding a var, you can see your media when you start your Bot.
                 reply_markup=mp
             )
         elif cq.data == "en_dis_bot_pm":
-            if BOT_PM:
-                BOT_PM = False
-            else:
-                BOT_PM = True
+            BOT_PM = not BOT_PM
             await SAVED_SETTINGS.update_one(
                 {"_id": "BOT_PM"}, {"$set": {"data": BOT_PM}}, upsert=True
             )
@@ -491,9 +482,9 @@ After Adding a var, you can see your media when you start your Bot.
         else:
             if replied.forward_from:
                 reply_id = replied.forward_from.id
+            elif replied.message_id not in _U_ID_F_M_ID:
+                return await msg.reply("You can't reply old message of this user.")
             else:
-                if replied.message_id not in _U_ID_F_M_ID:
-                    return await msg.reply("You can't reply old message of this user.")
                 reply_id = _U_ID_F_M_ID.get(replied.message_id)
             try:
                 if msg.text:
@@ -545,7 +536,7 @@ Type /send to confirm or /cancel to exit.
             filter_ = filters.create(lambda _, __, ___: filters.incoming & ~filters.edited)
             while True:
                 response = await conv.get_response(filters=filter_)
-                if response.text.startswith("/cancel"):
+                if response.text and response.text.startswith("/cancel"):
                     IN_CONVO = False
                     return await msg.reply("Broadcast process Cancelled.")
                 if len(temp_msgs) >= 1 and response.text == "/done":

@@ -27,7 +27,7 @@ async def who_is(message: Message):
         except Exception:  # pylint: disable=broad-except
             await message.err("no valid user_id or message specified")
             return
-    elif message.reply_to_message:
+    elif message.reply_to_message and message.reply_to_message.from_user:
         from_user = await message.client.get_users(message.reply_to_message.from_user.id)
         from_chat = await message.client.get_chat(message.reply_to_message.from_user.id)
     else:
@@ -71,8 +71,6 @@ async def who_is(message: Message):
             os.remove(local_user_photo)
             await message.delete()
         else:
-            cuz = "NO DP Found"
-            if not s_perm:
-                cuz = "Chat Send Media Forbidden"
+            cuz = "Chat Send Media Forbidden" if not s_perm else "NO DP Found"
             message_out_str = "<b>📷 " + cuz + " 📷</b>\n\n" + message_out_str
             await message.edit(message_out_str)

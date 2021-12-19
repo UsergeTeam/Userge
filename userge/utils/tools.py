@@ -9,6 +9,8 @@
 # All rights reserved.
 
 import asyncio
+import importlib
+import os
 import re
 import shlex
 from os.path import basename, join, exists
@@ -23,6 +25,16 @@ import userge
 _LOG = userge.logging.getLogger(__name__)
 _BTN_URL_REGEX = re.compile(r"(\[([^\[]+?)]\[buttonurl:/{0,2}(.+?)(:same)?])")
 _PTN_SPLIT = re.compile(r'(\.\d+|\.|\d+)')
+
+
+def import_ytdl():
+    """ import youtube_dl dynamically """
+    req_module = os.environ.get("YOUTUBE_DL_PATH", "youtube_dl")
+    try:
+        return importlib.import_module(req_module)
+    except ModuleNotFoundError:
+        _LOG.warning(f"please fix your requirements.txt file [{req_module}]")
+        raise
 
 
 def sort_file_name_key(file_name: str) -> tuple:

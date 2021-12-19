@@ -52,7 +52,9 @@ async def kang_(message: Message):
             if not replied.sticker.file_name:
                 await message.edit("`Sticker has no Name!`")
                 return
-            emoji_ = replied.sticker.emoji
+            _ = replied.sticker.emoji
+            if _:
+                emoji_ = _
             is_anim = replied.sticker.is_animated
             if not replied.sticker.file_name.endswith('.tgs'):
                 resize = True
@@ -108,7 +110,7 @@ async def kang_(message: Message):
             exist = await message.client.send(
                 GetStickerSet(
                     stickerset=InputStickerSetShortName(
-                        short_name=packname)))
+                        short_name=packname), hash=0))
         except StickersetInvalid:
             pass
         if exist is not False:
@@ -222,7 +224,7 @@ async def sticker_pack_info_(message: Message):
     get_stickerset = await message.client.send(
         GetStickerSet(
             stickerset=InputStickerSetShortName(
-                short_name=replied.sticker.set_name)))
+                short_name=replied.sticker.set_name), hash=0))
     pack_emojis = []
     for document_sticker in get_stickerset.packs:
         if document_sticker.emoticon not in pack_emojis:

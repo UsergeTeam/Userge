@@ -11,7 +11,7 @@ gitpython
 google-api-python-client
 google-auth-httplib2
 google-auth-oauthlib
-googletrans==3.1.0a0
+googletrans==4.0.0rc1
 hachoir
 heroku3
 html-telegraph-poster
@@ -20,7 +20,7 @@ oauth2client
 Pillow==8.3.2
 psutil
 pybase64
-pyrogram==1.2.9
+pyrogram>=1.2.20
 pySmartDL
 pysocks
 pytgcalls==2.1.0
@@ -42,4 +42,4 @@ UsergeAntiSpamApi==0.1.7
 wget
 wikipedia
 youtube_dl>=2021.1.8
-youtube-search-python
+youtube-search-python==1.4.9
