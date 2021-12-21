@@ -150,8 +150,9 @@ if userge.has_bot:
                 out_str = f"<code>{key_}</code>\n\n{commands[key_].about}"
             else:
                 out_str = f"<i>No Command Found for</i>: <code>{cmd}</code>"
-            return await msg.reply(out_str, parse_mode='html', disable_web_page_preview=True)
-        await send_start_text(msg, text, path, markup)
+            await msg.reply(out_str, parse_mode='html', disable_web_page_preview=True)
+        else:
+            await send_start_text(msg, text, path, markup)
 
     @bot.on_message(
         filters.user(userge_id) & filters.private & filters.command("settext"), group=1)
