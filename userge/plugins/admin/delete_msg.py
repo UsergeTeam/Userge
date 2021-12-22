@@ -8,6 +8,8 @@
 
 from datetime import datetime
 
+from pyrogram.errors import MessageDeleteForbidden
+
 from userge import userge, Message
 
 
