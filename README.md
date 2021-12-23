@@ -16,7 +16,11 @@
     <a href="https://github.com/UsergeTeam/Userge#copyright--license-">Copyright & License</a>
 </p>
 
-# Userge 🔥
+# NavaAssist
+
+> **NavaAssist** is a customized version of **[Userge](https://github.com/UsergeTeam/Userge)** created by [Navaneeth R](https://github.com/NavaneethRenjith8282).
+
+## Userge 🔥
 
 [![Build Status](https://travis-ci.com/UsergeTeam/Userge.svg?branch=alpha)](https://travis-ci.com/UsergeTeam/Userge)
 ![Python Version](https://img.shields.io/badge/python-3.8/3.9-lightgrey)
@@ -38,20 +42,25 @@
 
 > **Userge** is a Powerful , _Pluggable_ Telegram UserBot written in _Python_ using [Pyrogram](https://github.com/pyrogram/pyrogram).
 
+## About this project
+
+**NavaAssist** is the customized version of **[Userge](https://github.com/UsergeTeam/Userge)** userbot used by [Navaneeth R](https://github.com/NavaneethRenjith8282).
+
+He is using this repo for his `UPSTREAM_REPO` var to make edits and to create his own Userge. You can see that it is forked.
+
 ## Inspiration 😇
 
-> This project is inspired by the following projects :)
+> Userge is inspired by the these projects :)
 
-* [tg_userbot](https://github.com/watzon/tg_userbot) ( heavily ) 🤗
-* [PyroGramBot](https://github.com/SpEcHiDe/PyroGramBot)
-* [Telegram-Paperplane](https://github.com/RaphielGang/Telegram-Paperplane)
-* [UniBorg](https://github.com/SpEcHiDe/UniBorg)
+[Specially to these projects of **Userge**](https://github.com/UsergeTeam/Userge#inspiration-) 🥰
 
 > Special Thanks to all of you !!!.
 
 ## [Documentation](http://theuserge.tech) 📘
 
 ## [Deployment](http://theuserge.tech/deployment) 👷
+
+For deployment, visit [UsergeTeam/Userge](https://github.com/UsergeTeam/Userge).
 
 ## [Plugins](https://github.com/UsergeTeam/Userge-Plugins) 🔌
 
@@ -61,10 +70,11 @@
 
 ### Project Credits 💆‍♂️
 
-* [Specially to these projects](https://github.com/UsergeTeam/Userge#inspiration-) 🥰
+* **Error:** Project credits data cleared by **[Shrimadhav U K](https://github.com/spechide)**!
 * [Contributors](https://github.com/UsergeTeam/Userge/graphs/contributors) 👥
 
 ### Copyright & License 👮
 
+* Forked by [Navaneeth R](https://github.com/NavaneethRenjith8282) from [UsergeTeam/Userge](https://github.com/UsergeTeam/Userge)
 * Copyright (C) 2020 - 2021 by [UsergeTeam](https://github.com/UsergeTeam) ❤️️
 * Licensed under the terms of the [GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007](https://github.com/UsergeTeam/Userge/blob/master/LICENSE)
