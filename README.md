@@ -60,7 +60,7 @@ He is using this repo for his `UPSTREAM_REPO` var to make edits and to create hi
 
 ## [Deployment](http://theuserge.tech/deployment) 👷
 
-For deployment, visit [UsergeTeam/Userge](https://github.com/UsergeTeam/Userge).
+For deployment, visit **[UsergeTeam/Userge](https://github.com/UsergeTeam/Userge)**.
 
 ## [Plugins](https://github.com/UsergeTeam/Userge-Plugins) 🔌
 
