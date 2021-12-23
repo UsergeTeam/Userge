@@ -176,7 +176,7 @@ class Userge(_AbstractUserge):
     has_bot = bool(Config.BOT_TOKEN)
 
     def __init__(self, **kwargs) -> None:
-        _LOG.info(_LOG_STR, "Setting Userge Configs")
+        _LOG.info(_LOG_STR, "Setting NavaAssist Configs")
         kwargs = {
             'api_id': Config.API_ID,
             'api_hash': Config.API_HASH,
@@ -211,7 +211,7 @@ class Userge(_AbstractUserge):
 
         while await _is_running():
             _LOG.info(_LOG_STR, "Waiting for the Termination of "
-                                f"previous Userge instance ... [{timeout} sec]")
+                                f"previous NavaAssist instance ... [{timeout} sec]")
             time.sleep(timeout)
 
             counter += timeout
@@ -219,20 +219,20 @@ class Userge(_AbstractUserge):
                 _LOG.info(_LOG_STR, f"Max timeout reached ! [{max_} sec]")
                 break
 
-        _LOG.info(_LOG_STR, "Starting Userge")
+        _LOG.info(_LOG_STR, "Starting NavaAssist")
         await _set_running(True)
         await super().start()
         if self._bot is not None:
-            _LOG.info(_LOG_STR, "Starting UsergeBot")
+            _LOG.info(_LOG_STR, "Starting NavaAssistBot")
             await self._bot.start()
         await self._load_plugins()
 
     async def stop(self) -> None:  # pylint: disable=arguments-differ
         """ stop client and bot """
         if self._bot is not None:
-            _LOG.info(_LOG_STR, "Stopping UsergeBot")
+            _LOG.info(_LOG_STR, "Stopping NavaAssistBot")
             await self._bot.stop()
-        _LOG.info(_LOG_STR, "Stopping Userge")
+        _LOG.info(_LOG_STR, "Stopping NavaAssist")
         await super().stop()
         await _set_running(False)
         pool._stop()  # pylint: disable=protected-access
@@ -266,7 +266,7 @@ class Userge(_AbstractUserge):
 
         async def _shutdown(_sig: signal.Signals) -> None:
             global _SEND_SIGNAL  # pylint: disable=global-statement
-            _LOG.info(_LOG_STR, f"Received Stop Signal [{_sig.name}], Exiting Userge ...")
+            _LOG.info(_LOG_STR, f"Received Stop Signal [{_sig.name}], Exiting NavaAssist ...")
             await _finalize()
             if _sig == _sig.SIGUSR1:
                 _SEND_SIGNAL = True
@@ -292,7 +292,7 @@ class Userge(_AbstractUserge):
         for task in self._tasks:
             running_tasks.append(self.loop.create_task(task()))
 
-        logbot.edit_last_msg("Userge has Started Successfully !")
+        logbot.edit_last_msg("NavaAssist has Started Successfully !")
         logbot.end()
         mode = "[DUAL]" if RawClient.DUAL_MODE else "[BOT]" if Config.BOT_TOKEN else "[USER]"
 
@@ -301,7 +301,7 @@ class Userge(_AbstractUserge):
                 _LOG.info(_LOG_STR, f"Running Coroutine - {mode}")
                 self.loop.run_until_complete(coro)
             else:
-                _LOG.info(_LOG_STR, f"Idling Userge - {mode}")
+                _LOG.info(_LOG_STR, f"Idling NavaAssist - {mode}")
                 idle()
             self.loop.run_until_complete(_finalize())
         except (asyncio.exceptions.CancelledError, RuntimeError):
