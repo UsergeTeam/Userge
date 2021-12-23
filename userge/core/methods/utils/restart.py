@@ -27,7 +27,7 @@ class Restart(RawClient):  # pylint: disable=missing-class-docstring
     async def restart(self, update_req: bool = False,  # pylint: disable=arguments-differ
                       hard: bool = False) -> None:
         """ Restart the AbstractUserge """
-        _LOG.info(_LOG_STR, "Restarting Userge")
+        _LOG.info(_LOG_STR, "Restarting NavaAssist")
         await self.stop()
         if update_req:
             _LOG.info(_LOG_STR, "Installing Requirements...")

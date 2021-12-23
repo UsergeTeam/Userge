@@ -54,8 +54,8 @@ def _re_init_handler():
 
 
 @userge.on_cmd("antispam", about={
-    'header': "enable / disable antispam",
-    'description': "Toggle API Auto Bans"}, allow_channels=False)
+    'header': "enable / disable userge AntiSpam",
+    'description': "Toggle API Auto Bans in Userge AntiSpam"}, allow_channels=False)
 async def antispam_(message: Message):
     """ enable / disable antispam """
     Config.ANTISPAM_SENTRY = not Config.ANTISPAM_SENTRY
@@ -152,7 +152,7 @@ def _get_msg_and_log(chat: Chat, user: User,
 
     msg = (
         r"\\**#Userge_Antispam**//"
-        "\n\nGlobally Banned User Detected in this Chat.\n\n"
+        "\n\nGlobally Banned User is detected in this Chat.\n\n"
         f"{others}"
     )
 

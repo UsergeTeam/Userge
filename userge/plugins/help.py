@@ -31,7 +31,7 @@ _CATEGORY = {
     'unofficial': '🃏',
     'temp': '♻️',
     'custom': '👨',
-    'plugins': '💎'
+    'help': '💎'
 }
 SAVED_SETTINGS = get_collection("CONFIGS")
 PRVT_MSGS = {}
@@ -92,12 +92,12 @@ if userge.has_bot:
                 except MessageNotModified:
                     await c_q.answer("Nothing Found to Refresh 🤷‍♂️", show_alert=True)
                 except MessageIdInvalid:
-                    await c_q.answer("Sorry, I Don't Have Permissions to edit this 😔",
+                    await c_q.answer("Sorry, I don't have permissions to edit this 😔",
                                      show_alert=True)
             else:
                 user_dict = await userge.bot.get_user_dict(Config.OWNER_ID[0])
                 await c_q.answer(
-                    f"Only {user_dict['flname']} Can Access this...! Build Your Own @TheUserge 🤘",
+                    f"Only {user_dict['flname']} can Access this...! Build Your Own @TheUserge 🤘",
                     show_alert=True)
         return wrapper
 
@@ -148,10 +148,10 @@ if userge.has_bot:
         cur_pos = str(callback_query.matches[0].group(1))
         pos_list = cur_pos.split('|')
         if len(pos_list) == 1:
-            await callback_query.answer("you are in main menu", show_alert=True)
+            await callback_query.answer("you are in main menu of NavaAssist", show_alert=True)
             return
         if len(pos_list) == 2:
-            text = "🖥 **Userge Main Menu** 🖥"
+            text = "🖥 **NavaAssist Main Menu** 🖥"
             buttons = main_menu_buttons()
         elif len(pos_list) == 3:
             text, buttons = category_data(cur_pos)
@@ -199,7 +199,7 @@ if userge.has_bot:
     @check_owner
     async def callback_mm(callback_query: CallbackQuery):
         await callback_query.edit_message_text(
-            "🖥 **Userge Main Menu** 🖥", reply_markup=InlineKeyboardMarkup(main_menu_buttons()))
+            "🖥 **NavaAssist Main Menu** 🖥", reply_markup=InlineKeyboardMarkup(main_menu_buttons()))
 
     @userge.bot.on_callback_query(filters=filters.regex(pattern=r"^chgclnt$"))
     @check_owner
@@ -240,7 +240,7 @@ if userge.has_bot:
             await c_q.answer(msg, show_alert=True)
         else:
             await c_q.answer(
-                f"Only {flname} can see this Private Msg... 😔", show_alert=True)
+                f"Only {flname} can see this private message... 😔", show_alert=True)
 
     def is_filter(name: str) -> bool:
         split_ = name.split('.')
@@ -376,7 +376,8 @@ if userge.has_bot:
                 id=uuid4(),
                 title="Repo",
                 input_message_content=InputTextMessageContent(
-                    "**Here's how to setup Userge** 😎"
+                    "Hey, this is **NavaAssist**, a customized version of **Userge**/n".
+                     "**Here's how to setup Userge** 😎"
                 ),
                 url="https://github.com/UsergeTeam/Userge",
                 description="Setup Your Own",
@@ -385,6 +386,8 @@ if userge.has_bot:
                     [
                         [
                             InlineKeyboardButton(
+                                "🧰 NavaAssist Repo",
+                                url="https://github.com/NavaneethRenjith8282/NavaAssist"
                                 "🧰 Userge Repo",
                                 url="https://github.com/UsergeTeam/Userge"),
                             InlineKeyboardButton(
@@ -401,10 +404,10 @@ if userge.has_bot:
                     id=uuid4(),
                     title="Main Menu",
                     input_message_content=InputTextMessageContent(
-                        "🖥 **Userge Main Menu** 🖥"
+                        "🖥 **NavaAssist Main Menu** 🖥"
                     ),
                     url="https://github.com/UsergeTeam/Userge",
-                    description="Userge Main Menu",
+                    description="Main Menu of NavaAssist",
                     thumb_url="https://imgur.com/download/Inyeb1S",
                     reply_markup=InlineKeyboardMarkup(main_menu_buttons())
                 )
@@ -427,7 +430,7 @@ if userge.has_bot:
                 results.append(
                     InlineQueryResultArticle(
                         id=uuid4(),
-                        title=f"A Private Msg to {user.first_name}",
+                        title=f"A Private Message to {user.first_name}",
                         input_message_content=InputTextMessageContent(msg_c),
                         description="Only he/she can open it",
                         thumb_url="https://imgur.com/download/Inyeb1S",
