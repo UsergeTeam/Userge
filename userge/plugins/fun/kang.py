@@ -110,7 +110,7 @@ async def kang_(message: Message):
             exist = await message.client.send(
                 GetStickerSet(
                     stickerset=InputStickerSetShortName(
-                        short_name=packname), hash=0))
+                        short_name=packname)))
         except StickersetInvalid:
             pass
         if exist is not False:
@@ -224,7 +224,7 @@ async def sticker_pack_info_(message: Message):
     get_stickerset = await message.client.send(
         GetStickerSet(
             stickerset=InputStickerSetShortName(
-                short_name=replied.sticker.set_name), hash=0))
+                short_name=replied.sticker.set_name)))
     pack_emojis = []
     for document_sticker in get_stickerset.packs:
         if document_sticker.emoticon not in pack_emojis:
