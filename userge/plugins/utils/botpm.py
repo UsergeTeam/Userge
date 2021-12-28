@@ -137,7 +137,7 @@ if userge.has_bot:
             return
         text = "Hey, you can configure me here."
         markup = InlineKeyboardMarkup([[InlineKeyboardButton("Settings", callback_data="stngs")]])
-        if len(msg.command) > 1:          
+        if len(msg.command) > 1:
             #  https://github.com/UsergeTeam/Userge/blob/alpha/userge/plugins/help.py#L104
             return
         await send_start_text(msg, text, path, markup)
