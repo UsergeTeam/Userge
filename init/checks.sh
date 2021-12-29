@@ -8,6 +8,9 @@
 #
 # All rights reserved.
 
+export IFS="
+"
+
 _checkBashReq() {
     log "Checking Bash Commands ..."
     command -v jq &> /dev/null || quit "Required command : jq : could not be found !"
