@@ -45,6 +45,8 @@ _STATS: Dict[str, int] = {"incoming": 0, "outgoing": 0}
 
 START_TEXT = " Hello {mention}, you can contact me using this Bot."
 START_MEDIA = os.environ.get("START_MEDIA")
+INFO_TEXT = " Hello {mention}, this is a bot just for feedback./n"
+            f"You can just contact me using this bot."
 
 botPmFilter = filters.create(lambda _, __, ___: BOT_PM)
 bannedFilter = filters.create(lambda _, __, ___: ___.chat.id in _BANNED_USERS)
@@ -125,14 +127,7 @@ if userge.has_bot:
                 )
                 _USERS.append(user_id)
                 await USERS.insert_one({"user_id": user_id})
-            copy_ = "https://github.com/UsergeTeam/Userge/blob/master/LICENSE"
-            markup = InlineKeyboardMarkup([
-                [
-                    InlineKeyboardButton(text="👥 UsergeTeam", url="https://github.com/UsergeTeam"),
-                    InlineKeyboardButton(text="🧪 Repo", url=Config.UPSTREAM_REPO)
-                ],
-                [InlineKeyboardButton(text="🎖 GNU GPL v3.0", url=copy_)]
-            ])
+            markup = InlineKeyboardMarkup([[InlineKeyboardButton("Info", callback_data="info")]])
             await send_start_text(msg, text, path, markup)
             return
         text = "Hey, you can configure me here."
@@ -153,6 +148,25 @@ if userge.has_bot:
             return await msg.reply(out_str, parse_mode='html', disable_web_page_preview=True)
         await send_start_text(msg, text, path, markup)
 
+        elif cq.data == "info":
+            copy_ = "https://github.com/UsergeTeam/Userge/blob/master/LICENSE"
+            mp = InlineKeyboardMarkup([
+                [
+                    InlineKeyboardButton(text="👥 UsergeTeam", url="https://github.com/UsergeTeam"),
+                    InlineKeyboardButton(text="🧪 Repo", url=Config.UPSTREAM_REPO)
+                ],
+                [InlineKeyboardButton(text="🎖 GNU GPL v3.0", url=copy_)]
+                [InlineKeyboardButton(text="Close", callback_data="close")]
+            ])
+            await cq.edit_message_text(
+                INFO_TEXT,
+                disable_web_page_preview=True,
+                reply_markup=mp
+            )
+
+        elif cq.data == "close":
+            await cq.delete()
+
     @bot.on_message(
         filters.user(userge_id) & filters.private & filters.command("settext"), group=1)
     async def set_text(_, msg: PyroMessage):
@@ -168,7 +182,24 @@ if userge.has_bot:
             await SAVED_SETTINGS.update_one(
                 {"_id": "BOT_START_TEXT"}, {"$set": {"data": text}}, upsert=True
             )
-            await msg.reply("Custom Bot Pm text Saved Successfully.")
+            await msg.reply("Custom Bot Pm Text Saved Successfully.")
+
+    @bot.on_message(
+        filters.user(userge_id) & filters.private & filters.command("setinfo"), group=1)
+    async def set_text(_, msg: PyroMessage):
+        global INFO_TEXT  # pylint: disable=global-statement
+        text = msg.text.split(' ', maxsplit=1)[1] if ' ' in msg.text else ''
+        replied = msg.reply_to_message
+        if replied:
+            text = replied.text or replied.caption
+        if not text:
+            await msg.reply("Text not found!")
+        else:
+            INFO_TEXT = text
+            await SAVED_SETTINGS.update_one(
+                {"_id": "BOT_INFO_TEXT"}, {"$set": {"data": text}}, upsert=True
+            )
+            await msg.reply("Custom Bot Pm Info text Saved Successfully.")
 
     @bot.on_message(filters.user(userge_id) & filters.private & filters.command("pmban"), group=1)
     async def pm_ban(_, msg: PyroMessage):
@@ -270,6 +301,8 @@ After Adding a var, you can see your media when you start your Bot.
     SET_CUSTOM_TEXT = """You can set Custom Start text which you will see when you start Bot by /settext command.
 """
 
+    SET_INFO_TEXT = """You can set info text by using /setinfo command."""
+
     HELP_TEXT = """**Here are the available commands for Bot PM:**
 
 /start - Start the bot
@@ -279,7 +312,7 @@ After Adding a var, you can see your media when you start your Bot.
 """
 
     @bot.on_callback_query(
-        filters.regex("startcq|stngs|bothelp|misc|setmedia|settext|broadcast|stats|en_dis_bot_pm")
+        filters.regex("startcq|stngs|bothelp|misc|setmedia|settext|info|broadcast|stats|en_dis_bot_pm")
     )
     async def cq_handler(_, cq: CallbackQuery):
         global BOT_PM, IN_CONVO  # pylint: disable=global-statement
@@ -367,6 +400,7 @@ After Adding a var, you can see your media when you start your Bot.
                         InlineKeyboardButton("Start Text", callback_data="settext"),
                         InlineKeyboardButton("Start Media", callback_data="setmedia")
                     ],
+                    [InlineKeyboardButton("Start Info Text", callback_data="setinfo")],
                     [InlineKeyboardButton("Back", callback_data="stngs")]
                 ]
             )
@@ -386,6 +420,13 @@ After Adding a var, you can see your media when you start your Bot.
             mp = InlineKeyboardMarkup([[InlineKeyboardButton("Back", callback_data="misc")]])
             await cq.edit_message_text(
                 SET_CUSTOM_TEXT,
+                disable_web_page_preview=True,
+                reply_markup=mp
+            )
+        elif cq.data == "setinfo":
+            mp = InlineKeyboardMarkup([[InlineKeyboardButton("Back", callback_data="misc")]])
+            await cq.edit_message_text(
+                SET_INFO_TEXT,
                 disable_web_page_preview=True,
                 reply_markup=mp
             )
