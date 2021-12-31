@@ -133,6 +133,7 @@ if userge.has_bot:
         text = "Hey, you can configure me here."
         markup = InlineKeyboardMarkup([[InlineKeyboardButton("Settings", callback_data="stngs")]])
         cmd = msg.command[1] if len(msg.command) > 1 else ''
+
         if cmd and ' ' not in msg.text:
             commands = userge.manager.enabled_commands
             key = Config.CMD_TRIGGER + cmd
@@ -311,8 +312,8 @@ After Adding a var, you can see your media when you start your Bot.
 """
 
     @bot.on_callback_query(
-        filters.regex(
-        "startcq|stngs|bothelp|misc|setmedia|settext|setinfo|broadcast|stats|en_dis_bot_pm"))
+        filters.regex("""startcq|stngs|bothelp|misc|setmedia|settext|setinfo|
+                      broadcast|stats|en_dis_bot_pm"""))
     async def cq_handler(_, cq: CallbackQuery):
         global BOT_PM, IN_CONVO  # pylint: disable=global-statement
         settings_markup = InlineKeyboardMarkup(
