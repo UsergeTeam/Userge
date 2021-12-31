@@ -162,7 +162,8 @@ if userge.has_bot:
                 reply_markup=mp
             )
         elif cq.data == "close":
-            await cq.delete()
+            await msg.delete()
+
         await send_start_text(msg, text, path, markup)
 
     @bot.on_message(
@@ -184,7 +185,7 @@ if userge.has_bot:
 
     @bot.on_message(
         filters.user(userge_id) & filters.private & filters.command("setinfo"), group=1)
-    async def set_text(_, msg: PyroMessage):
+    async def set_info(_, msg: PyroMessage):
         global INFO_TEXT  # pylint: disable=global-statement
         text = msg.text.split(' ', maxsplit=1)[1] if ' ' in msg.text else ''
         replied = msg.reply_to_message
@@ -311,8 +312,7 @@ After Adding a var, you can see your media when you start your Bot.
 
     @bot.on_callback_query(
         filters.regex(
-        "startcq|stngs|bothelp|misc|setmedia|settext|info|broadcast|stats|en_dis_bot_pm")
-    )
+        "startcq|stngs|bothelp|misc|setmedia|settext|setinfo|broadcast|stats|en_dis_bot_pm"))
     async def cq_handler(_, cq: CallbackQuery):
         global BOT_PM, IN_CONVO  # pylint: disable=global-statement
         settings_markup = InlineKeyboardMarkup(
