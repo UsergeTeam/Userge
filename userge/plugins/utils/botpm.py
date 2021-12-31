@@ -45,7 +45,8 @@ _STATS: Dict[str, int] = {"incoming": 0, "outgoing": 0}
 
 START_TEXT = " Hello {mention}, you can contact me using this Bot."
 START_MEDIA = os.environ.get("START_MEDIA")
-INFO_TEXT = " Hello {mention}, this is a bot just for feedback./n You can just contact me using this bot."
+INFO_TEXT = """ Hello {mention}, this is a bot just for feedback./n
+               You can just contact me using this bot."""
 
 botPmFilter = filters.create(lambda _, __, ___: BOT_PM)
 bannedFilter = filters.create(lambda _, __, ___: ___.chat.id in _BANNED_USERS)
@@ -145,8 +146,6 @@ if userge.has_bot:
             else:
                 out_str = f"<i>No Command Found for</i>: <code>{cmd}</code>"
             return await msg.reply(out_str, parse_mode='html', disable_web_page_preview=True)
-        await send_start_text(msg, text, path, markup)
-
         elif cq.data == "info":
             copy_ = "https://github.com/UsergeTeam/Userge/blob/master/LICENSE"
             mp = InlineKeyboardMarkup([
@@ -162,9 +161,9 @@ if userge.has_bot:
                 disable_web_page_preview=True,
                 reply_markup=mp
             )
-
         elif cq.data == "close":
             await cq.delete()
+        await send_start_text(msg, text, path, markup)
 
     @bot.on_message(
         filters.user(userge_id) & filters.private & filters.command("settext"), group=1)
