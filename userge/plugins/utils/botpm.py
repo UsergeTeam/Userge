@@ -46,7 +46,7 @@ _STATS: Dict[str, int] = {"incoming": 0, "outgoing": 0}
 START_TEXT = " Hello {mention}, you can contact me using this Bot."
 START_MEDIA = os.environ.get("START_MEDIA")
 INFO_TEXT = " Hello {mention}, this is a bot just for feedback./n"
-            f"You can just contact me using this bot."
+            "You can just contact me using this bot."
 
 botPmFilter = filters.create(lambda _, __, ___: BOT_PM)
 bannedFilter = filters.create(lambda _, __, ___: ___.chat.id in _BANNED_USERS)
@@ -312,7 +312,8 @@ After Adding a var, you can see your media when you start your Bot.
 """
 
     @bot.on_callback_query(
-        filters.regex("startcq|stngs|bothelp|misc|setmedia|settext|info|broadcast|stats|en_dis_bot_pm")
+        filters.regex("startcq|stngs|bothelp|misc|setmedia|settext|info|broadcast|stats|
+                      en_dis_bot_pm")
     )
     async def cq_handler(_, cq: CallbackQuery):
         global BOT_PM, IN_CONVO  # pylint: disable=global-statement
