@@ -102,7 +102,7 @@ if userge.has_bot:
 
     @bot.on_message(
         ~bannedFilter & ~filters.edited & filters.private & filters.command("start"), group=1)
-    async def start(_, msg: PyroMessage):
+    async def start(_, msg: PyroMessage, cq: CallbackQuery):
         user_id = msg.from_user.id
         user_dict = await bot.get_user_dict(user_id)
         text = START_TEXT.format_map(SafeDict(**user_dict))
@@ -311,7 +311,8 @@ After Adding a var, you can see your media when you start your Bot.
 """
 
     @bot.on_callback_query(
-     filters.regex("startcq|stngs|bothelp|misc|setmedia|settext|info|broadcast|stats|en_dis_bot_pm")
+        filters.regex(
+        "startcq|stngs|bothelp|misc|setmedia|settext|info|broadcast|stats|en_dis_bot_pm")
     )
     async def cq_handler(_, cq: CallbackQuery):
         global BOT_PM, IN_CONVO  # pylint: disable=global-statement
