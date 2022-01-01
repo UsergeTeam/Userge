@@ -43,7 +43,7 @@ class PasteService:
                 break
         return token
 
-    # pylint: disable=W0613
+    # pylint: disable = W0613, R0201
     async def paste(self, ses: aiohttp.ClientSession,
                     text: str, file_type: Optional[str]) -> Optional[str]:
         """ returns the success url or None if failed """

@@ -140,7 +140,6 @@ async def get_id(message: Message):
     allow_channels=False)
 async def pmguard(message: Message):
     """ enable or disable auto pm handler """
-    global pmCounter  # pylint: disable=global-statement
     if Config.ALLOW_ALL_PMS:
         Config.ALLOW_ALL_PMS = False
         await message.edit("`PM_guard activated`", del_in=3, log=__name__)
