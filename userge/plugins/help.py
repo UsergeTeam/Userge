@@ -102,7 +102,7 @@ if userge.has_bot:
         return wrapper
 
     @userge.bot.on_message(
-        filters.private & filters.user(list(Config.OWNER_ID)) & filters.command("start")
+        filters.private & filters.user(list(Config.OWNER_ID)) & filters.command("start"), group=-1
     )
     async def pm_help_handler(_, msg: Message):
         cmd = msg.command[1] if len(msg.command) > 1 else ''

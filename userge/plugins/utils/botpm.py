@@ -44,7 +44,7 @@ _U_ID_F_M_ID: Dict[int, int] = {}
 _STATS: Dict[str, int] = {"incoming": 0, "outgoing": 0}
 
 START_TEXT = " Hello {mention}, you can contact me using this Bot."
-START_MEDIA = os.environ.get("START_MEDIA", None)
+START_MEDIA = os.environ.get("START_MEDIA")
 
 botPmFilter = filters.create(lambda _, __, ___: BOT_PM)
 bannedFilter = filters.create(lambda _, __, ___: ___.chat.id in _BANNED_USERS)
@@ -137,20 +137,9 @@ if userge.has_bot:
             return
         text = "Hey, you can configure me here."
         markup = InlineKeyboardMarkup([[InlineKeyboardButton("Settings", callback_data="stngs")]])
-        cmd = msg.command[1] if len(msg.command) > 1 else ''
-        if cmd and ' ' not in msg.text:
-            commands = userge.manager.enabled_commands
-            key = Config.CMD_TRIGGER + cmd
-            key_ = Config.SUDO_TRIGGER + cmd
-            if cmd in commands:
-                out_str = f"<code>{cmd}</code>\n\n{commands[cmd].about}"
-            elif key in commands:
-                out_str = f"<code>{key}</code>\n\n{commands[key].about}"
-            elif key_ in commands:
-                out_str = f"<code>{key_}</code>\n\n{commands[key_].about}"
-            else:
-                out_str = f"<i>No Command Found for</i>: <code>{cmd}</code>"
-            return await msg.reply(out_str, parse_mode='html', disable_web_page_preview=True)
+        if len(msg.command) > 1:
+            #  https://github.com/UsergeTeam/Userge/blob/alpha/userge/plugins/help.py#L104
+            return
         await send_start_text(msg, text, path, markup)
 
     @bot.on_message(
@@ -172,7 +161,6 @@ if userge.has_bot:
 
     @bot.on_message(filters.user(userge_id) & filters.private & filters.command("pmban"), group=1)
     async def pm_ban(_, msg: PyroMessage):
-        global _BANNED_USERS  # pylint: disable=global-statement
         replied = msg.reply_to_message
         user_id = msg.text.split(' ', maxsplit=1)[1] if ' ' in msg.text else ''
         if not (replied or user_id):
@@ -211,7 +199,6 @@ if userge.has_bot:
     @bot.on_message(
         filters.user(userge_id) & filters.private & filters.command("pmunban"), group=1)
     async def pm_unban(_, msg: PyroMessage):
-        global _BANNED_USERS  # pylint: disable=global-statement
         replied = msg.reply_to_message
         user_id = msg.text.split(' ', maxsplit=1)[1] if ' ' in msg.text else ''
         if not (replied or user_id):
@@ -275,7 +262,6 @@ After Adding a var, you can see your media when you start your Bot.
     HELP_TEXT = """**Here are the available commands for Bot PM:**
 
 /start - Start the bot
-/help -See this text again
 /settext [text | reply to text] - Set Custom Start Text
 /pmban [user_id | reply to user] - Ban User from Doing Pms
 /pmunban [user_id | reply to user] - UnBan Banned user
@@ -449,9 +435,11 @@ After Adding a var, you can see your media when you start your Bot.
             _USERS.append(user_id)
             await USERS.insert_one({"user_id": user_id})
         try:
-            if msg.sticker:
-                await bot.send_message(userge_id, f"{msg.from_user.mention} sent you a sticker.")
             m = await msg.forward(userge_id)
+            if msg.audio:
+                await bot.send_message(userge_id, f"{msg.from_user.mention} sent you a audio file.",
+                                       reply_to_message_id=m.message_id)
+                m.forward_sender_name = msg.from_user.first_name
             if m.forward_from or m.forward_sender_name or m.forward_date:
                 id_ = 0
                 for a, b in _U_ID_F_M_ID.items():

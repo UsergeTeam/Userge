@@ -88,7 +88,7 @@ async def dictionary(message: Message):
         return out
 
     if not input_:
-        await message.err("❌Plz enter word to search‼️")
+        await message.err("❌Please enter word to search‼️")
     else:
         word = input_
         url = f"https://api.dictionaryapi.dev/api/v1/entries/en/{word}"
@@ -100,8 +100,8 @@ async def dictionary(message: Message):
             v_word = r_dec['word']
         last_output = out_print(r_dec)
         if last_output:
-            await message.edit("`📌Search reasult for   `" + f"👉 {v_word}\n\n" + last_output)
-            await CHANNEL.log(f"Get dictionary results for 👉 {v_word}")
+            await message.edit("`📌Search result for   `" + f"👉 {v_word}\n\n" + last_output)
+            await CHANNEL.log(f"Got dictionary results for 👉 {v_word}")
         else:
-            await message.edit('`No result found from the database.😔`', del_in=5)
-            await CHANNEL.log("Get dictionary results empty")
+            await message.edit('`No result found in the database.😔`', del_in=5)
+            await CHANNEL.log("Got dictionary result empty")
