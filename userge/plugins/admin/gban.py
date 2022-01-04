@@ -9,6 +9,7 @@
 # All rights reserved
 
 import asyncio
+from typing import AsyncGenerator, Tuple, Dict
 
 from pyrogram.errors.exceptions.bad_request_400 import (
     ChatAdminRequired, UserAdminInvalid, ChannelInvalid)
@@ -19,6 +20,32 @@ GBAN_USER_BASE = get_collection("GBAN_USER")
 WHITELIST = get_collection("WHITELIST_USER")
 CHANNEL = userge.getCLogger(__name__)
 LOG = userge.getLogger(__name__)
+
+_WHITE_CACHE: Dict[int, str] = {}
+
+
+async def is_whitelist(user_id: int) -> bool:
+    return user_id in _WHITE_CACHE
+
+
+async def _init() -> None:
+    async for i in WHITELIST.find():
+        _WHITE_CACHE[int(i['user_id'])] = i['firstname']
+
+
+async def _add_whitelist(firstname: str, user_id: int) -> None:
+    _WHITE_CACHE[user_id] = firstname
+    await WHITELIST.insert_one({'firstname': firstname, 'user_id': user_id})
+
+
+async def _remove_whitelist(user_id: int) -> None:
+    del _WHITE_CACHE[user_id]
+    await WHITELIST.delete_one({'user_id': user_id})
+
+
+async def _iter_whitelist() -> AsyncGenerator[Tuple[int, str], None]:
+    for _ in _WHITE_CACHE.items():
+        yield _
 
 
 @userge.on_cmd("gban", about={
@@ -43,7 +70,7 @@ async def gban_user(message: Message):
             "Aborted coz No reason of gban provided by banner", del_in=5)
         return
     user_id = get_mem['id']
-    if user_id == (await message.client.get_me()).id:
+    if user_id == message.client.id:
         await message.edit(r"LoL. Why would I GBan myself ¯\(°_o)/¯")
         return
     if user_id in Config.SUDO_USERS:
@@ -137,7 +164,7 @@ async def list_gbanned(message: Message):
     """ vies gbanned users """
     msg = ''
     async for c in GBAN_USER_BASE.find():
-        msg += ("**User** : " + str(c['firstname']) + "-> with **User ID** -> "
+        msg += ("**User** : " + str(c['firstname']) + "-> **ID** : "
                 + str(c['user_id']) + " is **GBanned for** : " + str(c.get('reason')) + "\n\n")
     await message.edit_or_send_as_file(
         f"**--Globally Banned Users List--**\n\n{msg}" if msg else "`glist empty!`")
@@ -157,13 +184,13 @@ async def whitelist(message: Message):
         return
     get_mem = await message.client.get_user_dict(user_id)
     firstname = get_mem['fname']
-    user_id = get_mem['id']
-    found = await WHITELIST.find_one({'user_id': user_id})
+    user_id = int(get_mem['id'])
+    found = await is_whitelist(user_id)
     if found:
         await message.edit("`User Already in My WhiteList`", del_in=5)
         return
     await asyncio.gather(
-        WHITELIST.insert_one({'firstname': firstname, 'user_id': user_id}),
+        _add_whitelist(firstname, user_id),
         message.edit(
             r"\\**#Whitelisted_User**//"
             f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
@@ -192,13 +219,13 @@ async def rmwhitelist(message: Message):
         return
     get_mem = await message.client.get_user_dict(user_id)
     firstname = get_mem['fname']
-    user_id = get_mem['id']
-    found = await WHITELIST.find_one({'user_id': user_id})
+    user_id = int(get_mem['id'])
+    found = await is_whitelist(user_id)
     if not found:
         await message.edit("`User Not Found in My WhiteList`", del_in=5)
         return
     await asyncio.gather(
-        WHITELIST.delete_one({'firstname': firstname, 'user_id': user_id}),
+        _remove_whitelist(user_id),
         message.edit(
             r"\\**#Removed_Whitelisted_User**//"
             f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
@@ -221,8 +248,7 @@ async def rmwhitelist(message: Message):
 async def list_white(message: Message):
     """ list whitelist """
     msg = ''
-    async for c in WHITELIST.find():
-        msg += ("**User** : " + str(c['firstname']) + "-> with **User ID** -> " +
-                str(c['user_id']) + "\n\n")
+    async for user_id, firstname in _iter_whitelist():
+        msg += f"**User** : {firstname} -> **ID** : {user_id}\n"
     await message.edit_or_send_as_file(
         f"**--Whitelisted Users List--**\n\n{msg}" if msg else "`whitelist empty!`")

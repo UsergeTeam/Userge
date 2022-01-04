@@ -21,10 +21,10 @@ from pyrogram.errors.exceptions.bad_request_400 import (
 from pyrogram.types import User, Chat
 
 from userge import userge, Message, Config, get_collection, filters, pool
+from .gban import is_whitelist
 
 SAVED_SETTINGS = get_collection("CONFIGS")
 GBAN_USER_BASE = get_collection("GBAN_USER")
-WHITELIST = get_collection("WHITELIST_USER")
 
 CHANNEL = userge.getCLogger(__name__)
 LOG = userge.getLogger(__name__)
@@ -71,7 +71,7 @@ async def gban_at_entry(message: Message):
     if isinstance(HANDLER, Handler):
         try:
             for user in message.new_chat_members:
-                if await WHITELIST.find_one({'user_id': user.id}):
+                if await is_whitelist(user.id):
                     continue
                 await HANDLER.handle(message, user)
         except (ChatAdminRequired, UserAdminInvalid):
