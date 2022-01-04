@@ -1,6 +1,6 @@
 """ run shell or python command(s) """
 
-# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2022 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
@@ -332,7 +332,7 @@ class _Wrapper:
         self._original = original
 
     def __getattr__(self, name: str):
-        return getattr(_PROXIES.get(threading.currentThread().ident, self._original), name)
+        return getattr(_PROXIES.get(threading.current_thread().ident, self._original), name)
 
 
 sys.stdout = _Wrapper(sys.stdout)
@@ -343,7 +343,7 @@ sys.__stderr__ = _Wrapper(sys.__stderr__)
 
 @contextmanager
 def redirect() -> io.StringIO:
-    ident = threading.currentThread().ident
+    ident = threading.current_thread().ident
     source = io.StringIO()
     _PROXIES[ident] = source
     try:
