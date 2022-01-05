@@ -10,7 +10,7 @@
 
 from sys import version_info
 
-from pyrogram import __version__ as __pyro_version__  # noqa
+from pyrogram import __version__ as __pyro_version__  # skipcq
 
 __major__ = 0
 __minor__ = 6

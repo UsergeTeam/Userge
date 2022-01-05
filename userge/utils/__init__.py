@@ -8,9 +8,9 @@
 #
 # All rights reserved.
 
-from .progress import progress  # noqa
-from .sys_tools import SafeDict, get_import_path, terminate, secure_text  # noqa
-from .tools import (sort_file_name_key, # noqa
+from .progress import progress  # skipcq
+from .sys_tools import SafeDict, get_import_path, terminate, secure_text  # skipcq
+from .tools import (sort_file_name_key, # skipcq
                     import_ytdl,
                     is_url,
                     demojify,

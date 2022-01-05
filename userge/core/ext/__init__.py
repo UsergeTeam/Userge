@@ -8,7 +8,7 @@
 #
 # All rights reserved.
 
-from pyrogram.types import Message as RawMessage  # noqa
+from pyrogram.types import Message as RawMessage  # skipcq
 
-from . import pool  # noqa
-from .raw_client import RawClient  # noqa
+from . import pool  # skipcq
+from .raw_client import RawClient  # skipcq
