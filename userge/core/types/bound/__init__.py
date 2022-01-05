@@ -8,4 +8,4 @@
 #
 # All rights reserved.
 
-from .message import Message  # skipcq
+from .message import Message  # noqa

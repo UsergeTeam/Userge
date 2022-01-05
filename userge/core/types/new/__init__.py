@@ -8,6 +8,6 @@
 #
 # All rights reserved.
 
-from .channel_logger import ChannelLogger  # skipcq
-from .conversation import Conversation  # skipcq
-from .manager import Manager  # skipcq
+from .channel_logger import ChannelLogger  # noqa
+from .conversation import Conversation  # noqa
+from .manager import Manager  # noqa

@@ -8,6 +8,6 @@
 #
 # All rights reserved.
 
-from .filter import Filter, clear_db  # skipcq
-from .command import Command  # skipcq
-from .plugin import Plugin  # skipcq
+from .filter import Filter, clear_db  # noqa
+from .command import Command  # noqa
+from .plugin import Plugin  # noqa

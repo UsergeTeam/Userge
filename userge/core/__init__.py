@@ -8,9 +8,9 @@
 #
 # All rights reserved.
 
-from pyrogram import filters  # skipcq
+from pyrogram import filters  # noqa
 
-from .database import get_collection  # skipcq
-from .ext import pool  # skipcq
-from .types.bound import Message  # skipcq
-from .client import Userge  # skipcq
+from .database import get_collection  # noqa
+from .ext import pool  # noqa
+from .types.bound import Message  # noqa
+from .client import Userge  # noqa
