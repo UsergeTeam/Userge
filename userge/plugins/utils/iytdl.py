@@ -43,7 +43,7 @@ YOUTUBE_REGEX = comp_regex(
     r"(?:youtube\.com|youtu\.be)/(?:[\w-]+\?v=|embed/|v/|shorts/)?([\w-]{11})"
 )
 PATH = "./ytdl/ytsearch.json"
-DOWN_PATH = "./ytdl/downloads"
+DOWN_PATH = "./ytdl"
 
 
 class YT_Search_X:
