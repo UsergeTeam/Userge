@@ -10,7 +10,6 @@
 
 import os
 import io
-import re
 import time
 from datetime import datetime
 from pathlib import Path
@@ -22,7 +21,8 @@ from hachoir.parser import createParser
 from pyrogram.errors.exceptions import FloodWait
 
 from userge import userge, Config, Message
-from userge.utils import sort_file_name_key, progress, take_screen_shot, humanbytes
+from userge.utils import (
+    is_url, sort_file_name_key, progress, take_screen_shot, humanbytes)
 from userge.utils.exceptions import ProcessCanceled
 from userge.plugins.misc.download import tg_download, url_download
 
@@ -81,9 +81,9 @@ async def upload_to_tg(message: Message):
     if not path_:
         await message.err("Input not foud!")
         return
-    is_url = re.search(r"(?:https?|ftp)://[^|\s]+\.[^|\s]+", path_)
+    is_path_url = is_url(path_)
     del_path = False
-    if is_url:
+    if is_path_url:
         del_path = True
         try:
             path_, _ = await url_download(message, path_)
