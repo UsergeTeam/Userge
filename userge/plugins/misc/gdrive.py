@@ -29,7 +29,7 @@ from oauth2client.client import (
     OAuth2WebServerFlow, HttpAccessTokenRefreshError, FlowExchangeError)
 
 from userge import userge, Message, Config, get_collection, pool
-from userge.utils import humanbytes, time_formatter
+from userge.utils import humanbytes, time_formatter, is_url
 from userge.utils.exceptions import ProcessCanceled
 from userge.plugins.misc.download import url_download, tg_download
 
@@ -730,8 +730,7 @@ class Worker(_GDrive):
     async def upload(self) -> None:
         """ Upload from file/folder/link/tg file to GDrive """
         replied = self._message.reply_to_message
-        is_url = re.search(
-            r"(?:https?|ftp)://[^|\s]+\.[^|\s]+", self._message.input_str)
+        is_input_url = is_url(self._message.input_str)
         dl_loc = ""
         if replied and replied.media:
             try:
@@ -742,7 +741,7 @@ class Worker(_GDrive):
             except Exception as e_e:
                 await self._message.err(str(e_e))
                 return
-        elif is_url:
+        elif is_input_url:
             try:
                 dl_loc, _ = await url_download(self._message, self._message.input_str)
             except ProcessCanceled:
