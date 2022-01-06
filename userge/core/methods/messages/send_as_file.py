@@ -20,6 +20,7 @@ from userge import logging, Config
 from userge.utils import secure_text
 from ... import types
 from ...ext import RawClient
+from pyrogram.parser import Parser
 
 _LOG = logging.getLogger(__name__)
 _LOG_STR = "<<<!  :::::  %s  :::::  !>>>"
@@ -68,6 +69,7 @@ class SendAsFile(RawClient):  # pylint: disable=missing-class-docstring
         """
         if text and chat_id not in Config.AUTH_CHATS:
             text = secure_text(str(text))
+        text = (await Parser(self).parse(text)).get("message")
         async with aiofiles.open(filename, "w+", encoding="utf8") as out_file:
             await out_file.write(text)
         _LOG.debug(_LOG_STR, f"Uploading {filename} To Telegram")
