@@ -32,6 +32,7 @@ class SendAsFile(RawClient):  # pylint: disable=missing-class-docstring
                            filename: str = "output.txt",
                            caption: str = '',
                            log: Union[bool, str] = False,
+                           parse_mode: Optional[str] = "md",
                            reply_to_message_id: Optional[int] = None) -> 'types.bound.Message':
         """\nYou can send large outputs as file
 
@@ -60,6 +61,12 @@ class SendAsFile(RawClient):  # pylint: disable=missing-class-docstring
                 to the log channel.
                 If ``str``, the logger name will be updated.
 
+            parse_mode (``str``, *optional*):
+                By default, texts are parsed using Markdown.
+                Pass "markdown" or "md" to enable Markdown-style parsing.
+                Pass "html" to enable HTML-style parsing.
+                Pass None to completely disable style parsing.
+
             reply_to_message_id (``int``, *optional*):
                 If the message is a reply, ID of the original message.
 
@@ -74,6 +81,7 @@ class SendAsFile(RawClient):  # pylint: disable=missing-class-docstring
         msg = await self.send_document(chat_id=chat_id,
                                        document=filename,
                                        caption=caption[:1024],
+                                       parse_mode=parse_mode,
                                        disable_notification=True,
                                        reply_to_message_id=reply_to_message_id)
         os.remove(filename)
