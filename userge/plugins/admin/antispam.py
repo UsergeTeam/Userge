@@ -111,7 +111,7 @@ class AbstractHandler(Handler, ABC):
 
         chat = message.chat
         try:
-            await message.client.kick_chat_member(chat.id, user_id)
+            await message.client.ban_chat_member(chat.id, user_id)
         except PeerIdInvalid:
             return False
 
