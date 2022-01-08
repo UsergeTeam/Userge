@@ -9,73 +9,96 @@
 # All rights reserved.
 
 import os
-from typing import Sequence
+from typing import Tuple, Optional
 
 from pyrogram.types import ChatPermissions
+from pyrogram.errors import ChatNotModified
+from pyrogram.raw.types import InputPeerChannel, ChatBannedRights
+from pyrogram.raw.functions.channels import GetFullChannel
+from pyrogram.raw.functions.messages import GetFullChat, EditChatDefaultBannedRights
 
 from userge import userge, Message
 
 CHANNEL = userge.getCLogger(__name__)
 
-_types = [
-    'msg', 'media', 'polls', 'invite', 'pin', 'info',
-    'webprev', 'inlinebots', 'animations', 'games', 'stickers'
-]
+_types = ('msg', 'media', 'polls', 'invite', 'pin', 'info', 'webprev',
+          'inlinebots', 'animations', 'games', 'stickers')
 
 
-def _get_chat_lock(message: Message, lock_type: str, should_lock: bool) -> Sequence[str]:
-    lock = not should_lock
-    msg = message.chat.permissions.can_send_messages
-    media = message.chat.permissions.can_send_media_messages
-    stickers = message.chat.permissions.can_send_stickers
-    animations = message.chat.permissions.can_send_animations
-    games = message.chat.permissions.can_send_games
-    inlinebots = message.chat.permissions.can_use_inline_bots
-    webprev = message.chat.permissions.can_add_web_page_previews
-    polls = message.chat.permissions.can_send_polls
-    info = message.chat.permissions.can_change_info
-    invite = message.chat.permissions.can_invite_users
-    pin = message.chat.permissions.can_pin_messages
+async def _get_banned_rights(message: Message) -> ChatBannedRights:
+    peer = await message.client.resolve_peer(message.chat.id)
+    if isinstance(peer, InputPeerChannel):
+        return (await message.client.send(
+            GetFullChannel(
+                channel=peer))).chats[0].default_banned_rights
+    return (await message.client.send(
+        GetFullChat(
+            chat_id=peer.chat_id))).chats[0].default_banned_rights
+
+
+async def _get_new_rights(message: Message, lock_type: str,
+                          should_lock: bool) -> Tuple[ChatBannedRights, str]:
+    ban_rights = await _get_banned_rights(message)
+    ban_rights.until_date = 0
     perm = None
 
     if lock_type == "msg":
-        msg = lock
+        ban_rights.send_messages = should_lock
         perm = "messages"
     elif lock_type == "media":
-        media = lock
+        ban_rights.send_media = should_lock
         perm = "audios, documents, photos, videos, video notes, voice notes"
     elif lock_type == "stickers":
-        stickers = lock
+        ban_rights.send_stickers = should_lock
         perm = "stickers"
     elif lock_type == "animations":
-        animations = lock
+        ban_rights.send_gifs = should_lock
         perm = "animations"
     elif lock_type == "games":
-        games = lock
+        ban_rights.send_games = should_lock
         perm = "games"
     elif lock_type == "inlinebots":
-        inlinebots = lock
+        ban_rights.send_inline = should_lock
         perm = "inline bots"
     elif lock_type == "webprev":
-        webprev = lock
+        ban_rights.embed_links = should_lock
         perm = "web page previews"
     elif lock_type == "polls":
-        polls = lock
+        ban_rights.send_polls = should_lock
         perm = "polls"
     elif lock_type == "info":
-        info = lock
+        ban_rights.change_info = should_lock
         perm = "info"
     elif lock_type == "invite":
-        invite = lock
+        ban_rights.invite_users = should_lock
         perm = "invite"
     elif lock_type == "pin":
-        pin = lock
+        ban_rights.pin_messages = should_lock
         perm = "pin"
-    return (
-        msg, media, stickers,
-        animations, games, inlinebots,
-        webprev, polls, info,
-        invite, pin, perm)
+
+    return ban_rights, perm
+
+
+async def _edit_ban_rights(message: Message, rights: Optional[ChatBannedRights] = None) -> None:
+    if rights is None:
+        rights = ChatBannedRights(
+            until_date=0,
+            send_messages=False,
+            send_media=False,
+            send_stickers=False,
+            send_gifs=False,
+            send_games=False,
+            send_inline=False,
+            embed_links=False,
+            send_polls=False,
+            change_info=False,
+            invite_users=False,
+            pin_messages=False)
+
+    await message.client.send(
+        EditChatDefaultBannedRights(
+            peer=await message.client.resolve_peer(message.chat.id),
+            banned_rights=rights))
 
 
 @userge.on_cmd(
@@ -108,31 +131,18 @@ async def lock_perm(message: Message):
                 f"**ERROR:** `{e_f}`", del_in=5)
         return
     if lock_type in _types:
-        (msg, media, stickers,
-         animations, games, inlinebots,
-         webprev, polls, info, invite,
-         pin, perm) = _get_chat_lock(message, lock_type, True)
+        new_rights, perm = await _get_new_rights(message, lock_type, True)
     else:
         await message.err(r"Invalid lock type! ¯\_(ツ)_/¯")
         return
     try:
-        await message.client.set_chat_permissions(
-            chat_id,
-            ChatPermissions(can_send_messages=msg,
-                            can_send_media_messages=media,
-                            can_send_stickers=stickers,
-                            can_send_animations=animations,
-                            can_send_games=games,
-                            can_use_inline_bots=inlinebots,
-                            can_add_web_page_previews=webprev,
-                            can_send_polls=polls,
-                            can_change_info=info,
-                            can_invite_users=invite,
-                            can_pin_messages=pin))
+        await _edit_ban_rights(message, new_rights)
         await message.edit(f"**🔒 Locked {perm} for this chat!**", del_in=5)
         await CHANNEL.log(
             f"#LOCK\n\nCHAT: `{message.chat.title}` (`{chat_id}`)\n"
             f"PERMISSIONS: `{perm} Permission`")
+    except ChatNotModified:
+        await message.edit(f"Nothing was changed, since {perm} is already locked.", del_in=5)
     except Exception as e_f:
         await message.edit(
             r"`i don't have permission to do that ＞︿＜`\n\n"
@@ -157,55 +167,34 @@ async def unlock_perm(message: Message):
         return
     if unlock_type == "all":
         try:
-            await message.client.set_chat_permissions(
-                chat_id,
-                ChatPermissions(can_send_messages=True,
-                                can_send_media_messages=True,
-                                can_send_stickers=True,
-                                can_send_animations=True,
-                                can_send_games=True,
-                                can_use_inline_bots=True,
-                                can_send_polls=True,
-                                can_change_info=True,
-                                can_invite_users=True,
-                                can_pin_messages=True,
-                                can_add_web_page_previews=True))
+            await _edit_ban_rights(message)
             await message.edit(
                 "**🔓 Unlocked all permission from this Chat!**", del_in=5)
             await CHANNEL.log(
                 f"#UNLOCK\n\nCHAT: `{message.chat.title}` (`{chat_id}`)\n"
                 f"PERMISSIONS: `All Permissions`")
+        except ChatNotModified:
+            await message.edit(
+                "Nothing was changed, since currently no locks are applied here.",
+                del_in=5)
         except Exception as e_f:
             await message.edit(
                 r"`i don't have permission to do that ＞︿＜`\n\n"
                 f"**ERROR:** `{e_f}`", del_in=5)
         return
     if unlock_type in _types:
-        (umsg, umedia, ustickers,
-         uanimations, ugames, uinlinebots,
-         uwebprev, upolls, uinfo, uinvite,
-         upin, uperm) = _get_chat_lock(message, unlock_type, False)
+        new_rights, perm = await _get_new_rights(message, unlock_type, False)
     else:
         await message.err(r"Invalid Unlock Type! ¯\_(ツ)_/¯")
         return
     try:
-        await message.client.set_chat_permissions(
-            chat_id,
-            ChatPermissions(can_send_messages=umsg,
-                            can_send_media_messages=umedia,
-                            can_send_stickers=ustickers,
-                            can_send_animations=uanimations,
-                            can_send_games=ugames,
-                            can_use_inline_bots=uinlinebots,
-                            can_add_web_page_previews=uwebprev,
-                            can_send_polls=upolls,
-                            can_change_info=uinfo,
-                            can_invite_users=uinvite,
-                            can_pin_messages=upin))
-        await message.edit(f"**🔓 Unlocked {uperm} for this chat!**", del_in=5)
+        await _edit_ban_rights(message, new_rights)
+        await message.edit(f"**🔓 Unlocked {perm} for this chat!**", del_in=5)
         await CHANNEL.log(
             f"#UNLOCK\n\nCHAT: `{message.chat.title}` (`{chat_id}`)\n"
-            f"PERMISSIONS: `{uperm} Permission`")
+            f"PERMISSIONS: `{perm} Permission`")
+    except ChatNotModified:
+        await message.edit(f"Nothing was changed, since {perm} is not locked here.", del_in=5)
     except Exception as e_f:
         await message.edit(
             r"`i don't have permission to do that ＞︿＜`\n\n"
@@ -219,34 +208,22 @@ async def unlock_perm(message: Message):
 async def view_perm(message: Message):
     """ check chat permissions from tg group """
     await message.edit("`Checking group permissions... Hang on!! ⏳`")
+    ban_rights = await _get_banned_rights(message)
 
-    def convert_to_emoji(val: bool):
-        return "✅" if val else "❌"
-    vmsg = convert_to_emoji(message.chat.permissions.can_send_messages)
-    vmedia = convert_to_emoji(message.chat.permissions.can_send_media_messages)
-    vstickers = convert_to_emoji(message.chat.permissions.can_send_stickers)
-    vanimations = convert_to_emoji(message.chat.permissions.can_send_animations)
-    vgames = convert_to_emoji(message.chat.permissions.can_send_games)
-    vinlinebots = convert_to_emoji(message.chat.permissions.can_use_inline_bots)
-    vwebprev = convert_to_emoji(message.chat.permissions.can_add_web_page_previews)
-    vpolls = convert_to_emoji(message.chat.permissions.can_send_polls)
-    vinfo = convert_to_emoji(message.chat.permissions.can_change_info)
-    vinvite = convert_to_emoji(message.chat.permissions.can_invite_users)
-    vpin = convert_to_emoji(message.chat.permissions.can_pin_messages)
-    permission_view_str = ""
-    permission_view_str += "<b>CHAT PERMISSION INFO:</b>\n\n"
-    permission_view_str += f"<b>📩 Send Messages:</b> {vmsg}\n"
-    permission_view_str += f"<b>🎭 Send Media:</b> {vmedia}\n"
-    permission_view_str += f"<b>🎴 Send Stickers:</b> {vstickers}\n"
-    permission_view_str += f"<b>🎲 Send Animations:</b> {vanimations}\n"
-    permission_view_str += f"<b>🎮 Can Play Games:</b> {vgames}\n"
-    permission_view_str += f"<b>🤖 Can Use Inline Bots:</b> {vinlinebots}\n"
-    permission_view_str += f"<b>🌐 Webpage Preview:</b> {vwebprev}\n"
-    permission_view_str += f"<b>🗳 Send Polls:</b> {vpolls}\n"
-    permission_view_str += f"<b>ℹ Change Info:</b> {vinfo}\n"
-    permission_view_str += f"<b>👥 Invite Users:</b> {vinvite}\n"
-    permission_view_str += f"<b>📌 Pin Messages:</b> {vpin}\n"
-    if message.chat.photo and vmedia == "✅":
+    permission_view_str = "<b>CHAT PERMISSION INFO:</b>\n\n"
+    permission_view_str += f"<b>📩 Send Messages:</b> {_emojify(ban_rights.send_messages)}\n"
+    permission_view_str += f"<b>🎭 Send Media:</b> {_emojify(ban_rights.send_media)}\n"
+    permission_view_str += f"<b>🎴 Send Stickers:</b> {_emojify(ban_rights.send_stickers)}\n"
+    permission_view_str += f"<b>🎲 Send Animations:</b> {_emojify(ban_rights.send_gifs)}\n"
+    permission_view_str += f"<b>🎮 Can Play Games:</b> {_emojify(ban_rights.send_games)}\n"
+    permission_view_str += f"<b>🤖 Can Use Inline Bots:</b> {_emojify(ban_rights.send_inline)}\n"
+    permission_view_str += f"<b>🌐 Webpage Preview:</b> {_emojify(ban_rights.embed_links)}\n"
+    permission_view_str += f"<b>🗳 Send Polls:</b> {_emojify(ban_rights.send_polls)}\n"
+    permission_view_str += f"<b>ℹ Change Info:</b> {_emojify(ban_rights.change_info)}\n"
+    permission_view_str += f"<b>👥 Invite Users:</b> {_emojify(ban_rights.invite_users)}\n"
+    permission_view_str += f"<b>📌 Pin Messages:</b> {_emojify(ban_rights.pin_messages)}\n"
+
+    if message.chat.photo and not ban_rights.send_media:
         local_chat_photo = await message.client.download_media(
             message=message.chat.photo.big_file_id)
         await message.client.send_photo(chat_id=message.chat.id,
@@ -255,7 +232,11 @@ async def view_perm(message: Message):
                                         parse_mode="html")
         os.remove(local_chat_photo)
         await message.delete()
-        await CHANNEL.log("`vperm` command executed")
     else:
         await message.edit(permission_view_str)
-        await CHANNEL.log("`vperm` command executed")
+
+    await CHANNEL.log("`vperm` command executed")
+
+
+def _emojify(banned: bool):
+    return "❌" if banned else "✅"
