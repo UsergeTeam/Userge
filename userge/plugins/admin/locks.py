@@ -13,7 +13,7 @@ from typing import Tuple, Optional
 
 from pyrogram.types import ChatPermissions
 from pyrogram.errors import ChatNotModified
-from pyrogram.raw.types import InputChannel, ChatBannedRights
+from pyrogram.raw.types import InputPeerChannel, ChatBannedRights
 from pyrogram.raw.functions.channels import GetFullChannel
 from pyrogram.raw.functions.messages import GetFullChat, EditChatDefaultBannedRights
 
@@ -27,7 +27,7 @@ _types = ('msg', 'media', 'polls', 'invite', 'pin', 'info', 'webprev',
 
 async def _get_banned_rights(message: Message) -> ChatBannedRights:
     peer = await message.client.resolve_peer(message.chat.id)
-    if isinstance(peer, InputChannel):
+    if isinstance(peer, InputPeerChannel):
         return (await message.client.send(
             GetFullChannel(
                 channel=peer))).chats[0].default_banned_rights
