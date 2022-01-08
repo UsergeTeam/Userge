@@ -21,10 +21,8 @@ from userge import userge, Message
 
 CHANNEL = userge.getCLogger(__name__)
 
-_types = [
-    'msg', 'media', 'polls', 'invite', 'pin', 'info',
-    'webprev', 'inlinebots', 'animations', 'games', 'stickers'
-]
+_types = ('msg', 'media', 'polls', 'invite', 'pin', 'info', 'webprev',
+          'inlinebots', 'animations', 'games', 'stickers')
 
 
 async def _get_banned_rights(message: Message) -> ChatBannedRights:
@@ -33,10 +31,9 @@ async def _get_banned_rights(message: Message) -> ChatBannedRights:
         return (await message.client.send(
             GetFullChannel(
                 channel=peer))).chats[0].default_banned_rights
-    else:
-        return (await message.client.send(
-            GetFullChat(
-                chat_id=peer.chat_id))).chats[0].default_banned_rights
+    return (await message.client.send(
+        GetFullChat(
+            chat_id=peer.chat_id))).chats[0].default_banned_rights
 
 
 async def _get_new_rights(message: Message, lock_type: str,
