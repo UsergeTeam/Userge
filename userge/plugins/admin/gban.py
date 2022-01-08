@@ -95,7 +95,7 @@ async def gban_user(message: Message):
     gbanned_chats = []
     for chat in chats:
         try:
-            await chat.kick_member(user_id)
+            await chat.ban_member(user_id)
             gbanned_chats.append(chat.id)
             await CHANNEL.log(
                 r"\\**#Antispam_Log**//"
