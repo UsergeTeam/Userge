@@ -36,6 +36,7 @@ class SendMessage(RawClient):  # pylint: disable=missing-class-docstring
                            disable_notification: Optional[bool] = None,
                            reply_to_message_id: Optional[int] = None,
                            schedule_date: Optional[int] = None,
+                           protect_content: bool = None,
                            reply_markup: Union[InlineKeyboardMarkup,
                                                ReplyKeyboardMarkup,
                                                ReplyKeyboardRemove,
@@ -88,6 +89,9 @@ class SendMessage(RawClient):  # pylint: disable=missing-class-docstring
             schedule_date (``int``, *optional*):
                 Date when the message will be automatically sent. Unix time.
 
+            protect_content (``bool``, *optional*):
+                Protects the contents of the sent message from forwarding and saving.
+
             reply_markup (:obj:`InlineKeyboardMarkup` | :obj:`ReplyKeyboardMarkup`
             | :obj:`ReplyKeyboardRemove` | :obj:`ForceReply`, *optional*):
                 Additional interface options. An object for an inline keyboard,
@@ -107,6 +111,7 @@ class SendMessage(RawClient):  # pylint: disable=missing-class-docstring
                                          disable_notification=disable_notification,
                                          reply_to_message_id=reply_to_message_id,
                                          schedule_date=schedule_date,
+                                         protect_content=protect_content,
                                          reply_markup=reply_markup)
         module = inspect.currentframe().f_back.f_globals['__name__']
         if log:
