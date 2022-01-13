@@ -9,6 +9,7 @@
 # All rights reserved.
 
 import os
+import re
 import math
 import asyncio
 from typing import Tuple, Union
@@ -72,6 +73,22 @@ async def handle_download(message: Message, resource: Union[Message, str]) -> Tu
 
 async def url_download(message: Message, url: str) -> Tuple[str, int]:
     """ download from link """
+    pattern = r"^(http(?:s?):\/\/)?(www\.)?(t.me)(\/c\/(\d+)|:?\/(\w+))?\/(\d+)$"
+    match = re.search(pattern, url.split('|', 1)[0].strip())
+    if match:
+        chat_id = None
+        msg_id = int(match.group(7))
+        if match.group(5):
+            chat_id = int("-100" + match.group(5))
+        elif match.group(6):
+            chat_id = match.group(6)
+        if chat_id and msg_id:
+            resource = await message.client.get_messages(chat_id, msg_id)
+            if resource.media_group_id:
+                return await handle_download(message, resource)
+            else:
+                return await tg_download(message, resource, True)
+        raise Exception("invalid telegram message link!")
     await message.edit("`Downloading From URL...`")
     start_t = datetime.now()
     custom_file_name = unquote_plus(os.path.basename(url))
@@ -120,13 +137,19 @@ async def url_download(message: Message, url: str) -> Tuple[str, int]:
     return dl_loc, (datetime.now() - start_t).seconds
 
 
-async def tg_download(message: Message, to_download: Message) -> Tuple[str, int]:
+async def tg_download(
+    message: Message, to_download: Message, from_url: bool = False
+) -> Tuple[str, int]:
     """ download from tg file """
     await message.edit("`Downloading From TG...`")
     start_t = datetime.now()
     custom_file_name = Config.DOWN_PATH
-    if message.filtered_input_str:
+    if message.filtered_input_str and not from_url:
         custom_file_name = os.path.join(Config.DOWN_PATH, message.filtered_input_str.strip())
+    elif "|" in message.filtered_input_str:
+        _, c_file_name = message.filtered_input_str.split("|", maxsplit=1)
+        if c_file_name:
+            custom_file_name = c_file_name.strip()
     with message.cancel_callback():
         dl_loc = await message.client.download_media(
             message=to_download,
