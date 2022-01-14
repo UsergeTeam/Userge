@@ -73,15 +73,16 @@ async def handle_download(message: Message, resource: Union[Message, str]) -> Tu
 
 async def url_download(message: Message, url: str) -> Tuple[str, int]:
     """ download from link """
-    pattern = r"^(http(?:s?):\/\/)?(www\.)?(t.me)(\/c\/(\d+)|:?\/(\w+))?\/(\d+)$"
+    pattern = r"^(?:https?:\/\/)?(?:www\.)?t\.me\/(?:(?:c\/(\d+))|(\w+))\/(\d+)$"
+    # group 1: private chat id, group 2: chat username, group 3: message id
     match = re.search(pattern, url.split('|', 1)[0].strip())
     if match:
         chat_id = None
-        msg_id = int(match.group(7))
-        if match.group(5):
-            chat_id = int("-100" + match.group(5))
-        elif match.group(6):
-            chat_id = match.group(6)
+        msg_id = int(match.group(3))
+        if match.group(1):
+            chat_id = int("-100" + match.group(1))
+        elif match.group(2):
+            chat_id = match.group(2)
         if chat_id and msg_id:
             resource = await message.client.get_messages(chat_id, msg_id)
             if resource.media_group_id:
@@ -150,7 +151,7 @@ async def tg_download(
     elif "|" in message.filtered_input_str:
         _, c_file_name = message.filtered_input_str.split("|", maxsplit=1)
         if c_file_name:
-            custom_file_name = c_file_name.strip()
+            custom_file_name = os.path.join(Config.DOWN_PATH, c_file_name.strip())
     with message.cancel_callback():
         dl_loc = await message.client.download_media(
             message=to_download,
