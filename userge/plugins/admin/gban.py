@@ -112,7 +112,7 @@ async def gban_user(message: Message):
                                      'chat_ids': gbanned_chats})
     if Config.FBAN_CHAT_ID and not message.client.is_bot:
         mention = None  # to avoid peer id invalid
-        if message.reply_to_message:
+        if message.reply_to_message and message.reply_to_message.from_user:
             mention = message.reply_to_message.from_user.mention
         elif message.entities:
             for i in message.entities:
@@ -169,7 +169,7 @@ async def ungban_user(message: Message):
     await GBAN_USER_BASE.delete_one({'firstname': firstname, 'user_id': user_id})
     if Config.FBAN_CHAT_ID and not message.client.is_bot:
         mention = None  # to avoid peer id invalid
-        if message.reply_to_message:
+        if message.reply_to_message and message.reply_to_message.from_user:
             mention = message.reply_to_message.from_user.mention
         elif message.entities:
             for i in message.entities:
