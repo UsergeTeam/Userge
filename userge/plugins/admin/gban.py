@@ -110,6 +110,21 @@ async def gban_user(message: Message):
                                      'user_id': user_id,
                                      'reason': reason,
                                      'chat_ids': gbanned_chats})
+    if Config.FBAN_CHAT_ID and not message.client.is_bot:
+        mention = None  # to avoid peer id invalid
+        if message.reply_to_message and message.reply_to_message.from_user:
+            mention = message.reply_to_message.from_user.mention
+        elif message.entities:
+            for i in message.entities:
+                if i.type == "text_mention":
+                    mention = i.user.mention
+                    break
+        if mention:
+            await message.client.send_message(
+                Config.FBAN_CHAT_ID,
+                f"/fban {mention} {reason}"
+            )
+            await CHANNEL.log(f'$FBAN #prid{user_id} ⬆️')
     replied = message.reply_to_message
     if replied:
         if replied.text:
@@ -152,6 +167,21 @@ async def ungban_user(message: Message):
                        f"\n\n**First Name:** [{firstname}](tg://user?id={user_id})\n"
                        f"**User ID:** `{user_id}`")
     await GBAN_USER_BASE.delete_one({'firstname': firstname, 'user_id': user_id})
+    if Config.FBAN_CHAT_ID and not message.client.is_bot:
+        mention = None  # to avoid peer id invalid
+        if message.reply_to_message and message.reply_to_message.from_user:
+            mention = message.reply_to_message.from_user.mention
+        elif message.entities:
+            for i in message.entities:
+                if i.type == "text_mention":
+                    mention = i.user.mention
+                    break
+        if mention:
+            await message.client.send_message(
+                Config.FBAN_CHAT_ID,
+                f"/unfban {mention}"
+            )
+            await CHANNEL.log(f'$UNFBAN #prid{user_id} ⬆️')
     LOG.info("UnGbanned %s", str(user_id))
 
 
