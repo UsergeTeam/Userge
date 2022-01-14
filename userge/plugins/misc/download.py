@@ -87,8 +87,10 @@ async def url_download(message: Message, url: str) -> Tuple[str, int]:
             resource = await message.client.get_messages(chat_id, msg_id)
             if resource.media_group_id:
                 output = await handle_download(message, resource)
-            else:
+            elif resource.media:
                 output = await tg_download(message, resource, True)
+            else:
+                raise Exception("given tg link doesn't have any media")
             return output
         raise Exception("invalid telegram message link!")
     await message.edit("`Downloading From URL...`")
