@@ -73,16 +73,20 @@ async def handle_download(message: Message, resource: Union[Message, str]) -> Tu
 
 async def url_download(message: Message, url: str) -> Tuple[str, int]:
     """ download from link """
-    pattern = r"^(?:https?:\/\/)?(?:www\.)?t\.me\/(?:(?:c\/(\d+))|(\w+))\/(\d+)$"
-    # group 1: private chat id, group 2: chat username, group 3: message id
+    # pylint: disable=line-too-long
+    pattern = r"^(?:(?:https|tg):\/\/)?(?:www\.)?(?:t\.me\/|openmessage\?)(?:(?:c\/(\d+))|(\w+)|(?:user_id\=(\d+)))(?:\/|&message_id\=)(\d+)$"
+    # group 1: private supergroup id, group 2: chat username,
+    # group 3: private group/chat id, group 4: message id
     match = re.search(pattern, url.split('|', 1)[0].strip())
     if match:
         chat_id = None
-        msg_id = int(match.group(3))
+        msg_id = int(match.group(4))
         if match.group(1):
             chat_id = int("-100" + match.group(1))
         elif match.group(2):
             chat_id = match.group(2)
+        elif match.group(3):
+            chat_id = int(match.group(3))
         if chat_id and msg_id:
             resource = await message.client.get_messages(chat_id, msg_id)
             if resource.media_group_id:
