@@ -8,6 +8,8 @@
 
 from datetime import datetime
 
+from pyrogram.raw.functions import Ping
+
 from userge import userge, Message
 
 
@@ -16,7 +18,7 @@ from userge import userge, Message
     'flags': {'-a': "average ping"}}, group=-1)
 async def pingme(message: Message):
     start = datetime.now()
-    await message.edit('`Pong!`')
+    await message.client.send(Ping(ping_id=0))
     end = datetime.now()
     m_s = (end - start).microseconds / 1000
     await message.edit(f"**Pong!**\n`{m_s} ms`")

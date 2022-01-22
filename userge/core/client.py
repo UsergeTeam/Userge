@@ -235,7 +235,6 @@ class Userge(_AbstractUserge):
         _LOG.info(_LOG_STR, "Stopping Userge")
         await super().stop()
         await _set_running(False)
-        pool._stop()  # pylint: disable=protected-access
 
     def begin(self, coro: Optional[Awaitable[Any]] = None) -> None:
         """ start userge """
@@ -255,8 +254,6 @@ class Userge(_AbstractUserge):
                     t.cancel()
                 if self.is_initialized:
                     await self.stop()
-                else:
-                    pool._stop()  # pylint: disable=protected-access
             # pylint: disable=expression-not-assigned
             [t.cancel() for t in asyncio.all_tasks() if t is not asyncio.current_task()]
             await self.loop.shutdown_asyncgens()
@@ -282,6 +279,7 @@ class Userge(_AbstractUserge):
                 pass
             self.loop.close()
             _LOG.info(_LOG_STR, "Loop Closed !")
+            pool._stop()  # pylint: disable=protected-access
 
         try:
             self.loop.run_until_complete(self.start())
