@@ -99,6 +99,10 @@ installReq() {
     pip3 install -r $1/requirements.txt &> /dev/null
 }
 
+installCustomReq() {
+    pip3 install $(tr ' ' '\n' <<< "$1") &> /dev/null
+}
+
 printLine() {
     echo '->- ->- ->- ->- ->- ->- ->- --- -<- -<- -<- -<- -<- -<- -<-'
 }

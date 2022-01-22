@@ -54,6 +54,7 @@ _checkDefaultVars() {
         [UPSTREAM_REPO]="https://github.com/UsergeTeam/Userge"
         [LOAD_UNOFFICIAL_PLUGINS]=false
         [ASSERT_SINGLE_INSTANCE]=false
+        [CUSTOM_PIP_PACKAGES]=""
         [CUSTOM_PLUGINS_REPO]=""
         [G_DRIVE_IS_TD]=true
         [CMD_TRIGGER]="."
@@ -172,6 +173,15 @@ _checkCustomPlugins() {
     _setupPlugins Custom "https://(ghp_[0-9A-z]{36}@)?github.com/.+/.+" $CUSTOM_PLUGINS_REPO
 }
 
+_checkPipPackages() {
+    editLastMessage "Checking Custom Pip Packages ..."
+    if [[ $CUSTOM_PIP_PACKAGES ]]; then
+        log "\tFound and Installing ..."
+        upgradePip
+        installCustomReq "$CUSTOM_PIP_PACKAGES"
+    fi
+}
+
 _flushMessages() {
     deleteLastMessage
 }
@@ -192,5 +202,6 @@ assertEnvironment() {
     _checkUpstreamRepo
     _checkUnoffPlugins
     _checkCustomPlugins
+    _checkPipPackages
     _flushMessages
 }
