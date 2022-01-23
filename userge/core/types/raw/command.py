@@ -65,6 +65,7 @@ class Command(Filter):
                 and not m.scheduled
                 and not (m.forward_from or m.forward_sender_name)
                 and m.from_user and m.text
+                and not m.edit_date
                 and ((m.from_user.id in Config.OWNER_ID)
                      or (Config.SUDO_ENABLED and (m.from_user.id in Config.SUDO_USERS)
                          and (cname.lstrip(trigger) in Config.ALLOWED_COMMANDS)))
