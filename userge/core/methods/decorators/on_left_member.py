@@ -44,5 +44,5 @@ class OnLeftMember(RawDecorator):  # pylint: disable=missing-class-docstring
         """
         return self.on_filters(
             filters=filters.group & filters.left_chat_member & leaving_chats,
-            group=group, allow_via_bot=allow_via_bot,
-            check_client=check_client, check_downpath=check_downpath)
+            group=group, allow_via_bot=allow_via_bot, check_client=check_client,
+            check_downpath=check_downpath, stop_propagation=True)

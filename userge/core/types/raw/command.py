@@ -11,9 +11,10 @@
 __all__ = ['Command']
 
 import re
-from typing import Union, Dict, List
+from typing import Union, Dict, List, Callable, Sequence
 
 from pyrogram import filters
+from pyrogram.types import Message
 
 from userge import Config
 from .filter import Filter
@@ -35,46 +36,75 @@ class Command(Filter):
               trigger: str, name: str, filter_me: bool,
               **kwargs: Union['_client.Userge', int, bool]) -> 'Command':
         """ parse command """
-        pattern = f"^(?:\\{trigger}|\\{Config.SUDO_TRIGGER}){command.lstrip('^')}" if trigger \
-            else f"^{command.lstrip('^')}"
-        if [i for i in '^()[]+*.\\|?:$' if i in command]:
-            match = re.match("(\\w[\\w_]*)", command)
-            cname = match.groups()[0] if match else ''
-            cname = name or cname
-            cname = trigger + cname if cname else ''
+        pattern = '^'
+        if trigger:
+            pattern += f"(?:\\{trigger}|\\{Config.SUDO_TRIGGER})"
+        pattern += command.lstrip('^')
+
+        if _has_regex(command):
+            if name:
+                name = trigger + name
+            else:
+                match = re.match("(\\w[\\w_]*)", command)
+                if match:
+                    name = trigger + match.groups()[0]
         else:
-            cname = trigger + command
-            cname = name or cname
+            if not name:
+                name = trigger + command
             pattern += r"(?:\s([\S\s]+))?$"
+
         filters_ = filters.regex(pattern=pattern)
         if filter_me:
-            outgoing_flt = filters.create(
-                lambda _, __, m:
-                m.via_bot is None
-                and not m.scheduled
-                and not (m.forward_from or m.forward_sender_name)
-                and not (m.from_user and m.from_user.is_bot)
-                and (m.outgoing or (m.from_user and m.from_user.is_self))
-                and not (m.chat and m.chat.type == "channel" and m.edit_date)
-                and (m.text and m.text.startswith(trigger) if trigger else True))
-            incoming_flt = filters.create(
-                lambda _, __, m:
-                m.via_bot is None
-                and not m.outgoing
-                and trigger
-                and not m.scheduled
-                and not (m.forward_from or m.forward_sender_name)
-                and m.from_user and m.text
-                and not m.edit_date
-                and ((m.from_user.id in Config.OWNER_ID)
-                     or (Config.SUDO_ENABLED and (m.from_user.id in Config.SUDO_USERS)
-                         and (cname.lstrip(trigger) in Config.ALLOWED_COMMANDS)))
-                and m.text.startswith(Config.SUDO_TRIGGER))
-            filters_ = filters_ & (outgoing_flt | incoming_flt)
-        return cls(_format_about(about), trigger, pattern, filters=filters_, name=cname, **kwargs)
+            filters_ = filters_ & (_outgoing_flt(trigger, name) | _incoming_flt(trigger, name))
+
+        return cls(_format_about(about), trigger, pattern, filters=filters_, name=name, **kwargs)
 
     def __repr__(self) -> str:
         return f"<command {self.name}>"
+
+
+def _has_regex(command: str) -> bool:
+    return any(map(command.__contains__, '^()[]+*.\\|?:$'))
+
+
+def _outgoing_flt(trigger: str, name: str) -> filters.Filter:
+    return _build_filter(_outgoing_rules, trigger, name)
+
+
+def _incoming_flt(trigger: str, name: str) -> filters.Filter:
+    return _build_filter(_incoming_rules, trigger, name)
+
+
+def _build_filter(rules: Callable[[Message, str, str], Sequence[bool]],
+                  trigger: str, name: str) -> filters.Filter:
+    return filters.create(
+        lambda _, __, m:
+        m.via_bot is None and not m.scheduled
+        and not (m.forward_from or m.forward_sender_name)
+        and all(rules(m, trigger, name))
+    )
+
+
+def _outgoing_rules(m: Message, trigger: str, _) -> Sequence[bool]:
+    return (
+        not (m.from_user and m.from_user.is_bot),
+        m.outgoing or (m.from_user and m.from_user.is_self),
+        not (m.chat and m.chat.type == "channel" and m.edit_date),
+        m.text and m.text.startswith(trigger) if trigger else True
+    )
+
+
+def _incoming_rules(m: Message, trigger: str, name: str) -> Sequence[bool]:
+    return (
+        not m.outgoing and trigger,
+        m.from_user and m.text,
+        not m.edit_date,
+        (m.from_user.id in Config.OWNER_ID) or (
+            Config.SUDO_ENABLED and (m.from_user.id in Config.SUDO_USERS)
+            and (name.lstrip(trigger) in Config.ALLOWED_COMMANDS)
+        ),
+        m.text.startswith(Config.SUDO_TRIGGER)
+    )
 
 
 def _format_about(about: Union[str, Dict[str, Union[str, List[str], Dict[str, str]]]]) -> str:

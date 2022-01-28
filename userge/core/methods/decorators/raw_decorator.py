@@ -223,11 +223,12 @@ class RawDecorator(RawClient):
             async def template(r_c: Union['_client.Userge', '_client.UsergeBot'],
                                r_m: RawMessage) -> None:
                 if Config.DISABLED_ALL and r_m.chat.id != Config.LOG_CHANNEL_ID:
-                    return
+                    raise StopPropagation
                 if r_m.chat and r_m.chat.id in Config.DISABLED_CHATS:
-                    return
+                    raise StopPropagation
                 if Config.IGNORE_VERIFIED_CHATS and r_m.from_user and r_m.from_user.is_verified:
-                    return
+                    raise StopPropagation
+
                 await _init(r_m)
                 _raise = partial(_raise_func, r_c, r_m)
                 if r_m.chat and r_m.chat.type not in flt.scope:
@@ -281,6 +282,7 @@ class RawDecorator(RawClient):
                             if isinstance(flt, types.raw.Command):
                                 await _raise("`required permission [pin_messages]`")
                             return
+
                 if RawClient.DUAL_MODE and (
                     flt.check_client or (
                         r_m.from_user and r_m.from_user.id != RawClient.USER_ID
@@ -299,8 +301,10 @@ class RawDecorator(RawClient):
                             elif await _bot_is_present(r_c, r_m, is_bot) and isinstance(
                                     r_c, _client.Userge):
                                 return
+
                 if flt.check_downpath and not os.path.isdir(Config.DOWN_PATH):
                     os.makedirs(Config.DOWN_PATH)
+
                 try:
                     await func(types.bound.Message.parse(
                         r_c, r_m, module=func.__module__, **kwargs))
@@ -313,6 +317,12 @@ class RawDecorator(RawClient):
                                             f"**ERROR** : `{f_e or None}`\n"
                                             f"\n```{format_exc().strip()}```",
                                             "TRACEBACK")
+                finally:
+                    if flt.stop_propagation:
+                        raise StopPropagation
+                    if flt.continue_propagation:
+                        raise ContinuePropagation
+
             flt.update(func, template)
             self.manager.get_plugin(func.__module__).add(flt)
             _LOG.debug(_LOG_STR, f"Imported => [ async def {func.__name__}(message) ] "

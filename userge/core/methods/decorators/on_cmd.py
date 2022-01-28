@@ -10,7 +10,7 @@
 
 __all__ = ['OnCmd']
 
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Optional
 
 from userge import Config
 from ... import types
@@ -24,7 +24,7 @@ class OnCmd(RawDecorator):  # pylint: disable=missing-class-docstring
                *,
                group: int = 0,
                name: str = '',
-               trigger: str = Config.CMD_TRIGGER,
+               trigger: Optional[str] = Config.CMD_TRIGGER,
                filter_me: bool = True,
                allow_private: bool = True,
                allow_bots: bool = True,
@@ -34,6 +34,8 @@ class OnCmd(RawDecorator):  # pylint: disable=missing-class-docstring
                allow_via_bot: bool = True,
                check_client: bool = False,
                check_downpath: bool = False,
+               stop_propagation: bool = False,
+               continue_propagation: bool = False,
                check_change_info_perm: bool = False,
                check_edit_perm: bool = False,
                check_delete_perm: bool = False,
@@ -102,6 +104,12 @@ class OnCmd(RawDecorator):  # pylint: disable=missing-class-docstring
             check_downpath (``bool``, *optional*):
                 If ``True``, check downpath and make if not exist, defaults to False.
 
+            stop_propagation (``bool``, *optional*):
+                If ``True``, stop propagation to other groups, defaults to False.
+
+            continue_propagation (``bool``, *optional*):
+                If ``True``, continue propagation in this group, defaults to False.
+
             check_change_info_perm (``bool``, *optional*):
                 If ``True``, check user has change_info permission before execute,
                 defaults to False.
@@ -140,7 +148,7 @@ class OnCmd(RawDecorator):  # pylint: disable=missing-class-docstring
         """
         return self._build_decorator(
             types.raw.Command.parse(command, about,
-                                    trigger, name, filter_me,
+                                    trigger or '', name, filter_me,
                                     client=self,
                                     group=group,
                                     allow_private=allow_private,
@@ -151,6 +159,8 @@ class OnCmd(RawDecorator):  # pylint: disable=missing-class-docstring
                                     allow_via_bot=allow_via_bot,
                                     check_client=check_client,
                                     check_downpath=check_downpath,
+                                    stop_propagation=stop_propagation,
+                                    continue_propagation=continue_propagation,
                                     check_change_info_perm=check_change_info_perm,
                                     check_edit_perm=check_edit_perm,
                                     check_delete_perm=check_delete_perm,
