@@ -65,7 +65,8 @@ async def antispam_(message: Message):
     await SAVED_SETTINGS.update_one(_ID, {"$set": {'data': Config.ANTISPAM_SENTRY}}, upsert=True)
 
 
-@userge.on_filters(filters.group & filters.new_chat_members, group=1, check_restrict_perm=True)
+@userge.on_filters(filters.group & filters.new_chat_members, group=1,
+                   continue_propagation=True, check_restrict_perm=True)
 async def gban_at_entry(message: Message):
     """ handle gbans """
     if isinstance(HANDLER, Handler):
@@ -76,7 +77,6 @@ async def gban_at_entry(message: Message):
                 await HANDLER.handle(message, user)
         except (ChatAdminRequired, UserAdminInvalid):
             pass
-    message.continue_propagation()
 
 
 class Handler(ABC):

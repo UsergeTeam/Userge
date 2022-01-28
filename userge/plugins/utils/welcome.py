@@ -258,4 +258,3 @@ async def raw_say(message: Message, name, collection):
                                      user_id=user.id,
                                      reply_to_message_id=message.message_id,
                                      del_in=Config.WELCOME_DELETE_TIMEOUT)
-    message.stop_propagation()
