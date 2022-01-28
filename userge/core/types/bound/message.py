@@ -158,16 +158,20 @@ class Message(RawMessage):
 
         prefix = str(self._kwargs.get('prefix', '-'))
         del_pre = bool(self._kwargs.get('del_pre', False))
-        input_str = self.input_str
-        for i in input_str.strip().split(" "):
-            match = re.match(f"({prefix}[a-zA-Z]+)([0-9]*)$", i)
-            if match:
-                items: Sequence[str] = match.groups()
-                self._flags[items[0].lstrip(prefix).lower() if del_pre
-                            else items[0].lower()] = items[1] or ''
-            else:
-                self._filtered_input_str += ' ' + i
-        self._filtered_input_str = self._filtered_input_str.strip()
+        pattern = re.compile(f"({prefix}[A-z]+)(\\d*|=\\w*)$")
+        parts = self.input_str.split(" ")
+
+        while parts:
+            match = pattern.match(parts[0])
+            if not match:
+                break
+            items: Sequence[str] = match.groups()
+            key = items[0].lstrip(prefix).lower() if del_pre else items[0].lower()
+            self._flags[key] = items[1].lstrip('=') or ''
+            parts.pop(0)
+
+        if parts:
+            self._filtered_input_str = ' '.join(parts).strip()
         _LOG.debug(
             _LOG_STR,
             f"Filtered Input String => [ {self._filtered_input_str}, {self._flags} ]")
