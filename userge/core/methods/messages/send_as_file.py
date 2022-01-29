@@ -11,16 +11,15 @@
 __all__ = ['SendAsFile']
 
 import inspect
+import io
 from typing import Union, Optional
 
-import aiofiles
-from aiofiles import os
+from pyrogram.parser import Parser
 
 from userge import logging, Config
 from userge.utils import secure_text
 from ... import types
 from ...ext import RawClient
-from pyrogram.parser import Parser
 
 _LOG = logging.getLogger(__name__)
 _LOG_STR = "<<<!  :::::  %s  :::::  !>>>"
@@ -76,15 +75,14 @@ class SendAsFile(RawClient):  # pylint: disable=missing-class-docstring
             text = secure_text(str(text))
         if not as_raw:
             text = (await Parser(self).parse(text)).get("message")
-        async with aiofiles.open(filename, "w+", encoding="utf8") as out_file:
-            await out_file.write(text)
+        doc = io.BytesIO(text.encode())
+        doc.name = filename
         _LOG.debug(_LOG_STR, f"Uploading {filename} To Telegram")
         msg = await self.send_document(chat_id=chat_id,
-                                       document=filename,
+                                       document=doc,
                                        caption=caption[:1024],
                                        disable_notification=True,
                                        reply_to_message_id=reply_to_message_id)
-        await os.remove(filename)
         module = inspect.currentframe().f_back.f_globals['__name__']
         if log:
             await self._channel.fwd_msg(msg, module if isinstance(log, bool) else log)
