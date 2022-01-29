@@ -99,8 +99,8 @@ def _incoming_rules(m: Message, trigger: str, name: str) -> Sequence[bool]:
         not m.outgoing and trigger,
         m.from_user and m.text,
         not m.edit_date,
-        (m.from_user.id in Config.OWNER_ID) or (
-            Config.SUDO_ENABLED and (m.from_user.id in Config.SUDO_USERS)
+        (m.from_user and m.from_user.id in Config.OWNER_ID) or (
+            Config.SUDO_ENABLED and (m.from_user and m.from_user.id in Config.SUDO_USERS)
             and (name.lstrip(trigger) in Config.ALLOWED_COMMANDS)
         ),
         m.text.startswith(Config.SUDO_TRIGGER)
