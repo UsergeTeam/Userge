@@ -16,7 +16,7 @@ from userge import userge
 
 
 @userge.on_raw_update(-5)
-async def _on_raw(m: Message, *_) -> None:
+async def _on_raw(_, m: Message, *__) -> None:
     if isinstance(m, MessageService) and isinstance(m.action, MessageActionContactSignUp):
         raise StopPropagation
 
