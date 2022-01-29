@@ -46,13 +46,16 @@ def input_checker(func: Callable[[Message], Awaitable[Any]]):
 
 @userge.on_cmd("exec", about={
     'header': "run commands in exec",
+    'flags': {'-r': "raw text when send as file"},
     'usage': "{tr}exec [commands]",
     'examples': "{tr}exec echo \"Userge\""}, allow_channels=False)
 @input_checker
 async def exec_(message: Message):
     """ run commands in exec """
     await message.edit("`Executing exec ...`")
-    cmd = message.input_str
+    cmd = message.filtered_input_str
+    as_raw = '-r' in message.flags
+
     try:
         out, err, ret, pid = await runcmd(cmd)
     except Exception as t_e:  # pylint: disable=broad-except
@@ -63,6 +66,7 @@ async def exec_(message: Message):
 __Command:__\n`{cmd}`\n__PID:__\n`{pid}`\n__RETURN:__\n`{ret}`\n\n\
 **stderr:**\n`{err or 'no error'}`\n\n**stdout:**\n``{out or 'no output'}`` "
     await message.edit_or_send_as_file(text=output,
+                                       as_raw=as_raw,
                                        parse_mode='md',
                                        filename="exec.txt",
                                        caption=cmd)
@@ -75,7 +79,8 @@ _EVAL_TASKS: Dict[asyncio.Future, str] = {}
 @userge.on_cmd("eval", about={
     'header': "run python code line | lines",
     'flags': {
-        '-s': "silent mode (hide STDIN)",
+        '-r': "raw text when send as file",
+        '-s': "silent mode (hide input code)",
         '-p': "run in a private session",
         '-n': "spawn new main session and run",
         '-l': "list all running eval tasks",
@@ -127,6 +132,7 @@ async def eval_(message: Message):
         return
 
     cmd = message.filtered_input_str
+    as_raw = '-r' in flags
     if not cmd:
         await message.err("Unable to Parse Input!")
         return
@@ -154,6 +160,7 @@ async def eval_(message: Message):
             await msg.edit(f"**Logs**: {CHANNEL.get_link(msg_id)}")
         elif final:
             await msg.edit_or_send_as_file(text=final,
+                                           as_raw=as_raw,
                                            parse_mode='md',
                                            filename="eval.txt",
                                            caption=cmd)
@@ -196,13 +203,16 @@ async def eval_(message: Message):
 
 @userge.on_cmd("term", about={
     'header': "run commands in shell (terminal)",
+    'flags': {'-r': "raw text when send as file"},
     'usage': "{tr}term [commands]",
     'examples': "{tr}term echo \"Userge\""}, allow_channels=False)
 @input_checker
 async def term_(message: Message):
     """ run commands in shell (terminal with live update) """
     await message.edit("`Executing terminal ...`")
-    cmd = message.input_str
+    cmd = message.filtered_input_str
+    as_raw = '-r' in message.flags
+
     try:
         parsed_cmd = parse_py_template(cmd, message)
     except Exception as e:  # pylint: disable=broad-except
@@ -234,7 +244,7 @@ async def term_(message: Message):
 
     out_data = f"{output}<pre>{t_obj.output}</pre>\n{prefix}"
     await message.edit_or_send_as_file(
-        out_data, parse_mode='html', filename="term.txt", caption=cmd)
+        out_data, as_raw=as_raw, parse_mode='html', filename="term.txt", caption=cmd)
 
 
 def parse_py_template(cmd: str, msg: Message):

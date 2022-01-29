@@ -30,6 +30,7 @@ class SendAsFile(RawClient):  # pylint: disable=missing-class-docstring
     async def send_as_file(self,
                            chat_id: Union[int, str],
                            text: str,
+                           as_raw: bool = False,
                            filename: str = "output.txt",
                            caption: str = '',
                            log: Union[bool, str] = False,
@@ -50,6 +51,10 @@ class SendAsFile(RawClient):  # pylint: disable=missing-class-docstring
             text (``str``):
                 Text of the message to be sent.
 
+            as_raw (``bool``, *optional*):
+                If ``False``, the message will be escaped with current parse mode.
+                default to ``False``.
+
             filename (``str``, *optional*):
                 file_name for output file.
 
@@ -69,7 +74,8 @@ class SendAsFile(RawClient):  # pylint: disable=missing-class-docstring
         """
         if text and chat_id not in Config.AUTH_CHATS:
             text = secure_text(str(text))
-        text = (await Parser(self).parse(text)).get("message")
+        if not as_raw:
+            text = (await Parser(self).parse(text)).get("message")
         async with aiofiles.open(filename, "w+", encoding="utf8") as out_file:
             await out_file.write(text)
         _LOG.debug(_LOG_STR, f"Uploading {filename} To Telegram")
