@@ -11,7 +11,7 @@
 __all__ = ['Command']
 
 import re
-from typing import Union, Dict, List, Callable, Sequence
+from typing import Union, Dict, List, Callable
 
 from pyrogram import filters
 from pyrogram.types import Message
@@ -68,42 +68,44 @@ def _has_regex(command: str) -> bool:
 
 
 def _outgoing_flt(trigger: str, name: str) -> filters.Filter:
-    return _build_filter(_outgoing_rules, trigger, name)
+    return _build_filter(_outgoing_logic, trigger, name)
 
 
 def _incoming_flt(trigger: str, name: str) -> filters.Filter:
-    return _build_filter(_incoming_rules, trigger, name)
+    return _build_filter(_incoming_logic, trigger, name)
 
 
-def _build_filter(rules: Callable[[Message, str, str], Sequence[bool]],
+def _build_filter(logic: Callable[[Message, str, str], bool],
                   trigger: str, name: str) -> filters.Filter:
     return filters.create(
         lambda _, __, m:
         m.via_bot is None and not m.scheduled
         and not (m.forward_from or m.forward_sender_name)
-        and all(rules(m, trigger, name))
+        and logic(m, trigger, name)
     )
 
 
-def _outgoing_rules(m: Message, trigger: str, _) -> Sequence[bool]:
+def _outgoing_logic(m: Message, trigger: str, _) -> bool:
     return (
-        not (m.from_user and m.from_user.is_bot),
-        m.outgoing or (m.from_user and m.from_user.is_self),
-        not (m.chat and m.chat.type == "channel" and m.edit_date),
-        m.text and m.text.startswith(trigger) if trigger else True
+        not (m.from_user and m.from_user.is_bot)
+        and (m.outgoing or m.from_user and m.from_user.is_self)
+        and not (m.chat and m.chat.type == "channel" and m.edit_date)
+        and (m.text and m.text.startswith(trigger) if trigger else True)
     )
 
 
-def _incoming_rules(m: Message, trigger: str, name: str) -> Sequence[bool]:
+def _incoming_logic(m: Message, trigger: str, name: str) -> bool:
     return (
-        not m.outgoing and trigger,
-        m.from_user and m.text,
-        not m.edit_date,
-        (m.from_user.id in Config.OWNER_ID) or (
-            Config.SUDO_ENABLED and (m.from_user.id in Config.SUDO_USERS)
-            and (name.lstrip(trigger) in Config.ALLOWED_COMMANDS)
-        ),
-        m.text.startswith(Config.SUDO_TRIGGER)
+        not m.outgoing and trigger
+        and m.from_user and m.text
+        and not m.edit_date
+        and (
+            m.from_user.id in Config.OWNER_ID or (
+                Config.SUDO_ENABLED and m.from_user.id in Config.SUDO_USERS
+                and name.lstrip(trigger) in Config.ALLOWED_COMMANDS
+            )
+        )
+        and m.text.startswith(Config.SUDO_TRIGGER)
     )
 
 
