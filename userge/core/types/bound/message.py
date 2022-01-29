@@ -161,19 +161,38 @@ class Message(RawMessage):
         if input_str.startswith(prefix):
             del_pre = bool(self._kwargs.get('del_pre', False))
             pattern = re.compile(f"({prefix}[A-z]+)(\\d*|=\\w*)$")
-            parts = input_str.split(" ")
 
-            while parts:
-                match = pattern.match(parts[0])
-                if not match:
-                    break
-                items: Sequence[str] = match.groups()
-                key = items[0].lstrip(prefix).lower() if del_pre else items[0].lower()
-                self._flags[key] = items[1].lstrip('=') or ''
-                parts.pop(0)
+            end = False
+            parts = input_str.split(' ')
+            i = 0
+            while not end and len(parts) > i:
+                part = parts[i]
+                if len(part) == 0:
+                    # ignore empty string
+                    i += 1
+                    continue
+                # part can contain new lines
+                sub_parts = part.split('\n')
+                j = 0
+                while len(sub_parts) > j:
+                    sub_part = sub_parts[j]
+                    if len(sub_part) == 0:
+                        # ignore empty string
+                        j += 1
+                        continue
+                    match = pattern.match(sub_part)
+                    if not match:
+                        end = True
+                        break
+                    items: Sequence[str] = match.groups()
+                    key = items[0].lstrip(prefix).lower() if del_pre else items[0].lower()
+                    self._flags[key] = items[1].lstrip('=') or ''
+                    sub_parts.pop(j)
+                # rebuild that split part
+                parts[i] = '\n'.join(sub_parts).strip()
+                i += 1
 
-            if parts:
-                self._filtered_input_str = ' '.join(parts).strip()
+            self._filtered_input_str = ' '.join(parts).strip()
             _LOG.debug(
                 _LOG_STR,
                 f"Filtered Input String => [ {self._filtered_input_str}, {self._flags} ]")
