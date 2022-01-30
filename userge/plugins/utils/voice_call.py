@@ -872,8 +872,8 @@ async def play_audio(file: str):
 
 
 async def get_stream_link(link: str) -> str:
-    ytdl = (os.environ.get("YOUTUBE_DL_PATH", "youtube_dl")).replace("_", "-")
-    cmd = ytdl + \
+    yt_dl = (os.environ.get("YOUTUBE_DL_PATH", "youtube_dl")).replace("_", "-")
+    cmd = yt_dl + \
         " --geo-bypass -g -f best[height<=?720][width<=?1280]/best " + link
     out, err, _, _ = await runcmd(cmd)
     if err:
