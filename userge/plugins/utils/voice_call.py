@@ -740,10 +740,9 @@ async def yt_down(msg: Message):
         out = "Invalid media found in queue, and skipped"
         if QUEUE:
             out += "\n\n`Playing next Song.`"
-        await userge.send_message(
-            CHAT_ID,
-            out,
-            disable_web_page_preview=True
+        await reply_text(
+            msg,
+            out
         )
         return await _skip()
 
@@ -801,10 +800,9 @@ async def tg_down(msg: Message):
         out = "Invalid media found in queue, and skipped"
         if QUEUE:
             out += "\n\n`Playing next Song.`"
-        await userge.send_message(
-            CHAT_ID,
-            out,
-            disable_web_page_preview=True
+        await reply_text(
+            msg,
+            out
         )
         return await _skip()
 
@@ -979,8 +977,6 @@ def _get_song_info(url: str):
 
         if duration > Config.MAX_DURATION:
             return False
-
-    duration = info.get("duration")
     return info.get("title"), time_formatter(duration) if duration else "Live"
 
 
