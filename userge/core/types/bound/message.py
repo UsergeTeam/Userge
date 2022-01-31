@@ -160,7 +160,7 @@ class Message(RawMessage):
 
         if input_str.startswith(prefix):
             del_pre = bool(self._kwargs.get('del_pre', False))
-            pattern = re.compile(f"({prefix}[A-z]+)(\\d*|=\\w*)$")
+            pattern = re.compile(rf"({prefix}[A-z]+)(=?\S*)$")
 
             end = False
             parts = input_str.split(' ')
