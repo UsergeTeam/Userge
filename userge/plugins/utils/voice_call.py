@@ -221,7 +221,7 @@ async def joinvc(msg: Message):
     flags = msg.flags
     join_as = flags.get('-as')
     chat = flags.get('-at')
-    
+
     if not chat and msg.chat.type == "private":
         return await msg.err("Invalid chat, either use in group / channel or use -at flag.")
     if chat:
@@ -288,7 +288,7 @@ async def joinvc(msg: Message):
             )
             await asyncio.sleep(3)
             CHAT_ID, CHAT_NAME, CONTROL_CHAT_IDS = 0, '', []
-            await joinvc(msg)
+            return await joinvc(msg)
         except Exception as err:
             CHAT_ID, CHAT_NAME, CONTROL_CHAT_IDS = 0, '', []
             return await reply_text(msg, err)
@@ -298,7 +298,7 @@ async def joinvc(msg: Message):
         await call.leave_group_call(CHAT_ID)
         await asyncio.sleep(3)
         CHAT_ID, CHAT_NAME, CONTROL_CHAT_IDS = 0, '', []
-        await joinvc(msg)
+        return await joinvc(msg)
     except Exception as e:
         CHAT_ID, CHAT_NAME, CONTROL_CHAT_IDS = 0, '', []
         return await reply_text(msg, f'Error during Joining the Call\n`{e}`')
