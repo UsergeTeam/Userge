@@ -360,7 +360,8 @@ async def toggle_vc(msg: Message):
 @userge.on_cmd("play", about={
     'header': "play or add songs to queue",
     'flags': {
-        '-v': "Stream as video."}},
+        '-v': "Stream as video.",
+        '-q': "Quality of video stream (1-100)"}},
     trigger=Config.SUDO_TRIGGER, check_client=True,
     filter_me=False, allow_bots=False)
 @vc_chat
@@ -372,6 +373,7 @@ async def play_music(msg: Message):
     input_str = msg.filtered_input_str
     flags = msg.flags
     is_video = "-v" in flags
+    quality = flags.get('-q', 100)
     if input_str:
         if yt_regex.match(input_str):
             if PLAYING:
@@ -402,10 +404,13 @@ async def play_music(msg: Message):
                 'file_name',
                 replied_file.title or replied_file.file_name or "Song")
             setattr(replied.audio, 'is_video', False)
+            setattr(replied.audio, 'quality', 100)
         elif replied.video:
             setattr(replied.video, 'is_video', is_video)
+            setattr(replied.video, 'quality', quality)
         elif replied.document and "video" in replied.document.mime_type:
             setattr(replied.document, 'is_video', is_video)
+            setattr(replied.document, 'quality', quality)
         else:
             return await reply_text(msg, "Replied media is invalid.")
 
@@ -468,7 +473,8 @@ async def _help(msg: Message):
     'header': "Force play with skip the current song and "
               "Play your song on #1 Position",
     'flags': {
-        '-v': "Stream as video."}})
+        '-v': "Stream as video.",
+        'q': "Quality of video stream (1-100)"}})
 @vc_chat
 async def force_play_music(msg: Message):
     """ Force play music in voice call """
@@ -480,6 +486,7 @@ async def force_play_music(msg: Message):
     input_str = msg.filtered_input_str
     flags = msg.flags
     is_video = "-v" in flags
+    quality = flags.get('-q', 100)
     if input_str:
         if not yt_regex.match(input_str):
             mesg = await reply_text(msg, f"Searching `{input_str}` on YouTube")
@@ -502,10 +509,13 @@ async def force_play_music(msg: Message):
                 'file_name',
                 replied_file.title or replied_file.file_name or "Song")
             setattr(replied.audio, 'is_video', False)
+            setattr(replied.audio, 'quality', 100)
         elif replied.video:
             setattr(replied.video, 'is_video', is_video)
+            setattr(replied.video, 'quality', quality)
         elif replied.document and "video" in replied.document.mime_type:
             setattr(replied.document, 'is_video', is_video)
+            setattr(replied.document, 'quality', quality)
         else:
             return await reply_text(msg, "Replied media is invalid.")
 
@@ -730,10 +740,11 @@ async def yt_down(msg: Message):
 
     flags = msg.flags
     is_video = "-v" in flags
+    quality = max(min(100, int(flags.get('-q', 100))), 1)
     height, width, has_audio, has_video = await get_file_info(stream_link)
 
     if is_video and has_video:
-        await play_video(stream_link, height, width)
+        await play_video(stream_link, height, width, quality)
     elif has_audio:
         await play_audio(stream_link)
     else:
@@ -791,9 +802,10 @@ async def tg_down(msg: Message):
     height, width, has_audio, has_video = await get_file_info(shlex.quote(filename))
 
     is_video = file.is_video
+    quality = max(min(100, int(getattr(file, 'quality', 100))), 1)
 
     if is_video and has_video:
-        await play_video(filename, height, width)
+        await play_video(filename, height, width, quality)
     elif has_audio:
         await play_audio(filename)
     else:
@@ -823,8 +835,8 @@ async def tg_down(msg: Message):
     CQ_MSG.append(raw_msg)
 
 
-async def play_video(file: str, height: int, width: int):
-    r_width, r_height = resize_ratio(width, height)
+async def play_video(file: str, height: int, width: int, quality: int):
+    r_width, r_height = resize_ratio(width, height, quality)
     try:
         await call.change_stream(
             CHAT_ID,
@@ -946,14 +958,14 @@ def _get_yt_info(msg: Message) -> Tuple[str, str]:
     return "Song", _get_yt_link(msg)
 
 
-def resize_ratio(w: int, h: int) -> Tuple[int, int]:
+def resize_ratio(w: int, h: int, q: int) -> Tuple[int, int]:
     rescaling = min(w, 1280) * 100 / w if w > h else min(h, 720) * 100 / h
     h = round((h * rescaling) / 100)
     w = round((w * rescaling) / 100)
     divisor = gcd(w, h)
     ratio_w = w / divisor
     ratio_h = h / divisor
-    factor = (divisor * 100) / 100
+    factor = (divisor * q) / 100
     width = round(ratio_w * factor)
     height = round(ratio_h * factor)
     return width - 1 if width % 2 else width, height - 1 if height % 2 else height
