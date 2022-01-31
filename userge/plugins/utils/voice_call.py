@@ -16,7 +16,6 @@ import os
 import re
 import shutil
 import shlex
-from math import gcd
 from traceback import format_exc
 from typing import List, Tuple
 
@@ -207,8 +206,8 @@ def volume_button_markup():
         '-as': "Join as any of your public channel.",
         '-at': "Joins vc in a remote chat and control it from saved messages/linked chat"},
     'examples': [
-        "{tr}joinvc -as @TheUserge -at @UsergeOT - Join VC of @UsergeOT as @TheUserge.",
-        "{tr}joinvc -at -100123456789 - Join VC of any private channel / group."]},
+        "{tr}joinvc -as=@TheUserge -at=@UsergeOT - Join VC of @UsergeOT as @TheUserge.",
+        "{tr}joinvc -at=-100123456789 - Join VC of any private channel / group."]},
     allow_bots=False)
 async def joinvc(msg: Message):
     """ join voice chat """
@@ -219,11 +218,10 @@ async def joinvc(msg: Message):
     if CHAT_NAME:
         return await reply_text(msg, f"`Already joined in {CHAT_NAME}`")
 
-    regex = re.match(
-        r'(\-as\s+(\-100\d+|[@a-zA-Z_0-9]+))?(\s+?\-at\s+(\-100\d+|[@a-zA-Z_0-9]+))?',
-        msg.input_str)
-    join_as = regex.group(2)
-    chat = regex.group(4)
+    flags = msg.flags
+    join_as = flags.get('-as')
+    chat = flags.get('-at')
+    
     if not chat and msg.chat.type == "private":
         return await msg.err("Invalid chat, either use in group / channel or use -at flag.")
     if chat:
@@ -836,7 +834,7 @@ async def tg_down(msg: Message):
 
 
 async def play_video(file: str, height: int, width: int, quality: int):
-    r_width, r_height = resize_ratio(width, height, quality)
+    r_width, r_height = get_quality_ratios(width, height, quality)
     try:
         await call.change_stream(
             CHAT_ID,
@@ -958,17 +956,11 @@ def _get_yt_info(msg: Message) -> Tuple[str, str]:
     return "Song", _get_yt_link(msg)
 
 
-def resize_ratio(w: int, h: int, q: int) -> Tuple[int, int]:
+def get_quality_ratios(w: int, h: int, q: int) -> Tuple[int, int]:
     rescaling = min(w, 1280) * 100 / w if w > h else min(h, 720) * 100 / h
-    h = round((h * rescaling) / 100)
-    w = round((w * rescaling) / 100)
-    divisor = gcd(w, h)
-    ratio_w = w / divisor
-    ratio_h = h / divisor
-    factor = (divisor * q) / 100
-    width = round(ratio_w * factor)
-    height = round(ratio_h * factor)
-    return width - 1 if width % 2 else width, height - 1 if height % 2 else height
+    h = round((h * rescaling) / 100 * (q / 100))
+    w = round((w * rescaling) / 100 * (q / 100))
+    return w - 1 if w % 2 else w, h - 1 if h % 2 else h
 
 
 @pool.run_in_thread
