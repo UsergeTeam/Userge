@@ -415,7 +415,7 @@ async def dclear_(message: Message):
         rmtree(Config.DOWN_PATH, True)
         await message.edit(
             f'path : `{Config.DOWN_PATH}` **cleared** successfully!', del_in=5)
-    os.makedirs(Config.DOWN_PATH)
+    os.makedirs(Config.DOWN_PATH, exist_ok=True)
 
 
 @userge.on_cmd('dremove', about={
