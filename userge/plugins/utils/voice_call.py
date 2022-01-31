@@ -129,6 +129,8 @@ def vc_chat(func):
     async def checker(msg: Message):
         if CHAT_ID and msg.chat.id in ([CHAT_ID] + CONTROL_CHAT_IDS):
             await func(msg)
+        elif CHAT_ID and msg.outgoing:
+            await msg.edit("You can't access voice_call from this chat.")
         elif msg.outgoing:
             await msg.edit("`Haven't join any Voice-Call...`")
 
