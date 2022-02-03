@@ -33,12 +33,13 @@ from userge import userge, Message, Config, pool
 async def translateme(message: Message):
     text = message.filtered_input_str
     flags = message.flags
+    is_poll = bool(replied.poll)
     replied = message.reply_to_message
     if replied:
         if replied.poll:
-            text = f'{replied.poll.question}\n'
-            for i, option in enumerate(replied.poll.options, start=1):
-                text += f'\n\t{i}. {option.get("text")}'
+            text = f'{replied.poll.question}\n-$-\n'
+            for option in replied.poll.options:
+                text += f'{option.get("text")}\n-$-\n'
         else:
             text = message.reply_to_message.text or message.reply_to_message.caption
     if not text:
@@ -55,7 +56,20 @@ async def translateme(message: Message):
     try:
         reply_text = await _translate_this(text, dest, src)
     except ValueError:
-        await message.err("Invalid destination language.")
+        return await message.err("Invalid destination language.")
+
+    if is_poll:
+        options = reply_text.split('\n-$-\n')
+        question = options.pop(0)
+        await asyncio.gather(
+            message.delete(),
+            message.client.send_poll(
+                chat_id=message.chat.id,
+                question=question,
+                options=options,
+                is_anonymous=replied.poll.is_anonymous
+            )
+        )
         return
     source_lan = LANGUAGES[f'{reply_text.src.lower()}']
     transl_lan = LANGUAGES[f'{reply_text.dest.lower()}']
