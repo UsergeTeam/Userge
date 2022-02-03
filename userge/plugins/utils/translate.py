@@ -33,8 +33,13 @@ from userge import userge, Message, Config, pool
 async def translateme(message: Message):
     text = message.filtered_input_str
     flags = message.flags
-    if message.reply_to_message:
+    replied = message.reply_to_message
+    if replied:
         text = message.reply_to_message.text or message.reply_to_message.caption
+    elif replied.poll:
+        text = f'{replied.poll.question}\n'
+        for i, option in enumerate(replied.poll.options, start=1):
+            text += f'\n\t{i}.{option.get("text"}'
     if not text:
         await message.err("Give a text or reply to a message to translate!")
         return
