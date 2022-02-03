@@ -7,6 +7,7 @@
 # All rights reserved.
 
 import time
+import asyncio
 from json import dumps
 
 from emoji import get_emoji_regexp
@@ -33,8 +34,9 @@ from userge import userge, Message, Config, pool
 async def translateme(message: Message):
     text = message.filtered_input_str
     flags = message.flags
-    is_poll = bool(replied.poll)
     replied = message.reply_to_message
+    is_poll = bool(replied.poll)
+
     if replied:
         if replied.poll:
             text = f'{replied.poll.question}\n-$-\n'
