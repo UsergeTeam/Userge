@@ -11,6 +11,7 @@ import time
 import asyncio
 import shutil
 
+from pyrogram import Client
 from pyrogram.types import User
 from pyrogram.errors import (
     SessionPasswordNeeded, FloodWait,
@@ -305,7 +306,7 @@ async def convert_usermode(msg: Message):
             await conv.send_message("Now send me your phone number:"
                                     "\nFor example: `+91451212458`")
             phone = await conv.get_response(mark_read=True)
-            client = CLient(
+            client = Client(
                 session_name=":memory:",
                 api_id=Config.API_ID,
                 api_hash=Config.API_HASH
