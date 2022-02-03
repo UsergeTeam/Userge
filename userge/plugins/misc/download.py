@@ -149,9 +149,9 @@ async def tg_download(
     message: Message, to_download: Message, from_url: bool = False
 ) -> Tuple[str, int]:
     """ download from tg file """
-    if not message.media:
-        ets = message.entities or message.caption_entities or []
-        text = message.text or message.caption or ""
+    if not to_download.media:
+        ets = to_download.entities or to_download.caption_entities or []
+        text = to_download.text or to_download.caption or ""
         for entity in ets:
             url = None
             if entity.type == "text_link":
