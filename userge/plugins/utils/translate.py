@@ -39,7 +39,7 @@ async def translateme(message: Message):
     elif replied.poll:
         text = f'{replied.poll.question}\n'
         for i, option in enumerate(replied.poll.options, start=1):
-            text += f'\n\t{i}.{option.get("text"}'
+            text += f'\n\t{i}.{option.get("text")}'
     if not text:
         await message.err("Give a text or reply to a message to translate!")
         return
