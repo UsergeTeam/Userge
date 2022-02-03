@@ -34,7 +34,7 @@ async def translateme(message: Message):
     text = message.filtered_input_str
     flags = message.flags
     replied = message.reply_to_message
-     if replied:
+    if replied:
         if replied.poll:
             text = f'{replied.poll.question}\n'
             for i, option in enumerate(replied.poll.options, start=1):
