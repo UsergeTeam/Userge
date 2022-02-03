@@ -20,7 +20,7 @@ from urllib.parse import unquote_plus
 from pySmartDL import SmartDL
 
 from userge import userge, Message, Config
-from userge.utils import progress, humanbytes
+from userge.utils import progress, humanbytes, extract_urls
 from userge.utils.exceptions import ProcessCanceled
 
 LOGGER = userge.getLogger(__name__)
@@ -151,19 +151,10 @@ async def tg_download(
     """ download from tg file """
     if not to_download.media:
         dl_loc, mite = None, 0
-        ets = to_download.entities or to_download.caption_entities or []
-        text = to_download.text or to_download.caption or ""
-        for entity in ets:
-            url = None
-            if entity.type == "text_link":
-                url = entity.url
-            elif entity.type == "url":
-                offset = entity.offset
-                length = entity.length
-                url = text[offset:offset + length]
-            if url:
-                dl_loc, b_ = await url_download(message, url)
-                mite += b_
+        ets = extract_urls(to_download)
+        for uarl in ets:
+            dl_loc, b_ = await url_download(message, uarl)
+            mite += b_
         return dl_loc, mite
     await message.edit("`Downloading From TG...`")
     start_t = datetime.now()

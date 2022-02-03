@@ -18,7 +18,7 @@ from typing import Tuple, List, Optional, Iterator, Union
 
 from emoji import get_emoji_regexp
 from html_telegraph_poster import TelegraphPoster
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 import userge
 
@@ -220,3 +220,20 @@ def is_command(cmd: str) -> bool:
     elif _key in commands:
         is_cmd = True
     return is_cmd
+
+
+def extract_urls(message: Message) -> List[str]:
+    tero = []
+    entities = message.entities or message.caption_entities or []
+    text = message.text or message.caption or ""
+    for entity in entities:
+        url = None
+        if entity.type == "text_link":
+            url = entity.url
+        elif entity.type == "url":
+            offset = entity.offset
+            length = entity.length
+            url = text[offset:offset + length]
+        if url:
+            tero.append(url)
+    return tero
