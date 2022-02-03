@@ -157,9 +157,9 @@ async def tg_download(
             if entity.type == "text_link":
                 url = entity.url
             elif entity.type == "url":
-                o = entity.offset
-                l = entity.length
-                url = text[o:o + l]
+                offset = entity.offset
+                lengtg = entity.length
+                url = text[offset:offset + length]
             if url:
                 await url_download(message, url)
         return  # to prevent below code to get executed
