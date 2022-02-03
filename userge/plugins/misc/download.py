@@ -33,7 +33,7 @@ LOGGER = userge.getLogger(__name__)
     check_downpath=True)
 async def down_load_media(message: Message):
     """ download from tg and url """
-    if message.reply_to_message and message.reply_to_message.media:
+    if message.reply_to_message:
         resource = message.reply_to_message
     elif message.input_str:
         resource = message.input_str
@@ -41,7 +41,7 @@ async def down_load_media(message: Message):
         await message.err("nothing found to download")
         return
     try:
-        dl_loc, d_in = await handle_download(message, resource)
+        await handle_download(message, resource)
     except ProcessCanceled:
         await message.canceled()
     except Exception as e_e:  # pylint: disable=broad-except
