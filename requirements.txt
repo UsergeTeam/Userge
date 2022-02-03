@@ -23,7 +23,7 @@ pybase64
 pyrogram>=1.3.6
 pySmartDL
 pysocks
-pytgcalls==2.1.0
+py-tgcalls==0.8.5
 python-dotenv
 pytz
 rarfile
