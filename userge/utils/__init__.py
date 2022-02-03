@@ -21,4 +21,5 @@ from .tools import (sort_file_name_key, # noqa
                     runcmd,
                     take_screen_shot,
                     parse_buttons,
-                    is_command)
+                    is_command,
+                    extract_urls)
