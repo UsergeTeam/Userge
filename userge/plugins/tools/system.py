@@ -12,10 +12,16 @@ import asyncio
 import shutil
 
 from pyrogram.types import User
+from pyrogram.errors import (
+    SessionPasswordNeeded, FloodWait,
+    PhoneNumberInvalid, ApiIdInvalid,
+    PhoneCodeInvalid, PhoneCodeExpired
+)
 
 from userge.core.ext import RawClient
 from userge import userge, Message, Config, get_collection
 from userge.utils import terminate
+from userge.utils.exceptions import StopConversation
 
 SAVED_SETTINGS = get_collection("CONFIGS")
 DISABLED_CHATS = get_collection("DISABLED_CHATS")
@@ -284,6 +290,82 @@ async def view_disabled_chats_(message: Message):
         async for chat in DISABLED_CHATS.find():
             out_str += f" 👥 {chat['title']} 🆔 `{chat['_id']}`\n"
         await message.edit(out_str, del_in=0)
+
+
+@userge.on_cmd("convert_usermode", about={
+    'header': "convert your bot into userbot to use user mode",
+    'usage': "{tr}convert_usermode"}, allow_channels=False)
+async def convert_usermode(msg: Message):
+    if userge.dual_mode:
+        return await msg.reply("already using user mode")
+    if msg.from_user.id not in Config.OWNER_ID:
+        return await msg.reply("only owners can use this command")
+    try:
+        async with userge.conversation(msg.from_user.id) as conv:
+            await conv.send_message("Now send me your phone number:"
+                                    "\nFor example: `+91451212458`")
+            phone = await conv.get_response(mark_read=True)
+            client = CLient(
+                session_name=":memory:",
+                api_id=Config.API_ID,
+                api_hash=Config.API_HASH
+            )
+            try:
+                await client.connect()
+            except ConnectionError:
+                await client.disconnect()
+                await client.connect()
+            try:
+                code = await client.send_code(phone.text)
+                await asyncio.sleep(1)
+            except FloodWait as e:
+                await msg.reply(f"floodwait occur of {e.x} Seconds")
+            except ApiIdInvalid:
+                await msg.reply("Api Id and Api Hash are Invalid.")
+            except PhoneNumberInvalid:
+                await msg.reply("your Phone Number is Invalid.")
+            except Exception as e:
+                await msg.reply(str(e))
+            else:
+                await conv.send_message(
+                    "`An otp is sent to your phone number\n"
+                    "Please enter otp in `1 2 3 4 5` format."
+                )
+                otp = await conv.get_response(mark_read=True)
+                try:
+                    await client.sign_in(
+                        phone.text,
+                        code.phone_code_hash,
+                        phone_code=otp.text
+                    )
+                except PhoneCodeInvalid:
+                    await msg.reply("Invalid Code.")
+                except PhoneCodeExpired:
+                    await msg.reply("Code is Expired.")
+                    await conv.send_message(
+                        "Make sure you have entered otp in "
+                        f"{' '.join(otp.text.split(''))} format."
+                    )
+                except SessionPasswordNeeded:
+                    two_step_code = await conv.send_message(
+                        "Your account have two-step verification code.\n"
+                        "Please enter your second factor authentication code.",
+                    )
+                    two_step_code = await conv.get_response(mark_read=True)
+                    try:
+                        await client.check_password(two_step_code.text)
+                    except Exception as e:
+                        await msg.reply(str(e))
+                try:
+                    session_string = await client.export_session_string()
+                    await conv.send_message(
+                        "DONE! User Mode will be enabled after restart."
+                    )
+                    Config.HEROKU_APP.config()["HU_STRING_SESSION"] = session_string
+                except Exception as e:
+                    await msg.reply(str(e))
+    except StopConversation:
+        await msg.reply("You didn't reply on time, conversation stopped.")
 
 
 @userge.on_cmd("sleep (\\d+)", about={
