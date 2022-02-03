@@ -41,7 +41,7 @@ async def down_load_media(message: Message):
         await message.err("nothing found to download")
         return
     try:
-        await handle_download(message, resource)
+        dl_loc, d_in = await handle_download(message, resource)
     except ProcessCanceled:
         await message.canceled()
     except Exception as e_e:  # pylint: disable=broad-except
@@ -150,6 +150,7 @@ async def tg_download(
 ) -> Tuple[str, int]:
     """ download from tg file """
     if not to_download.media:
+        dl_loc, mite = None, 0
         ets = to_download.entities or to_download.caption_entities or []
         text = to_download.text or to_download.caption or ""
         for entity in ets:
@@ -161,8 +162,9 @@ async def tg_download(
                 length = entity.length
                 url = text[offset:offset + length]
             if url:
-                await url_download(message, url)
-        return  # to prevent below code to get executed
+                dl_loc, b_ = await url_download(message, url)
+                mite += b_
+        return dl_loc, mite
     await message.edit("`Downloading From TG...`")
     start_t = datetime.now()
     custom_file_name = Config.DOWN_PATH
