@@ -149,6 +149,20 @@ async def tg_download(
     message: Message, to_download: Message, from_url: bool = False
 ) -> Tuple[str, int]:
     """ download from tg file """
+    if not message.media:
+        ets = message.entities or message.caption_entities or []
+        text = message.text or message.caption or ""
+        for entity in ets:
+            url = None
+            if entity.type == "text_link":
+                url = entity.url
+            elif entity.type == "url":
+                o = entity.offset
+                l = entity.length
+                url = text[o:o + l]
+            if url:
+                await url_download(message, url)
+        return  # to prevent below code to get executed
     await message.edit("`Downloading From TG...`")
     start_t = datetime.now()
     custom_file_name = Config.DOWN_PATH
