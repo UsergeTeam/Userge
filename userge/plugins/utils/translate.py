@@ -34,15 +34,16 @@ async def translateme(message: Message):
     text = message.filtered_input_str
     flags = message.flags
     replied = message.reply_to_message
-    if replied:
-        text = message.reply_to_message.text or message.reply_to_message.caption
-    elif replied.poll:
-        text = f'{replied.poll.question}\n'
-        for i, option in enumerate(replied.poll.options, start=1):
-            text += f'\n\t{i}.{option.get("text")}'
+     if replied:
+        if replied.poll:
+            text = f'{replied.poll.question}\n'
+            for i, option in enumerate(replied.poll.options, start=1):
+                text += f'\n\t{i}. {option.get("text")}'
+        else:
+            text = message.reply_to_message.text or message.reply_to_message.caption
     if not text:
-        await message.err("Give a text or reply to a message to translate!")
-        return
+        return await message.err("Give a text or reply to a message to translate!")
+
     if len(flags) == 2:
         src, dest = list(flags)
     elif len(flags) == 1:
