@@ -150,12 +150,15 @@ async def tg_download(
 ) -> Tuple[str, int]:
     """ download from tg file """
     if not to_download.media:
-        dl_loc, mite = None, 0
+        dl_loc, mite = [], 0
         ets = extract_urls(to_download)
+        if len(ets) == 0:
+            raise Exception("nothing found to download")
         for uarl in ets:
-            dl_loc, b_ = await url_download(message, uarl)
+            _dl_loc, b_ = await url_download(message, uarl)
+            dl_loc.append(_dl_loc)
             mite += b_
-        return dl_loc, mite
+        return dumps(dl_loc), mite
     await message.edit("`Downloading From TG...`")
     start_t = datetime.now()
     custom_file_name = Config.DOWN_PATH
