@@ -7,6 +7,7 @@
 # All rights reserved.
 
 import time
+import asyncio
 from json import dumps
 
 from emoji import get_emoji_regexp
@@ -33,11 +34,20 @@ from userge import userge, Message, Config, pool
 async def translateme(message: Message):
     text = message.filtered_input_str
     flags = message.flags
-    if message.reply_to_message:
-        text = message.reply_to_message.text or message.reply_to_message.caption
+    replied = message.reply_to_message
+    is_poll = False
+
+    if replied:
+        if replied.poll:
+            is_poll = True
+            text = f'{replied.poll.question}'
+            for option in replied.poll.options:
+                text += f'\n,\n{option.text}'
+        else:
+            text = replied.text or replied.caption
     if not text:
-        await message.err("Give a text or reply to a message to translate!")
-        return
+        return await message.err("Give a text or reply to a message to translate!")
+
     if len(flags) == 2:
         src, dest = list(flags)
     elif len(flags) == 1:
@@ -49,8 +59,22 @@ async def translateme(message: Message):
     try:
         reply_text = await _translate_this(text, dest, src)
     except ValueError:
-        await message.err("Invalid destination language.")
-        return
+        return await message.err("Invalid destination language.")
+
+    if is_poll:
+        options = reply_text.text.split('\n,\n')
+        if len(options) > 1:
+            question = options.pop(0)
+            await asyncio.gather(
+                message.delete(),
+                message.client.send_poll(
+                    chat_id=message.chat.id,
+                    question=question,
+                    options=options,
+                    is_anonymous=replied.poll.is_anonymous
+                )
+            )
+            return
     source_lan = LANGUAGES[f'{reply_text.src.lower()}']
     transl_lan = LANGUAGES[f'{reply_text.dest.lower()}']
     output = f"**Source ({source_lan.title()}):**`\n{text}`\n\n\
