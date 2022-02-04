@@ -118,8 +118,12 @@ def _public_logic(m: Message, trigger: str, _) -> bool:
     return (
         not m.edit_date
         and (
-            True if not trigger else m.text.startswith(Config.CMD_TRIGGER)
-            if m.from_user and m.from_user.id in Config.OWNER_ID else m.text.startswith(trigger)
+            True if not trigger
+            else m.text.startswith(Config.CMD_TRIGGER)
+            if m.from_user and m.from_user.id in Config.OWNER_ID
+            else m.text.startswith(Config.SUDO_TRIGGER)
+            if Config.SUDO_ENABLED and m.from_user and m.from_user.id in Config.SUDO_USERS
+            else m.text.startswith(trigger)
         )
     )
 

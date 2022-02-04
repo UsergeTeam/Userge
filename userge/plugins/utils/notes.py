@@ -160,7 +160,7 @@ async def mv_to_global_note(message: Message) -> None:
                       'usage': "#[notename]\nget notename"},
                group=-1,
                name="get_note",
-               trigger='',
+               trigger=None,
                filter_me=False,
                check_client=True)
 async def get_note(message: Message) -> None:

@@ -528,7 +528,7 @@ async def force_play_music(msg: Message):
 @userge.on_cmd("current", about={
     'header': "View Current playing Song.",
     'usage': "{tr}current"},
-    trigger=Config.SUDO_TRIGGER, check_client=True,
+    trigger=Config.PUBLIC_TRIGGER, check_client=True,
     filter_me=False, allow_bots=False)
 @vc_chat
 @check_enable_for_all
@@ -549,7 +549,7 @@ async def current(msg: Message):
 @userge.on_cmd("queue", about={
     'header': "View Queue of Songs",
     'usage': "{tr}queue"},
-    trigger=Config.SUDO_TRIGGER, check_client=True,
+    trigger=Config.PUBLIC_TRIGGER, check_client=True,
     filter_me=False, allow_bots=False)
 @vc_chat
 @check_enable_for_all
@@ -608,7 +608,7 @@ async def set_volume(msg: Message):
 @userge.on_cmd("skip", about={
     'header': "Skip Song",
     'usage': "{tr}skip"},
-    trigger=Config.SUDO_TRIGGER, check_client=True,
+    trigger=Config.PUBLIC_TRIGGER, check_client=True,
     filter_me=False, allow_bots=False)
 @vc_chat
 async def skip_music(msg: Message):
@@ -622,7 +622,7 @@ async def skip_music(msg: Message):
 @userge.on_cmd("pause", about={
     'header': "Pause Song.",
     'usage': "{tr}pause"},
-    trigger=Config.SUDO_TRIGGER, check_client=True,
+    trigger=Config.PUBLIC_TRIGGER, check_client=True,
     filter_me=False, allow_bots=False)
 @vc_chat
 async def pause_music(msg: Message):
@@ -636,7 +636,7 @@ async def pause_music(msg: Message):
 @userge.on_cmd("resume", about={
     'header': "Resume Song.",
     'usage': "{tr}resume"},
-    trigger=Config.SUDO_TRIGGER, check_client=True,
+    trigger=Config.PUBLIC_TRIGGER, check_client=True,
     filter_me=False, allow_bots=False)
 @vc_chat
 async def resume_music(msg: Message):
