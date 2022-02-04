@@ -40,9 +40,9 @@ async def translateme(message: Message):
     if replied:
         if replied.poll:
             is_poll = True
-            text = f'{replied.poll.question}\n-$-\n'
+            text = f'{replied.poll.question}'
             for option in replied.poll.options:
-                text += f'{option.get("text")}\n-$-\n'
+                text += f'\n,\n{option.text}'
         else:
             text = replied.text or replied.caption
     if not text:
@@ -62,18 +62,19 @@ async def translateme(message: Message):
         return await message.err("Invalid destination language.")
 
     if is_poll:
-        options = reply_text.split('\n-$-\n')
-        question = options.pop(0)
-        await asyncio.gather(
-            message.delete(),
-            message.client.send_poll(
-                chat_id=message.chat.id,
-                question=question,
-                options=options,
-                is_anonymous=replied.poll.is_anonymous
+        options = reply_text.text.split('\n,\n')
+        if len(options) > 1:
+            question = options.pop(0)
+            await asyncio.gather(
+                message.delete(),
+                message.client.send_poll(
+                    chat_id=message.chat.id,
+                    question=question,
+                    options=options,
+                    is_anonymous=replied.poll.is_anonymous
+                )
             )
-        )
-        return
+            return
     source_lan = LANGUAGES[f'{reply_text.src.lower()}']
     transl_lan = LANGUAGES[f'{reply_text.dest.lower()}']
     output = f"**Source ({source_lan.title()}):**`\n{text}`\n\n\
