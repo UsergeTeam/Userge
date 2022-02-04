@@ -293,10 +293,10 @@ async def view_disabled_chats_(message: Message):
     'header': "convert your bot into userbot to use user mode",
     'flags': {
         '-c': "provide code",
-        '-sc': "provide two step authentication code",
+        '-sc': "provide two step authentication code"
     },
-    'usage': "{tr}convert_usermode +915623461809\n",
-             "{tr}convert_usermode -c=12345\n",
+    'usage': "{tr}convert_usermode +915623461809\n"
+             "{tr}convert_usermode -c=12345\n"
              "{tr}convert_usermode -sc=yourcode"
 }, allow_channels=False)
 async def convert_usermode(msg: Message):
