@@ -38,7 +38,7 @@ class Command(Filter):
         """ parse command """
         pattern = '^'
         if trigger:
-            pattern += f"(?:\\{trigger}|\\{Config.SUDO_TRIGGER})"
+            pattern += f"(?:\\{trigger}|\\{Config.SUDO_TRIGGER}|\\{Config.CMD_TRIGGER})"
         pattern += command.lstrip('^')
 
         if _has_regex(command):
@@ -55,9 +55,9 @@ class Command(Filter):
 
         filters_ = filters.regex(pattern=pattern)
         if filter_me:
-            filters_ &= (_outgoing_flt(trigger, name) | _incoming_flt(trigger, name))
+            filters_ &= _outgoing_flt(trigger, name) | _incoming_flt(trigger, name)
         else:
-            filters_ &= ~filters.edited
+            filters_ &= _public_flt(trigger, name)
 
         return cls(_format_about(about), trigger, pattern, filters=filters_, name=name, **kwargs)
 
@@ -77,13 +77,17 @@ def _incoming_flt(trigger: str, name: str) -> filters.Filter:
     return _build_filter(_incoming_logic, trigger, name)
 
 
+def _public_flt(trigger: str, name: str) -> filters.Filter:
+    return _build_filter(_public_logic, trigger, name)
+
+
 def _build_filter(logic: Callable[[Message, str, str], bool],
                   trigger: str, name: str) -> filters.Filter:
     return filters.create(
         lambda _, __, m:
         m.via_bot is None and not m.scheduled
         and not (m.forward_from or m.forward_sender_name)
-        and logic(m, trigger, name)
+        and m.text and logic(m, trigger, name)
     )
 
 
@@ -92,15 +96,14 @@ def _outgoing_logic(m: Message, trigger: str, _) -> bool:
         not (m.from_user and m.from_user.is_bot)
         and (m.outgoing or m.from_user and m.from_user.is_self)
         and not (m.chat and m.chat.type == "channel" and m.edit_date)
-        and (m.text and m.text.startswith(trigger) if trigger else True)
+        and (m.text.startswith(trigger) if trigger else True)
     )
 
 
 def _incoming_logic(m: Message, trigger: str, name: str) -> bool:
     return (
         not m.outgoing and trigger
-        and m.from_user and m.text
-        and not m.edit_date
+        and m.from_user and not m.edit_date
         and (
             m.from_user.id in Config.OWNER_ID or (
                 Config.SUDO_ENABLED and m.from_user.id in Config.SUDO_USERS
@@ -108,6 +111,16 @@ def _incoming_logic(m: Message, trigger: str, name: str) -> bool:
             )
         )
         and m.text.startswith(Config.SUDO_TRIGGER)
+    )
+
+
+def _public_logic(m: Message, trigger: str, _) -> bool:
+    return (
+        not m.edit_date
+        and (
+            True if not trigger else m.text.startswith(Config.CMD_TRIGGER)
+            if m.from_user and m.from_user.id in Config.OWNER_ID else m.text.startswith(trigger)
+        )
     )
 
 

@@ -359,7 +359,7 @@ async def toggle_vc(msg: Message):
     'flags': {
         '-v': "Stream as video.",
         '-q': "Quality of video stream (1-100)"}},
-    trigger=Config.SUDO_TRIGGER, check_client=True,
+    trigger=Config.PUBLIC_TRIGGER, check_client=True,
     filter_me=False, allow_bots=False)
 @vc_chat
 @check_enable_for_all
@@ -425,7 +425,7 @@ async def play_music(msg: Message):
 
 @userge.on_cmd("helpvc",
                about={'header': "help for voice_call plugin"},
-               trigger=Config.SUDO_TRIGGER,
+               trigger=Config.PUBLIC_TRIGGER,
                allow_private=False,
                check_client=True,
                filter_me=False,
