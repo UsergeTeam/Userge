@@ -13,11 +13,7 @@ import shutil
 
 from pyrogram import Client
 from pyrogram.types import User
-from pyrogram.errors import (
-    SessionPasswordNeeded, FloodWait,
-    PhoneNumberInvalid, ApiIdInvalid,
-    PhoneCodeInvalid, PhoneCodeExpired
-)
+from pyrogram.errors import SessionPasswordNeeded
 
 from userge.core.ext import RawClient
 from userge import userge, Message, Config, get_collection
@@ -295,17 +291,62 @@ async def view_disabled_chats_(message: Message):
 
 @userge.on_cmd("convert_usermode", about={
     'header': "convert your bot into userbot to use user mode",
-    'usage': "{tr}convert_usermode"}, allow_channels=False)
+    'flags': {
+        '-c': "provide code",
+        '-sc': "provide two step authentication code",
+    },
+    'usage': [
+        "{tr}convert_usermode +915623461809",
+        "{tr}convert_usermode -c=12345",
+        "{tr}convert_usermode -sc=yourcode"
+    ]}, allow_channels=False)
 async def convert_usermode(msg: Message):
     if bool(Config.HU_STRING_SESSION):
         return await msg.reply("already using user mode")
     if msg.from_user.id not in Config.OWNER_ID:
         return await msg.reply("only owners can use this command")
-    try:
-        async with userge.conversation(msg.from_user.id) as conv:
-            await conv.send_message("Now send me your phone number:"
-                                    "\nFor example: `+91451212458`")
-            phone = await conv.get_response(mark_read=True)
+    if msg.flags:
+        code = msg.flags.get('-c')
+        two_step = msg.flags.get('-sc')
+        if code:
+            try:
+                if hasattr(generate_session, "two_step_code"):
+                    delattr(generate_session, "two_step_code")
+                setattr(generate_session, "phone_code", code)
+                if await generate_session():
+                    session_string = await generate_session.client.export_session_string()
+                    await msg.reply(
+                        "DONE! User Mode will be enabled after restart."
+                    )
+                    Config.HEROKU_APP.config()["HU_STRING_SESSION"] = session_string
+            except SessionPasswordNeeded:
+                await msg.reply(
+                    "Your account have two-step verification code.\n"
+                    "Please send your second factor authentication code "
+                    "using\n`!convert_usermode -sc=yourcode`"
+                )
+            except Exception as e:
+                delattr(generate_session, "phone_code")
+                await msg.reply(str(e))
+        elif two_step:
+            try:
+                setattr(generate_session, "two_step_code", two_step)
+                if await generate_session():
+                    session_string = await generate_session.client.export_session_string()
+                    await msg.reply(
+                        "DONE! User Mode will be enabled after restart."
+                    )
+                    Config.HEROKU_APP.config()["HU_STRING_SESSION"] = session_string
+            except Exception as e:
+                delattr(generate_session, "two_step_code")
+                await msg.reply(str(e))
+        else:
+            await msg.err("invalid flag or didn't provide argument with flag")
+    else:
+        if not msg.input_str:
+            return await msg.err("phone number not found")
+
+        if not hasattr(generate_session, "client"):
             client = Client(
                 session_name=":memory:",
                 api_id=Config.API_ID,
@@ -316,57 +357,20 @@ async def convert_usermode(msg: Message):
             except ConnectionError:
                 await client.disconnect()
                 await client.connect()
-            try:
-                code = await client.send_code(phone.text)
-                await asyncio.sleep(1)
-            except FloodWait as e:
-                await msg.reply(f"floodwait occur of {e.x} Seconds")
-            except ApiIdInvalid:
-                await msg.reply("Api Id and Api Hash are Invalid.")
-            except PhoneNumberInvalid:
-                await msg.reply("your Phone Number is Invalid.")
-            except Exception as e:
-                await msg.reply(str(e))
-            else:
-                await conv.send_message(
-                    "`An otp is sent to your phone number\n"
-                    "Please enter otp in `1 2 3 4 5` format."
+            setattr(generate_session, "client", client)
+        for i in ("phone_number", "phone_code", "two_step"):
+            if hasattr(generate_session, i):
+                delattr(generate_session, i)
+        setattr(generate_session, "phone_number", msg.input_str)
+        try:
+            if await generate_session():
+                return await msg.reply(
+                    "`An otp is sent to your phone number\n\n"
+                    "Send otp using `!convert_usermode -c12345` command."
                 )
-                otp = await conv.get_response(mark_read=True)
-                try:
-                    await client.sign_in(
-                        phone.text,
-                        code.phone_code_hash,
-                        phone_code=otp.text
-                    )
-                except PhoneCodeInvalid:
-                    await msg.reply("Invalid Code.")
-                except PhoneCodeExpired:
-                    await msg.reply("Code is Expired.")
-                    await conv.send_message(
-                        "Make sure you have entered otp in "
-                        f"{' '.join(otp.text.split(''))} format."
-                    )
-                except SessionPasswordNeeded:
-                    two_step_code = await conv.send_message(
-                        "Your account have two-step verification code.\n"
-                        "Please enter your second factor authentication code.",
-                    )
-                    two_step_code = await conv.get_response(mark_read=True)
-                    try:
-                        await client.check_password(two_step_code.text)
-                    except Exception as e:
-                        await msg.reply(str(e))
-                try:
-                    session_string = await client.export_session_string()
-                    await conv.send_message(
-                        "DONE! User Mode will be enabled after restart."
-                    )
-                    Config.HEROKU_APP.config()["HU_STRING_SESSION"] = session_string
-                except Exception as e:
-                    await msg.reply(str(e))
-    except StopConversation:
-        await msg.reply("You didn't reply on time, conversation stopped.")
+            raise Exception("Unable to send OTP to this phone number.")
+        except Exception as error:
+            await msg.reply(str(error))
 
 
 @userge.on_cmd("sleep (\\d+)", about={
@@ -377,6 +381,28 @@ async def sleep_(message: Message) -> None:
     seconds = int(message.matches[0].group(1))
     await message.edit(f"`sleeping {seconds} seconds...`")
     asyncio.get_event_loop().create_task(_slp_wrkr(seconds))
+
+
+async def generate_session() -> bool:
+    myFunc = generate_session
+    if not hasattr(myFunc, "client"):
+        return False
+
+    client = myFunc.client
+    if hasattr(myFunc, "two_step_code"):
+        await client.check_password(myFunc.two_step_code)
+    elif hasattr(myFunc, "code") and hasattr(myFunc, "phone_code"):
+        await client.sign_in(
+            myFunc.phone_number,
+            myFunc.code.phone_code_hash,
+            phone_code=myFunc.phone_code
+        )
+    elif hasattr(myFunc, "phone_number"):
+        code = await client.send_code(myFunc.phone_number)
+        setattr(generate_session, "code", code)
+    else:
+        return False
+    return True
 
 
 async def _slp_wrkr(seconds: int) -> None:
