@@ -35,15 +35,16 @@ async def translateme(message: Message):
     text = message.filtered_input_str
     flags = message.flags
     replied = message.reply_to_message
-    is_poll = bool(replied.poll)
+    is_poll = False
 
     if replied:
         if replied.poll:
+            is_poll = True
             text = f'{replied.poll.question}\n-$-\n'
             for option in replied.poll.options:
                 text += f'{option.get("text")}\n-$-\n'
         else:
-            text = message.reply_to_message.text or message.reply_to_message.caption
+            text = replied.text or replied.caption
     if not text:
         return await message.err("Give a text or reply to a message to translate!")
 
