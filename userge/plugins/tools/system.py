@@ -295,17 +295,19 @@ async def view_disabled_chats_(message: Message):
         '-c': "provide code",
         '-sc': "provide two step authentication code",
     },
-    'usage': [
-        "{tr}convert_usermode +915623461809",
-        "{tr}convert_usermode -c=12345",
-        "{tr}convert_usermode -sc=yourcode"
-    ]}, allow_channels=False)
+    'usage': "{tr}convert_usermode +915623461809\n",
+             "{tr}convert_usermode -c=12345\n",
+             "{tr}convert_usermode -sc=yourcode"
+}, allow_channels=False)
 async def convert_usermode(msg: Message):
     if bool(Config.HU_STRING_SESSION):
-        return await msg.reply("already using user mode")
+        return await msg.err("already using user mode")
     if msg.from_user.id not in Config.OWNER_ID:
-        return await msg.reply("only owners can use this command")
+        return await msg.err("only owners can use this command")
     if msg.flags:
+        if not hasattr(generate_session, "phone_number"):
+            return await msg.err(
+                "first give phone number, click on below button 👇")
         code = msg.flags.get('-c')
         two_step = msg.flags.get('-sc')
         if code:
@@ -329,6 +331,8 @@ async def convert_usermode(msg: Message):
                 delattr(generate_session, "phone_code")
                 await msg.reply(str(e))
         elif two_step:
+            if not hasattr(generate_session, "phone_code"):
+                return await msg.err("first verify OTP, click on below button 👇")
             try:
                 setattr(generate_session, "two_step_code", two_step)
                 if await generate_session():
@@ -344,7 +348,7 @@ async def convert_usermode(msg: Message):
             await msg.err("invalid flag or didn't provide argument with flag")
     else:
         if not msg.input_str:
-            return await msg.err("phone number not found")
+            return await msg.err("phone number not found, click on below button 👇")
 
         if not hasattr(generate_session, "client"):
             client = Client(
@@ -365,12 +369,49 @@ async def convert_usermode(msg: Message):
         try:
             if await generate_session():
                 return await msg.reply(
-                    "`An otp is sent to your phone number\n\n"
+                    "An otp is sent to your phone number\n\n"
                     "Send otp using `!convert_usermode -c12345` command."
                 )
             raise Exception("Unable to send OTP to this phone number.")
         except Exception as error:
             await msg.reply(str(error))
+
+
+@userge.on_cmd("convert_botmode", about={
+    'header': "convert your userbot to use bot mode",
+    'usage': "{tr}convert_botmode bot_name | bot_username"}, allow_channels=False)
+async def convert_botmode(msg: Message):
+    if userge.has_bot:
+        return await msg.err("using have bot mode")
+    if not msg.input_str and '|' not in msg.input_str:
+        return await msg.err("read .help convert_botmode")
+
+    _, __ = msg.input_str.split('|', maxsplit=1)
+    name = _.strip()
+    username = __.strip()
+    await msg.edit("`Converting to use bot mode`")
+    try:
+        async with userge.conversation('botfather') as conv:
+            try:
+                await conv.send_message('/start')
+            except YouBlockedUser:
+                await userge.unblock_user('botfather')
+                await conv.send_message('/start')
+            await conv.send_messge('/newbot')
+            await conv.send_message(name)
+            await conv.send_message(username)
+            response = await conv.get_response(mark_read=True)
+            if 'this username is already taken' in response.text:
+                await msg.err("username already taken, try with different username.")
+            else:
+                for i in response.entities:
+                    if i.type == "code":
+                        token = response.text[i.offset: i.offset + i.length]
+                        await msg.edit("DONE! Bot Mode will be enabled after restart.")
+                        Config.HEROKU_APP.config()["BOT_TOKEN"] = token
+                        break
+    except StopConversation:
+        await msg.err("@botfather didn't respond in time.")
 
 
 @userge.on_cmd("sleep (\\d+)", about={
