@@ -29,7 +29,7 @@ from userge.plugins import get_all_plugins
 from userge.utils import time_formatter
 from userge.utils.exceptions import UsergeBotNotFound
 from .database import get_collection
-from .ext import RawClient, pool
+from .ext import RawClient
 from .methods import Methods
 
 _LOG = logging.getLogger(__name__)
@@ -116,7 +116,7 @@ class _AbstractUserge(Methods, RawClient):
         for name in get_all_plugins():
             try:
                 await self.load_plugin(name)
-            except ImportError as i_e:
+            except Exception as i_e:
                 _LOG.error(_LOG_STR, f"[{name}] - {i_e}")
         await self.finalize_load()
         _LOG.info(_LOG_STR, f"Imported ({len(_IMPORTED)}) Plugins => "
@@ -130,7 +130,7 @@ class _AbstractUserge(Methods, RawClient):
         for imported in _IMPORTED:
             try:
                 reloaded_ = importlib.reload(imported)
-            except ImportError as i_e:
+            except Exception as i_e:
                 _LOG.error(_LOG_STR, i_e)
             else:
                 reloaded.append(reloaded_.__name__)
@@ -272,19 +272,9 @@ class Userge(_AbstractUserge):
             self.loop.add_signal_handler(
                 sig, lambda _sig=sig: self.loop.create_task(_shutdown(_sig)))
 
-        def _close_loop() -> None:
-            try:
-                self.loop.run_until_complete(_waiter())
-            except RuntimeError:
-                pass
-            self.loop.close()
-            _LOG.info(_LOG_STR, "Loop Closed !")
-            pool._stop()  # pylint: disable=protected-access
-
         try:
             self.loop.run_until_complete(self.start())
         except RuntimeError:
-            _close_loop()
             return
 
         for task in self._tasks:
@@ -305,7 +295,10 @@ class Userge(_AbstractUserge):
         except (asyncio.exceptions.CancelledError, RuntimeError):
             pass
         finally:
-            _close_loop()
+            try:
+                self.loop.run_until_complete(_waiter())
+            except RuntimeError:
+                pass
             if _SEND_SIGNAL:
                 os.kill(os.getpid(), signal.SIGUSR1)
 

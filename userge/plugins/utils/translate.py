@@ -42,7 +42,7 @@ async def translateme(message: Message):
             is_poll = True
             text = f'{replied.poll.question}'
             for option in replied.poll.options:
-                text += f'\n,\n{option.text}'
+                text += f'\n\n\n{option.text}'
         else:
             text = replied.text or replied.caption
     if not text:
@@ -62,7 +62,7 @@ async def translateme(message: Message):
         return await message.err("Invalid destination language.")
 
     if is_poll:
-        options = reply_text.text.split('\n,\n')
+        options = reply_text.text.split('\n\n\n')
         if len(options) > 1:
             question = options.pop(0)
             await asyncio.gather(

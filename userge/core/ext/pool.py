@@ -11,15 +11,18 @@
 __all__ = ['submit_thread', 'run_in_thread']
 
 import asyncio
-from typing import Any, Callable
+import atexit
 from concurrent.futures import ThreadPoolExecutor, Future
 from functools import wraps, partial
+from typing import Any, Callable
 
 from userge import logging, Config
 
 _LOG = logging.getLogger(__name__)
 _LOG_STR = "<<<!  ||||  %s  ||||  !>>>"
 _EXECUTOR = ThreadPoolExecutor(Config.WORKERS)
+# pylint: disable=protected-access
+_MAX = _EXECUTOR._max_workers
 
 
 def submit_thread(func: Callable[..., Any], *args: Any, **kwargs: Any) -> Future:
@@ -37,10 +40,9 @@ def run_in_thread(func: Callable[..., Any]) -> Callable[..., Any]:
 
 
 def _stop():
-    _EXECUTOR.shutdown(wait=False)
-    # pylint: disable=protected-access
-    _LOG.info(_LOG_STR, f"Stopped Pool : {_EXECUTOR._max_workers} Workers")
+    _EXECUTOR.shutdown()
+    _LOG.info(_LOG_STR, f"Stopped Pool : {_MAX} Workers")
 
 
-# pylint: disable=protected-access
-_LOG.info(_LOG_STR, f"Started Pool : {_EXECUTOR._max_workers} Workers")
+atexit.register(_stop)
+_LOG.info(_LOG_STR, f"Started Pool : {_MAX} Workers")

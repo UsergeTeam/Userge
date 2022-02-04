@@ -14,8 +14,9 @@ import asyncio
 import json
 import os
 import re
-import shutil
 import shlex
+import shutil
+from json.decoder import JSONDecodeError
 from traceback import format_exc
 from typing import List, Tuple
 
@@ -26,16 +27,7 @@ from pyrogram.types import (
     CallbackQuery,
     Message as RawMessage)
 from pyrogram.types.messages_and_media.message import Str
-
-from youtubesearchpython import VideosSearch
-
-from json.decoder import JSONDecodeError
-
-from userge import userge, Message, pool, filters, get_collection, Config
-from userge.utils import time_formatter, import_ytdl, progress, runcmd
-from userge.utils.exceptions import StopConversation
-
-from pytgcalls import PyTgCalls
+from pytgcalls import PyTgCalls, StreamType
 from pytgcalls.exceptions import (
     NodeJSNotInstalled,
     TooOldNodeJSVersion,
@@ -43,6 +35,7 @@ from pytgcalls.exceptions import (
     AlreadyJoinedError,
     NotInGroupCallError
 )
+from pytgcalls.types import Update
 from pytgcalls.types.input_stream import (
     AudioVideoPiped,
     AudioPiped,
@@ -51,12 +44,16 @@ from pytgcalls.types.input_stream import (
 from pytgcalls.types.stream import (
     StreamAudioEnded
 )
-from pytgcalls.types import Update
-from pytgcalls import StreamType
+from youtubesearchpython import VideosSearch
+
+from userge import userge, Message, pool, filters, get_collection, Config
+from userge.utils import time_formatter, import_ytdl, progress, runcmd
+from userge.utils.exceptions import StopConversation
 
 # https://github.com/pytgcalls/pytgcalls/blob/master/pytgcalls/mtproto/mtproto_client.py#L18
 userge.__class__.__module__ = 'pyrogram.client'
 call = PyTgCalls(userge, overload_quiet_mode=True)
+call._env_checker.check_environment()  # pylint: disable=protected-access
 
 
 CHANNEL = userge.getCLogger(__name__)
