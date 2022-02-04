@@ -297,7 +297,7 @@ async def view_disabled_chats_(message: Message):
     'header': "convert your bot into userbot to use user mode",
     'usage': "{tr}convert_usermode"}, allow_channels=False)
 async def convert_usermode(msg: Message):
-    if userge.dual_mode:
+    if bool(Config.HU_STRING_SESSION):
         return await msg.reply("already using user mode")
     if msg.from_user.id not in Config.OWNER_ID:
         return await msg.reply("only owners can use this command")
