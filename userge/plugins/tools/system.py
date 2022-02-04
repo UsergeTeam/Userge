@@ -13,7 +13,7 @@ import shutil
 
 from pyrogram import Client
 from pyrogram.types import User
-from pyrogram.errors import SessionPasswordNeeded
+from pyrogram.errors import SessionPasswordNeeded, YouBlockedUser
 
 from userge.core.ext import RawClient
 from userge import userge, Message, Config, get_collection
