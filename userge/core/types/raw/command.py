@@ -55,7 +55,9 @@ class Command(Filter):
 
         filters_ = filters.regex(pattern=pattern)
         if filter_me:
-            filters_ = filters_ & (_outgoing_flt(trigger, name) | _incoming_flt(trigger, name))
+            filters_ &= (_outgoing_flt(trigger, name) | _incoming_flt(trigger, name))
+        else:
+            filters_ &= ~filters.edited
 
         return cls(_format_about(about), trigger, pattern, filters=filters_, name=name, **kwargs)
 

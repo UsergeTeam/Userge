@@ -137,9 +137,10 @@ class Filter:
         self._handler: Handler
 
     @classmethod
-    def parse(cls, **kwargs: Union[RawFilter, '_client.Userge', int, bool]) -> 'Filter':
+    def parse(cls, filters: RawFilter, **kwargs: Union['_client.Userge', int, bool]) -> 'Filter':
         """ parse filter """
-        return cls(**Filter._parse(**kwargs))  # pylint: disable=protected-access
+        # pylint: disable=protected-access
+        return cls(**Filter._parse(filters=filters & ~rawfilters.edited, **kwargs))
 
     @staticmethod
     def _parse(allow_private: bool,
