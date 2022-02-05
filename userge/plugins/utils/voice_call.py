@@ -666,7 +666,7 @@ async def handler(_: PyTgCalls, update: Update):
     elif isinstance(update, LeftVoiceChat):
         await userge.send_message(
             CHAT_ID,
-            f"`Left Voice-Chat Successfully`"
+            "`Left Voice-Chat Successfully`"
         )
         CHAT_NAME = ""
         CHAT_ID = 0
