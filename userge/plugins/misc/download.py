@@ -20,7 +20,7 @@ from urllib.parse import unquote_plus
 from pySmartDL import SmartDL
 
 from userge import userge, Message, Config
-from userge.utils import progress, humanbytes, extract_urls
+from userge.utils import progress, humanbytes, extract_entities
 from userge.utils.exceptions import ProcessCanceled
 
 LOGGER = userge.getLogger(__name__)
@@ -151,7 +151,7 @@ async def tg_download(
     """ download from tg file """
     if not to_download.media:
         dl_loc, mite = [], 0
-        ets = extract_urls(to_download)
+        ets = extract_entities(to_download, ["url", "text_link"])
         if len(ets) == 0:
             raise Exception("nothing found to download")
         for uarl in ets:

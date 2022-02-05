@@ -222,18 +222,42 @@ def is_command(cmd: str) -> bool:
     return is_cmd
 
 
-def extract_urls(message: Message) -> List[str]:
+def extract_entities(message: Message, typeofentity: List[str]) -> List[str]:
+    """ gets a message and returns a list of entity_type in the message
+    """
     tero = []
     entities = message.entities or message.caption_entities or []
     text = message.text or message.caption or ""
     for entity in entities:
         url = None
-        if entity.type == "text_link":
-            url = entity.url
-        elif entity.type == "url":
+        cet = entity.type
+        if entity.type in [
+            "url",
+            "mention",
+            "hashtag",
+            "cashtag",
+            "bot_command",
+            "url",
+            "email",
+            "phone_number",
+            "bold",
+            "italic",
+            "underline",
+            "strikethrough",
+            "spoiler",
+            "code",
+            "pre",
+        ]:
             offset = entity.offset
             length = entity.length
             url = text[offset:offset + length]
-        if url:
+
+        elif entity.type == "text_link":
+            url = entity.url
+
+        elif entity.type == "text_mention":
+            url = entity.user
+
+        if url and cet in typeofentity:
             tero.append(url)
     return tero
