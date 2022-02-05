@@ -72,15 +72,16 @@ async def helpme(message: Message) -> None:  # pylint: disable=missing-function-
                             f"    📚 <b>info:</b>  <i>{cmd.doc}</i>\n\n")
             out_str += f"""📕 <b>Usage:</b>  <code>{Config.CMD_TRIGGER}help [command_name]</code>"""
         else:
-            commands = userge.manager.enabled_commands
-            key = key.lstrip(Config.CMD_TRIGGER)
-            key_ = Config.CMD_TRIGGER + key
-            if key in commands:
-                out_str = f"<code>{key}</code>\n\n{commands[key].about}"
-            elif key_ in commands:
-                out_str = f"<code>{key_}</code>\n\n{commands[key_].about}"
-            else:
-                out_str = f"<i>No Module or Command Found for</i>: <code>{message.input_str}</code>"
+            triggers = (Config.CMD_TRIGGER, Config.SUDO_TRIGGER, Config.PUBLIC_TRIGGER)
+            for _ in triggers:
+                key = key.lstrip(_)
+            out_str = f"<i>No Module or Command Found for</i>: <code>{message.input_str}</code>"
+            for name, cmd in userge.manager.enabled_commands.items():
+                for _ in triggers:
+                    name = name.lstrip(_)
+                if key == name:
+                    out_str = f"<code>{cmd.name}</code>\n\n{cmd.about}"
+                    break
     await message.edit(out_str, del_in=0, parse_mode='html', disable_web_page_preview=True)
 
 if userge.has_bot:
