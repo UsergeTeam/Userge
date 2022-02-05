@@ -11,11 +11,14 @@ import time
 import asyncio
 import shutil
 
+from pyrogram import Client
 from pyrogram.types import User
+from pyrogram.errors import SessionPasswordNeeded, YouBlockedUser
 
 from userge.core.ext import RawClient
 from userge import userge, Message, Config, get_collection
-from userge.utils import terminate
+from userge.utils import terminate, extract_entities
+from userge.utils.exceptions import StopConversation
 
 SAVED_SETTINGS = get_collection("CONFIGS")
 DISABLED_CHATS = get_collection("DISABLED_CHATS")
@@ -286,6 +289,149 @@ async def view_disabled_chats_(message: Message):
         await message.edit(out_str, del_in=0)
 
 
+@userge.on_cmd("convert_usermode", about={
+    'header': "convert your bot into userbot to use user mode",
+    'flags': {
+        '-c': "provide code",
+        '-sc': "provide two step authentication code"
+    },
+    'usage': "{tr}convert_usermode +915623461809\n"
+             "{tr}convert_usermode -c=12345\n"
+             "{tr}convert_usermode -sc=yourcode"
+}, allow_channels=False)
+async def convert_usermode(msg: Message):
+    if bool(Config.HU_STRING_SESSION):
+        return await msg.err("already using user mode")
+    if msg.from_user.id not in Config.OWNER_ID:
+        return await msg.err("only owners can use this command")
+    if msg.flags:
+        if not hasattr(generate_session, "phone_number"):
+            return await msg.err(
+                "first give phone number, click on below button 👇")
+        code = msg.flags.get('-c')
+        two_step = msg.flags.get('-sc')
+        if code:
+            try:
+                if hasattr(generate_session, "two_step_code"):
+                    delattr(generate_session, "two_step_code")
+                setattr(generate_session, "phone_code", code)
+                if await generate_session():
+                    session_string = await generate_session.client.export_session_string()
+                    if Config.HEROKU_APP:
+                        await msg.reply(
+                            "DONE! User Mode will be enabled after restart."
+                        )
+                        Config.HEROKU_APP.config()["HU_STRING_SESSION"] = session_string
+                    else:
+                        await msg.reply(
+                            "Add this in your environ variables\n"
+                            "Key = `HEROKU_STRING_SESION`\nValue 👇\n\n"
+                            f"`{session_string}`"
+                        )
+            except SessionPasswordNeeded:
+                await msg.reply(
+                    "Your account have two-step verification code.\n"
+                    "Please send your second factor authentication code "
+                    "using\n`!convert_usermode -sc=yourcode`"
+                )
+            except Exception as e:
+                delattr(generate_session, "phone_code")
+                await msg.reply(str(e))
+        elif two_step:
+            if not hasattr(generate_session, "phone_code"):
+                return await msg.err("first verify OTP, click on below button 👇")
+            try:
+                setattr(generate_session, "two_step_code", two_step)
+                if await generate_session():
+                    session_string = await generate_session.client.export_session_string()
+                    if Config.HEROKU_APP:
+                        await msg.reply(
+                            "DONE! User Mode will be enabled after restart."
+                        )
+                        Config.HEROKU_APP.config()["HU_STRING_SESSION"] = session_string
+                    else:
+                        await msg.reply(
+                            "Add this in your environ variables\n"
+                            "Key = `HEROKU_STRING_SESION`\nValue 👇\n\n"
+                            f"`{session_string}`"
+                        )
+            except Exception as e:
+                delattr(generate_session, "two_step_code")
+                await msg.reply(str(e))
+        else:
+            await msg.err("invalid flag or didn't provide argument with flag")
+    else:
+        if not msg.input_str:
+            return await msg.err("phone number not found, click on below button 👇")
+
+        if not hasattr(generate_session, "client"):
+            client = Client(
+                session_name=":memory:",
+                api_id=Config.API_ID,
+                api_hash=Config.API_HASH
+            )
+            try:
+                await client.connect()
+            except ConnectionError:
+                await client.disconnect()
+                await client.connect()
+            setattr(generate_session, "client", client)
+        for i in ("phone_number", "phone_code", "two_step"):
+            if hasattr(generate_session, i):
+                delattr(generate_session, i)
+        setattr(generate_session, "phone_number", msg.input_str)
+        try:
+            if await generate_session():
+                return await msg.reply(
+                    "An otp is sent to your phone number\n\n"
+                    "Send otp using `!convert_usermode -c12345` command."
+                )
+            raise Exception("Unable to send OTP to this phone number.")
+        except Exception as error:
+            await msg.reply(str(error))
+
+
+@userge.on_cmd("convert_botmode", about={
+    'header': "convert your userbot to use bot mode",
+    'usage': "{tr}convert_botmode bot_name | bot_username"}, allow_channels=False)
+async def convert_botmode(msg: Message):
+    if userge.has_bot:
+        return await msg.err("using have bot mode")
+    if not msg.input_str and '|' not in msg.input_str:
+        return await msg.err("read .help convert_botmode")
+
+    _, __ = msg.input_str.split('|', maxsplit=1)
+    name = _.strip()
+    username = __.strip()
+    await msg.edit("`Converting to use bot mode`")
+    try:
+        async with userge.conversation('botfather') as conv:
+            try:
+                await conv.send_message('/start')
+            except YouBlockedUser:
+                await userge.unblock_user('botfather')
+                await conv.send_message('/start')
+            await conv.send_messge('/newbot')
+            await conv.send_message(name)
+            await conv.send_message(username)
+            response = await conv.get_response(mark_read=True)
+            if 'this username is already taken' in response.text:
+                await msg.err("username already taken, try with different username.")
+            else:
+                token = extract_entities(response, ["code"])[0]
+                if Config.HEROKU_APP:
+                    await msg.edit("DONE! Bot Mode will be enabled after restart.")
+                    Config.HEROKU_APP.config()["BOT_TOKEN"] = token
+                else:
+                    await msg.reply(
+                        "Add this in your environ variables\n"
+                        "Key = `BOT_TOKEN`\n"
+                        f"Value = `{token}`"
+                    )
+    except StopConversation:
+        await msg.err("@botfather didn't respond in time.")
+
+
 @userge.on_cmd("sleep (\\d+)", about={
     'header': "sleep userge :P",
     'usage': "{tr}sleep [timeout in seconds]"}, allow_channels=False)
@@ -294,6 +440,28 @@ async def sleep_(message: Message) -> None:
     seconds = int(message.matches[0].group(1))
     await message.edit(f"`sleeping {seconds} seconds...`")
     asyncio.get_event_loop().create_task(_slp_wrkr(seconds))
+
+
+async def generate_session() -> bool:
+    myFunc = generate_session
+    if not hasattr(myFunc, "client"):
+        return False
+
+    client = myFunc.client
+    if hasattr(myFunc, "two_step_code"):
+        await client.check_password(myFunc.two_step_code)
+    elif hasattr(myFunc, "code") and hasattr(myFunc, "phone_code"):
+        await client.sign_in(
+            myFunc.phone_number,
+            myFunc.code.phone_code_hash,
+            phone_code=myFunc.phone_code
+        )
+    elif hasattr(myFunc, "phone_number"):
+        code = await client.send_code(myFunc.phone_number)
+        setattr(generate_session, "code", code)
+    else:
+        return False
+    return True
 
 
 async def _slp_wrkr(seconds: int) -> None:
