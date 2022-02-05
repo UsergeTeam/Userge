@@ -436,15 +436,16 @@ async def _help(msg: Message):
     """ help commands of this plugin for others """
 
     commands = userge.manager.enabled_plugins["voice_call"].enabled_commands
+    key = msg.input_str.lstrip(Config.PUBLIC_TRIGGER)
     cmds = []
     raw_cmds = []
 
     for i in commands:
-        if i.name.startswith(Config.SUDO_TRIGGER):
+        if i.name.startswith(Config.PUBLIC_TRIGGER):
             cmds.append(i)
-            raw_cmds.append(i.name.lstrip(Config.SUDO_TRIGGER))
+            raw_cmds.append(i.name)
 
-    if not msg.input_str:
+    if not key:
         out_str = f"""⚔ <b><u>(<code>{len(cmds)}</code>) Command(s) Available</u></b>
 
 🔧 <b>Plugin:</b>  <code>voice_call</code>
@@ -453,17 +454,15 @@ async def _help(msg: Message):
             out_str += (
                 f"    🤖 <b>cmd(<code>{i}</code>):</b>  <code>{cmd.name}</code>\n"
                 f"    📚 <b>info:</b>  <i>{cmd.doc}</i>\n\n")
-        await reply_text(msg, out_str, parse_mode="html")
+        return await reply_text(msg, out_str, parse_mode="html")
 
-    elif msg.input_str.lstrip(Config.SUDO_TRIGGER) in raw_cmds:
-        key = msg.input_str.lstrip(Config.CMD_TRIGGER)
-        key_ = Config.CMD_TRIGGER + key
-        if key in commands:
-            out_str = f"<code>{key}</code>\n\n{commands[key].about}"
-            await reply_text(msg, out_str, parse_mode="html")
-        elif key_ in commands:
-            out_str = f"<code>{key_}</code>\n\n{commands[key_].about}"
-            await reply_text(msg, out_str, parse_mode="html")
+    key = Config.PUBLIC_TRIGGER + key
+    if key in raw_cmds:
+        for cmd in cmds:
+            if cmd.name == key:
+                out_str = f"<code>{key}</code>\n\n{cmd.about}"
+                await reply_text(msg, out_str, parse_mode="html")
+                break
 
 
 @userge.on_cmd("forceplay", about={
