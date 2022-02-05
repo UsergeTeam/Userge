@@ -317,10 +317,17 @@ async def convert_usermode(msg: Message):
                 setattr(generate_session, "phone_code", code)
                 if await generate_session():
                     session_string = await generate_session.client.export_session_string()
-                    await msg.reply(
-                        "DONE! User Mode will be enabled after restart."
-                    )
-                    Config.HEROKU_APP.config()["HU_STRING_SESSION"] = session_string
+                    if Config.HEROKU_APP:
+                        await msg.reply(
+                            "DONE! User Mode will be enabled after restart."
+                        )
+                        Config.HEROKU_APP.config()["HU_STRING_SESSION"] = session_string
+                    else:
+                        await msg.reply(
+                            "Add this in your environ variables\n"
+                            "Key = `HEROKU_STRING_SESION`\nValue 👇\n\n"
+                            f"`{session_string}`"
+                        )
             except SessionPasswordNeeded:
                 await msg.reply(
                     "Your account have two-step verification code.\n"
@@ -337,10 +344,17 @@ async def convert_usermode(msg: Message):
                 setattr(generate_session, "two_step_code", two_step)
                 if await generate_session():
                     session_string = await generate_session.client.export_session_string()
-                    await msg.reply(
-                        "DONE! User Mode will be enabled after restart."
-                    )
-                    Config.HEROKU_APP.config()["HU_STRING_SESSION"] = session_string
+                    if Config.HEROKU_APP:
+                        await msg.reply(
+                            "DONE! User Mode will be enabled after restart."
+                        )
+                        Config.HEROKU_APP.config()["HU_STRING_SESSION"] = session_string
+                    else:
+                        await msg.reply(
+                            "Add this in your environ variables\n"
+                            "Key = `HEROKU_STRING_SESION`\nValue 👇\n\n"
+                            f"`{session_string}`"
+                        )
             except Exception as e:
                 delattr(generate_session, "two_step_code")
                 await msg.reply(str(e))
