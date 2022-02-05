@@ -17,7 +17,7 @@ from pyrogram.errors import SessionPasswordNeeded, YouBlockedUser
 
 from userge.core.ext import RawClient
 from userge import userge, Message, Config, get_collection
-from userge.utils import terminate
+from userge.utils import terminate, extract_entities
 from userge.utils.exceptions import StopConversation
 
 SAVED_SETTINGS = get_collection("CONFIGS")
@@ -418,12 +418,10 @@ async def convert_botmode(msg: Message):
             if 'this username is already taken' in response.text:
                 await msg.err("username already taken, try with different username.")
             else:
-                for i in response.entities:
-                    if i.type == "code":
-                        token = response.text[i.offset: i.offset + i.length]
-                        await msg.edit("DONE! Bot Mode will be enabled after restart.")
-                        Config.HEROKU_APP.config()["BOT_TOKEN"] = token
-                        break
+                token = extract_entities(response, ["code"])[0]
+                await msg.edit("DONE! Bot Mode will be enabled after restart.")
+                Config.HEROKU_APP.config()["BOT_TOKEN"] = token
+                break
     except StopConversation:
         await msg.err("@botfather didn't respond in time.")
 
