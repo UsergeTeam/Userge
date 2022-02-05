@@ -41,7 +41,7 @@ from pytgcalls.types.input_stream import (
     AudioPiped,
     VideoParameters
 )
-from pytgcalls.types StreamAudioEnded, LeftVoiceChat
+from pytgcalls.types import StreamAudioEnded, LeftVoiceChat
 
 from youtubesearchpython import VideosSearch
 
