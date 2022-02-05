@@ -41,7 +41,7 @@ from pytgcalls.types.input_stream import (
     AudioPiped,
     VideoParameters
 )
-from pytgcalls.types import StreamAudioEnded, LeftVoiceChat
+from pytgcalls.types import StreamAudioEnded, JoinedVoiceChat, LeftVoiceChat
 
 from youtubesearchpython import VideosSearch
 
@@ -663,8 +663,14 @@ async def handler(_: PyTgCalls, update: Update):
     if isinstance(update, StreamAudioEnded):
         await _skip()
 
+    elif isinstance(update, JoinedVoiceChat):
+        await CLIENT.send_message(
+            int('-100' + str(update.chat_id)),
+            "`Joined Voice-Chat Successfully`"
+        )
+
     elif isinstance(update, LeftVoiceChat):
-        await userge.send_message(
+        await CLIENT.send_message(
             CHAT_ID,
             "`Left Voice-Chat Successfully`"
         )
