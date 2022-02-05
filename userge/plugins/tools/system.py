@@ -419,9 +419,15 @@ async def convert_botmode(msg: Message):
                 await msg.err("username already taken, try with different username.")
             else:
                 token = extract_entities(response, ["code"])[0]
-                await msg.edit("DONE! Bot Mode will be enabled after restart.")
-                Config.HEROKU_APP.config()["BOT_TOKEN"] = token
-                break
+                if Config.HEROKU_APP:
+                    await msg.edit("DONE! Bot Mode will be enabled after restart.")
+                    Config.HEROKU_APP.config()["BOT_TOKEN"] = token
+                else:
+                    await msg.reply(
+                        "Add this in your environ variables\n"
+                        "Key = `BOT_TOKEN`\n"
+                        f"Value = `{token}`"
+                    )
     except StopConversation:
         await msg.err("@botfather didn't respond in time.")
 
