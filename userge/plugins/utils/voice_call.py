@@ -41,9 +41,8 @@ from pytgcalls.types.input_stream import (
     AudioPiped,
     VideoParameters
 )
-from pytgcalls.types.stream import (
-    StreamAudioEnded
-)
+from pytgcalls.types StreamAudioEnded, LeftVoiceChat
+
 from youtubesearchpython import VideosSearch
 
 from userge import userge, Message, pool, filters, get_collection, Config
@@ -657,10 +656,28 @@ async def stop_music(msg: Message):
     await reply_text(msg, "`Stopped Userge-Music.`", del_in=5)
 
 
-@call.on_stream_end()
+@call.on_raw_update()
 async def handler(_: PyTgCalls, update: Update):
+    global CHAT_NAME, CHAT_ID, PLAYING, BACK_BUTTON_TEXT  # pylint: disable=global-statement
+
     if isinstance(update, StreamAudioEnded):
         await _skip()
+
+    elif isinstance(update, LeftVoiceChat):
+        await userge.send_message(
+            CHAT_ID,
+            f"`Left Voice-Chat Successfully`"
+        )
+        CHAT_NAME = ""
+        CHAT_ID = 0
+        CONTROL_CHAT_IDS.clear()
+        QUEUE.clear()
+        PLAYING = False
+        BACK_BUTTON_TEXT = ""
+        if CQ_MSG:
+            for msg in CQ_MSG:
+                await msg.delete()
+            CQ_MSG.clear()
 
 
 async def handle_queue():
@@ -677,6 +694,7 @@ async def _skip(clear_queue: bool = False):
         # deleting many messages without bot object 😂😂
         for msg in CQ_MSG:
             await msg.delete()
+        CQ_MSG.clear()
 
     if clear_queue:
         QUEUE.clear()
