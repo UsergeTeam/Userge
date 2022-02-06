@@ -123,7 +123,7 @@ async def add_sudo_cmd(message: Message):
         await SUDO_CMDS_COLLECTION.drop()
         Config.ALLOWED_COMMANDS.clear()
         tmp_ = []
-        restricted = ('addsudo', 'addscmd', 'exec', 'eval', 'term')
+        restricted = ('addsudo', 'addscmd', 'exec', 'eval', 'term', 'load')
         for c_d in list(userge.manager.enabled_commands):
             t_c = c_d.lstrip(Config.CMD_TRIGGER)
             if t_c in restricted:
