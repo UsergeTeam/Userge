@@ -74,9 +74,10 @@ async def handle_download(message: Message, resource: Union[Message, str]) -> Tu
 async def url_download(message: Message, url: str) -> Tuple[str, int]:
     """ download from link """
     # pylint: disable=line-too-long
-    pattern = r"^(?:(?:https|tg):\/\/)?(?:www\.)?(?:t\.me\/|openmessage\?)(?:(?:c\/(\d+))|(\w+)|(?:user_id\=(\d+)))(?:\/|&message_id\=)(\d+)$"
+    pattern = r"^(?:(?:https|tg):\/\/)?(?:www\.)?(?:t\.me\/|openmessage\?)(?:(?:c\/(\d+))|(\w+)|(?:user_id\=(\d+)))(?:\/|&message_id\=)(\d+)(\?single)?$"
     # group 1: private supergroup id, group 2: chat username,
     # group 3: private group/chat id, group 4: message id
+    # group 5: check for download single media from media group
     match = re.search(pattern, url.split('|', 1)[0].strip())
     if match:
         chat_id = None
@@ -89,7 +90,7 @@ async def url_download(message: Message, url: str) -> Tuple[str, int]:
             chat_id = int(match.group(3))
         if chat_id and msg_id:
             resource = await message.client.get_messages(chat_id, msg_id)
-            if resource.media_group_id:
+            if resource.media_group_id and not bool(match.group(5)):
                 output = await handle_download(message, resource)
             elif resource.media:
                 output = await tg_download(message, resource, True)
