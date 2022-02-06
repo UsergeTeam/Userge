@@ -1,6 +1,6 @@
 """ setup sudos """
 
-# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2022 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
@@ -123,8 +123,11 @@ async def add_sudo_cmd(message: Message):
         await SUDO_CMDS_COLLECTION.drop()
         Config.ALLOWED_COMMANDS.clear()
         tmp_ = []
+        restricted = ('addsudo', 'addscmd', 'exec', 'eval', 'term', 'load')
         for c_d in list(userge.manager.enabled_commands):
             t_c = c_d.lstrip(Config.CMD_TRIGGER)
+            if t_c in restricted:
+                continue
             tmp_.append({'_id': t_c})
             Config.ALLOWED_COMMANDS.add(t_c)
         await asyncio.gather(

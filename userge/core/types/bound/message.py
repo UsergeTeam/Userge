@@ -1,6 +1,6 @@
 # pylint: disable=missing-module-docstring
 #
-# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2022 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
@@ -155,22 +155,49 @@ class Message(RawMessage):
     def _filter(self) -> None:
         if self._filtered:
             return
-
         prefix = str(self._kwargs.get('prefix', '-'))
-        del_pre = bool(self._kwargs.get('del_pre', False))
         input_str = self.input_str
-        for i in input_str.strip().split(" "):
-            match = re.match(f"({prefix}[a-zA-Z]+)([0-9]*)$", i)
-            if match:
-                items: Sequence[str] = match.groups()
-                self._flags[items[0].lstrip(prefix).lower() if del_pre
-                            else items[0].lower()] = items[1] or ''
-            else:
-                self._filtered_input_str += ' ' + i
-        self._filtered_input_str = self._filtered_input_str.strip()
-        _LOG.debug(
-            _LOG_STR,
-            f"Filtered Input String => [ {self._filtered_input_str}, {self._flags} ]")
+
+        if input_str.startswith(prefix):
+            del_pre = bool(self._kwargs.get('del_pre', False))
+            pattern = re.compile(rf"({prefix}[A-z]+)(=?\S*)$")
+
+            end = False
+            parts = input_str.split(' ')
+            i = 0
+            while not end and len(parts) > i:
+                part = parts[i]
+                if len(part) == 0:
+                    # ignore empty string
+                    i += 1
+                    continue
+                # part can contain new lines
+                sub_parts = part.split('\n')
+                j = 0
+                while len(sub_parts) > j:
+                    sub_part = sub_parts[j]
+                    if len(sub_part) == 0:
+                        # ignore empty string
+                        j += 1
+                        continue
+                    match = pattern.match(sub_part)
+                    if not match:
+                        end = True
+                        break
+                    items: Sequence[str] = match.groups()
+                    key = items[0].lstrip(prefix).lower() if del_pre else items[0].lower()
+                    self._flags[key] = items[1].lstrip('=') or ''
+                    sub_parts.pop(j)
+                # rebuild that split part
+                parts[i] = '\n'.join(sub_parts).strip()
+                i += 1
+
+            self._filtered_input_str = ' '.join(parts).strip()
+            _LOG.debug(
+                _LOG_STR,
+                f"Filtered Input String => [ {self._filtered_input_str}, {self._flags} ]")
+        else:
+            self._filtered_input_str = input_str
         self._filtered = True
 
     @property
@@ -232,20 +259,25 @@ class Message(RawMessage):
             func = self.edit
         await func("`Process Canceled!`", del_in=5)
 
-    async def send_as_file(self,
-                           text: str,
-                           filename: str = "output.txt",
-                           caption: str = '',
-                           log: Union[bool, str] = False,
-                           delete_message: bool = True) -> 'Message':
+    async def reply_as_file(self,
+                            text: str,
+                            as_raw: bool = False,
+                            filename: str = "output.txt",
+                            caption: str = '',
+                            log: Union[bool, str] = False,
+                            delete_message: bool = True) -> 'Message':
         """\nYou can send large outputs as file
 
         Example:
-                message.send_as_file(text="hello")
+                message.reply_as_file(text="hello")
 
         Parameters:
             text (``str``):
                 Text of the message to be sent.
+
+            as_raw (``bool``, *optional*):
+                If ``False``, the message will be escaped with current parse mode.
+                default to ``False``.
 
             filename (``str``, *optional*):
                 file_name for output file.
@@ -273,6 +305,7 @@ class Message(RawMessage):
             log = self._module
         return await self._client.send_as_file(chat_id=self.chat.id,
                                                text=text,
+                                               as_raw=as_raw,
                                                filename=filename,
                                                caption=caption,
                                                log=log,
@@ -725,12 +758,13 @@ class Message(RawMessage):
                                    del_in: int = -1,
                                    log: Union[bool, str] = False,
                                    sudo: bool = True,
+                                   as_raw: bool = False,
                                    parse_mode: Union[str, object] = object,
                                    disable_web_page_preview: Optional[bool] = None,
                                    reply_markup: InlineKeyboardMarkup = None,
                                    **kwargs) -> Union['Message', bool]:
         """\nThis will first try to message.edit.
-        If it raise MessageTooLong error,
+        If it raises MessageTooLong error,
         run message.send_as_file.
 
         Example:
@@ -750,6 +784,10 @@ class Message(RawMessage):
 
             sudo (``bool``, *optional*):
                 If ``True``, sudo users supported.
+
+            as_raw (``bool``, *optional*):
+                If ``False``, the message will be escaped with current parse mode.
+                default to ``False``.
 
             parse_mode (``str``, *optional*):
                 By default, texts are parsed using both
@@ -784,13 +822,14 @@ class Message(RawMessage):
                                    disable_web_page_preview=disable_web_page_preview,
                                    reply_markup=reply_markup)
         except (MessageTooLong, OSError):
-            return await self.send_as_file(text=text, log=log, **kwargs)
+            return await self.reply_as_file(text=text, as_raw=as_raw, log=log, **kwargs)
 
     async def reply_or_send_as_file(self,
                                     text: str,
                                     del_in: int = -1,
                                     log: Union[bool, str] = False,
                                     quote: Optional[bool] = None,
+                                    as_raw: bool = False,
                                     parse_mode: Union[str, object] = object,
                                     disable_web_page_preview: Optional[bool] = None,
                                     disable_notification: Optional[bool] = None,
@@ -823,6 +862,10 @@ class Message(RawMessage):
                 this parameter will be ignored.
                 Defaults to ``True`` in group chats
                 and ``False`` in private chats.
+
+            as_raw (``bool``, *optional*):
+                If ``False``, the message will be escaped with current parse mode.
+                default to ``False``.
 
             parse_mode (``str``, *optional*):
                 By default, texts are parsed using
@@ -871,12 +914,13 @@ class Message(RawMessage):
                                     reply_to_message_id=reply_to_message_id,
                                     reply_markup=reply_markup)
         except MessageTooLong:
-            return await self.send_as_file(text=text, log=log, **kwargs)
+            return await self.reply_as_file(text=text, as_raw=as_raw, log=log, **kwargs)
 
     async def force_edit_or_send_as_file(self,
                                          text: str,
                                          del_in: int = -1,
                                          log: Union[bool, str] = False,
+                                         as_raw: bool = False,
                                          parse_mode: Union[str, object] = object,
                                          disable_web_page_preview: Optional[bool] = None,
                                          reply_markup: InlineKeyboardMarkup = None,
@@ -899,6 +943,10 @@ class Message(RawMessage):
                 If ``True``, the message will be
                 forwarded to the log channel.
                 If ``str``, the logger name will be updated.
+
+            as_raw (``bool``, *optional*):
+                If ``False``, the message will be escaped with current parse mode.
+                default to ``False``.
 
             parse_mode (``str``, *optional*):
                 By default, texts are parsed using
@@ -927,6 +975,7 @@ class Message(RawMessage):
                 del_in=del_in,
                 log=log,
                 sudo=False,
+                as_raw=as_raw,
                 parse_mode=parse_mode,
                 disable_web_page_preview=disable_web_page_preview,
                 reply_markup=reply_markup,
@@ -936,6 +985,7 @@ class Message(RawMessage):
                 text=text,
                 del_in=del_in,
                 log=log,
+                as_raw=as_raw,
                 parse_mode=parse_mode,
                 disable_web_page_preview=disable_web_page_preview,
                 reply_markup=reply_markup,

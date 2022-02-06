@@ -1,6 +1,6 @@
 # pylint: disable=missing-module-docstring
 #
-# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2022 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
@@ -11,10 +11,10 @@
 __all__ = ['SendAsFile']
 
 import inspect
-import os
+import io
 from typing import Union, Optional
 
-import aiofiles
+from pyrogram.parser import Parser
 
 from userge import logging, Config
 from userge.utils import secure_text
@@ -29,6 +29,7 @@ class SendAsFile(RawClient):  # pylint: disable=missing-class-docstring
     async def send_as_file(self,
                            chat_id: Union[int, str],
                            text: str,
+                           as_raw: bool = False,
                            filename: str = "output.txt",
                            caption: str = '',
                            log: Union[bool, str] = False,
@@ -49,6 +50,10 @@ class SendAsFile(RawClient):  # pylint: disable=missing-class-docstring
             text (``str``):
                 Text of the message to be sent.
 
+            as_raw (``bool``, *optional*):
+                If ``False``, the message will be escaped with current parse mode.
+                default to ``False``.
+
             filename (``str``, *optional*):
                 file_name for output file.
 
@@ -68,15 +73,16 @@ class SendAsFile(RawClient):  # pylint: disable=missing-class-docstring
         """
         if text and chat_id not in Config.AUTH_CHATS:
             text = secure_text(str(text))
-        async with aiofiles.open(filename, "w+", encoding="utf8") as out_file:
-            await out_file.write(text)
+        if not as_raw:
+            text = (await Parser(self).parse(text)).get("message")
+        doc = io.BytesIO(text.encode())
+        doc.name = filename
         _LOG.debug(_LOG_STR, f"Uploading {filename} To Telegram")
         msg = await self.send_document(chat_id=chat_id,
-                                       document=filename,
+                                       document=doc,
                                        caption=caption[:1024],
                                        disable_notification=True,
                                        reply_to_message_id=reply_to_message_id)
-        os.remove(filename)
         module = inspect.currentframe().f_back.f_globals['__name__']
         if log:
             await self._channel.fwd_msg(msg, module if isinstance(log, bool) else log)

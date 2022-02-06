@@ -1,6 +1,6 @@
 # pylint: disable=missing-module-docstring
 #
-# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2022 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
@@ -99,6 +99,8 @@ class Filter:
                  allow_via_bot: bool,
                  check_client: bool,
                  check_downpath: bool,
+                 stop_propagation: bool,
+                 continue_propagation: bool,
                  check_perm: bool,
                  check_change_info_perm: bool,
                  check_edit_perm: bool,
@@ -115,6 +117,8 @@ class Filter:
         self.allow_via_bot = allow_via_bot
         self.check_client = check_client
         self.check_downpath = check_downpath
+        self.stop_propagation = stop_propagation
+        self.continue_propagation = continue_propagation
         self.check_perm = check_perm
         self.check_change_info_perm = check_change_info_perm
         self.check_edit_perm = check_edit_perm
@@ -126,16 +130,17 @@ class Filter:
         self.doc: Optional[str]
         self.plugin_name: str
         self._client = client
-        self._group = group
+        self._group = group if group > -5 else -4
         self._enabled = True
         self._loaded = False
         self._func: Callable[[Any], Any]
         self._handler: Handler
 
     @classmethod
-    def parse(cls, **kwargs: Union[RawFilter, '_client.Userge', int, bool]) -> 'Filter':
+    def parse(cls, filters: RawFilter, **kwargs: Union['_client.Userge', int, bool]) -> 'Filter':
         """ parse filter """
-        return cls(**Filter._parse(**kwargs))  # pylint: disable=protected-access
+        # pylint: disable=protected-access
+        return cls(**Filter._parse(filters=filters & ~rawfilters.edited, **kwargs))
 
     @staticmethod
     def _parse(allow_private: bool,

@@ -1,6 +1,6 @@
 """ upload , rename and convert telegram files """
 
-# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2022 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
@@ -10,7 +10,6 @@
 
 import os
 import io
-import re
 import time
 from datetime import datetime
 from pathlib import Path
@@ -22,7 +21,8 @@ from hachoir.parser import createParser
 from pyrogram.errors.exceptions import FloodWait
 
 from userge import userge, Config, Message
-from userge.utils import sort_file_name_key, progress, take_screen_shot, humanbytes
+from userge.utils import (
+    is_url, sort_file_name_key, progress, take_screen_shot, humanbytes)
 from userge.utils.exceptions import ProcessCanceled
 from userge.plugins.misc.download import tg_download, url_download
 
@@ -81,9 +81,9 @@ async def upload_to_tg(message: Message):
     if not path_:
         await message.err("Input not foud!")
         return
-    is_url = re.search(r"(?:https?|ftp)://[^|\s]+\.[^|\s]+", path_)
+    is_path_url = is_url(path_)
     del_path = False
-    if is_url:
+    if is_path_url:
         del_path = True
         try:
             path_, _ = await url_download(message, path_)
@@ -283,7 +283,7 @@ async def audio_upload(message: Message, path, del_path: bool = False,
             chat_id=message.chat.id,
             audio=str_path,
             thumb=thumb,
-            caption=f"{path.name} [ {file_size} ]",
+            caption=f"{path.name}\n[ {file_size} ]",
             title=title,
             performer=artist,
             duration=duration,

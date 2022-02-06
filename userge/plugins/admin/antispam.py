@@ -1,6 +1,6 @@
 """ setup antispam """
 
-# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2022 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
@@ -21,10 +21,10 @@ from pyrogram.errors.exceptions.bad_request_400 import (
 from pyrogram.types import User, Chat
 
 from userge import userge, Message, Config, get_collection, filters, pool
+from .gban import is_whitelist
 
 SAVED_SETTINGS = get_collection("CONFIGS")
 GBAN_USER_BASE = get_collection("GBAN_USER")
-WHITELIST = get_collection("WHITELIST_USER")
 
 CHANNEL = userge.getCLogger(__name__)
 LOG = userge.getLogger(__name__)
@@ -65,18 +65,18 @@ async def antispam_(message: Message):
     await SAVED_SETTINGS.update_one(_ID, {"$set": {'data': Config.ANTISPAM_SENTRY}}, upsert=True)
 
 
-@userge.on_filters(filters.group & filters.new_chat_members, group=1, check_restrict_perm=True)
+@userge.on_filters(filters.group & filters.new_chat_members, group=1,
+                   continue_propagation=True, check_restrict_perm=True)
 async def gban_at_entry(message: Message):
     """ handle gbans """
     if isinstance(HANDLER, Handler):
         try:
             for user in message.new_chat_members:
-                if await WHITELIST.find_one({'user_id': user.id}):
+                if await is_whitelist(user.id):
                     continue
                 await HANDLER.handle(message, user)
         except (ChatAdminRequired, UserAdminInvalid):
             pass
-    message.continue_propagation()
 
 
 class Handler(ABC):
@@ -111,7 +111,7 @@ class AbstractHandler(Handler, ABC):
 
         chat = message.chat
         try:
-            await message.client.kick_chat_member(chat.id, user_id)
+            await message.client.ban_chat_member(chat.id, user_id)
         except PeerIdInvalid:
             return False
 

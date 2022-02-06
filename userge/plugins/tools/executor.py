@@ -1,6 +1,6 @@
 """ run shell or python command(s) """
 
-# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2022 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
@@ -31,17 +31,31 @@ from userge.utils import runcmd
 CHANNEL = userge.getCLogger()
 
 
+def input_checker(func: Callable[[Message], Awaitable[Any]]):
+    async def wrapper(message: Message) -> None:
+        cmd = message.input_str
+        if not cmd:
+            await message.err("No Command Found!")
+            return
+        if "config.env" in cmd:
+            await message.edit("`That's a dangerous operation! Not Permitted!`")
+            return
+        await func(message)
+    return wrapper
+
+
 @userge.on_cmd("exec", about={
     'header': "run commands in exec",
+    'flags': {'-r': "raw text when send as file"},
     'usage': "{tr}exec [commands]",
     'examples': "{tr}exec echo \"Userge\""}, allow_channels=False)
+@input_checker
 async def exec_(message: Message):
     """ run commands in exec """
-    cmd = await init_func(message)
-    if cmd is None:
-        return
-
     await message.edit("`Executing exec ...`")
+    cmd = message.filtered_input_str
+    as_raw = '-r' in message.flags
+
     try:
         out, err, ret, pid = await runcmd(cmd)
     except Exception as t_e:  # pylint: disable=broad-except
@@ -52,6 +66,7 @@ async def exec_(message: Message):
 __Command:__\n`{cmd}`\n__PID:__\n`{pid}`\n__RETURN:__\n`{ret}`\n\n\
 **stderr:**\n`{err or 'no error'}`\n\n**stdout:**\n``{out or 'no output'}`` "
     await message.edit_or_send_as_file(text=output,
+                                       as_raw=as_raw,
                                        parse_mode='md',
                                        filename="exec.txt",
                                        caption=cmd)
@@ -64,7 +79,8 @@ _EVAL_TASKS: Dict[asyncio.Future, str] = {}
 @userge.on_cmd("eval", about={
     'header': "run python code line | lines",
     'flags': {
-        '-s': "silent mode (hide STDIN)",
+        '-r': "raw text when send as file",
+        '-s': "silent mode (hide input code)",
         '-p': "run in a private session",
         '-n': "spawn new main session and run",
         '-l': "list all running eval tasks",
@@ -77,6 +93,7 @@ _EVAL_TASKS: Dict[asyncio.Future, str] = {}
         "{tr}eval 5 + 6", "{tr}eval -s 5 + 6",
         "{tr}eval -p x = 'private_value'", "{tr}eval -n y = 'new_value'",
         "{tr}eval -c2", "{tr}eval -ca", "{tr}eval -l"]}, allow_channels=False)
+@input_checker
 async def eval_(message: Message):
     """ run python code """
     for t in tuple(_EVAL_TASKS):
@@ -114,31 +131,16 @@ async def eval_(message: Message):
         await message.edit(f"Canceled eval task [{t_id}] !", del_in=5)
         return
 
-    cmd = await init_func(message)
-    if cmd is None:
-        return
-
-    _flags = []
-    for _ in range(3):
-        _found = False
-        for f in ('-s', '-p', '-n'):
-            if cmd.startswith(f):
-                _found = True
-                _flags.append(f)
-                cmd = cmd[len(f):].strip()
-                if not cmd:
-                    break
-        if not _found or not cmd:
-            break
-
+    cmd = message.filtered_input_str
+    as_raw = '-r' in flags
     if not cmd:
         await message.err("Unable to Parse Input!")
         return
 
-    silent_mode = '-s' in _flags
-    if '-n' in _flags:
+    silent_mode = '-s' in flags
+    if '-n' in flags:
         context_type = _ContextType.NEW
-    elif '-p' in _flags:
+    elif '-p' in flags:
         context_type = _ContextType.PRIVATE
     else:
         context_type = _ContextType.GLOBAL
@@ -158,6 +160,7 @@ async def eval_(message: Message):
             await msg.edit(f"**Logs**: {CHANNEL.get_link(msg_id)}")
         elif final:
             await msg.edit_or_send_as_file(text=final,
+                                           as_raw=as_raw,
                                            parse_mode='md',
                                            filename="eval.txt",
                                            caption=cmd)
@@ -200,15 +203,16 @@ async def eval_(message: Message):
 
 @userge.on_cmd("term", about={
     'header': "run commands in shell (terminal)",
+    'flags': {'-r': "raw text when send as file"},
     'usage': "{tr}term [commands]",
     'examples': "{tr}term echo \"Userge\""}, allow_channels=False)
+@input_checker
 async def term_(message: Message):
     """ run commands in shell (terminal with live update) """
-    cmd = await init_func(message)
-    if cmd is None:
-        return
-
     await message.edit("`Executing terminal ...`")
+    cmd = message.filtered_input_str
+    as_raw = '-r' in message.flags
+
     try:
         parsed_cmd = parse_py_template(cmd, message)
     except Exception as e:  # pylint: disable=broad-except
@@ -240,18 +244,7 @@ async def term_(message: Message):
 
     out_data = f"{output}<pre>{t_obj.output}</pre>\n{prefix}"
     await message.edit_or_send_as_file(
-        out_data, parse_mode='html', filename="term.txt", caption=cmd)
-
-
-async def init_func(message: Message):
-    cmd = message.input_str
-    if not cmd:
-        await message.err("No Command Found!")
-        return None
-    if "config.env" in cmd:
-        await message.edit("`That's a dangerous operation! Not Permitted!`")
-        return None
-    return cmd
+        out_data, as_raw=as_raw, parse_mode='html', filename="term.txt", caption=cmd)
 
 
 def parse_py_template(cmd: str, msg: Message):
@@ -332,7 +325,7 @@ class _Wrapper:
         self._original = original
 
     def __getattr__(self, name: str):
-        return getattr(_PROXIES.get(threading.currentThread().ident, self._original), name)
+        return getattr(_PROXIES.get(threading.current_thread().ident, self._original), name)
 
 
 sys.stdout = _Wrapper(sys.stdout)
@@ -343,7 +336,7 @@ sys.__stderr__ = _Wrapper(sys.__stderr__)
 
 @contextmanager
 def redirect() -> io.StringIO:
-    ident = threading.currentThread().ident
+    ident = threading.current_thread().ident
     source = io.StringIO()
     _PROXIES[ident] = source
     try:

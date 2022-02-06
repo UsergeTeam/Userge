@@ -1,6 +1,6 @@
 """ work with paths or files """
 
-# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2022 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
@@ -415,7 +415,7 @@ async def dclear_(message: Message):
         rmtree(Config.DOWN_PATH, True)
         await message.edit(
             f'path : `{Config.DOWN_PATH}` **cleared** successfully!', del_in=5)
-    os.makedirs(Config.DOWN_PATH)
+    os.makedirs(Config.DOWN_PATH, exist_ok=True)
 
 
 @userge.on_cmd('dremove', about={
@@ -437,7 +437,7 @@ async def dremove_(message: Message) -> None:
     await message.edit(f"path : `{path}` **removed** successfully!", del_in=5)
 
 
-@userge.on_cmd('drename ([^|]+)\|([^|]+)', about={  # noqa
+@userge.on_cmd(r'drename ([^|]+)\|([^|]+)', about={  # noqa
     'header': "rename a directory or file",
     'usage': "{tr}drename [path / name] | [new name]"}, allow_channels=False)
 async def drename_(message: Message) -> None:

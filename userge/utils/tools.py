@@ -1,6 +1,6 @@
 # pylint: disable=missing-module-docstring
 #
-# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2022 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
@@ -18,7 +18,7 @@ from typing import Tuple, List, Optional, Iterator, Union
 
 from emoji import get_emoji_regexp
 from html_telegraph_poster import TelegraphPoster
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 import userge
 
@@ -35,6 +35,10 @@ def import_ytdl():
     except ModuleNotFoundError:
         _LOG.warning(f"please fix your requirements.txt file [{req_module}]")
         raise
+
+
+def is_url(url: str) -> bool:
+    return bool(re.match(r"(?:https?|ftp)://[^|\s]+\.[^|\s]+", url))
 
 
 def sort_file_name_key(file_name: str) -> tuple:
@@ -216,3 +220,44 @@ def is_command(cmd: str) -> bool:
     elif _key in commands:
         is_cmd = True
     return is_cmd
+
+
+def extract_entities(message: Message, typeofentity: List[str]) -> List[str]:
+    """ gets a message and returns a list of entity_type in the message
+    """
+    tero = []
+    entities = message.entities or message.caption_entities or []
+    text = message.text or message.caption or ""
+    for entity in entities:
+        url = None
+        cet = entity.type
+        if entity.type in [
+            "url",
+            "mention",
+            "hashtag",
+            "cashtag",
+            "bot_command",
+            "url",
+            "email",
+            "phone_number",
+            "bold",
+            "italic",
+            "underline",
+            "strikethrough",
+            "spoiler",
+            "code",
+            "pre",
+        ]:
+            offset = entity.offset
+            length = entity.length
+            url = text[offset:offset + length]
+
+        elif entity.type == "text_link":
+            url = entity.url
+
+        elif entity.type == "text_mention":
+            url = entity.user
+
+        if url and cet in typeofentity:
+            tero.append(url)
+    return tero

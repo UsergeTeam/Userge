@@ -34,6 +34,11 @@ RUN mkdir -p /tmp/ && \
 ENV GOOGLE_CHROME_DRIVER /usr/bin/chromedriver
 ENV GOOGLE_CHROME_BIN /usr/bin/google-chrome-stable
 
+# install node-js
+RUN curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
+    apt-get install -y nodejs && \
+    npm i -g npm
+
 # install rar
 RUN mkdir -p /tmp/ && \
     cd /tmp/ && \
@@ -44,8 +49,8 @@ RUN mkdir -p /tmp/ && \
     # clean up
     rm -rf /tmp/rar*
 
-# clone repository
-RUN git clone https://github.com/UsergeTeam/Userge /app
+# copy the content of the local src directory to the working directory
+COPY . .
 
 # install dependencies
 RUN pip install -r requirements.txt

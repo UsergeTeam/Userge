@@ -1,6 +1,6 @@
 """ Anti-Flood Module to control Spam """
 
-# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2022 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
@@ -180,11 +180,11 @@ async def anti_flood_handler(msg: Message):
 
     if check_flood(chat_id, user_id):
         if mode.lower() == 'ban':
-            await msg.client.kick_chat_member(
+            await msg.client.ban_chat_member(
                 chat_id, user_id)
             exec_str = "#BANNED"
         elif mode.lower() == 'kick':
-            await msg.client.kick_chat_member(
+            await msg.client.ban_chat_member(
                 chat_id, user_id, int(time.time() + 60))
             exec_str = "#KICKED"
         else:
