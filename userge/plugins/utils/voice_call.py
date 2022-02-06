@@ -18,9 +18,13 @@ import shlex
 import shutil
 from json.decoder import JSONDecodeError
 from traceback import format_exc
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
+from pyrogram import ContinuePropagation
 from pyrogram.raw import functions
+from pyrogram.raw.base import Message as BaseMessage
+from pyrogram.raw.functions.phone import GetGroupCall
+from pyrogram.raw.types import UpdateGroupCallParticipants, InputGroupCall, GroupCall
 from pyrogram.types import (
     InlineKeyboardMarkup,
     InlineKeyboardButton,
@@ -35,14 +39,11 @@ from pytgcalls.exceptions import (
     AlreadyJoinedError,
     NotInGroupCallError
 )
-from pytgcalls.types import Update
+from pytgcalls.types import Update, StreamAudioEnded
 from pytgcalls.types.input_stream import (
     AudioVideoPiped,
     AudioPiped,
     VideoParameters
-)
-from pytgcalls.types.stream import (
-    StreamAudioEnded
 )
 from youtubesearchpython import VideosSearch
 
@@ -57,6 +58,7 @@ call._env_checker.check_environment()  # pylint: disable=protected-access
 
 
 CHANNEL = userge.getCLogger(__name__)
+LOG = userge.getLogger()
 
 VC_DB = get_collection("VC_CMDS_TOGGLE")
 CMDS_FOR_ALL = False
@@ -302,6 +304,7 @@ async def joinvc(msg: Message):
         CHAT_ID, CHAT_NAME, CONTROL_CHAT_IDS = 0, '', []
         return await reply_text(msg, f'Error during Joining the Call\n`{e}`')
 
+    await _on_join()
     await reply_text(msg, "`Joined VoiceChat Succesfully`", del_in=5)
 
 
@@ -310,22 +313,13 @@ async def joinvc(msg: Message):
     'usage': "{tr}leavevc"})
 async def leavevc(msg: Message):
     """ leave voice chat """
-    global CHAT_NAME, CHAT_ID, PLAYING, BACK_BUTTON_TEXT  # pylint: disable=global-statement
-
     await msg.delete()
-
     if CHAT_NAME:
         try:
             await call.leave_group_call(CHAT_ID)
         except (NotInGroupCallError, NoActiveGroupCall):
             pass
-        CHAT_NAME = ""
-        CHAT_ID = 0
-        CONTROL_CHAT_IDS.clear()
-        QUEUE.clear()
-        PLAYING = False
-        BACK_BUTTON_TEXT = ""
-
+        await _on_left()
         await reply_text(msg, "`Left Voicechat`", del_in=5)
     else:
         await reply_text(msg, "`I didn't find any Voice-Chat to leave")
@@ -591,16 +585,13 @@ async def set_volume(msg: Message):
             await reply_text(msg, "Invalid Arguments!")
     else:
         try:
-
             await userge.bot.send_message(
                 msg.chat.id,
                 "**🎚 Volume Control**\n\n`Click on the button to change volume"
                 " or Click last option to Enter volume manually.`",
                 reply_markup=volume_button_markup()
             )
-
         except Exception:
-
             await reply_text(msg, "Input not found!")
 
 
@@ -613,7 +604,6 @@ async def set_volume(msg: Message):
 async def skip_music(msg: Message):
     """ skip music in vc """
     await msg.delete()
-
     await _skip()
     await reply_text(msg, "`Skipped`")
 
@@ -627,7 +617,6 @@ async def skip_music(msg: Message):
 async def pause_music(msg: Message):
     """ pause music in vc """
     await msg.delete()
-
     await call.pause_stream(CHAT_ID)
     await reply_text(msg, "⏸️ **Paused** Music Successfully")
 
@@ -653,8 +642,55 @@ async def stop_music(msg: Message):
     """ stop music in vc """
     await msg.delete()
     await _skip(True)
-
     await reply_text(msg, "`Stopped Userge-Music.`", del_in=5)
+
+
+@userge.on_raw_update()
+async def _on_raw(_, m: BaseMessage, *__) -> None:
+    if isinstance(m, UpdateGroupCallParticipants):
+        # TODO: chat_id
+        for participant in m.participants:
+            if participant.is_self:
+                group_call = await userge.send(
+                    GetGroupCall(call=InputGroupCall(
+                        access_hash=m.call.access_hash,
+                        id=m.call.id), limit=1)
+                )
+                if participant.just_joined:
+                    await _on_join(group_call.call)
+                elif participant.left:
+                    await _on_left(group_call.call)
+                break
+    raise ContinuePropagation
+
+
+async def _on_join(group_call: Optional[GroupCall] = None) -> None:
+    if group_call:
+        LOG.info("Joined group call: [%s], participants: [%s]",
+                 group_call.title, group_call.participants_count)
+    else:
+        LOG.info("Joined group call: [%s] [joinvc]", CHAT_NAME)
+
+
+async def _on_left(group_call: Optional[GroupCall] = None) -> None:
+    global CHAT_NAME, CHAT_ID, PLAYING, BACK_BUTTON_TEXT  # pylint: disable=global-statement
+
+    if group_call:
+        LOG.info("Left group call: [%s], participants: [%s]",
+                 group_call.title, group_call.participants_count)
+    else:
+        LOG.info("Left group call: [%s] [leavevc]", CHAT_NAME)
+
+    CHAT_NAME = ""
+    CHAT_ID = 0
+    CONTROL_CHAT_IDS.clear()
+    QUEUE.clear()
+    PLAYING = False
+    BACK_BUTTON_TEXT = ""
+    if CQ_MSG:
+        for msg in CQ_MSG:
+            await msg.delete()
+        CQ_MSG.clear()
 
 
 @call.on_stream_end()
@@ -665,7 +701,6 @@ async def handler(_: PyTgCalls, update: Update):
 
 async def handle_queue():
     global PLAYING  # pylint: disable=global-statement
-
     PLAYING = True
     await _skip()
 
@@ -677,6 +712,7 @@ async def _skip(clear_queue: bool = False):
         # deleting many messages without bot object 😂😂
         for msg in CQ_MSG:
             await msg.delete()
+        CQ_MSG.clear()
 
     if clear_queue:
         QUEUE.clear()

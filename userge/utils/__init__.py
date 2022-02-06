@@ -22,4 +22,4 @@ from .tools import (sort_file_name_key, # noqa
                     take_screen_shot,
                     parse_buttons,
                     is_command,
-                    extract_urls)
+                    extract_entities)
