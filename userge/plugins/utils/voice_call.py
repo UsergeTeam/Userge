@@ -91,7 +91,6 @@ async def _init():
     data = await VC_DB.find_one({'_id': 'VC_CMD_TOGGLE'})
     if data:
         CMDS_FOR_ALL = bool(data['is_enable'])
-    await call.start()  # Initialising NodeJS
 
 
 async def reply_text(
@@ -269,6 +268,9 @@ async def joinvc(msg: Message):
     else:
         peer = await userge.resolve_peer(userge.id)
     try:
+        # Initialising NodeJS
+        if not call.is_connected:
+            await call.start()
         # Joining with a dummy audio, since py-tgcalls wont allow joining
         # without file.
         await call.join_group_call(
