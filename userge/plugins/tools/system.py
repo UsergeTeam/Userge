@@ -421,6 +421,7 @@ async def convert_botmode(msg: Message):
             if 'Sorry' in response.text:
                 await msg.err(response.text)
             else:
+                await userge.promote_chat_member(Config.LOG_CHANNEL_ID, username)
                 token = extract_entities(response, ["code"])[0]
                 if Config.HEROKU_APP:
                     await msg.edit("DONE! Bot Mode will be enabled after restart.")
