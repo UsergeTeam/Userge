@@ -324,7 +324,7 @@ async def convert_usermode(msg: Message):
                         Config.HEROKU_APP.config()["HU_STRING_SESSION"] = session_string
                     else:
                         await msg.reply(
-                            "Add this in your environ variables\n"
+                            "Add this in your environmental variables\n"
                             "Key = `HEROKU_STRING_SESION`\nValue 👇\n\n"
                             f"`{session_string}`"
                         )
@@ -351,7 +351,7 @@ async def convert_usermode(msg: Message):
                         Config.HEROKU_APP.config()["HU_STRING_SESSION"] = session_string
                     else:
                         await msg.reply(
-                            "Add this in your environ variables\n"
+                            "Add this in your environmental variables\n"
                             "Key = `HEROKU_STRING_SESION`\nValue 👇\n\n"
                             f"`{session_string}`"
                         )
@@ -411,20 +411,24 @@ async def convert_botmode(msg: Message):
             except YouBlockedUser:
                 await userge.unblock_user('botfather')
                 await conv.send_message('/start')
-            await conv.send_messge('/newbot')
+            await conv.get_response()
+            await conv.send_message('/newbot')
+            await conv.get_response()
             await conv.send_message(name)
+            await conv.get_response()
             await conv.send_message(username)
             response = await conv.get_response(mark_read=True)
-            if 'this username is already taken' in response.text:
-                await msg.err("username already taken, try with different username.")
+            if 'Sorry' in response.text:
+                await msg.err(response.text)
             else:
+                await userge.promote_chat_member(Config.LOG_CHANNEL_ID, username)
                 token = extract_entities(response, ["code"])[0]
                 if Config.HEROKU_APP:
                     await msg.edit("DONE! Bot Mode will be enabled after restart.")
                     Config.HEROKU_APP.config()["BOT_TOKEN"] = token
                 else:
                     await msg.reply(
-                        "Add this in your environ variables\n"
+                        "Add this in your environmental variables\n"
                         "Key = `BOT_TOKEN`\n"
                         f"Value = `{token}`"
                     )
