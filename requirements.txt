@@ -17,13 +17,13 @@ heroku3
 html-telegraph-poster
 motor
 oauth2client
-Pillow==8.3.2
+Pillow==9.0.0
 psutil
 pybase64
-pyrogram>=1.2.20
+pyrogram>=1.3.6
 pySmartDL
 pysocks
-pytgcalls==2.1.0
+py-tgcalls==0.8.5
 python-dotenv
 pytz
 rarfile
@@ -38,7 +38,7 @@ stagger
 telegraph
 tgcrypto
 urbandict==0.5
-UsergeAntiSpamApi==0.1.7
+UsergeAntiSpamApi==0.1.8
 wget
 wikipedia
 youtube_dl>=2021.1.8

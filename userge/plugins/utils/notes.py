@@ -1,6 +1,6 @@
 """ setup notes """
 
-# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2022 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
@@ -160,7 +160,7 @@ async def mv_to_global_note(message: Message) -> None:
                       'usage': "#[notename]\nget notename"},
                group=-1,
                name="get_note",
-               trigger='',
+               trigger=None,
                filter_me=False,
                check_client=True)
 async def get_note(message: Message) -> None:

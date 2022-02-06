@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2022 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
@@ -6,9 +6,8 @@
 #
 # All rights reserved.
 
-import os
-
 import aiofiles
+from aiofiles import os
 from PIL import Image
 from telegraph import upload_file
 from userge import userge, Message, Config, pool
@@ -56,7 +55,7 @@ async def telegraph_(message: Message):
             header = message.input_str
             if not header:
                 header = "Pasted content by @theuserge"
-            os.remove(dl_loc)
+            await os.remove(dl_loc)
         else:
             content = message.reply_to_message.text.html
             if "|" in content and not content.startswith("<"):
@@ -79,14 +78,14 @@ async def telegraph_(message: Message):
     if replied.sticker:
         img = Image.open(dl_loc).convert('RGB')
         img.save(f'{Config.DOWN_PATH}/userge.png', 'png')
-        os.remove(dl_loc)
+        await os.remove(dl_loc)
         dl_loc = f'{Config.DOWN_PATH}/userge.png'
     await message.edit("`uploading to telegraph...`")
     try:
-        response = upload_file(dl_loc)
+        response = await pool.run_in_thread(upload_file)(dl_loc)
     except Exception as t_e:
-        await message.err(t_e)
+        await message.err(str(t_e))
     else:
         await message.edit(f"**[Here Your Telegra.ph Link!](https://telegra.ph{response[0]})**")
     finally:
-        os.remove(dl_loc)
+        await os.remove(dl_loc)

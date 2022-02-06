@@ -1,6 +1,6 @@
 """ auto welcome and left messages """
 
-# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2022 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
@@ -258,4 +258,3 @@ async def raw_say(message: Message, name, collection):
                                      user_id=user.id,
                                      reply_to_message_id=message.message_id,
                                      del_in=Config.WELCOME_DELETE_TIMEOUT)
-    message.stop_propagation()

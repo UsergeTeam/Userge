@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2022 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
@@ -97,6 +97,10 @@ upgradePip() {
 
 installReq() {
     pip3 install -r $1/requirements.txt &> /dev/null
+}
+
+installCustomReq() {
+    pip3 install $(tr ' ' '\n' <<< "$1") &> /dev/null
 }
 
 printLine() {

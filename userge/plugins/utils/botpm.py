@@ -1,6 +1,6 @@
 """ Bot Pm """
 
-# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2022 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
@@ -99,8 +99,8 @@ if userge.has_bot:
     userge_id = userge.id if userge.dual_mode else Config.OWNER_ID[0]
     bot = userge.bot
 
-    @bot.on_message(
-        ~bannedFilter & ~filters.edited & filters.private & filters.command("start"), group=1)
+    @bot.on_message(~bannedFilter & ~filters.edited
+                    & filters.private & filters.command("start"), group=1)
     async def start(_, msg: PyroMessage):
         user_id = msg.from_user.id
         user_dict = await bot.get_user_dict(user_id)
@@ -137,24 +137,13 @@ if userge.has_bot:
             return
         text = "Hey, you can configure me here."
         markup = InlineKeyboardMarkup([[InlineKeyboardButton("Settings", callback_data="stngs")]])
-        cmd = msg.command[1] if len(msg.command) > 1 else ''
-        if cmd and ' ' not in msg.text:
-            commands = userge.manager.enabled_commands
-            key = Config.CMD_TRIGGER + cmd
-            key_ = Config.SUDO_TRIGGER + cmd
-            if cmd in commands:
-                out_str = f"<code>{cmd}</code>\n\n{commands[cmd].about}"
-            elif key in commands:
-                out_str = f"<code>{key}</code>\n\n{commands[key].about}"
-            elif key_ in commands:
-                out_str = f"<code>{key_}</code>\n\n{commands[key_].about}"
-            else:
-                out_str = f"<i>No Command Found for</i>: <code>{cmd}</code>"
-            return await msg.reply(out_str, parse_mode='html', disable_web_page_preview=True)
+        if len(msg.command) > 1:
+            #  https://github.com/UsergeTeam/Userge/blob/alpha/userge/plugins/help.py#L104
+            return
         await send_start_text(msg, text, path, markup)
 
-    @bot.on_message(
-        filters.user(userge_id) & filters.private & filters.command("settext"), group=1)
+    @bot.on_message(filters.user(userge_id) & ~filters.edited
+                    & filters.private & filters.command("settext"), group=1)
     async def set_text(_, msg: PyroMessage):
         global START_TEXT  # pylint: disable=global-statement
         text = msg.text.split(' ', maxsplit=1)[1] if ' ' in msg.text else ''
@@ -170,7 +159,8 @@ if userge.has_bot:
             )
             await msg.reply("Custom Bot Pm text Saved Successfully.")
 
-    @bot.on_message(filters.user(userge_id) & filters.private & filters.command("pmban"), group=1)
+    @bot.on_message(filters.user(userge_id) & ~filters.edited
+                    & filters.private & filters.command("pmban"), group=1)
     async def pm_ban(_, msg: PyroMessage):
         replied = msg.reply_to_message
         user_id = msg.text.split(' ', maxsplit=1)[1] if ' ' in msg.text else ''
@@ -207,8 +197,8 @@ if userge.has_bot:
             except Exception:
                 pass
 
-    @bot.on_message(
-        filters.user(userge_id) & filters.private & filters.command("pmunban"), group=1)
+    @bot.on_message(filters.user(userge_id) & ~filters.edited
+                    & filters.private & filters.command("pmunban"), group=1)
     async def pm_unban(_, msg: PyroMessage):
         replied = msg.reply_to_message
         user_id = msg.text.split(' ', maxsplit=1)[1] if ' ' in msg.text else ''
@@ -245,9 +235,8 @@ if userge.has_bot:
             except Exception:
                 pass
 
-    @bot.on_message(
-        botPmFilter & ~bannedFilter & ~filters.edited & filters.private & filters.incoming, group=1
-    )
+    @bot.on_message(botPmFilter & ~bannedFilter & ~filters.edited
+                    & filters.private & filters.incoming, group=1)
     async def bot_pm_handler(_, msg: PyroMessage):
         if not hasattr(msg, '_client'):
             setattr(msg, '_client', _)
@@ -446,9 +435,11 @@ After Adding a var, you can see your media when you start your Bot.
             _USERS.append(user_id)
             await USERS.insert_one({"user_id": user_id})
         try:
-            if msg.sticker:
-                await bot.send_message(userge_id, f"{msg.from_user.mention} sent you a sticker.")
             m = await msg.forward(userge_id)
+            if msg.audio:
+                await bot.send_message(userge_id, f"{msg.from_user.mention} sent you a audio file.",
+                                       reply_to_message_id=m.message_id)
+                m.forward_sender_name = msg.from_user.first_name
             if m.forward_from or m.forward_sender_name or m.forward_date:
                 id_ = 0
                 for a, b in _U_ID_F_M_ID.items():

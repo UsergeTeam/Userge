@@ -1,6 +1,6 @@
 """ manage your group """
 
-# Copyright (C) 2020-2021 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2022 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
@@ -146,7 +146,7 @@ async def ban_user(message: Message):
     await message.edit("`Trying to Ban User.. Hang on!! ⏳`")
     _period, _time = _get_period_and_time(message.flags)
     try:
-        await message.chat.kick_member(user_id, _period)
+        await message.chat.ban_member(user_id, _period)
     except UsernameInvalid:
         await message.err("invalid username, try again with valid info ⚠")
     except PeerIdInvalid:
@@ -250,7 +250,7 @@ async def kick_usr(message: Message):
 
     await message.edit("`Trying to Kick User.. Hang on!! ⏳`")
     try:
-        await message.chat.kick_member(user_id, until_date=int(time.time() + 59))
+        await message.chat.ban_member(user_id, until_date=int(time.time() + 59))
     except UsernameInvalid:
         await message.err("invalid username, try again with valid info ⚠")
     except PeerIdInvalid:
@@ -366,7 +366,7 @@ async def zombie_clean(message: Message):
             async for member in message.client.iter_chat_members(chat_id):
                 if member.user.is_deleted:
                     try:
-                        await message.client.kick_chat_member(
+                        await message.client.ban_chat_member(
                             chat_id,
                             member.user.id, int(time.time() + 45))
                     except UserAdminInvalid:
@@ -734,7 +734,7 @@ async def ban_spammers(message: Message):
     if sender_chat_id not in ALLOWED.get(chat_id, [chat_id]):
         await message.delete()
         if chat_id in BAN_CHANNELS:
-            await message.chat.kick_member(sender_chat_id)
+            await message.chat.ban_member(sender_chat_id)
             await message.reply(
                 "#BAN_CHANNEL\n\n"
                 "Message from channel detected and banned\n"
