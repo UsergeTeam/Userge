@@ -59,7 +59,6 @@ async def kang_(message: Message):
         elif replied.sticker:
             if not replied.sticker.file_name:
                 return await message.edit("`Sticker has no Name!`")
-
             _ = replied.sticker.emoji
             if _:
                 emoji_ = _
@@ -109,7 +108,7 @@ async def kang_(message: Message):
         packnick = f"{custom_packnick} Vol.{pack}"
         cmd = '/newpack'
         if resize:
-            media = resize_media(media, is_video)
+            media = await resize_media(media, is_video)
         if is_anim:
             packname += "_anim"
             packnick += " (Animated)"
@@ -248,6 +247,7 @@ async def sticker_pack_info_(message: Message):
         f"**Archived:** `{get_stickerset.set.archived}`\n" \
         f"**Official:** `{get_stickerset.set.official}`\n" \
         f"**Masks:** `{get_stickerset.set.masks}`\n" \
+        f"**Video:** `{get_stickerset.set.gifs}`\n" \
         f"**Animated:** `{get_stickerset.set.animated}`\n" \
         f"**Stickers In Pack:** `{get_stickerset.set.count}`\n" \
         f"**Emojis In Pack:**\n{' '.join(pack_emojis)}"
