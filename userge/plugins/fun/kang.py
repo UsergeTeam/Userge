@@ -64,7 +64,10 @@ async def kang_(message: Message):
                 emoji_ = _
             is_anim = replied.sticker.is_animated
             is_video = replied.sticker.is_video
-            if not replied.sticker.file_name.endswith('.tgs') and not replied.sticker.file_name.endswith('.webm'):
+            if not (
+                replied.sticker.file_name.endswith('.tgs')
+                or replied.sticker.file_name.endswith('.webm')
+            ):
                 resize = True
         else:
             return await message.edit("`Unsupported File!`")
@@ -257,23 +260,22 @@ async def sticker_pack_info_(message: Message):
 async def resize_media(media: str, video: bool) -> str:
     """ Resize the given media to 512x512 """
     if video:
-        resized_path = f"{media}.webm"
-        await runcmd(
-            f"ffmpeg -i {media} -ss 0 -to 3 -async 1 -strict -2 -c:v libvpx-vp9 -vf scale=512:512 -an {resized_path}"
-        )
+        resized_video = f"{media}.webm"
+        cmd = f"ffmpeg -i {media} -ss 0 -to 3 -async 1 -strict -2" + \
+            f" -c:v libvpx-vp9 -vf scale=512:512 -an {resized_video}"
+        await runcmd(cmd)
         os.remove(media)
-        return resized_path
-    else:
-        image = Image.open(media)
-        maxsize = 512
-        scale = maxsize / max(image.width, image.height)
-        new_size = (int(image.width*scale), int(image.height*scale))
-        image = image.resize(new_size, Image.LANCZOS)
-        resized_photo = io.BytesIO()
-        resized_photo.name = "sticker.png"
-        image.save(resized_photo, "PNG")
-        os.remove(media)
-        return resized_photo
+        return resized_video
+    image = Image.open(media)
+    maxsize = 512
+    scale = maxsize / max(image.width, image.height)
+    new_size = (int(image.width * scale), int(image.height * scale))
+    image = image.resize(new_size, Image.LANCZOS)
+    resized_photo = io.BytesIO()
+    resized_photo.name = "sticker.png"
+    image.save(resized_photo, "PNG")
+    os.remove(media)
+    return resized_photo
 
 
 KANGING_STR = (
