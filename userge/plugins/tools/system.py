@@ -332,7 +332,7 @@ async def convert_usermode(msg: Message):
                 await msg.reply(
                     "Your account have two-step verification code.\n"
                     "Please send your second factor authentication code "
-                    "using\n`!convert_usermode -sc=yourcode`"
+                    "using\n`{tr}convert_usermode -sc=yourcode`"
                 )
             except Exception as e:
                 delattr(generate_session, "phone_code")
@@ -384,7 +384,7 @@ async def convert_usermode(msg: Message):
             if await generate_session():
                 return await msg.reply(
                     "An otp is sent to your phone number\n\n"
-                    "Send otp using `!convert_usermode -c12345` command."
+                    "Send otp using `{tr}convert_usermode -c12345` command."
                 )
             raise Exception("Unable to send OTP to this phone number.")
         except Exception as error:
