@@ -129,7 +129,7 @@ class Pasting(PasteService):
         async with ses.post(self._url + "api", json=data) as resp:
             if resp.status != 200:
                 return None
-            return self._url + await resp.json()['key']
+            return self._url + (await resp.json())['key']
 
 
 class PastyLus(PasteService):
