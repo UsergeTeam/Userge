@@ -10,6 +10,7 @@
 
 import io
 import os
+import cv2
 import random
 
 from PIL import Image
@@ -261,9 +262,19 @@ async def sticker_pack_info_(message: Message):
 async def resize_media(media: str, video: bool) -> str:
     """ Resize the given media to 512x512 """
     if video:
+        vcap = cv2.VideoCapture(media)
+        width = round(vcap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = round(vcap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        if height == width and height != 512:
+            height, width = 512, 512
+        if height != 512 or width != 512:
+            if height > width:
+                height, width = 512, -1
+            if width > height:
+                height, width = -1, 512
         resized_video = f"{media}.webm"
-        cmd = f"ffmpeg -i {media} -ss 00:00:00 -to 00:00:03 -map 0:v" + \
-            f" -c:v libvpx-vp9 -vf scale=512:512,fps=fps=30 {resized_video}"
+        cmd = f"ffmpeg -i {media} -ss 00:00:00 -to 00:00:03 -map 0:v -bufsize 256k" + \
+            f" -c:v libvpx-vp9 -vf scale={width}:{height},fps=fps=30 {resized_video}"
         await runcmd(cmd)
         os.remove(media)
         return resized_video
