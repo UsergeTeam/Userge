@@ -120,13 +120,16 @@ class Pasting(PasteService):
 
     async def paste(self, ses: aiohttp.ClientSession,
                     text: str, file_type: Optional[str]) -> Optional[str]:
-        data = {"content": text}
+        data = {
+            "heading": "userge",
+            "content": text
+        }
         if file_type:
             data['code'] = "true"
         async with ses.post(self._url + "api", json=data) as resp:
             if resp.status != 200:
                 return None
-            return self._url + await resp.text()
+            return self._url + (await resp.json())['key']
 
 
 class PastyLus(PasteService):
