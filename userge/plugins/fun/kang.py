@@ -50,7 +50,7 @@ async def kang_(message: Message):
             resize = True
         elif replied.document and "tgsticker" in replied.document.mime_type:
             is_anim = True
-        elif replied.document and "video" in replied.document.mime_type:
+        elif replied.document and "video" in replied.document.mime_type and replied.document.file_size <= 10485760:
             resize = True
             is_video = True
         elif replied.animation:
