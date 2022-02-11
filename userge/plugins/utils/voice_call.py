@@ -149,12 +149,11 @@ def check_enable_for_all(func):
     """ decorator to check cmd is_enable for others """
 
     async def checker(msg: Message):
-        if ((msg.from_user and msg.from_user.id == userge.id)
-             or (CMDS_FOR_ALL
-                 and ((msg.from_user
-                       and msg.from_user.id in GROUP_CALL_PARTICIPANTS)
-                      or (msg.sender_chat
-                          and msg.sender_chat.id in GROUP_CALL_PARTICIPANTS)))):
+        is_self = msg.from_user and msg.from_user.id == userge.id
+        user_in_vc = msg.from_user and msg.from_user.id in GROUP_CALL_PARTICIPANTS
+        sender_chat_in_vc = msg.sender_chat and msg.sender_chat.id in GROUP_CALL_PARTICIPANTS
+
+        if (is_self or (CMDS_FOR_ALL and ((user_in_vc) or (sender_chat_in_vc)))):
             await func(msg)
 
     checker.__doc__ = func.__doc__
@@ -165,19 +164,14 @@ def check_enable_for_all(func):
 def check_cq_for_all(func):
     """ decorator to check CallbackQuery users """
 
-    async def checker(_, c_q: CallbackQuery):
-        if (
-            (c_q.from_user and c_q.from_user.id == userge.id)
-            or (CMDS_FOR_ALL
-                and (
-                    c_q.from_user
-                    and c_q.from_user.id in GROUP_CALL_PARTICIPANTS
-                )
-            )
-        ):
-            await func(c_q)
+    async def checker(_, cq: CallbackQuery):
+        is_self = cq.from_user and cq.from_user.id == userge.id
+        user_in_vc = cq.from_user and cq.from_user.id in GROUP_CALL_PARTICIPANTS
+
+        if (is_self or (CMDS_FOR_ALL and user_in_vc)):
+            await func(cq)
         else:
-            await c_q.answer(
+            await cq.answer(
                 "⚠️ You don't have permission to use me", show_alert=True)
 
     checker.__doc__ = func.__doc__
