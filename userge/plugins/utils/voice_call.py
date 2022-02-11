@@ -615,12 +615,12 @@ async def set_volume(msg: Message):
 async def skip_music(msg: Message):
     """ skip music in vc """
     await msg.delete()
-    if not QUEUE:
+    if not (QUEUE and PLAYING):
         return
     if (
         msg.input_str
         and msg.input_str.isnumeric()
-        and len(QUEUE) >= int(msg.input_str) - 1
+        and len(QUEUE) >= int(msg.input_str)
     ):
         m = QUEUE.pop(int(msg.input_str) - 1)
         file = m.audio or m.video or m.document or None
