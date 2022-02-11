@@ -16,6 +16,7 @@ import json
 import shlex
 import shutil
 import asyncio
+import requests
 from pathlib import Path
 from traceback import format_exc
 from typing import List, Tuple, Optional
@@ -411,17 +412,29 @@ async def play_music(msg: Message, forceplay: bool):
                 QUEUE.insert(0, msg)
             else:
                 QUEUE.append(msg)
-        elif is_url(input_str):
-            # TODO
-            pass
-        elif path.exists() and path.is_file():
-            if not path.name.endswith(
-                (".mkv", ".mp4", ".webm", ".m4v", ".mp3", ".flac", ".wav", ".m4a")
-            ):
-                await reply_text(msg, "`invalid file path provided to stream!`")
-                return
-            setattr(msg, 'path_to_media', str(path.absolute()))
-            setattr(msg, 'file_name', path.name)
+        elif (is_url(input_str) or (path.exists() and path.is_file())):
+            if path.exists():
+                if not path.name.endswith(
+                    (".mkv", ".mp4", ".webm", ".m4v", ".mp3", ".flac", ".wav", ".m4a")
+                ):
+                    return await reply_text(msg, "`invalid file path provided to stream!`")
+                path_to_media = str(path.absolute())
+                filename = path.name
+            else:
+                try:
+                    res = await pool.run_in_thread(
+                        requests.get
+                    )(input_str, allow_redirects=True, stream=True)
+                    headers = dict(res.headers)
+                    if not ("video" in headers["Content-Type"]
+                            and "audio" in headers["Content-Type"]):
+                        raise Exception
+                    path_to_media = input_str
+                    filename = headers["Content-Disposition"].split('=', 1)[1].strip('"')
+                except Exception:
+                    return await reply_text(msg, "`invalid direct link provided to stream!`")
+            setattr(msg, 'path_to_media', path_to_media)
+            setattr(msg, 'file_name', filename.replace('_', ' '))
             setattr(msg, 'is_video', is_video)
             setattr(msg, 'quality', quality)
             CLIENT = msg.client
