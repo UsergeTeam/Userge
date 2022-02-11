@@ -149,20 +149,12 @@ def check_enable_for_all(func):
     """ decorator to check cmd is_enable for others """
 
     async def checker(msg: Message):
-        if (
-            (msg.from_user and msg.from_user.id == userge.id)
-            or (CMDS_FOR_ALL
-                and (
-                    (
-                        msg.from_user
-                        and msg.from_user.id in GROUP_CALL_PARTICIPANTS
-                    ) or (
-                        msg.sender_chat
-                        and msg.sender_chat.id in GROUP_CALL_PARTICIPANTS
-                    )
-                )
-            )
-        ):
+        if ((msg.from_user and msg.from_user.id == userge.id)
+             or (CMDS_FOR_ALL
+                 and ((msg.from_user
+                       and msg.from_user.id in GROUP_CALL_PARTICIPANTS)
+                      or (msg.sender_chat
+                          and msg.sender_chat.id in GROUP_CALL_PARTICIPANTS)))):
             await func(msg)
 
     checker.__doc__ = func.__doc__
@@ -394,7 +386,7 @@ async def toggle_vc(msg: Message):
 async def play_music(msg: Message):
     """ play music in voice call """
     global CLIENT  # pylint: disable=global-statement
-    
+
     forceplay = msg.text.split(' ', 1)[0][1:] == "forceplay"
 
     input_str = msg.filtered_input_str
@@ -462,7 +454,6 @@ async def play_music(msg: Message):
                 if PLAYING:
                     await reply_text(msg, _get_scheduled_text(path.name))
                 QUEUE.append(msg)
-                
     elif msg.reply_to_message:
         replied = msg.reply_to_message
         replied_file = replied.audio or replied.video or replied.document
@@ -491,7 +482,6 @@ async def play_music(msg: Message):
             if PLAYING:
                 await reply_text(msg, _get_scheduled_text(replied_file.file_name, replied.link))
             QUEUE.append(replied)
-            
     else:
         return await reply_text(msg, "Input not found")
 
@@ -632,9 +622,9 @@ async def skip_music(msg: Message):
     if (
         msg.input_str
         and msg.input_str.isnumeric()
-        and len(QUEUE) >= int(msg.input_str)-1
+        and len(QUEUE) >= int(msg.input_str) - 1
     ):
-        m = QUEUE.pop(int(msg.input_str)-1)
+        m = QUEUE.pop(int(msg.input_str) - 1)
         file = m.audio or m.video or m.document or None
         if hasattr(m, 'file_name'):
             out = f"`Skipped` {m.file_name}"
