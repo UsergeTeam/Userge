@@ -426,8 +426,9 @@ async def play_music(msg: Message, forceplay: bool):
                         requests.get
                     )(input_str, allow_redirects=True, stream=True)
                     headers = dict(res.headers)
-                    if not ("video" in headers["Content-Type"]
-                            and "audio" in headers["Content-Type"]):
+                    if ("video" not in headers["Content-Type"]
+                        and "audio" not in headers["Content-Type"]
+                    ):
                         raise Exception
                     path_to_media = input_str
                     filename = headers["Content-Disposition"].split('=', 1)[1].strip('"')
