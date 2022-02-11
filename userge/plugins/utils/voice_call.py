@@ -368,7 +368,13 @@ async def toggle_vc(msg: Message):
         '-q': "Quality of video stream (1-100)"}},
     trigger=Config.PUBLIC_TRIGGER, check_client=True,
     filter_me=False, allow_bots=False)
-@check_enable_for_all  # only working for play command
+@check_enable_for_all
+@vc_chat
+async def _play(msg: Message):
+    """ play music in voice call """
+    return await play_music(msg, False)
+
+
 @userge.on_cmd("forceplay", about={
     'header': "Force play with skip the current song and "
               "Play your song on #1 Position",
@@ -376,12 +382,15 @@ async def toggle_vc(msg: Message):
         '-v': "Stream as video.",
         '-yt': "Search on YouTube",
         '-q': "Quality of video stream (1-100)"}})
-@vc_chat  # working for both commands
-async def play_music(msg: Message):
-    """ play music in voice call """
-    global CLIENT  # pylint: disable=global-statement
+@vc_chat
+async def _forceplay(msg: Message):
+    """ forceplay music in voice call """
+    return await play_music(msg, true)
 
-    forceplay = msg.text.split(' ', 1)[0][1:] == "forceplay"
+
+async def play_music(msg: Message, forceplay: bool):
+    """ play music """
+    global CLIENT  # pylint: disable=global-statement
 
     input_str = msg.filtered_input_str
     flags = msg.flags
@@ -395,7 +404,7 @@ async def play_music(msg: Message):
             if link:
                 details = await _get_song_info(link)
                 if not details:
-                    return await mesg.edit(msg, "Invalid YouTube link found during search!")
+                    return await mesg.edit("Invalid YouTube link found during search!")
                 _, duration = details
                 if PLAYING and not forceplay:
                     msg = await reply_text(msg, _get_scheduled_text(title, link))
