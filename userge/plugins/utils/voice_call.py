@@ -364,7 +364,6 @@ async def toggle_vc(msg: Message):
     'header': "play or add songs to queue",
     'flags': {
         '-v': "Stream as video.",
-        '-yt': "Search on YouTube",
         '-q': "Quality of video stream (1-100)"}},
     trigger=Config.PUBLIC_TRIGGER, check_client=True,
     filter_me=False, allow_bots=False)
@@ -380,12 +379,11 @@ async def _play(msg: Message):
               "Play your song on #1 Position",
     'flags': {
         '-v': "Stream as video.",
-        '-yt': "Search on YouTube",
         '-q': "Quality of video stream (1-100)"}})
 @vc_chat
 async def _forceplay(msg: Message):
     """ forceplay music in voice call """
-    return await play_music(msg, true)
+    return await play_music(msg, True)
 
 
 async def play_music(msg: Message, forceplay: bool):
@@ -395,10 +393,45 @@ async def play_music(msg: Message, forceplay: bool):
     input_str = msg.filtered_input_str
     flags = msg.flags
     is_video = "-v" in flags
-    yt_search = "-yt" in flags
+    path = Path(input_str)
     quality = flags.get('-q', 80)
     if input_str:
-        if yt_search:
+        if yt_regex.match(input_str):
+            details = await _get_song_info(input_str)
+            if not details:
+                return await reply_text(msg, "Invalid YouTube Link!")
+            name, duration = details
+            if PLAYING and not forceplay:
+                msg = await reply_text(msg, _get_scheduled_text(name, input_str))
+            else:
+                msg = await reply_text(msg, f"[{name}]({input_str})")
+            flags["duration"] = duration
+            setattr(msg, '_flags', flags)
+            if forceplay:
+                QUEUE.insert(0, msg)
+            else:
+                QUEUE.append(msg)
+        elif is_url(input_str):
+            # TODO
+            pass
+        elif path.exists() and path.is_file():
+            if not path.name.endswith(
+                (".mkv", ".mp4", ".webm", ".m4v", ".mp3", ".flac", ".wav", ".m4a")
+            ):
+                await reply_text(msg, "`invalid file path provided to stream!`")
+                return
+            setattr(msg, 'path_to_media', str(path.absolute()))
+            setattr(msg, 'file_name', path.name)
+            setattr(msg, 'is_video', is_video)
+            setattr(msg, 'quality', quality)
+            CLIENT = msg.client
+            if forceplay:
+                QUEUE.insert(0, msg)
+            else:
+                if PLAYING:
+                    await reply_text(msg, _get_scheduled_text(path.name))
+                QUEUE.append(msg)
+        else:
             mesg = await reply_text(msg, f"Searching `{input_str}` on YouTube")
             title, link = await _get_song(input_str)
             if link:
@@ -419,44 +452,6 @@ async def play_music(msg: Message, forceplay: bool):
                     QUEUE.append(msg)
             else:
                 await mesg.edit("No results found.")
-        elif yt_regex.match(input_str):
-            details = await _get_song_info(input_str)
-            if not details:
-                return await reply_text(msg, "Invalid YouTube Link!")
-            name, duration = details
-            if PLAYING and not forceplay:
-                msg = await reply_text(msg, _get_scheduled_text(name, input_str))
-            else:
-                msg = await reply_text(msg, f"[{name}]({input_str})")
-            flags["duration"] = duration
-            setattr(msg, '_flags', flags)
-            if forceplay:
-                QUEUE.insert(0, msg)
-            else:
-                QUEUE.append(msg)
-        elif is_url(input_str):
-            # TODO
-            pass
-        else:
-            path = Path(input_str)
-            if not path.exists() and not path.is_file():
-                return await reply_text(msg, "`File not Found!`")
-            if not path.name.endswith(
-                (".mkv", ".mp4", ".webm", ".m4v", ".mp3", ".flac", ".wav", ".m4a")
-            ):
-                await reply_text(msg, "`invalid file path provided to stream!`")
-                return
-            setattr(msg, 'path_to_media', str(path.absolute()))
-            setattr(msg, 'file_name', path.name)
-            setattr(msg, 'is_video', is_video)
-            setattr(msg, 'quality', quality)
-            CLIENT = msg.client
-            if forceplay:
-                QUEUE.insert(0, msg)
-            else:
-                if PLAYING:
-                    await reply_text(msg, _get_scheduled_text(path.name))
-                QUEUE.append(msg)
     elif msg.reply_to_message:
         replied = msg.reply_to_message
         replied_file = replied.audio or replied.video or replied.document
