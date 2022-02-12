@@ -426,7 +426,8 @@ async def play_music(msg: Message, forceplay: bool):
                         requests.get
                     )(input_str, allow_redirects=True, stream=True)
                     headers = dict(res.headers)
-                    if ("video" not in headers["Content-Type"]
+                    if (
+                        "video" not in headers["Content-Type"]
                         and "audio" not in headers["Content-Type"]
                     ):
                         raise Exception
@@ -577,15 +578,15 @@ async def view_queue(msg: Message):
         out = "`Queue is empty`"
     else:
         out = f"**{len(QUEUE)} Songs in Queue:**\n"
-        for m in QUEUE:
+        for i, m in enumerate(QUEUE, start=1):
             file = m.audio or m.video or m.document or None
             if hasattr(m, 'file_name'):
-                out += f"\n - {m.file_name}"
+                out += f"\n{i}. {m.file_name}"
             elif file:
-                out += f"\n - [{file.file_name}]({m.link})"
+                out += f"\n{i}. [{file.file_name}]({m.link})"
             else:
                 title, link = _get_yt_info(m)
-                out += f"\n - [{title}]({link})"
+                out += f"\n{i}. [{title}]({link})"
 
     await reply_text(msg, out)
 
@@ -629,12 +630,12 @@ async def set_volume(msg: Message):
 async def skip_music(msg: Message):
     """ skip music in vc """
     await msg.delete()
-    if not (QUEUE and PLAYING):
+    if not QUEUE and not PLAYING:
         return
     if (
         msg.input_str
         and msg.input_str.isnumeric()
-        and len(QUEUE) >= int(msg.input_str)
+        and (len(QUEUE) >= int(msg.input_str) >  0)
     ):
         m = QUEUE.pop(int(msg.input_str) - 1)
         file = m.audio or m.video or m.document or None
@@ -761,14 +762,16 @@ async def _participants_change_handler(_: PyTgCalls, update: Update):
 
 async def _skip(clear_queue: bool = False):
     global PLAYING  # pylint: disable=global-statement
-    PLAYING = True
 
-    await call.change_stream(
-        CHAT_ID,
-        AudioPiped(
-            'http://duramecho.com/Misc/SilentCd/Silence01s.mp3'
+    if PLAYING:
+        # skip current playing song the play next
+        await call.change_stream(
+            CHAT_ID,
+            AudioPiped(
+                'http://duramecho.com/Misc/SilentCd/Silence01s.mp3'
+            )
         )
-    )
+    PLAYING = True
 
     if CQ_MSG:
         for msg in CQ_MSG:
@@ -1095,15 +1098,15 @@ if userge.has_bot:
             else:
                 out = f"**{len(QUEUE)} Song"
                 out += f"{'s' if len(QUEUE) > 1 else ''} in Queue:**\n"
-                for m in QUEUE:
+                for i, m in enumerate(QUEUE, start=1):
                     file = m.audio or m.video or m.document or None
                     if hasattr(m, 'file_name'):
-                        out = f"\n - {m.file_name}"
+                        out = f"\n{i}. {m.file_name}"
                     elif file:
-                        out += f"\n - [{file.file_name}]({m.link})"
+                        out += f"\n{i}. [{file.file_name}]({m.link})"
                     else:
                         title, link = _get_yt_info(m)
-                        out += f"\n - [{title}]({link})"
+                        out += f"\n{i}. [{title}]({link})"
 
             out += f"\n\n**Clicked by:** {cq.from_user.mention}"
             button = InlineKeyboardMarkup(
