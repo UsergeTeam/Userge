@@ -400,7 +400,7 @@ async def play_music(msg: Message, forceplay: bool):
         if yt_regex.match(input_str):
             details = await _get_song_info(input_str)
             if not details:
-                return await reply_text(msg, "<Max song duration limit reached!>")
+                return await reply_text(msg, "**ERROR:** `Max song duration limit reached!`")
             name, duration = details
             if PLAYING and not forceplay:
                 msg = await reply_text(msg, _get_scheduled_text(name, input_str))
@@ -885,7 +885,7 @@ async def tg_down(msg: Message):
         filename = msg.path_to_media
         duration = await get_duration(shlex.quote(msg.path_to_media))
     if duration > Config.MAX_DURATION:
-        await reply_text(msg, "<Max song duration limit reached!>")
+        await reply_text(msg, "**ERROR:** `Max song duration limit reached!`")
         return await _skip()
 
     height, width, has_audio, has_video = await get_file_info(shlex.quote(filename))
