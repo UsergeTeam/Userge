@@ -635,7 +635,7 @@ async def skip_music(msg: Message):
     if (
         msg.input_str
         and msg.input_str.isnumeric()
-        and (len(QUEUE) >= int(msg.input_str) >  0)
+        and (len(QUEUE) >= int(msg.input_str) > 0)
     ):
         m = QUEUE.pop(int(msg.input_str) - 1)
         file = m.audio or m.video or m.document or None
