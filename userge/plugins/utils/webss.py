@@ -12,7 +12,7 @@ from re import match
 
 import aiofiles
 from selenium import webdriver
-
+from fake_headers import Headers
 from userge import userge, Message, Config
 
 
@@ -28,6 +28,7 @@ async def webss(message: Message):
     link = link_match.group()
     await message.edit("`Processing ...`")
     chrome_options = webdriver.ChromeOptions()
+    header = Headers(headers=False).generate()
     chrome_options.binary_location = Config.GOOGLE_CHROME_BIN
     chrome_options.add_argument('--ignore-certificate-errors')
     chrome_options.add_argument("--test-type")
@@ -36,6 +37,7 @@ async def webss(message: Message):
     chrome_options.add_argument('--disable-dev-shm-usage')
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument('--disable-gpu')
+    chrome_options.add_argument(f"user-agent={header['User-Agent']}")
     driver = webdriver.Chrome(chrome_options=chrome_options)
     driver.get(link)
     height = driver.execute_script(
