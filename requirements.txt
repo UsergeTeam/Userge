@@ -5,6 +5,7 @@ covid
 cowpy
 dnspython
 emoji==0.6.0
+fake-headers
 feedparser
 ffmpeg-python
 gitpython
