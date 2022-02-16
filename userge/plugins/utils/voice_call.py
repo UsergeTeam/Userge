@@ -704,7 +704,7 @@ async def _on_raw(_, m: BaseMessage, *__) -> None:
                     await _on_join(group_call.call)
                 elif participant.left:
                     await _on_left(group_call.call)
-                    break
+                break
     raise ContinuePropagation
 
 
