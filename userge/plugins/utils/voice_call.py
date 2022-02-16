@@ -10,15 +10,18 @@
 #
 # Author (C) - @Krishna_Singhal (https://github.com/Krishna-Singhal)
 
-import asyncio
-import json
 import os
 import re
+import json
 import shlex
 import shutil
-from json.decoder import JSONDecodeError
+import asyncio
+import requests
+from pathlib import Path
 from traceback import format_exc
 from typing import List, Tuple, Optional
+from json.decoder import JSONDecodeError
+from youtubesearchpython import VideosSearch
 
 from pyrogram import ContinuePropagation
 from pyrogram.raw import functions
@@ -30,25 +33,30 @@ from pyrogram.types import (
     InlineKeyboardButton,
     CallbackQuery,
     Message as RawMessage)
-from pyrogram.types.messages_and_media.message import Str
+
 from pytgcalls import PyTgCalls, StreamType
 from pytgcalls.exceptions import (
     NodeJSNotInstalled,
     TooOldNodeJSVersion,
     NoActiveGroupCall,
     AlreadyJoinedError,
-    NotInGroupCallError
+    NotInGroupCallError,
+    GroupCallNotFound
 )
-from pytgcalls.types import Update, StreamAudioEnded
+from pytgcalls.types import (
+    Update,
+    StreamAudioEnded,
+    JoinedGroupCallParticipant,
+    LeftGroupCallParticipant
+)
 from pytgcalls.types.input_stream import (
     AudioVideoPiped,
     AudioPiped,
     VideoParameters
 )
-from youtubesearchpython import VideosSearch
 
 from userge import userge, Message, pool, filters, get_collection, Config
-from userge.utils import time_formatter, import_ytdl, progress, runcmd
+from userge.utils import time_formatter, import_ytdl, progress, runcmd, is_url
 from userge.utils.exceptions import StopConversation
 
 # https://github.com/pytgcalls/pytgcalls/blob/master/pytgcalls/mtproto/mtproto_client.py#L18
@@ -62,6 +70,7 @@ LOG = userge.getLogger()
 
 VC_DB = get_collection("VC_CMDS_TOGGLE")
 CMDS_FOR_ALL = False
+GROUP_CALL_PARTICIPANTS: List[int] = []
 
 ADMINS = {}
 
@@ -117,7 +126,7 @@ async def reply_text(
     return new_msg
 
 
-def _get_scheduled_text(title: str, link: str) -> str:
+def _get_scheduled_text(title: str, link: str = None) -> str:
     return _SCHEDULED.format(title=title, link=link, position=len(QUEUE) + 1)
 
 
@@ -141,12 +150,11 @@ def check_enable_for_all(func):
     """ decorator to check cmd is_enable for others """
 
     async def checker(msg: Message):
-        if (
-            (
-                msg.from_user
-                and msg.from_user.id == userge.id
-            ) or CMDS_FOR_ALL
-        ):
+        is_self = msg.from_user and msg.from_user.id == userge.id
+        user_in_vc = msg.from_user and msg.from_user.id in GROUP_CALL_PARTICIPANTS
+        sender_chat_in_vc = msg.sender_chat and msg.sender_chat.id in GROUP_CALL_PARTICIPANTS
+
+        if (is_self or (CMDS_FOR_ALL and ((user_in_vc) or (sender_chat_in_vc)))):
             await func(msg)
 
     checker.__doc__ = func.__doc__
@@ -157,11 +165,14 @@ def check_enable_for_all(func):
 def check_cq_for_all(func):
     """ decorator to check CallbackQuery users """
 
-    async def checker(_, c_q: CallbackQuery):
-        if c_q.from_user.id == userge.id or CMDS_FOR_ALL:
-            await func(c_q)
+    async def checker(_, cq: CallbackQuery):
+        is_self = cq.from_user and cq.from_user.id == userge.id
+        user_in_vc = cq.from_user and cq.from_user.id in GROUP_CALL_PARTICIPANTS
+
+        if (is_self or (CMDS_FOR_ALL and user_in_vc)):
+            await func(cq)
         else:
-            await c_q.answer(
+            await cq.answer(
                 "⚠️ You don't have permission to use me", show_alert=True)
 
     checker.__doc__ = func.__doc__
@@ -357,33 +368,103 @@ async def toggle_vc(msg: Message):
         '-q': "Quality of video stream (1-100)"}},
     trigger=Config.PUBLIC_TRIGGER, check_client=True,
     filter_me=False, allow_bots=False)
-@vc_chat
 @check_enable_for_all
-async def play_music(msg: Message):
+@vc_chat
+async def _play(msg: Message):
     """ play music in voice call """
+    return await play_music(msg, False)
+
+
+@userge.on_cmd("forceplay", about={
+    'header': "Force play with skip the current song and "
+              "Play your song on #1 Position",
+    'flags': {
+        '-v': "Stream as video.",
+        '-q': "Quality of video stream (1-100)"}})
+@vc_chat
+async def _forceplay(msg: Message):
+    """ forceplay music in voice call """
+    return await play_music(msg, True)
+
+
+async def play_music(msg: Message, forceplay: bool):
+    """ play music """
     global CLIENT  # pylint: disable=global-statement
 
     input_str = msg.filtered_input_str
     flags = msg.flags
     is_video = "-v" in flags
-    quality = flags.get('-q', 100)
+    path = Path(input_str)
+    quality = flags.get('-q', 80)
     if input_str:
         if yt_regex.match(input_str):
-            if PLAYING:
-                msg = await reply_text(msg, _get_scheduled_text("Song", input_str))
+            details = await _get_song_info(input_str)
+            if not details:
+                return await reply_text(msg, "**ERROR:** `Max song duration limit reached!`")
+            name, duration = details
+            if PLAYING and not forceplay:
+                msg = await reply_text(msg, _get_scheduled_text(name, input_str))
+            else:
+                msg = await reply_text(msg, f"[{name}]({input_str})")
+            flags["duration"] = duration
             setattr(msg, '_flags', flags)
-            QUEUE.append(msg)
+            if forceplay:
+                QUEUE.insert(0, msg)
+            else:
+                QUEUE.append(msg)
+        elif (is_url(input_str) or (path.exists() and path.is_file())):
+            if path.exists():
+                if not path.name.endswith(
+                    (".mkv", ".mp4", ".webm", ".m4v", ".mp3", ".flac", ".wav", ".m4a")
+                ):
+                    return await reply_text(msg, "`invalid file path provided to stream!`")
+                path_to_media = str(path.absolute())
+                filename = path.name
+            else:
+                try:
+                    res = await pool.run_in_thread(
+                        requests.get
+                    )(input_str, allow_redirects=True, stream=True)
+                    headers = dict(res.headers)
+                    if (
+                        "video" not in headers["Content-Type"]
+                        and "audio" not in headers["Content-Type"]
+                    ):
+                        raise Exception
+                    path_to_media = input_str
+                    filename = headers["Content-Disposition"].split('=', 1)[1].strip('"')
+                except Exception:
+                    return await reply_text(msg, "`invalid direct link provided to stream!`")
+            setattr(msg, 'path_to_media', path_to_media)
+            setattr(msg, 'file_name', filename.replace('_', ' '))
+            setattr(msg, 'is_video', is_video)
+            setattr(msg, 'quality', quality)
+            CLIENT = msg.client
+            if forceplay:
+                QUEUE.insert(0, msg)
+            else:
+                if PLAYING:
+                    await reply_text(msg, _get_scheduled_text(path.name))
+                QUEUE.append(msg)
         else:
             mesg = await reply_text(msg, f"Searching `{input_str}` on YouTube")
             title, link = await _get_song(input_str)
             if link:
-                if PLAYING:
+                details = await _get_song_info(link)
+                if not details:
+                    return await mesg.edit("Invalid YouTube link found during search!")
+                _, duration = details
+                if PLAYING and not forceplay:
                     msg = await reply_text(msg, _get_scheduled_text(title, link))
                 else:
-                    msg = await msg.edit(f"[{title}]({link})", disable_web_page_preview=True)
+                    msg = await msg.edit(f"[{title}]({link})")
+                flags["duration"] = duration
                 await mesg.delete()
                 setattr(msg, '_flags', flags)
-                QUEUE.append(msg)
+                if forceplay:
+                    QUEUE.insert(0, msg)
+                else:
+                    QUEUE.append(msg)
             else:
                 await mesg.edit("No results found.")
     elif msg.reply_to_message:
@@ -407,16 +488,18 @@ async def play_music(msg: Message):
         else:
             return await reply_text(msg, "Replied media is invalid.")
 
-        setattr(replied, '_client', msg.client)
         CLIENT = msg.client
-        QUEUE.append(replied)
-        if PLAYING:
-            await reply_text(msg, _get_scheduled_text(replied_file.file_name, replied.link))
+        if forceplay:
+            QUEUE.insert(0, replied)
+        else:
+            if PLAYING:
+                await reply_text(msg, _get_scheduled_text(replied_file.file_name, replied.link))
+            QUEUE.append(replied)
     else:
         return await reply_text(msg, "Input not found")
 
-    if not PLAYING:
-        await handle_queue()
+    if not PLAYING or forceplay:
+        await _skip()
 
 
 @userge.on_cmd("helpvc",
@@ -461,65 +544,6 @@ async def _help(msg: Message):
                 break
 
 
-@userge.on_cmd("forceplay", about={
-    'header': "Force play with skip the current song and "
-              "Play your song on #1 Position",
-    'flags': {
-        '-v': "Stream as video.",
-        'q': "Quality of video stream (1-100)"}})
-@vc_chat
-async def force_play_music(msg: Message):
-    """ Force play music in voice call """
-
-    if not PLAYING:
-        return await play_music(msg)
-    global CLIENT  # pylint: disable=global-statement
-
-    input_str = msg.filtered_input_str
-    flags = msg.flags
-    is_video = "-v" in flags
-    quality = flags.get('-q', 100)
-    if input_str:
-        if not yt_regex.match(input_str):
-            mesg = await reply_text(msg, f"Searching `{input_str}` on YouTube")
-            title, link = await _get_song(input_str)
-            if not link:
-                return await mesg.edit("No results found.")
-            await mesg.delete()
-            msg.text = f"[{title}]({link})"
-            setattr(msg, '_flags', flags)
-        QUEUE.insert(0, msg)
-    elif msg.reply_to_message:
-        replied = msg.reply_to_message
-        replied_file = replied.audio or replied.video or replied.document
-        if not replied_file:
-            return await reply_text(msg, "Input not found")
-
-        if replied.audio:
-            setattr(
-                replied.audio,
-                'file_name',
-                replied_file.title or replied_file.file_name or "Song")
-            setattr(replied.audio, 'is_video', False)
-            setattr(replied.audio, 'quality', 100)
-        elif replied.video:
-            setattr(replied.video, 'is_video', is_video)
-            setattr(replied.video, 'quality', quality)
-        elif replied.document and "video" in replied.document.mime_type:
-            setattr(replied.document, 'is_video', is_video)
-            setattr(replied.document, 'quality', quality)
-        else:
-            return await reply_text(msg, "Replied media is invalid.")
-
-        setattr(replied, '_client', msg.client)
-        CLIENT = msg.client
-        QUEUE.insert(0, replied)
-    else:
-        return await reply_text(msg, "Input not found")
-
-    await _skip()
-
-
 @userge.on_cmd("current", about={
     'header': "View Current playing Song.",
     'usage': "{tr}current"},
@@ -529,7 +553,6 @@ async def force_play_music(msg: Message):
 @check_enable_for_all
 async def current(msg: Message):
     """ View current playing song """
-    await msg.delete()
 
     if not BACK_BUTTON_TEXT:
         return await reply_text(msg, "No song is playing!")
@@ -550,19 +573,20 @@ async def current(msg: Message):
 @check_enable_for_all
 async def view_queue(msg: Message):
     """ View Queue """
-    await msg.delete()
 
     if not QUEUE:
         out = "`Queue is empty`"
     else:
         out = f"**{len(QUEUE)} Songs in Queue:**\n"
-        for m in QUEUE:
+        for i, m in enumerate(QUEUE, start=1):
             file = m.audio or m.video or m.document or None
-            if file:
-                out += f"\n - [{file.file_name}]({m.link})"
+            if hasattr(m, 'file_name'):
+                out += f"\n{i}. {m.file_name}"
+            elif file:
+                out += f"\n{i}. [{file.file_name}]({m.link})"
             else:
                 title, link = _get_yt_info(m)
-                out += f"\n - [{title}]({link})"
+                out += f"\n{i}. [{title}]({link})"
 
     await reply_text(msg, out)
 
@@ -599,15 +623,33 @@ async def set_volume(msg: Message):
 
 @userge.on_cmd("skip", about={
     'header': "Skip Song",
-    'usage': "{tr}skip"},
+    'usage': "{tr}skip\n{tr}skip 2"},
     trigger=Config.PUBLIC_TRIGGER, check_client=True,
     filter_me=False, allow_bots=False)
 @vc_chat
 async def skip_music(msg: Message):
     """ skip music in vc """
     await msg.delete()
-    await _skip()
+    if not QUEUE and not PLAYING:
+        return
+    if (
+        msg.input_str
+        and msg.input_str.isnumeric()
+        and (len(QUEUE) >= int(msg.input_str) > 0)
+    ):
+        m = QUEUE.pop(int(msg.input_str) - 1)
+        file = m.audio or m.video or m.document or None
+        if hasattr(m, 'file_name'):
+            out = f"`Skipped` {m.file_name}"
+        elif file:
+            out = f"`Skipped` [{file.file_name}]({m.link})"
+        else:
+            title, link = _get_yt_info(m)
+            out = f"`Skipped` [{title}]({link})"
+        await reply_text(msg, out)
+        return
     await reply_text(msg, "`Skipped`")
+    await _skip()
 
 
 @userge.on_cmd("pause", about={
@@ -672,6 +714,14 @@ async def _on_join(group_call: Optional[GroupCall] = None) -> None:
                  group_call.title, group_call.participants_count)
     else:
         LOG.info("Joined group call: [%s] [joinvc]", CHAT_NAME)
+        try:
+            GROUP_CALL_PARTICIPANTS.clear()
+            for p in await call.get_participants(CHAT_ID):
+                if p.user_id == userge.id:
+                    continue
+                GROUP_CALL_PARTICIPANTS.append(p.user_id)
+        except GroupCallNotFound as err:
+            LOG.error(err)
 
 
 async def _on_left(group_call: Optional[GroupCall] = None) -> None:
@@ -687,6 +737,7 @@ async def _on_left(group_call: Optional[GroupCall] = None) -> None:
     CHAT_ID = 0
     CONTROL_CHAT_IDS.clear()
     QUEUE.clear()
+    GROUP_CALL_PARTICIPANTS.clear()
     PLAYING = False
     BACK_BUTTON_TEXT = ""
     if CQ_MSG:
@@ -696,22 +747,33 @@ async def _on_left(group_call: Optional[GroupCall] = None) -> None:
 
 
 @call.on_stream_end()
-async def handler(_: PyTgCalls, update: Update):
+async def _stream_end_handler(_: PyTgCalls, update: Update):
     if isinstance(update, StreamAudioEnded):
         await _skip()
 
 
-async def handle_queue():
-    global PLAYING  # pylint: disable=global-statement
-    PLAYING = True
-    await _skip()
+@call.on_participants_change()
+async def _participants_change_handler(_: PyTgCalls, update: Update):
+    if isinstance(update, JoinedGroupCallParticipant):
+        GROUP_CALL_PARTICIPANTS.append(update.participant.user_id)
+    elif isinstance(update, LeftGroupCallParticipant):
+        GROUP_CALL_PARTICIPANTS.remove(update.participant.user_id)
 
 
 async def _skip(clear_queue: bool = False):
     global PLAYING  # pylint: disable=global-statement
 
+    if PLAYING:
+        # skip current playing song the play next
+        await call.change_stream(
+            CHAT_ID,
+            AudioPiped(
+                'http://duramecho.com/Misc/SilentCd/Silence01s.mp3'
+            )
+        )
+    PLAYING = True
+
     if CQ_MSG:
-        # deleting many messages without bot object 😂😂
         for msg in CQ_MSG:
             await msg.delete()
         CQ_MSG.clear()
@@ -720,13 +782,6 @@ async def _skip(clear_queue: bool = False):
         QUEUE.clear()
 
     if not QUEUE:
-        if PLAYING:
-            await call.change_stream(
-                CHAT_ID,
-                AudioPiped(
-                    'http://duramecho.com/Misc/SilentCd/Silence01s.mp3'
-                )
-            )
         PLAYING = False
         return
 
@@ -734,23 +789,22 @@ async def _skip(clear_queue: bool = False):
     msg = QUEUE.pop(0)
 
     try:
-        if msg.audio or msg.video or msg.document:
+        if msg.audio or msg.video or msg.document or hasattr(msg, "file_name"):
             await tg_down(msg)
         else:
             await yt_down(msg)
-        PLAYING = True
     except Exception as err:
         PLAYING = False
         out = f'**ERROR:** `{err}`'
         await CHANNEL.log(f"`{format_exc().strip()}`")
         if QUEUE:
             out += "\n\n`Playing next Song.`"
-        await userge.send_message(
+        await CLIENT.send_message(
             CHAT_ID,
             out,
             disable_web_page_preview=True
         )
-        await handle_queue()
+        await _skip()
 
 
 async def yt_down(msg: Message):
@@ -759,14 +813,7 @@ async def yt_down(msg: Message):
     global BACK_BUTTON_TEXT  # pylint: disable=global-statement
 
     title, url = _get_yt_info(msg)
-    message = await reply_text(msg, f"`Downloading {title}`")
-    song_details = await _get_song_info(url.strip())
-    if not song_details:
-        await message.delete()
-        return await _skip()
-
-    title, duration = song_details
-
+    message = await reply_text(msg, f"`Preparing {title}`")
     stream_link = await get_stream_link(url)
 
     if not stream_link:
@@ -774,6 +821,7 @@ async def yt_down(msg: Message):
 
     flags = msg.flags
     is_video = "-v" in flags
+    duration = flags.get("duration")
     quality = max(min(100, int(flags.get('-q', 100))), 1)
     height, width, has_audio, has_video = await get_file_info(stream_link)
 
@@ -816,21 +864,28 @@ async def tg_down(msg: Message):
 
     global BACK_BUTTON_TEXT  # pylint: disable=global-statement
 
-    file = msg.audio or msg.video or msg.document
+    file = msg.audio or msg.video or msg.document or msg
     title = file.file_name
     setattr(msg, '_client', CLIENT)
-    message = await reply_text(msg, f"`Downloading {title}`")
-    path = await msg.client.download_media(
-        message=msg,
-        file_name="temp_music_dir/",
-        progress=progress,
-        progress_args=(message, "Downloading..."))
-    filename = os.path.join("temp_music_dir", os.path.basename(path))
-    if msg.audio:
-        duration = msg.audio.duration
-    elif msg.video or msg.document:
-        duration = await get_duration(shlex.quote(filename))
+    message = await reply_text(
+        msg, f"`{'Preparing' if hasattr(msg, 'file_name') else 'Downloading'} {title}`"
+    )
+    if not hasattr(msg, "path_to_media"):
+        path = await msg.client.download_media(
+            message=msg,
+            file_name="temp_music_dir/",
+            progress=progress,
+            progress_args=(message, "Downloading..."))
+        filename = os.path.join("temp_music_dir", os.path.basename(path))
+        if msg.audio:
+            duration = msg.audio.duration
+        elif msg.video or msg.document:
+            duration = await get_duration(shlex.quote(filename))
+    else:
+        filename = msg.path_to_media
+        duration = await get_duration(shlex.quote(msg.path_to_media))
     if duration > Config.MAX_DURATION:
+        await reply_text(msg, "**ERROR:** `Max song duration limit reached!`")
         return await _skip()
 
     height, width, has_audio, has_video = await get_file_info(shlex.quote(filename))
@@ -855,7 +910,7 @@ async def tg_down(msg: Message):
     await message.delete()
 
     BACK_BUTTON_TEXT = (
-        f"🎶 **Now playing:** [{title}]({msg.link})\n"
+        f"🎶 **Now playing:** [{title}]({msg.link if not hasattr(msg, 'file_name') else None})\n"
         f"⏳ **Duration:** `{time_formatter(duration)}`\n"
         f"🎧 **Requested By:** {requester(msg)}"
     )
@@ -975,21 +1030,12 @@ def requester(msg: Message):
     return msg.from_user.mention
 
 
-def _get_yt_link(msg: Message) -> str:
-    text = msg.text
-    if isinstance(text, Str):
-        text = text.markdown
-    for _ in yt_regex.finditer(text):
-        return _.group(0)
-    return ""
-
-
 def _get_yt_info(msg: Message) -> Tuple[str, str]:
     if msg.entities:
         for e in msg.entities:
             if e.url:
                 return msg.text[e.offset:e.length], e.url
-    return "Song", _get_yt_link(msg)
+    return "", ""
 
 
 def get_quality_ratios(w: int, h: int, q: int) -> Tuple[int, int]:
@@ -1045,7 +1091,7 @@ if userge.has_bot:
                         break
 
             await cq.edit_message_text(text, disable_web_page_preview=True)
-            await handle_queue()
+            await _skip()
 
         elif "queue" in cq.data:
             if not QUEUE:
@@ -1053,13 +1099,15 @@ if userge.has_bot:
             else:
                 out = f"**{len(QUEUE)} Song"
                 out += f"{'s' if len(QUEUE) > 1 else ''} in Queue:**\n"
-                for m in QUEUE:
+                for i, m in enumerate(QUEUE, start=1):
                     file = m.audio or m.video or m.document or None
-                    if file:
-                        out += f"\n - [{file.file_name}]({m.link})"
+                    if hasattr(m, 'file_name'):
+                        out = f"\n{i}. {m.file_name}"
+                    elif file:
+                        out += f"\n{i}. [{file.file_name}]({m.link})"
                     else:
                         title, link = _get_yt_info(m)
-                        out += f"\n - [{title}]({link})"
+                        out += f"\n{i}. [{title}]({link})"
 
             out += f"\n\n**Clicked by:** {cq.from_user.mention}"
             button = InlineKeyboardMarkup(
