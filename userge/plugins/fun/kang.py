@@ -151,8 +151,7 @@ async def kang_(message: Message):
                 if is_video:
                     packname += "_video"
                     packnick += " (Video)"
-                await message.edit("`Switching to Pack " + str(pack) +
-                                   " due to insufficient space`")
+                await message.edit(f"`Switching to Pack {pack} due to insufficient space`")
                 await conv.send_message(packname)
                 msg = await conv.get_response(mark_read=True)
                 if msg.text == "Invalid pack selected.":
