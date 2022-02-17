@@ -17,7 +17,6 @@ heroku3
 html-telegraph-poster
 motor
 oauth2client
-opencv-python-headless
 Pillow==9.0.0
 psutil
 pybase64
