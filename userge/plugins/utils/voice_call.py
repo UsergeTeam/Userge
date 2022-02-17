@@ -444,7 +444,7 @@ async def play_music(msg: Message, forceplay: bool):
                 QUEUE.insert(0, msg)
             else:
                 if PLAYING:
-                    await reply_text(msg, _get_scheduled_text(path.name))
+                    await reply_text(msg, _get_scheduled_text(msg.file_name))
                 QUEUE.append(msg)
         else:
             mesg = await reply_text(msg, f"Searching `{input_str}` on YouTube")
