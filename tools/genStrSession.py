@@ -21,6 +21,7 @@ if os.path.isfile("config.env"):
 # clean-up before gen. new Str
 if os.path.exists("tools/Userge.session"):
     os.remove("tools/Userge.session")
+    
 
 async def genStrSession() -> None:  # pylint: disable=missing-function-docstring
     async with Client(
