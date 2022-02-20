@@ -18,11 +18,12 @@ from pyrogram.filters import Filter as RawFilter
 from pyrogram.handlers import MessageHandler
 from pyrogram.handlers.handler import Handler
 
-from userge import logging, Config
+from userge import logging, config
 from ... import client as _client, get_collection  # pylint: disable=unused-import
 
 _DISABLED_FILTERS = get_collection("DISABLED_FILTERS")
 _UNLOADED_FILTERS = get_collection("UNLOADED_FILTERS")
+
 _LOG = logging.getLogger(__name__)
 _LOG_STR = "<<<!  [[[[[  %s  ]]]]]  !>>>"
 
@@ -31,7 +32,7 @@ _UNLOADED: List[str] = []
 
 
 def _init(name: str) -> Tuple[bool, bool]:
-    name = name.lstrip(Config.CMD_TRIGGER)
+    name = name.lstrip(config.CMD_TRIGGER)
     enabled = True
     loaded = True
     if name in _DISABLED:
@@ -49,28 +50,28 @@ async def _main() -> None:
 
 
 async def _enable(name: str) -> None:
-    name = name.lstrip(Config.CMD_TRIGGER)
+    name = name.lstrip(config.CMD_TRIGGER)
     if name in _DISABLED:
         _DISABLED.remove(name)
         await _DISABLED_FILTERS.delete_one({'filter': name})
 
 
 async def _disable(name: str) -> None:
-    name = name.lstrip(Config.CMD_TRIGGER)
+    name = name.lstrip(config.CMD_TRIGGER)
     if name != "enable":
         _DISABLED.append(name)
         await _DISABLED_FILTERS.insert_one({'filter': name})
 
 
 async def _load(name: str) -> None:
-    name = name.lstrip(Config.CMD_TRIGGER)
+    name = name.lstrip(config.CMD_TRIGGER)
     if name in _UNLOADED:
         _UNLOADED.remove(name)
         await _UNLOADED_FILTERS.delete_one({'filter': name})
 
 
 async def _unload(name: str) -> None:
-    name = name.lstrip(Config.CMD_TRIGGER)
+    name = name.lstrip(config.CMD_TRIGGER)
     if name != "load":
         _UNLOADED.append(name)
         await _UNLOADED_FILTERS.insert_one({'filter': name})
@@ -99,8 +100,7 @@ class Filter:
                  allow_via_bot: bool,
                  check_client: bool,
                  check_downpath: bool,
-                 stop_propagation: bool,
-                 continue_propagation: bool,
+                 propagate: Optional[bool],
                  check_perm: bool,
                  check_change_info_perm: bool,
                  check_edit_perm: bool,
@@ -117,8 +117,7 @@ class Filter:
         self.allow_via_bot = allow_via_bot
         self.check_client = check_client
         self.check_downpath = check_downpath
-        self.stop_propagation = stop_propagation
-        self.continue_propagation = continue_propagation
+        self.propagate = propagate
         self.check_perm = check_perm
         self.check_change_info_perm = check_change_info_perm
         self.check_edit_perm = check_edit_perm

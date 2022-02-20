@@ -118,7 +118,7 @@ class Manager:
             self.plugins[name].doc = doc.strip()
 
     def get_plugins(self) -> Dict[str, List[str]]:
-        """ returns categorized plugins """
+        """ returns categorized enabled plugins """
         ret_dict: Dict[str, List[str]] = {}
         for _, plg in self.enabled_plugins.items():
             if plg.parent not in ret_dict:
@@ -142,7 +142,7 @@ class Manager:
     async def enable_commands(self, commands: List[str]) -> List[str]:
         """ enable list of commands """
         enabled: List[str] = []
-        for cmd_name in list(set(commands).intersection(set(self.commands))):
+        for cmd_name in set(commands).intersection(set(self.commands)):
             ret = await self.commands[cmd_name].enable()
             if ret:
                 enabled.append(ret)
@@ -151,7 +151,7 @@ class Manager:
     async def disable_commands(self, commands: List[str]) -> List[str]:
         """ disable list of commands """
         disabled: List[str] = []
-        for cmd_name in list(set(commands).intersection(set(self.commands))):
+        for cmd_name in set(commands).intersection(set(self.commands)):
             ret = await self.commands[cmd_name].disable()
             if ret:
                 disabled.append(ret)
@@ -160,7 +160,7 @@ class Manager:
     async def load_commands(self, commands: List[str]) -> List[str]:
         """ load list of commands """
         loaded: List[str] = []
-        for cmd_name in list(set(commands).intersection(set(self.commands))):
+        for cmd_name in set(commands).intersection(set(self.commands)):
             ret = await self.commands[cmd_name].load()
             if ret:
                 loaded.append(ret)
@@ -169,7 +169,7 @@ class Manager:
     async def unload_commands(self, commands: List[str]) -> List[str]:
         """ unload list of commands """
         unloaded: List[str] = []
-        for cmd_name in list(set(commands).intersection(set(self.commands))):
+        for cmd_name in set(commands).intersection(set(self.commands)):
             ret = await self.commands[cmd_name].unload()
             if ret:
                 unloaded.append(ret)
@@ -178,7 +178,7 @@ class Manager:
     async def enable_filters(self, filters: List[str]) -> List[str]:
         """ enable list of filters """
         enabled: List[str] = []
-        for flt_name in list(set(filters).intersection(set(self.filters))):
+        for flt_name in set(filters).intersection(set(self.filters)):
             ret = await self.filters[flt_name].enable()
             if ret:
                 enabled.append(ret)
@@ -187,7 +187,7 @@ class Manager:
     async def disable_filters(self, filters: List[str]) -> List[str]:
         """ disable list of filters """
         disabled: List[str] = []
-        for flt_name in list(set(filters).intersection(set(self.filters))):
+        for flt_name in set(filters).intersection(set(self.filters)):
             ret = await self.filters[flt_name].disable()
             if ret:
                 disabled.append(ret)
@@ -196,7 +196,7 @@ class Manager:
     async def load_filters(self, filters: List[str]) -> List[str]:
         """ load list of filters """
         loaded: List[str] = []
-        for flt_name in list(set(filters).intersection(set(self.filters))):
+        for flt_name in set(filters).intersection(set(self.filters)):
             ret = await self.filters[flt_name].load()
             if ret:
                 loaded.append(ret)
@@ -205,7 +205,7 @@ class Manager:
     async def unload_filters(self, filters: List[str]) -> List[str]:
         """ unload list of filters """
         unloaded: List[str] = []
-        for flt_name in list(set(filters).intersection(set(self.filters))):
+        for flt_name in set(filters).intersection(set(self.filters)):
             ret = await self.filters[flt_name].unload()
             if ret:
                 unloaded.append(ret)
@@ -214,7 +214,7 @@ class Manager:
     async def enable_plugins(self, plugins: List[str]) -> Dict[str, List[str]]:
         """ enable list of plugins """
         enabled: Dict[str, List[str]] = {}
-        for plg_name in list(set(plugins).intersection(set(self.plugins))):
+        for plg_name in set(plugins).intersection(set(self.plugins)):
             ret = await self.plugins[plg_name].enable()
             if ret:
                 enabled.update({plg_name: ret})
@@ -223,7 +223,7 @@ class Manager:
     async def disable_plugins(self, plugins: List[str]) -> Dict[str, List[str]]:
         """ disable list of plugins """
         disabled: Dict[str, List[str]] = {}
-        for plg_name in list(set(plugins).intersection(set(self.plugins))):
+        for plg_name in set(plugins).intersection(set(self.plugins)):
             ret = await self.plugins[plg_name].disable()
             if ret:
                 disabled.update({plg_name: ret})
@@ -232,7 +232,7 @@ class Manager:
     async def load_plugins(self, plugins: List[str]) -> Dict[str, List[str]]:
         """ load list of plugins """
         loaded: Dict[str, List[str]] = {}
-        for plg_name in list(set(plugins).intersection(set(self.plugins))):
+        for plg_name in set(plugins).intersection(set(self.plugins)):
             ret = await self.plugins[plg_name].load()
             if ret:
                 loaded.update({plg_name: ret})
@@ -241,11 +241,19 @@ class Manager:
     async def unload_plugins(self, plugins: List[str]) -> Dict[str, List[str]]:
         """ unload list of plugins """
         unloaded: Dict[str, List[str]] = {}
-        for plg_name in list(set(plugins).intersection(set(self.plugins))):
+        for plg_name in set(plugins).intersection(set(self.plugins)):
             ret = await self.plugins[plg_name].unload()
             if ret:
                 unloaded.update({plg_name: ret})
         return unloaded
+
+    async def start(self) -> None:
+        for plg in self.plugins.values():
+            await plg.start()
+
+    async def stop(self) -> None:
+        for plg in self.plugins.values():
+            await plg.stop()
 
     @staticmethod
     async def clear() -> bool:

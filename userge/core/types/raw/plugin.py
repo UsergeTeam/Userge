@@ -11,7 +11,7 @@
 __all__ = ['Plugin']
 
 import asyncio
-from typing import Union, List, Optional
+from typing import Union, List, Optional, Callable, Set, Awaitable, Any
 
 from userge import logging
 from . import command, filter as _filter  # pylint: disable=unused-import
@@ -30,7 +30,14 @@ class Plugin:
         self.doc: Optional[str] = None
         self.commands: List['command.Command'] = []
         self.filters: List['_filter.Filter'] = []
-        _LOG.debug(_LOG_STR, f"created plugin -> {self.name}")
+
+        self._on_init_callback: Optional[Callable[[], Awaitable[Any]]] = None
+        self._on_start_callback: Optional[Callable[[], Awaitable[Any]]] = None
+        self._on_stop_callback: Optional[Callable[[], Awaitable[Any]]] = None
+        self._on_enable_callback: Optional[Callable[[], Awaitable[Any]]] = None
+        self._on_disable_callback: Optional[Callable[[], Awaitable[Any]]] = None
+        self._on_load_callback: Optional[Callable[[], Awaitable[Any]]] = None
+        self._on_unload_callback: Optional[Callable[[], Awaitable[Any]]] = None
 
     def __repr__(self) -> str:
         return f"<plugin {self.name} {self.commands + self.filters}>"
@@ -92,19 +99,25 @@ class Plugin:
 
     async def init(self) -> None:
         """ initialize the plugin """
+        if self._on_init_callback:
+            await self._on_init_callback()
+
         await asyncio.gather(*[flt.init() for flt in self.commands + self.filters])
 
     def add(self, obj: Union['command.Command', '_filter.Filter']) -> None:
         """ add command or filter to plugin """
         obj.plugin_name = self.name
+
         if isinstance(obj, command.Command):
             type_ = self.commands
         else:
             type_ = self.filters
+
         for flt in type_:
             if flt.name == obj.name:
                 type_.remove(flt)
                 break
+
         type_.append(obj)
         _LOG.debug(_LOG_STR, f"add filter to plugin -> {self.name}")
 
@@ -112,37 +125,93 @@ class Plugin:
         """ returns all sorted command names in the plugin """
         return sorted((cmd.name for cmd in self.enabled_commands))
 
+    async def start(self) -> None:
+        if self._on_start_callback:
+            await self._on_start_callback()
+
+    async def stop(self) -> None:
+        if self._on_stop_callback:
+            await self._on_stop_callback()
+
     async def enable(self) -> List[str]:
         """ enable all commands in the plugin """
         if self.is_enabled:
             return []
-        return await _do_it(self, 'enable')
+
+        out = await _do_it(self, 'enable')
+
+        if self._on_enable_callback:
+            await self._on_enable_callback()
+
+        return out
 
     async def disable(self) -> List[str]:
         """ disable all commands in the plugin """
         if not self.is_enabled:
             return []
-        return await _do_it(self, 'disable')
+
+        out = await _do_it(self, 'disable')
+
+        if self._on_disable_callback:
+            await self._on_disable_callback()
+
+        return out
 
     async def load(self) -> List[str]:
         """ load all commands in the plugin """
         if self.is_loaded:
             return []
-        return await _do_it(self, 'load')
+
+        out = await _do_it(self, 'load')
+
+        if self._on_load_callback:
+            await self._on_load_callback()
+
+        return out
 
     async def unload(self) -> List[str]:
         """ unload all commands in the plugin """
         if not self.is_loaded:
             return []
-        return await _do_it(self, 'unload')
+
+        out = await _do_it(self, 'unload')
+
+        if self._on_unload_callback:
+            await self._on_unload_callback()
+
+        return out
+
+    def set_on_init_callback(self, callback: Callable[[], Awaitable[Any]]) -> None:
+        self._on_init_callback = callback
+
+    def set_on_start_callback(self, callback: Callable[[], Awaitable[Any]]) -> None:
+        self._on_start_callback = callback
+
+    def set_on_stop_callback(self, callback: Callable[[], Awaitable[Any]]) -> None:
+        self._on_stop_callback = callback
+
+    def set_on_enable_callback(self, callback: Callable[[], Awaitable[Any]]) -> None:
+        self._on_enable_callback = callback
+
+    def set_on_disable_callback(self, callback: Callable[[], Awaitable[Any]]) -> None:
+        self._on_disable_callback = callback
+
+    def set_on_load_callback(self, callback: Callable[[], Awaitable[Any]]) -> None:
+        self._on_load_callback = callback
+
+    def set_on_unload_callback(self, callback: Callable[[], Awaitable[Any]]) -> None:
+        self._on_unload_callback = callback
 
 
 async def _do_it(plg: Plugin, work_type: str) -> List[str]:
     done: List[str] = []
+
     for flt in plg.commands + plg.filters:
         tmp = await getattr(flt, work_type)()
         if tmp:
             done.append(tmp)
+
     if done:
         _LOG.info(_LOG_STR, f"{work_type.rstrip('e')}ed {plg}")
+
     return done

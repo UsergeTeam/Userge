@@ -16,11 +16,10 @@ from concurrent.futures import ThreadPoolExecutor, Future
 from functools import wraps, partial
 from typing import Any, Callable
 
-from userge import logging, Config
+from userge import logging, config
 
 _LOG = logging.getLogger(__name__)
-_LOG_STR = "<<<!  ||||  %s  ||||  !>>>"
-_EXECUTOR = ThreadPoolExecutor(Config.WORKERS)
+_EXECUTOR = ThreadPoolExecutor(config.WORKERS)
 # pylint: disable=protected-access
 _MAX = _EXECUTOR._max_workers
 
@@ -41,8 +40,8 @@ def run_in_thread(func: Callable[..., Any]) -> Callable[..., Any]:
 
 def _stop():
     _EXECUTOR.shutdown()
-    _LOG.info(_LOG_STR, f"Stopped Pool : {_MAX} Workers")
+    _LOG.info(f"Stopped Pool : {_MAX} Workers")
 
 
 atexit.register(_stop)
-_LOG.info(_LOG_STR, f"Started Pool : {_MAX} Workers")
+_LOG.info(f"Started Pool : {_MAX} Workers")

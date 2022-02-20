@@ -18,14 +18,14 @@ import os
 import signal
 import threading
 import time
+from contextlib import suppress
 from types import ModuleType
 from typing import List, Awaitable, Any, Optional, Union
 
 from pyrogram import idle, types
 from pyrogram.methods import Methods as RawMethods
 
-from userge import logging, Config, logbot
-from userge.plugins import get_all_plugins
+from userge import logging, config
 from userge.utils import time_formatter
 from userge.utils.exceptions import UsergeBotNotFound
 from .database import get_collection
@@ -35,11 +35,50 @@ from .methods import Methods
 _LOG = logging.getLogger(__name__)
 _LOG_STR = "<<<!  #####  %s  #####  !>>>"
 
-_IMPORTED: List[ModuleType] = []
-_INIT_TASKS: List[asyncio.Task] = []
-_START_TIME = time.time()
-_SEND_SIGNAL = False
 
+def _import_module(path: str) -> Optional[ModuleType]:
+    try:
+        return importlib.import_module(path)
+    except Exception as i_e:
+        _LOG.error(_LOG_STR, f"[{path}] - {i_e}")
+
+
+def _reload_module(module: Optional[ModuleType]) -> Optional[ModuleType]:
+    if module:
+        try:
+            return importlib.reload(module)
+        except Exception as i_e:
+            _LOG.error(_LOG_STR, i_e)
+            return module
+
+
+class _Module:
+    def __init__(self, cat: str, name: str):
+        self.cat = cat
+        self.name = name
+        self._path = f"userge.plugins.{cat}.{name}"
+        self._init: Optional[ModuleType] = None
+        self._main: Optional[ModuleType] = None
+
+    def init(self) -> Optional[ModuleType]:
+        self._init = _import_module(self._path)
+
+        return self._init
+
+    def main(self) -> None:
+        self._main = _import_module(self._path + ".__main__")
+
+    def reload_init(self) -> Optional[ModuleType]:
+        self._init = _reload_module(self._init)
+
+        return self._init
+
+    def reload_main(self) -> None:
+        self._main = _reload_module(self._main)
+
+
+_MODULES: List[_Module] = []
+_START_TIME = time.time()
 _USERGE_STATUS = get_collection("USERGE_STATUS")
 
 
@@ -52,18 +91,12 @@ async def _set_running(is_running: bool) -> None:
 
 
 async def _is_running() -> bool:
-    if Config.ASSERT_SINGLE_INSTANCE:
+    if config.ASSERT_SINGLE_INSTANCE:
         data = await _USERGE_STATUS.find_one({'_id': 'USERGE_STATUS'})
         if data:
             return bool(data['is_running'])
+
     return False
-
-
-async def _complete_init_tasks() -> None:
-    if not _INIT_TASKS:
-        return
-    await asyncio.gather(*_INIT_TASKS)
-    _INIT_TASKS.clear()
 
 
 class _AbstractUserge(Methods, RawClient):
@@ -76,6 +109,7 @@ class _AbstractUserge(Methods, RawClient):
         """ returns client id """
         if self.is_bot:
             return RawClient.BOT_ID
+
         return RawClient.USER_ID
 
     @property
@@ -83,69 +117,73 @@ class _AbstractUserge(Methods, RawClient):
         """ returns client is bot or not """
         if self._bot is not None:
             return hasattr(self, 'ubot')
-        return bool(Config.BOT_TOKEN)
+
+        return bool(config.BOT_TOKEN)
 
     @property
     def uptime(self) -> str:
         """ returns userge uptime """
         return time_formatter(time.time() - _START_TIME)
 
-    async def finalize_load(self) -> None:
-        """ finalize the plugins load """
-        await asyncio.gather(_complete_init_tasks(), self.manager.init())
-
-    async def load_plugin(self, name: str, reload_plugin: bool = False) -> None:
-        """ Load plugin to Userge """
-        _LOG.debug(_LOG_STR, f"Importing {name}")
-        _IMPORTED.append(
-            importlib.import_module(f"userge.plugins.{name}"))
-        if reload_plugin:
-            _IMPORTED[-1] = importlib.reload(_IMPORTED[-1])
-        plg = _IMPORTED[-1]
-        self.manager.update_plugin(plg.__name__, plg.__doc__)
-        if hasattr(plg, '_init'):
-            # pylint: disable=protected-access
-            if asyncio.iscoroutinefunction(plg._init):
-                _INIT_TASKS.append(self.loop.create_task(plg._init()))
-        _LOG.debug(_LOG_STR, f"Imported {_IMPORTED[-1].__name__} Plugin Successfully")
-
     async def _load_plugins(self) -> None:
-        _IMPORTED.clear()
-        _INIT_TASKS.clear()
-        logbot.edit_last_msg("Importing All Plugins", _LOG.info, _LOG_STR)
-        for name in get_all_plugins():
-            try:
-                await self.load_plugin(name)
-            except Exception as i_e:
-                _LOG.error(_LOG_STR, f"[{name}] - {i_e}")
-        await self.finalize_load()
-        _LOG.info(_LOG_STR, f"Imported ({len(_IMPORTED)}) Plugins => "
-                  + str([i.__name__ for i in _IMPORTED]))
+        _LOG.info(_LOG_STR, "Importing All Plugins")
+
+        _MODULES.clear()
+        base = os.path.join("userge", "plugins")
+
+        for cat in os.listdir(base):
+            cat_path = os.path.join(base, cat)
+            if not os.path.isdir(cat_path) or cat.startswith("_"):
+                continue
+
+            for plg in os.listdir(cat_path):
+                plg_path = os.path.join(cat_path, plg)
+                if not os.path.isdir(plg_path) or plg.startswith("_"):
+                    continue
+
+                mdl = _Module(cat, plg)
+                mt = mdl.init()
+                if mt:
+                    _MODULES.append(mdl)
+                    self.manager.update_plugin(mt.__name__, mt.__doc__)
+
+        for mdl in _MODULES:
+            mdl.main()
+
+        await self.manager.init()
+        _LOG.info(_LOG_STR, f"Imported ({len(_MODULES)}) Plugins => "
+                  + str(['.'.join((mdl.cat, mdl.name)) for mdl in _MODULES]))
 
     async def reload_plugins(self) -> int:
         """ Reload all Plugins """
-        self.manager.clear_plugins()
-        reloaded: List[str] = []
         _LOG.info(_LOG_STR, "Reloading All Plugins")
-        for imported in _IMPORTED:
-            try:
-                reloaded_ = importlib.reload(imported)
-            except Exception as i_e:
-                _LOG.error(_LOG_STR, i_e)
-            else:
-                reloaded.append(reloaded_.__name__)
-        _LOG.info(_LOG_STR, f"Reloaded {len(reloaded)} Plugins => {reloaded}")
-        await self.finalize_load()
+
+        self.manager.clear_plugins()
+        reloaded: List[_Module] = []
+
+        for mdl in _MODULES:
+            if mdl.reload_init():
+                reloaded.append(mdl)
+
+        for mdl in reloaded:
+            mdl.reload_main()
+
+        await self.manager.init()
+        _LOG.info(_LOG_STR, f"Reloaded {len(reloaded)} Plugins => "
+                  + str([mdl.name for mdl in reloaded]))
+
         return len(reloaded)
 
     async def get_me(self, cached: bool = True) -> types.User:
         if not cached or self._me is None:
             self._me = await super().get_me()
+
         return self._me
 
     async def start(self):
         await super().start()
         self._me = await self.get_me()
+
         if self.is_bot:
             RawClient.BOT_ID = self._me.id
         else:
@@ -161,7 +199,6 @@ class _AbstractUserge(Methods, RawClient):
 class UsergeBot(_AbstractUserge):
     """ UsergeBot, the bot """
     def __init__(self, **kwargs) -> None:
-        _LOG.info(_LOG_STR, "Setting UsergeBot Configs")
         super().__init__(session_name=":memory:", **kwargs)
 
     @property
@@ -173,21 +210,23 @@ class UsergeBot(_AbstractUserge):
 class Userge(_AbstractUserge):
     """ Userge, the userbot """
 
-    has_bot = bool(Config.BOT_TOKEN)
+    has_bot = bool(config.BOT_TOKEN)
 
     def __init__(self, **kwargs) -> None:
-        _LOG.info(_LOG_STR, "Setting Userge Configs")
         kwargs = {
-            'api_id': Config.API_ID,
-            'api_hash': Config.API_HASH,
-            'workers': Config.WORKERS
+            'api_id': config.API_ID,
+            'api_hash': config.API_HASH,
+            'workers': config.WORKERS
         }
-        if Config.BOT_TOKEN:
-            kwargs['bot_token'] = Config.BOT_TOKEN
-        if Config.HU_STRING_SESSION and Config.BOT_TOKEN:
+
+        if config.BOT_TOKEN:
+            kwargs['bot_token'] = config.BOT_TOKEN
+
+        if config.SESSION_STRING and config.BOT_TOKEN:
             RawClient.DUAL_MODE = True
             kwargs['bot'] = UsergeBot(bot=self, **kwargs)
-        kwargs['session_name'] = Config.HU_STRING_SESSION or ":memory:"
+
+        kwargs['session_name'] = config.SESSION_STRING or ":memory:"
         super().__init__(**kwargs)
 
     @property
@@ -198,9 +237,10 @@ class Userge(_AbstractUserge):
     def bot(self) -> Union['UsergeBot', 'Userge']:
         """ returns usergebot """
         if self._bot is None:
-            if Config.BOT_TOKEN:
+            if config.BOT_TOKEN:
                 return self
             raise UsergeBotNotFound("Need BOT_TOKEN ENV!")
+
         return self._bot
 
     async def start(self) -> None:
@@ -222,17 +262,24 @@ class Userge(_AbstractUserge):
         _LOG.info(_LOG_STR, "Starting Userge")
         await _set_running(True)
         await super().start()
+
         if self._bot is not None:
             _LOG.info(_LOG_STR, "Starting UsergeBot")
             await self._bot.start()
+
         await self._load_plugins()
+        await self.manager.start()
 
     async def stop(self) -> None:  # pylint: disable=arguments-differ
         """ stop client and bot """
+        await self.manager.stop()
+
         if self._bot is not None:
             _LOG.info(_LOG_STR, "Stopping UsergeBot")
             await self._bot.stop()
+
         _LOG.info(_LOG_STR, "Stopping Userge")
+
         await super().stop()
         await _set_running(False)
 
@@ -243,10 +290,8 @@ class Userge(_AbstractUserge):
         running_tasks: List[asyncio.Task] = []
 
         async def _waiter() -> None:
-            try:
+            with suppress(asyncio.exceptions.TimeoutError):
                 await asyncio.wait_for(loop_is_stopped.wait(), 30)
-            except asyncio.exceptions.TimeoutError:
-                pass
 
         async def _finalize() -> None:
             async with lock:
@@ -254,21 +299,20 @@ class Userge(_AbstractUserge):
                     t.cancel()
                 if self.is_initialized:
                     await self.stop()
+
             # pylint: disable=expression-not-assigned
             [t.cancel() for t in asyncio.all_tasks() if t is not asyncio.current_task()]
             await self.loop.shutdown_asyncgens()
+
             self.loop.stop()
             _LOG.info(_LOG_STR, "Loop Stopped !")
             loop_is_stopped.set()
 
         async def _shutdown(_sig: signal.Signals) -> None:
-            global _SEND_SIGNAL  # pylint: disable=global-statement
             _LOG.info(_LOG_STR, f"Received Stop Signal [{_sig.name}], Exiting Userge ...")
             await _finalize()
-            if _sig == _sig.SIGUSR1:
-                _SEND_SIGNAL = True
 
-        for sig in (signal.SIGHUP, signal.SIGTERM, signal.SIGINT, signal.SIGUSR1):
+        for sig in (signal.SIGHUP, signal.SIGTERM, signal.SIGINT):
             self.loop.add_signal_handler(
                 sig, lambda _sig=sig: self.loop.create_task(_shutdown(_sig)))
 
@@ -280,11 +324,9 @@ class Userge(_AbstractUserge):
         for task in self._tasks:
             running_tasks.append(self.loop.create_task(task()))
 
-        logbot.edit_last_msg("Userge has Started Successfully !")
-        logbot.end()
-        mode = "[DUAL]" if RawClient.DUAL_MODE else "[BOT]" if Config.BOT_TOKEN else "[USER]"
+        mode = "[DUAL]" if RawClient.DUAL_MODE else "[BOT]" if config.BOT_TOKEN else "[USER]"
 
-        try:
+        with suppress(asyncio.exceptions.CancelledError, RuntimeError):
             if coro:
                 _LOG.info(_LOG_STR, f"Running Coroutine - {mode}")
                 self.loop.run_until_complete(coro)
@@ -292,15 +334,9 @@ class Userge(_AbstractUserge):
                 _LOG.info(_LOG_STR, f"Idling Userge - {mode}")
                 idle()
             self.loop.run_until_complete(_finalize())
-        except (asyncio.exceptions.CancelledError, RuntimeError):
-            pass
-        finally:
-            try:
-                self.loop.run_until_complete(_waiter())
-            except RuntimeError:
-                pass
-            if _SEND_SIGNAL:
-                os.kill(os.getpid(), signal.SIGUSR1)
+
+        with suppress(RuntimeError):
+            self.loop.run_until_complete(_waiter())
 
 
 def _un_wrapper(obj, name, function):

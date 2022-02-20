@@ -140,8 +140,7 @@ config.env
 *.session
 unknown_errors.txt
 logs/
-bin/
-resources/base_profile_pic.jpg
-resources/mdfy_profile_pic.jpg
-resources/MutantAcademyBB.ttf
+loader/
 userge/plugins/dev/
+.rcache
+test.py

@@ -12,7 +12,7 @@ __all__ = ['OnCmd']
 
 from typing import Dict, List, Union, Optional
 
-from userge import Config
+from userge import config
 from ... import types
 from . import RawDecorator
 
@@ -24,7 +24,7 @@ class OnCmd(RawDecorator):  # pylint: disable=missing-class-docstring
                *,
                group: int = 0,
                name: str = '',
-               trigger: Optional[str] = Config.CMD_TRIGGER,
+               trigger: Optional[str] = config.CMD_TRIGGER,
                filter_me: bool = True,
                allow_private: bool = True,
                allow_bots: bool = True,
@@ -34,8 +34,7 @@ class OnCmd(RawDecorator):  # pylint: disable=missing-class-docstring
                allow_via_bot: bool = True,
                check_client: bool = False,
                check_downpath: bool = False,
-               stop_propagation: bool = False,
-               continue_propagation: bool = False,
+               propagate: Optional[bool] = None,
                check_change_info_perm: bool = False,
                check_edit_perm: bool = False,
                check_delete_perm: bool = False,
@@ -104,11 +103,9 @@ class OnCmd(RawDecorator):  # pylint: disable=missing-class-docstring
             check_downpath (``bool``, *optional*):
                 If ``True``, check downpath and make if not exist, defaults to False.
 
-            stop_propagation (``bool``, *optional*):
-                If ``True``, stop propagation to other groups, defaults to False.
-
-            continue_propagation (``bool``, *optional*):
-                If ``True``, continue propagation in this group, defaults to False.
+            propagate (``bool``, *optional*):
+                If ``False``, stop propagation to other groups,
+                if ``True`` continue propagation in this group. defaults to None.
 
             check_change_info_perm (``bool``, *optional*):
                 If ``True``, check user has change_info permission before execute,
@@ -159,8 +156,7 @@ class OnCmd(RawDecorator):  # pylint: disable=missing-class-docstring
                                     allow_via_bot=allow_via_bot,
                                     check_client=check_client,
                                     check_downpath=check_downpath,
-                                    stop_propagation=stop_propagation,
-                                    continue_propagation=continue_propagation,
+                                    propagate=propagate,
                                     check_change_info_perm=check_change_info_perm,
                                     check_edit_perm=check_edit_perm,
                                     check_delete_perm=check_delete_perm,

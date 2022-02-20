@@ -16,7 +16,8 @@ from typing import Union, Dict, List, Callable
 from pyrogram import filters
 from pyrogram.types import Message
 
-from userge import Config
+from userge import config
+from userge.plugins.builtin import sudo
 from .filter import Filter
 from ... import client as _client  # pylint: disable=unused-import
 
@@ -38,7 +39,7 @@ class Command(Filter):
         """ parse command """
         pattern = '^'
         if trigger:
-            pattern += f"(?:\\{trigger}|\\{Config.SUDO_TRIGGER}|\\{Config.CMD_TRIGGER})"
+            pattern += f"(?:\\{trigger}|\\{config.SUDO_TRIGGER}|\\{config.CMD_TRIGGER})"
         pattern += command.lstrip('^')
 
         if _has_regex(command):
@@ -105,12 +106,12 @@ def _incoming_logic(m: Message, trigger: str, name: str) -> bool:
         not m.outgoing and trigger
         and m.from_user and not m.edit_date
         and (
-            m.from_user.id in Config.OWNER_ID or (
-                Config.SUDO_ENABLED and m.from_user.id in Config.SUDO_USERS
-                and name.lstrip(trigger) in Config.ALLOWED_COMMANDS
+            m.from_user.id in config.OWNER_ID or (
+                sudo.Dynamic.ENABLED and m.from_user.id in sudo.USERS
+                and name.lstrip(trigger) in sudo.COMMANDS
             )
         )
-        and m.text.startswith(Config.SUDO_TRIGGER)
+        and m.text.startswith(config.SUDO_TRIGGER)
     )
 
 
@@ -119,10 +120,10 @@ def _public_logic(m: Message, trigger: str, _) -> bool:
         not m.edit_date
         and (
             True if not trigger
-            else m.text.startswith(Config.CMD_TRIGGER)
-            if m.from_user and m.from_user.id in Config.OWNER_ID
-            else m.text.startswith(Config.SUDO_TRIGGER)
-            if Config.SUDO_ENABLED and m.from_user and m.from_user.id in Config.SUDO_USERS
+            else m.text.startswith(config.CMD_TRIGGER)
+            if m.from_user and m.from_user.id in config.OWNER_ID
+            else m.text.startswith(config.SUDO_TRIGGER)
+            if sudo.Dynamic.ENABLED and m.from_user and m.from_user.id in sudo.USERS
             else m.text.startswith(trigger)
         )
     )
@@ -190,4 +191,4 @@ def _format_about(about: Union[str, Dict[str, Union[str, List[str], Dict[str, st
             else:
                 tmp_chelp += '\n'
                 tmp_chelp += t_d
-    return tmp_chelp.replace('{tr}', Config.CMD_TRIGGER)
+    return tmp_chelp.replace('{tr}', config.CMD_TRIGGER)

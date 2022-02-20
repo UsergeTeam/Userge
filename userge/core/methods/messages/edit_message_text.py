@@ -16,7 +16,7 @@ from typing import Optional, Union, List
 
 from pyrogram.types import InlineKeyboardMarkup, MessageEntity
 
-from userge import Config
+from userge import config
 from userge.utils import secure_text
 from ...ext import RawClient
 from ... import types
@@ -85,7 +85,7 @@ class EditMessageText(RawClient):  # pylint: disable=missing-class-docstring
         Raises:
             RPCError: In case of a Telegram RPC error.
         """
-        if text and chat_id not in Config.AUTH_CHATS:
+        if text and chat_id not in config.AUTH_CHATS:
             text = secure_text(str(text))
         msg = await super().edit_message_text(chat_id=chat_id,
                                               message_id=message_id,
@@ -97,7 +97,7 @@ class EditMessageText(RawClient):  # pylint: disable=missing-class-docstring
         module = inspect.currentframe().f_back.f_globals['__name__']
         if log:
             await self._channel.fwd_msg(msg, module if isinstance(log, bool) else log)
-        del_in = del_in or Config.MSG_DELETE_TIMEOUT
+        del_in = del_in or config.Dynamic.MSG_DELETE_TIMEOUT
         if del_in > 0:
             await asyncio.sleep(del_in)
             return bool(await msg.delete())

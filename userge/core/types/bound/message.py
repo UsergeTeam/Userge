@@ -21,7 +21,7 @@ from pyrogram.errors import (
     MessageIdInvalid, MessageDeleteForbidden, BotInlineDisabled
 )
 
-from userge import logging, Config
+from userge import logging, config
 from userge.utils import is_command
 from ... import client as _client  # pylint: disable=unused-import
 
@@ -592,11 +592,11 @@ class Message(RawMessage):
         """
         if show_help:
             command_name = self.text.split()[0].strip()
-            cmd = command_name.lstrip(Config.CMD_TRIGGER).lstrip(Config.SUDO_TRIGGER)
+            cmd = command_name.lstrip(config.CMD_TRIGGER).lstrip(config.SUDO_TRIGGER)
             is_cmd = is_command(cmd)
         else:
             is_cmd = False
-        if not is_cmd or not bool(Config.BOT_TOKEN):
+        if not is_cmd or not bool(config.BOT_TOKEN):
             del_in = del_in if del_in > 0 else _ERROR_MSG_DELETE_TIMEOUT
             return await self.edit(text=_ERROR_STRING.format(text),
                                    del_in=del_in,
@@ -707,11 +707,11 @@ class Message(RawMessage):
         except (MessageAuthorRequired, MessageIdInvalid):
             if show_help:
                 command_name = self.text.split()[0].strip()
-                cmd = command_name.lstrip(Config.CMD_TRIGGER).lstrip(Config.SUDO_TRIGGER)
+                cmd = command_name.lstrip(config.CMD_TRIGGER).lstrip(config.SUDO_TRIGGER)
                 is_cmd = is_command(cmd)
             else:
                 is_cmd = False
-            if not is_cmd or not bool(Config.BOT_TOKEN):
+            if not is_cmd or not bool(config.BOT_TOKEN):
                 del_in = del_in if del_in > 0 else _ERROR_MSG_DELETE_TIMEOUT
                 return await self.reply(text=_ERROR_STRING.format(text),
                                         del_in=del_in,

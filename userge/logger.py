@@ -23,7 +23,6 @@ logging.basicConfig(level=logging.INFO,
                     ])
 
 logging.getLogger("pyrogram").setLevel(logging.WARNING)
-logging.getLogger("pytgcalls").setLevel(logging.WARNING)
 logging.getLogger("pyrogram.parser.html").setLevel(logging.ERROR)
 logging.getLogger("pyrogram.session.session").setLevel(logging.ERROR)
 logging.getLogger('googleapiclient.discovery').setLevel(logging.WARNING)

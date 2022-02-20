@@ -17,7 +17,7 @@ from pyrogram.errors import ChatWriteForbidden
 from pyrogram.types import Message as RawMessage
 from pyrogram.errors.exceptions import MessageTooLong
 
-from userge import logging, Config
+from userge import logging, config
 from userge.utils import SafeDict, get_file_id_of_media, parse_buttons
 from ..bound import message as _message  # pylint: disable=unused-import
 from ... import client as _client  # pylint: disable=unused-import
@@ -33,7 +33,7 @@ def _gen_string(name: str) -> str:
 class ChannelLogger:
     """ Channel logger for Userge """
     def __init__(self, client: Union['_client.Userge', '_client.UsergeBot'], name: str) -> None:
-        self._id = Config.LOG_CHANNEL_ID
+        self._id = config.LOG_CHANNEL_ID
         self._client = client
         self._string = _gen_string(name)
 
@@ -49,7 +49,7 @@ class ChannelLogger:
             str
         """
         return "<b><a href='https://t.me/c/{}/{}'>Preview</a></b>".format(
-            str(Config.LOG_CHANNEL_ID)[4:], message_id)
+            str(config.LOG_CHANNEL_ID)[4:], message_id)
 
     async def log(self, text: str, name: str = '') -> int:
         """\nsend text message to log channel.
