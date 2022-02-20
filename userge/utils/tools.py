@@ -9,36 +9,24 @@
 # All rights reserved.
 
 import asyncio
-import importlib
-import os
 import re
 import shlex
 from os.path import basename, join, exists
 from typing import Tuple, List, Optional, Iterator, Union
 
-from emoji import get_emoji_regexp
-from html_telegraph_poster import TelegraphPoster
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 import userge
 
 _LOG = userge.logging.getLogger(__name__)
+
 _BTN_URL_REGEX = re.compile(r"(\[([^\[]+?)]\[buttonurl:/{0,2}(.+?)(:same)?])")
 _PTN_SPLIT = re.compile(r'(\.\d+|\.|\d+)')
-
-
-def import_ytdl():
-    """ import youtube_dl dynamically """
-    req_module = os.environ.get("YOUTUBE_DL_PATH", "youtube_dl")
-    try:
-        return importlib.import_module(req_module)
-    except ModuleNotFoundError:
-        _LOG.warning(f"please fix your requirements.txt file [{req_module}]")
-        raise
+_PTN_URL = re.compile(r"(?:https?|ftp)://[^|\s]+\.[^|\s]+")
 
 
 def is_url(url: str) -> bool:
-    return bool(re.match(r"(?:https?|ftp)://[^|\s]+\.[^|\s]+", url))
+    return bool(_PTN_URL.match(url))
 
 
 def sort_file_name_key(file_name: str) -> tuple:
@@ -99,11 +87,6 @@ def _sort_algo(data: List[str]) -> Iterator[Union[str, float]]:
         p1 = p2
 
 
-def demojify(string: str) -> str:
-    """ Remove emojis and other non-safe characters from string """
-    return get_emoji_regexp().sub(u'', string)
-
-
 def get_file_id_of_media(message: 'userge.Message') -> Optional[str]:
     """ get file_id """
     file_ = message.audio or message.animation or message.photo \
@@ -137,21 +120,6 @@ def time_formatter(seconds: float) -> str:
         ((str(minutes) + "m, ") if minutes else "") + \
         ((str(seconds) + "s, ") if seconds else "")
     return tmp[:-2]
-
-
-# https://github.com/UsergeTeam/Userge-Plugins/blob/master/plugins/anilist.py
-def post_to_telegraph(a_title: str, content: str) -> str:
-    """ Create a Telegram Post using HTML Content """
-    post_client = TelegraphPoster(use_api=True)
-    auth_name = "@theUserge"
-    post_client.create_api_token(auth_name)
-    post_page = post_client.post(
-        title=a_title,
-        author=auth_name,
-        author_url="https://t.me/theUserge",
-        text=content
-    )
-    return post_page['url']
 
 
 async def runcmd(cmd: str) -> Tuple[str, str, int, int]:

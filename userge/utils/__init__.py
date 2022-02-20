@@ -11,13 +11,10 @@
 from .progress import progress  # noqa
 from .sys_tools import SafeDict, terminate, secure_env, secure_text  # noqa
 from .tools import (sort_file_name_key, # noqa
-                    import_ytdl,
                     is_url,
-                    demojify,
                     get_file_id_of_media,
                     humanbytes,
                     time_formatter,
-                    post_to_telegraph,
                     runcmd,
                     take_screen_shot,
                     parse_buttons,
