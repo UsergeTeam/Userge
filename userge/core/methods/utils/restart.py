@@ -15,11 +15,10 @@ from userge import logging
 from ...ext import RawClient
 
 _LOG = logging.getLogger(__name__)
-_LOG_STR = "<<<!  #####  %s  #####  !>>>"
 
 
 class Restart(RawClient):  # pylint: disable=missing-class-docstring
     async def restart(self, hard: bool = False) -> None:  # pylint: disable=arguments-differ
         """ Restart the AbstractUserge """
-        _LOG.info(_LOG_STR, f"Restarting Userge [{'hard' if hard else 'soft'}]")
+        _LOG.info(f"Restarting Userge [{'HARD' if hard else 'SOFT'}]")
         restart(hard)

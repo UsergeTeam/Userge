@@ -21,16 +21,13 @@ from pyrogram.errors import (
     MessageIdInvalid, MessageDeleteForbidden, BotInlineDisabled
 )
 
-from userge import logging, config
+from userge import config
 from userge.utils import is_command
 from ... import client as _client  # pylint: disable=unused-import
 
 _CANCEL_CALLBACKS: Dict[str, List[Callable[[], Any]]] = {}
 _ERROR_STRING = "**ERROR**: `{}`"
 _ERROR_MSG_DELETE_TIMEOUT = 5
-
-_LOG = logging.getLogger(__name__)
-_LOG_STR = "<<<!  :::::  %s  :::::  !>>>"
 
 
 class Message(RawMessage):
@@ -193,9 +190,7 @@ class Message(RawMessage):
                 i += 1
 
             self._filtered_input_str = ' '.join(parts).strip()
-            _LOG.debug(
-                _LOG_STR,
-                f"Filtered Input String => [ {self._filtered_input_str}, {self._flags} ]")
+
         else:
             self._filtered_input_str = input_str
         self._filtered = True

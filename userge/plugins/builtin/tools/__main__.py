@@ -34,10 +34,13 @@ async def _init() -> None:
 async def set_delete_timeout(message: Message):
     """ set delete timeout """
     await message.edit("`Setting auto message delete timeout...`")
+
     t_o = int(message.matches[0].group(1))
     config.Dynamic.MSG_DELETE_TIMEOUT = t_o
+
     await SAVED_SETTINGS.update_one(
         {'_id': 'MSG_DELETE_TIMEOUT'}, {"$set": {'data': t_o}}, upsert=True)
+
     if t_o:
         await message.edit(
             f"`Set auto message delete timeout as {t_o} seconds!`", del_in=3)
@@ -66,10 +69,13 @@ async def set_es_timeout(message: Message):
     if t_o < 5:
         await message.err("too short! (min = 5sec)")
         return
+
     await message.edit("`Setting edit sleep timeout...`")
     config.Dynamic.EDIT_SLEEP_TIMEOUT = t_o
+
     await SAVED_SETTINGS.update_one(
         {'_id': 'EDIT_SLEEP_TIMEOUT'}, {"$set": {'data': t_o}}, upsert=True)
+
     await message.edit(
         f"`Set edit sleep timeout as {t_o} seconds!`", del_in=3)
 
@@ -86,11 +92,13 @@ async def view_es_timeout(message: Message):
     'header': "Reply this to message you want to cancel",
     'flags': {'-a': "cancel all tasks"}})
 async def cancel_(message: Message):
+    """ cancel bg tasks """
     if '-a' in message.flags:
         ret = Message._call_all_cancel_callbacks()  # pylint: disable=protected-access
         if ret == 0:
             await message.err("nothing found to cancel", show_help=False)
         return
+
     replied = message.reply_to_message  # type: Message
     if replied:
         if not replied._call_cancel_callbacks():  # pylint: disable=protected-access
@@ -103,6 +111,7 @@ async def cancel_(message: Message):
     'header': "message object to json",
     'usage': "reply {tr}json to any message"})
 async def jsonify(message: Message):
+    """ msg to json """
     msg = str(message.reply_to_message) if message.reply_to_message else str(message)
     await message.edit_or_send_as_file(text=msg, filename="json.txt", caption="Too Large")
 
@@ -110,9 +119,11 @@ async def jsonify(message: Message):
 @userge.on_cmd("ping", about={
     'header': "check how long it takes to ping your userbot"}, group=-1)
 async def pingme(message: Message):
+    """ ping tg servers """
     start = datetime.now()
     await message.client.send(Ping(ping_id=0))
     end = datetime.now()
+
     m_s = (end - start).microseconds / 1000
     await message.edit(f"**Pong!**\n`{m_s} ms`")
 
@@ -121,16 +132,20 @@ async def pingme(message: Message):
     'header': "search commands in USERGE",
     'examples': "{tr}s wel"}, allow_channels=False)
 async def search(message: Message):
+    """ search commands """
     cmd = message.input_str
     if not cmd:
         await message.err("Enter any keyword to search in commands")
         return
+
     found = [i for i in sorted(list(userge.manager.enabled_commands)) if cmd in i]
     out_str = '    '.join(found)
+
     if found:
         out = f"**--I found ({len(found)}) commands for-- : `{cmd}`**\n\n`{out_str}`"
     else:
         out = f"__command not found for__ : `{cmd}`"
+
     await message.edit(text=out, del_in=0)
 
 
@@ -142,9 +157,11 @@ async def search(message: Message):
 async def check_logs(message: Message):
     """ check logs """
     await message.edit("`checking logs ...`")
+
     if '-h' in message.flags and config.HEROKU_APP:
         limit = int(message.flags.get('-l', 100))
         logs = await pool.run_in_thread(config.HEROKU_APP.get_log)(lines=limit)
+
         await message.client.send_as_file(chat_id=message.chat.id,
                                           text=logs,
                                           filename='userge-heroku.log',
@@ -174,9 +191,12 @@ async def set_level(message: Message):
     """ set logger level """
     await message.edit("`setting logger level ...`")
     level = message.input_str.lower()
+
     if level not in _LEVELS:
         await message.err("unknown level !")
         return
+
     for logger in (logging.getLogger(name) for name in logging.root.manager.loggerDict):
         logger.setLevel(_LEVELS[level])
+
     await message.edit(f"`successfully set logger level as` : **{level.upper()}**", del_in=3)

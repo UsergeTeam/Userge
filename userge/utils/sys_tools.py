@@ -8,8 +8,7 @@
 #
 # All rights reserved.
 
-from signal import SIGTERM
-from os import environ, getpid, kill
+from os import environ
 from typing import Dict
 
 
@@ -17,11 +16,6 @@ class SafeDict(Dict[str, str]):
     """ modded dict """
     def __missing__(self, key: str) -> str:
         return '{' + key + '}'
-
-
-def terminate() -> None:
-    """ terminate programme """
-    kill(getpid(), SIGTERM)
 
 
 _SECURE = {'API_ID', 'API_HASH', 'BOT_TOKEN', 'SESSION_STRING', 'DATABASE_URL', 'HEROKU_API_KEY'}

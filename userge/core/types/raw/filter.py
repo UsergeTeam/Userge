@@ -25,7 +25,6 @@ _DISABLED_FILTERS = get_collection("DISABLED_FILTERS")
 _UNLOADED_FILTERS = get_collection("UNLOADED_FILTERS")
 
 _LOG = logging.getLogger(__name__)
-_LOG_STR = "<<<!  [[[[[  %s  ]]]]]  !>>>"
 
 _DISABLED: List[str] = []
 _UNLOADED: List[str] = []
@@ -83,7 +82,7 @@ async def clear_db() -> bool:
     _UNLOADED.clear()
     await _DISABLED_FILTERS.drop()
     await _UNLOADED_FILTERS.drop()
-    _LOG.info(_LOG_STR, "cleared filter DB!")
+    _LOG.info("cleared filter DB!")
     return True
 
 asyncio.get_event_loop().run_until_complete(_main())
@@ -195,7 +194,7 @@ class Filter:
         self.doc = func.__doc__.strip() if func.__doc__ else None
         self._func = func
         self._handler = MessageHandler(template, self.filters)
-        _LOG.debug(_LOG_STR, f"updated {self}")
+        _LOG.debug(f"updated {self}")
 
     async def enable(self) -> str:
         """ enable the filter """
@@ -203,7 +202,7 @@ class Filter:
             return ''
         self._enabled = True
         await _enable(self.name)
-        _LOG.debug(_LOG_STR, f"enabled {self}")
+        _LOG.debug(f"enabled {self}")
         return self.name
 
     async def disable(self) -> str:
@@ -212,7 +211,7 @@ class Filter:
             return ''
         self._enabled = False
         await _disable(self.name)
-        _LOG.debug(_LOG_STR, f"disabled {self}")
+        _LOG.debug(f"disabled {self}")
         return self.name
 
     async def load(self) -> str:
@@ -225,7 +224,7 @@ class Filter:
             self._client._bot.add_handler(self._handler, self._group)
         self._loaded = True
         await _load(self.name)
-        _LOG.debug(_LOG_STR, f"loaded {self}")
+        _LOG.debug(f"loaded {self}")
         return self.name
 
     async def unload(self) -> str:
@@ -238,5 +237,5 @@ class Filter:
             self._client._bot.remove_handler(self._handler, self._group)
         self._loaded = False
         await _unload(self.name)
-        _LOG.debug(_LOG_STR, f"unloaded {self}")
+        _LOG.debug(f"unloaded {self}")
         return self.name

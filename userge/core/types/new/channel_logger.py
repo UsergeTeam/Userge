@@ -17,13 +17,10 @@ from pyrogram.errors import ChatWriteForbidden
 from pyrogram.types import Message as RawMessage
 from pyrogram.errors.exceptions import MessageTooLong
 
-from userge import logging, config
+from userge import config
 from userge.utils import SafeDict, get_file_id_of_media, parse_buttons
 from ..bound import message as _message  # pylint: disable=unused-import
 from ... import client as _client  # pylint: disable=unused-import
-
-_LOG = logging.getLogger(__name__)
-_LOG_STR = "<<<!  :::::  %s  :::::  !>>>"
 
 
 def _gen_string(name: str) -> str:
@@ -67,7 +64,6 @@ class ChannelLogger:
         string = self._string
         if name:
             string = _gen_string(name)
-        _LOG.debug(_LOG_STR, f"logging text : {text} to channel : {self._id}")
         try:
             msg = await self._client.send_message(chat_id=self._id,
                                                   text=string.format(text.strip()))
@@ -100,8 +96,6 @@ class ChannelLogger:
         Returns:
             None
         """
-        _LOG.debug(
-            _LOG_STR, f"forwarding msg : {message} to channel : {self._id}")
         if isinstance(message, RawMessage):
             if message.media:
                 await self.log("**Forwarding Message...**", name)

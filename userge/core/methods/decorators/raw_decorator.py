@@ -28,7 +28,6 @@ from ...ext import RawClient
 from ... import types, client as _client  # pylint: disable=unused-import
 
 _LOG = logging.getLogger(__name__)
-_LOG_STR = "<<<!  :::::  %s  :::::  !>>>"
 
 _PYROFUNC = Callable[['types.bound.Message'], Any]
 _TASK_1_START_TO = time.time()
@@ -338,7 +337,7 @@ class RawDecorator(RawClient):
                 except (StopPropagation, ContinuePropagation):  # pylint: disable=W0706
                     raise
                 except Exception as f_e:  # pylint: disable=broad-except
-                    _LOG.exception(_LOG_STR, f_e)
+                    _LOG.exception(f_e)
                     await self._channel.log(f"**PLUGIN** : `{func.__module__}`\n"
                                             f"**FUNCTION** : `{func.__name__}`\n"
                                             f"**ERROR** : `{f_e or None}`\n"

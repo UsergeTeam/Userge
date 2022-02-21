@@ -18,7 +18,6 @@ from . import command, filter as _filter  # pylint: disable=unused-import
 from ... import client as _client  # pylint: disable=unused-import
 
 _LOG = logging.getLogger(__name__)
-_LOG_STR = "<<<!  [[[[[  %s  ]]]]]  !>>>"
 
 
 class Plugin:
@@ -119,7 +118,7 @@ class Plugin:
                 break
 
         type_.append(obj)
-        _LOG.debug(_LOG_STR, f"add filter to plugin -> {self.name}")
+        _LOG.debug(f"add filter to plugin -> {self.name}")
 
     def get_commands(self) -> List[str]:
         """ returns all sorted command names in the plugin """
@@ -212,6 +211,6 @@ async def _do_it(plg: Plugin, work_type: str) -> List[str]:
             done.append(tmp)
 
     if done:
-        _LOG.info(_LOG_STR, f"{work_type.rstrip('e')}ed {plg}")
+        _LOG.info(f"{work_type.rstrip('e')}ed {plg}")
 
     return done

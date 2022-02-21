@@ -24,7 +24,7 @@ from pyrogram.raw.core import TLObject
 import userge  # pylint: disable=unused-import
 
 _LOG = userge.logging.getLogger(__name__)
-_LOG_STR = "<<<!  FLOOD CONTROL : sleeping %.2fs in %d  !>>>"
+_LOG_STR = "FLOOD CONTROL : sleeping %.2fs in %d"
 
 
 class RawClient(Client):

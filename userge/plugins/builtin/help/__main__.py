@@ -368,7 +368,7 @@ if userge.has_bot:
         buttons = [tmp_btns] + buttons
         return text, buttons
 
-    @userge.bot.on_inline_query()
+    @userge.bot.on_inline_query(group=1)
     async def inline_answer(_, inline_query: InlineQuery):
         results = [
             InlineQueryResultArticle(
@@ -431,28 +431,6 @@ if userge.has_bot:
                         description="Only he/she can open it",
                         thumb_url="https://imgur.com/download/Inyeb1S",
                         reply_markup=InlineKeyboardMarkup(prvte_msg)
-                    )
-                )
-            elif "pmpermit" in inline_query.query:
-                owner = await userge.get_me()
-                pm_inline_msg = await SAVED_SETTINGS.find_one({'_id': 'CUSTOM_INLINE_PM_MESSAGE'})
-                if pm_inline_msg:
-                    text = pm_inline_msg.get('data')
-                else:
-                    text = f"Hello, welcome to **{owner.first_name}** Dm.\n\nWhat you want to do ?"
-                buttons = [[
-                    InlineKeyboardButton(
-                        "Contact Me", callback_data="pm_contact"),
-                    InlineKeyboardButton(
-                        "Spam here", callback_data="pm_spam")]]
-                results.append(
-                    InlineQueryResultArticle(
-                        id=uuid4(),
-                        title="Pm Permit",
-                        input_message_content=InputTextMessageContent(text),
-                        description="Inline Pm Permit Handler",
-                        thumb_url="https://imgur.com/download/Inyeb1S",
-                        reply_markup=InlineKeyboardMarkup(buttons)
                     )
                 )
             elif "msg.err" in inline_query.query:

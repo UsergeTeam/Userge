@@ -1,4 +1,5 @@
 """ system commands """
+
 # Copyright (C) 2020-2022 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
@@ -7,17 +8,17 @@
 #
 # All rights reserved.
 
-import time
 import asyncio
 import shutil
+import time
 
 from pyrogram import Client
-from pyrogram.types import User
 from pyrogram.errors import SessionPasswordNeeded, YouBlockedUser
+from pyrogram.types import User
 
-from userge.core.ext import RawClient
 from userge import userge, Message, config, get_collection
-from userge.utils import terminate, extract_entities
+from userge.core.ext import RawClient
+from userge.utils import extract_entities
 from userge.utils.exceptions import StopConversation
 from .. import system
 
@@ -71,16 +72,9 @@ async def restart_(message: Message):
 async def shutdown_(message: Message) -> None:
     """ shutdown userge """
     await message.edit("`shutting down ...`")
-    if config.HEROKU_APP:
-        try:
-            config.HEROKU_APP.process_formation()['worker'].scale(0)
-        except Exception as h_e:  # pylint: disable=broad-except
-            await message.edit(f"**heroku error** : `{h_e}`")
-            await asyncio.sleep(3)
-    else:
-        await asyncio.sleep(1)
+    await asyncio.sleep(1)
     await message.delete()
-    terminate()
+    system.shutdown()
 
 
 @userge.on_cmd("die", about={
@@ -117,76 +111,73 @@ async def die_(message: Message) -> None:
 
 
 @userge.on_cmd("setvar", about={
-    'header': "set var in heroku",
+    'header': "set var",
     'usage': "{tr}setvar [var_name] [var_data]",
     'examples': "{tr}setvar WORKERS 4"})
 async def setvar_(message: Message) -> None:
-    """ set var (heroku) """
-    if not config.HEROKU_APP:
-        await message.edit("`heroku app not detected !`", del_in=5)
-        return
+    """ set var """
     if not message.input_str:
-        await message.err("`input needed !`")
+        await message.err("`input needed!`")
         return
+
     var_name, var_data = message.input_str.split(maxsplit=1)
     if not var_data:
-        await message.err("`var data needed !`")
+        await message.err("`var data needed!`")
         return
+
     var_name = var_name.strip()
     var_data = var_data.strip()
-    heroku_vars = config.HEROKU_APP.config()
-    if var_name in heroku_vars:
-        await CHANNEL.log(
-            f"#HEROKU_VAR #SET #UPDATED\n\n`{var_name}` = `{var_data}`")
-        await message.edit(f"`var {var_name} updated and forwarded to log channel !`", del_in=3)
-    else:
-        await CHANNEL.log(
-            f"#HEROKU_VAR #SET #ADDED\n\n`{var_name}` = `{var_data}`")
-        await message.edit(f"`var {var_name} added and forwarded to log channel !`", del_in=3)
-    heroku_vars[var_name] = var_data
+
+    type_ = 'UPDATED' if system.get_env(var_name) else 'ADDED'
+
+    await CHANNEL.log(f"#ENV_VAR #SET #{type_}\n\n`{var_name}` = `{var_data}`")
+    await message.edit(f"`var {var_name} added and forwarded to log channel!`", del_in=3)
+
+    await system.set_env(var_name, var_data)
 
 
 @userge.on_cmd("delvar", about={
-    'header': "del var in heroku",
+    'header': "del var",
     'usage': "{tr}delvar [var_name]",
     'examples': "{tr}delvar WORKERS"})
 async def delvar_(message: Message) -> None:
-    """ del var (heroku) """
-    if not config.HEROKU_APP:
-        await message.edit("`heroku app not detected !`", del_in=5)
-        return
+    """ del var """
     if not message.input_str:
-        await message.err("`var name needed !`")
+        await message.err("`var name needed!`")
         return
+
     var_name = message.input_str.strip()
-    heroku_vars = config.HEROKU_APP.config()
-    if var_name not in heroku_vars:
-        await message.err(f"`var {var_name} not found !`")
+    var_data = system.get_env(var_name)
+
+    if var_data:
+        await message.err(f"`var {var_name} not found!`")
         return
-    await CHANNEL.log(f"#HEROKU_VAR #DEL\n\n`{var_name}` = `{heroku_vars[var_name]}`")
-    await message.edit(f"`var {var_name} deleted and forwarded to log channel !`", del_in=3)
-    del heroku_vars[var_name]
+
+    await CHANNEL.log(f"#ENV_VAR #DEL\n\n`{var_name}` = `{var_data}`")
+    await message.edit(f"`var {var_name} deleted and forwarded to log channel!`", del_in=3)
+
+    await system.del_env(var_name)
 
 
 @userge.on_cmd("getvar", about={
-    'header': "get var in heroku",
+    'header': "get var",
     'usage': "{tr}getvar [var_name]",
     'examples': "{tr}getvar WORKERS"})
 async def getvar_(message: Message) -> None:
-    """ get var (heroku) """
-    if not config.HEROKU_APP:
-        await message.edit("`heroku app not detected !`", del_in=5)
-        return
+    """ get var """
     if not message.input_str:
-        await message.err("`var name needed !`")
+        await message.err("`var name needed!`")
         return
+
     var_name = message.input_str.strip()
-    heroku_vars = config.HEROKU_APP.config()
-    if var_name not in heroku_vars:
-        await message.err(f"`var {var_name} not found !`")
+    var_data = system.get_env(var_name)
+
+    if not var_data:
+        await message.err(f"`var {var_name} not found!`")
         return
-    await CHANNEL.log(f"#HEROKU_VAR #GET\n\n`{var_name}` = `{heroku_vars[var_name]}`")
-    await message.edit(f"`var {var_name} forwarded to log channel !`", del_in=3)
+
+    await CHANNEL.log(f"#ENV_VAR #GET\n\n`{var_name}` = `{var_data}`")
+    await message.edit(f"`var {var_name} forwarded to log channel!`", del_in=3)
 
 
 @userge.on_cmd("enhere", about={
@@ -194,6 +185,7 @@ async def getvar_(message: Message) -> None:
     'flags': {'-all': "Enable Userbot in all chats."},
     'usage': "{tr}enhere [chat_id | username]\n{tr}enhere -all"})
 async def enable_userbot(message: Message):
+    """ enable userbot in disabled chat """
     if message.flags:
         if '-all' in message.flags:
             system.Dynamic.DISABLED_ALL = False
@@ -235,6 +227,7 @@ async def enable_userbot(message: Message):
     'flags': {'-all': "disable Userbot in all chats."},
     'usage': "{tr}dishere\n{tr}dishere [chat_id | username]\n{tr}dishere -all"})
 async def disable_userbot(message: Message):
+    """ disable userbot in current chat """
     if message.flags:
         if '-all' in message.flags:
             system.Dynamic.DISABLED_ALL = True
@@ -269,6 +262,7 @@ async def disable_userbot(message: Message):
 
 @userge.on_cmd("listdisabled", about={'header': "List all disabled chats."})
 async def view_disabled_chats_(message: Message):
+    """ list disabled chats """
     if system.Dynamic.DISABLED_ALL:
         # bot will not print this, but dont worry except log channel
         await message.edit("All chats are disabled!", del_in=5)
@@ -292,6 +286,7 @@ async def view_disabled_chats_(message: Message):
              "{tr}convert_usermode -sc=yourcode"
 }, allow_channels=False)
 async def convert_usermode(msg: Message):
+    """ convert to user mode """
     if bool(config.SESSION_STRING):
         return await msg.err("already using user mode")
     if msg.from_user.id not in config.OWNER_ID:
@@ -309,17 +304,8 @@ async def convert_usermode(msg: Message):
                 setattr(generate_session, "phone_code", code)
                 if await generate_session():
                     session_string = await generate_session.client.export_session_string()
-                    if config.HEROKU_APP:
-                        await msg.reply(
-                            "DONE! User Mode will be enabled after restart."
-                        )
-                        config.HEROKU_APP.config()["HU_STRING_SESSION"] = session_string
-                    else:
-                        await msg.reply(
-                            "Add this in your environmental variables\n"
-                            "Key = `HEROKU_STRING_SESION`\nValue 👇\n\n"
-                            f"`{session_string}`"
-                        )
+                    await msg.reply("DONE! User Mode will be enabled after restart.")
+                    await system.set_env("SESSION_STRING", session_string)
             except SessionPasswordNeeded:
                 await msg.reply(
                     "Your account have two-step verification code.\n"
@@ -336,17 +322,8 @@ async def convert_usermode(msg: Message):
                 setattr(generate_session, "two_step_code", two_step)
                 if await generate_session():
                     session_string = await generate_session.client.export_session_string()
-                    if config.HEROKU_APP:
-                        await msg.reply(
-                            "DONE! User Mode will be enabled after restart."
-                        )
-                        config.HEROKU_APP.config()["HU_STRING_SESSION"] = session_string
-                    else:
-                        await msg.reply(
-                            "Add this in your environmental variables\n"
-                            "Key = `HEROKU_STRING_SESION`\nValue 👇\n\n"
-                            f"`{session_string}`"
-                        )
+                    await msg.reply("DONE! User Mode will be enabled after restart.")
+                    await system.set_env("SESSION_STRING", session_string)
             except Exception as e:
                 delattr(generate_session, "two_step_code")
                 await msg.reply(str(e))
@@ -387,6 +364,7 @@ async def convert_usermode(msg: Message):
     'header': "convert your userbot to use bot mode",
     'usage': "{tr}convert_botmode bot_name | bot_username"}, allow_channels=False)
 async def convert_botmode(msg: Message):
+    """ convert to bot mode """
     if userge.has_bot:
         return await msg.err("using have bot mode")
     if not msg.input_str and '|' not in msg.input_str:
@@ -415,15 +393,8 @@ async def convert_botmode(msg: Message):
             else:
                 await userge.promote_chat_member(config.LOG_CHANNEL_ID, username)
                 token = extract_entities(response, ["code"])[0]
-                if config.HEROKU_APP:
-                    await msg.edit("DONE! Bot Mode will be enabled after restart.")
-                    config.HEROKU_APP.config()["BOT_TOKEN"] = token
-                else:
-                    await msg.reply(
-                        "Add this in your environmental variables\n"
-                        "Key = `BOT_TOKEN`\n"
-                        f"Value = `{token}`"
-                    )
+                await msg.edit("DONE! Bot Mode will be enabled after restart.")
+                await system.set_env("BOT_TOKEN", token)
     except StopConversation:
         await msg.err("@botfather didn't respond in time.")
 
@@ -497,7 +468,7 @@ async def _dyno_saver_worker() -> None:
                         warned = False
                     if current_idle_time >= MAX_IDLE_TIME:
                         try:
-                            config.HEROKU_APP.process_formation()['worker'].scale(0)
+                            system.shutdown()
                         except Exception as h_e:  # pylint: disable=broad-except
                             LOG.error(f"heroku app error : {h_e}")
                             offline_start_time += 20
@@ -505,7 +476,6 @@ async def _dyno_saver_worker() -> None:
                             continue
                         LOG.info("< successfully killed heroku dyno ! >")
                         await CHANNEL.log("heroku dyno killed !")
-                        terminate()
                         return
                     prog = round(current_idle_time * 100 / MAX_IDLE_TIME, 2)
                     mins = int(MAX_IDLE_TIME / 60)

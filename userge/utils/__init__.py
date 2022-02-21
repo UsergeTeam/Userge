@@ -9,7 +9,7 @@
 # All rights reserved.
 
 from .progress import progress  # noqa
-from .sys_tools import SafeDict, terminate, secure_env, secure_text  # noqa
+from .sys_tools import SafeDict, secure_env, secure_text  # noqa
 from .tools import (sort_file_name_key, # noqa
                     is_url,
                     get_file_id_of_media,

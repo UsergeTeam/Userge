@@ -1,1 +1,4 @@
+dnspython
 heroku3
+motor
+pyrogram>=1.3.6

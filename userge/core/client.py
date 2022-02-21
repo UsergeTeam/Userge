@@ -22,7 +22,7 @@ from contextlib import suppress
 from types import ModuleType
 from typing import List, Awaitable, Any, Optional, Union
 
-from pyrogram import idle, types
+from pyrogram import types
 from pyrogram.methods import Methods as RawMethods
 
 from userge import logging, config
@@ -33,14 +33,13 @@ from .ext import RawClient
 from .methods import Methods
 
 _LOG = logging.getLogger(__name__)
-_LOG_STR = "<<<!  #####  %s  #####  !>>>"
 
 
 def _import_module(path: str) -> Optional[ModuleType]:
     try:
         return importlib.import_module(path)
     except Exception as i_e:
-        _LOG.error(_LOG_STR, f"[{path}] - {i_e}")
+        _LOG.error(f"[{path}] - {i_e}")
 
 
 def _reload_module(module: Optional[ModuleType]) -> Optional[ModuleType]:
@@ -48,7 +47,7 @@ def _reload_module(module: Optional[ModuleType]) -> Optional[ModuleType]:
         try:
             return importlib.reload(module)
         except Exception as i_e:
-            _LOG.error(_LOG_STR, i_e)
+            _LOG.error(i_e)
             return module
 
 
@@ -99,6 +98,22 @@ async def _is_running() -> bool:
     return False
 
 
+async def _wait_for_instance() -> None:
+    counter = 0
+    timeout = 30  # 30 sec
+    max_ = 1800  # 30 min
+
+    while await _is_running():
+        _LOG.info("Waiting for the Termination of "
+                  f"previous Userge instance ... [{timeout} sec]")
+        time.sleep(timeout)
+
+        counter += timeout
+        if counter >= max_:
+            _LOG.info(f"Max timeout reached ! [{max_} sec]")
+            break
+
+
 class _AbstractUserge(Methods, RawClient):
     def __init__(self, **kwargs) -> None:
         self._me: Optional[types.User] = None
@@ -126,7 +141,7 @@ class _AbstractUserge(Methods, RawClient):
         return time_formatter(time.time() - _START_TIME)
 
     async def _load_plugins(self) -> None:
-        _LOG.info(_LOG_STR, "Importing All Plugins")
+        _LOG.info("Importing All Plugins")
 
         _MODULES.clear()
         base = os.path.join("userge", "plugins")
@@ -151,12 +166,12 @@ class _AbstractUserge(Methods, RawClient):
             mdl.main()
 
         await self.manager.init()
-        _LOG.info(_LOG_STR, f"Imported ({len(_MODULES)}) Plugins => "
+        _LOG.info(f"Imported ({len(_MODULES)}) Plugins => "
                   + str(['.'.join((mdl.cat, mdl.name)) for mdl in _MODULES]))
 
     async def reload_plugins(self) -> int:
         """ Reload all Plugins """
-        _LOG.info(_LOG_STR, "Reloading All Plugins")
+        _LOG.info("Reloading All Plugins")
 
         self.manager.clear_plugins()
         reloaded: List[_Module] = []
@@ -169,7 +184,7 @@ class _AbstractUserge(Methods, RawClient):
             mdl.reload_main()
 
         await self.manager.init()
-        _LOG.info(_LOG_STR, f"Reloaded {len(reloaded)} Plugins => "
+        _LOG.info(f"Reloaded {len(reloaded)} Plugins => "
                   + str([mdl.name for mdl in reloaded]))
 
         return len(reloaded)
@@ -245,26 +260,13 @@ class Userge(_AbstractUserge):
 
     async def start(self) -> None:
         """ start client and bot """
-        counter = 0
-        timeout = 30  # 30 sec
-        max_ = 1800  # 30 min
+        await _wait_for_instance()
 
-        while await _is_running():
-            _LOG.info(_LOG_STR, "Waiting for the Termination of "
-                                f"previous Userge instance ... [{timeout} sec]")
-            time.sleep(timeout)
-
-            counter += timeout
-            if counter >= max_:
-                _LOG.info(_LOG_STR, f"Max timeout reached ! [{max_} sec]")
-                break
-
-        _LOG.info(_LOG_STR, "Starting Userge")
+        _LOG.info("Starting Userge")
         await _set_running(True)
         await super().start()
 
         if self._bot is not None:
-            _LOG.info(_LOG_STR, "Starting UsergeBot")
             await self._bot.start()
 
         await self._load_plugins()
@@ -275,68 +277,61 @@ class Userge(_AbstractUserge):
         await self.manager.stop()
 
         if self._bot is not None:
-            _LOG.info(_LOG_STR, "Stopping UsergeBot")
             await self._bot.stop()
 
-        _LOG.info(_LOG_STR, "Stopping Userge")
+        _LOG.info("Stopping Userge")
 
         await super().stop()
         await _set_running(False)
 
     def begin(self, coro: Optional[Awaitable[Any]] = None) -> None:
         """ start userge """
-        lock = asyncio.Lock()
-        loop_is_stopped = asyncio.Event()
-        running_tasks: List[asyncio.Task] = []
-
-        async def _waiter() -> None:
-            with suppress(asyncio.exceptions.TimeoutError):
-                await asyncio.wait_for(loop_is_stopped.wait(), 30)
-
-        async def _finalize() -> None:
-            async with lock:
-                for t in running_tasks:
-                    t.cancel()
-                if self.is_initialized:
-                    await self.stop()
-
-            # pylint: disable=expression-not-assigned
-            [t.cancel() for t in asyncio.all_tasks() if t is not asyncio.current_task()]
-            await self.loop.shutdown_asyncgens()
-
-            self.loop.stop()
-            _LOG.info(_LOG_STR, "Loop Stopped !")
-            loop_is_stopped.set()
-
-        async def _shutdown(_sig: signal.Signals) -> None:
-            _LOG.info(_LOG_STR, f"Received Stop Signal [{_sig.name}], Exiting Userge ...")
-            await _finalize()
-
-        for sig in (signal.SIGHUP, signal.SIGTERM, signal.SIGINT):
-            self.loop.add_signal_handler(
-                sig, lambda _sig=sig: self.loop.create_task(_shutdown(_sig)))
-
         try:
             self.loop.run_until_complete(self.start())
         except RuntimeError:
             return
 
+        idle_event = asyncio.Event()
+
+        def _handle(num, _) -> None:
+            _LOG.info(f"Received Stop Signal [{num}], Exiting Userge ...")
+            idle_event.set()
+
+        for sig in (signal.SIGHUP, signal.SIGTERM, signal.SIGINT):
+            signal.signal(sig, _handle)
+
+        bg_tasks: List[asyncio.Task] = []
+
         for task in self._tasks:
-            running_tasks.append(self.loop.create_task(task()))
+            bg_tasks.append(self.loop.create_task(task()))
 
         mode = "[DUAL]" if RawClient.DUAL_MODE else "[BOT]" if config.BOT_TOKEN else "[USER]"
 
         with suppress(asyncio.exceptions.CancelledError, RuntimeError):
             if coro:
-                _LOG.info(_LOG_STR, f"Running Coroutine - {mode}")
+                _LOG.info(f"Running Coroutine - {mode}")
                 self.loop.run_until_complete(coro)
             else:
-                _LOG.info(_LOG_STR, f"Idling Userge - {mode}")
-                idle()
-            self.loop.run_until_complete(_finalize())
+                _LOG.info(f"Idling Userge - {mode}")
+                self.loop.run_until_complete(idle_event.wait())
+
+        for t in bg_tasks:
+            t.cancel()
+
+        if self.is_initialized:
+            with suppress(RuntimeError):
+                self.loop.run_until_complete(self.stop())
+
+        to_cancel = asyncio.all_tasks(self.loop)
+        for t in to_cancel:
+            t.cancel()
 
         with suppress(RuntimeError):
-            self.loop.run_until_complete(_waiter())
+            self.loop.run_until_complete(asyncio.gather(*to_cancel, return_exceptions=True))
+            self.loop.run_until_complete(self.loop.shutdown_asyncgens())
+
+        self.loop.stop()
+        _LOG.info("Loop Stopped !")
 
 
 def _un_wrapper(obj, name, function):
