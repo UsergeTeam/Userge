@@ -209,34 +209,20 @@ class RawDecorator(RawClient):
 
     def __init__(self, **kwargs) -> None:
         self.manager = types.new.Manager(self)
-        self._tasks: List[Callable[[], Any]] = []
         super().__init__(**kwargs)
 
-    def add_task(self, func: Callable[[], Any]) -> Callable[[], Any]:
-        """ add tasks """
-        self._tasks.append(func)
-        return func
-
-    def on_init(self, callback: Callable[[], Awaitable[Any]]) -> None:
-        self.manager.get_plugin(_get_module(callback)).set_on_init_callback(callback)
+    def add_task(self, task: Callable[[], Awaitable[Any]]) -> Callable[[], Awaitable[Any]]:
+        self.manager.get_plugin(getattr(task, '__module__')).add_task(task)
+        return task
 
     def on_start(self, callback: Callable[[], Awaitable[Any]]) -> None:
-        self.manager.get_plugin(_get_module(callback)).set_on_start_callback(callback)
+        self.manager.get_plugin(getattr(callback, '__module__')).set_on_start_callback(callback)
 
     def on_stop(self, callback: Callable[[], Awaitable[Any]]) -> None:
-        self.manager.get_plugin(_get_module(callback)).set_on_stop_callback(callback)
+        self.manager.get_plugin(getattr(callback, '__module__')).set_on_stop_callback(callback)
 
-    def on_enable(self, callback: Callable[[], Awaitable[Any]]) -> None:
-        self.manager.get_plugin(_get_module(callback)).set_on_enable_callback(callback)
-
-    def on_disable(self, callback: Callable[[], Awaitable[Any]]) -> None:
-        self.manager.get_plugin(_get_module(callback)).set_on_disable_callback(callback)
-
-    def on_load(self, callback: Callable[[], Awaitable[Any]]) -> None:
-        self.manager.get_plugin(_get_module(callback)).set_on_load_callback(callback)
-
-    def on_unload(self, callback: Callable[[], Awaitable[Any]]) -> None:
-        self.manager.get_plugin(_get_module(callback)).set_on_unload_callback(callback)
+    def on_exit(self, callback: Callable[[], Awaitable[Any]]) -> None:
+        self.manager.get_plugin(getattr(callback, '__module__')).set_on_exit_callback(callback)
 
     def on_filters(self, filters: RawFilter, group: int = 0,
                    **kwargs: Union[bool]) -> 'RawDecorator._PYRORETTYPE':
@@ -338,7 +324,7 @@ class RawDecorator(RawClient):
                     raise
                 except Exception as f_e:  # pylint: disable=broad-except
                     _LOG.exception(f_e)
-                    await self._channel.log(f"**PLUGIN** : `{func.__module__}`\n"
+                    await self._channel.log(f"**PLUGIN** : `{module}`\n"
                                             f"**FUNCTION** : `{func.__name__}`\n"
                                             f"**ERROR** : `{f_e or None}`\n"
                                             f"\n```{format_exc().strip()}```",
@@ -349,14 +335,10 @@ class RawDecorator(RawClient):
                     elif flt.propagate is not None:
                         raise StopPropagation
 
-            module = _get_module(func)
+            module = getattr(func, '__module__')
 
             flt.update(func, template)
             self.manager.get_plugin(module).add(flt)
 
             return func
         return decorator
-
-
-def _get_module(func: Callable) -> str:
-    return '.'.join(func.__module__.split('.')[:-1])

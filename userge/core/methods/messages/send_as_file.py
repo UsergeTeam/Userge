@@ -76,7 +76,7 @@ class SendAsFile(RawClient):  # pylint: disable=missing-class-docstring
             text = (await Parser(self).parse(text)).get("message")
         doc = io.BytesIO(text.encode())
         doc.name = filename
-        _LOG.debug(f"Uploading {filename} To Telegram")
+
         msg = await self.send_document(chat_id=chat_id,
                                        document=doc,
                                        caption=caption[:1024],

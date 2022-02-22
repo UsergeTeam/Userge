@@ -24,7 +24,12 @@ from ... import client as _client  # pylint: disable=unused-import
 
 
 def _gen_string(name: str) -> str:
-    return "**logger** : #" + name.split('.')[-1].upper() + "\n\n{}"
+    parts = name.split('.')
+
+    if len(parts) >= 2:
+        name = parts[-2]
+
+    return "**logger** : #" + name.upper() + "\n\n{}"
 
 
 class ChannelLogger:

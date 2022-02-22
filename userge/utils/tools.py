@@ -137,7 +137,7 @@ async def runcmd(cmd: str) -> Tuple[str, str, int, int]:
 
 async def take_screen_shot(video_file: str, duration: int, path: str = '') -> Optional[str]:
     """ take a screenshot """
-    _LOG.info('[[[Extracting a frame from %s ||| Video duration => %s]]]', video_file, duration)
+    _LOG.info('Extracting a frame from %s ||| Video duration => %s', video_file, duration)
     ttl = duration // 2
     thumb_image_path = path or join(userge.Config.DOWN_PATH, f"{basename(video_file)}.jpg")
     command = f'''ffmpeg -ss {ttl} -i "{video_file}" -vframes 1 "{thumb_image_path}"'''

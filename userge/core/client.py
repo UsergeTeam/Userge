@@ -173,17 +173,23 @@ class _AbstractUserge(Methods, RawClient):
         """ Reload all Plugins """
         _LOG.info("Reloading All Plugins")
 
-        self.manager.clear_plugins()
+        await self.manager.stop()
+        self.manager.clear()
+
         reloaded: List[_Module] = []
 
         for mdl in _MODULES:
-            if mdl.reload_init():
+            mt = mdl.reload_init()
+            if mt:
                 reloaded.append(mdl)
+                self.manager.update_plugin(mt.__name__, mt.__doc__)
 
         for mdl in reloaded:
             mdl.reload_main()
 
         await self.manager.init()
+        await self.manager.start()
+
         _LOG.info(f"Reloaded {len(reloaded)} Plugins => "
                   + str([mdl.name for mdl in reloaded]))
 
@@ -261,27 +267,29 @@ class Userge(_AbstractUserge):
     async def start(self) -> None:
         """ start client and bot """
         await _wait_for_instance()
-
-        _LOG.info("Starting Userge")
         await _set_running(True)
+
+        await self._load_plugins()
+        await self.manager.start()
+
+        _LOG.info("Starting ...")
+
         await super().start()
 
         if self._bot is not None:
             await self._bot.start()
 
-        await self._load_plugins()
-        await self.manager.start()
-
     async def stop(self) -> None:  # pylint: disable=arguments-differ
         """ stop client and bot """
         await self.manager.stop()
 
+        _LOG.info("Stopping ...")
+
         if self._bot is not None:
             await self._bot.stop()
 
-        _LOG.info("Stopping Userge")
-
         await super().stop()
+
         await _set_running(False)
 
     def begin(self, coro: Optional[Awaitable[Any]] = None) -> None:
@@ -294,16 +302,11 @@ class Userge(_AbstractUserge):
         idle_event = asyncio.Event()
 
         def _handle(num, _) -> None:
-            _LOG.info(f"Received Stop Signal [{num}], Exiting Userge ...")
+            _LOG.info(f"Received Stop Signal [{signal.Signals(num).name}], Exiting Userge ...")
             idle_event.set()
 
-        for sig in (signal.SIGHUP, signal.SIGTERM, signal.SIGINT):
+        for sig in (signal.SIGABRT, signal.SIGTERM, signal.SIGINT):
             signal.signal(sig, _handle)
-
-        bg_tasks: List[asyncio.Task] = []
-
-        for task in self._tasks:
-            bg_tasks.append(self.loop.create_task(task()))
 
         mode = "[DUAL]" if RawClient.DUAL_MODE else "[BOT]" if config.BOT_TOKEN else "[USER]"
 
@@ -315,12 +318,10 @@ class Userge(_AbstractUserge):
                 _LOG.info(f"Idling Userge - {mode}")
                 self.loop.run_until_complete(idle_event.wait())
 
-        for t in bg_tasks:
-            t.cancel()
-
         if self.is_initialized:
             with suppress(RuntimeError):
                 self.loop.run_until_complete(self.stop())
+                self.loop.run_until_complete(self.manager.exit())
 
         to_cancel = asyncio.all_tasks(self.loop)
         for t in to_cancel:

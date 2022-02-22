@@ -14,8 +14,6 @@ import inspect
 
 from userge import logging
 
-_LOG = logging.getLogger(__name__)
-
 
 class GetLogger:  # pylint: disable=missing-class-docstring
     @staticmethod
@@ -23,5 +21,5 @@ class GetLogger:  # pylint: disable=missing-class-docstring
         """ This returns new logger object """
         if not name:
             name = inspect.currentframe().f_back.f_globals['__name__']
-        _LOG.debug(f"Creating Logger => {name}")
+
         return logging.getLogger(name)

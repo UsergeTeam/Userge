@@ -37,13 +37,16 @@ async def _init() -> None:
     if d_s:
         system.Dynamic.RUN_DYNO_SAVER = bool(d_s['on'])
         MAX_IDLE_TIME = int(d_s['timeout'])
+
     disabled_all = await SAVED_SETTINGS.find_one({'_id': 'DISABLE_ALL_CHATS'})
+
     if disabled_all:
         system.Dynamic.DISABLED_ALL = bool(disabled_all['on'])
     else:
         async for i in DISABLED_CHATS.find():
             if i['_id'] == config.LOG_CHANNEL_ID:
                 continue
+
             system.DISABLED_CHATS.add(i['_id'])
 
 
@@ -57,12 +60,14 @@ async def _init() -> None:
 async def restart_(message: Message):
     """ restart userge """
     await message.edit("`Restarting Userge Services`", log=__name__)
-    LOG.info("USERGE Services - Restart initiated")
+
     if 'd' in message.flags:
         shutil.rmtree(config.Dynamic.DOWN_PATH, ignore_errors=True)
+
     if 'h' in message.flags:
         await message.edit("`Restarting [HARD] ...`", del_in=1)
         await userge.restart(hard=True)
+
     else:
         await message.edit("`Restarting [SOFT] ...`", del_in=1)
         await userge.restart()
@@ -88,25 +93,32 @@ async def die_(message: Message) -> None:
     if not config.HEROKU_APP:
         await message.edit("`heroku app not detected !`", del_in=5)
         return
+
     await message.edit('`processing ...`')
+
     if system.Dynamic.RUN_DYNO_SAVER:
         if isinstance(system.Dynamic.RUN_DYNO_SAVER, asyncio.Task):
             system.Dynamic.RUN_DYNO_SAVER.cancel()
+
         system.Dynamic.RUN_DYNO_SAVER = False
         SAVED_SETTINGS.update_one({'_id': 'DYNO_SAVER'},
                                   {"$set": {'on': False}}, upsert=True)
         await message.edit('auto heroku dyno off worker has been **stopped**',
                            del_in=5, log=__name__)
         return
+
     time_in_min = int(message.flags.get('-t', 5))
     if time_in_min < 5:
         await message.err(f"`please set higher value [{time_in_min}] !`")
         return
+
     MAX_IDLE_TIME = time_in_min * 60
     SAVED_SETTINGS.update_one({'_id': 'DYNO_SAVER'},
                               {"$set": {'on': True, 'timeout': MAX_IDLE_TIME}}, upsert=True)
+
     await message.edit('auto heroku dyno off worker has been **started** '
                        f'[`{time_in_min}`min]', del_in=3, log=__name__)
+
     system.Dynamic.RUN_DYNO_SAVER = asyncio.get_event_loop().create_task(_dyno_saver_worker())
 
 
