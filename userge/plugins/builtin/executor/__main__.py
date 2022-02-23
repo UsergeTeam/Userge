@@ -19,14 +19,19 @@ import traceback
 from contextlib import contextmanager
 from enum import Enum
 from getpass import getuser
-from os import geteuid, setsid, getpgid, killpg
-from signal import SIGKILL
+from os import name
 from typing import Awaitable, Any, Callable, Dict, Optional, Tuple, Iterable
 
 from pyrogram.types.messages_and_media.message import Str
 
 from userge import userge, Message, config, pool
 from userge.utils import runcmd
+
+try:
+    from signal import SIGKILL
+    from os import geteuid, setsid, getpgid, killpg
+except ImportError:
+    pass
 
 CHANNEL = userge.getCLogger()
 
@@ -201,50 +206,52 @@ async def eval_(message: Message):
             _EVAL_TASKS.pop(future, None)
 
 
-@userge.on_cmd("term", about={
-    'header': "run commands in shell (terminal)",
-    'flags': {'-r': "raw text when send as file"},
-    'usage': "{tr}term [commands]",
-    'examples': "{tr}term echo \"Userge\""}, allow_channels=False)
-@input_checker
-async def term_(message: Message):
-    """ run commands in shell (terminal with live update) """
-    await message.edit("`Executing terminal ...`")
-    cmd = message.filtered_input_str
-    as_raw = '-r' in message.flags
+if name != "nt":
 
-    try:
-        parsed_cmd = parse_py_template(cmd, message)
-    except Exception as e:  # pylint: disable=broad-except
-        await message.err(str(e))
-        await CHANNEL.log(f"**Exception**: {type(e).__name__}\n**Message**: " + str(e))
-        return
-    try:
-        t_obj = await Term.execute(parsed_cmd)  # type: Term
-    except Exception as t_e:  # pylint: disable=broad-except
-        await message.err(str(t_e))
-        return
+    @userge.on_cmd("term", about={
+        'header': "run commands in shell (terminal)",
+        'flags': {'-r': "raw text when send as file"},
+        'usage': "{tr}term [commands]",
+        'examples': "{tr}term echo \"Userge\""}, allow_channels=False)
+    @input_checker
+    async def term_(message: Message):
+        """ run commands in shell (terminal with live update) """
+        await message.edit("`Executing terminal ...`")
+        cmd = message.filtered_input_str
+        as_raw = '-r' in message.flags
 
-    cur_user = getuser()
-    try:
-        uid = geteuid()
-    except ImportError:
-        uid = 1
-    prefix = f"<b>{cur_user}:~#</b>" if uid == 0 else f"<b>{cur_user}:~$</b>"
-    output = f"{prefix} <pre>{cmd}</pre>\n"
-
-    with message.cancel_callback(t_obj.cancel):
-        await t_obj.init()
-        while not t_obj.finished:
-            await message.edit(f"{output}<pre>{t_obj.line}</pre>", parse_mode='html')
-            await t_obj.wait(config.Dynamic.EDIT_SLEEP_TIMEOUT)
-        if t_obj.cancelled:
-            await message.canceled(reply=True)
+        try:
+            parsed_cmd = parse_py_template(cmd, message)
+        except Exception as e:  # pylint: disable=broad-except
+            await message.err(str(e))
+            await CHANNEL.log(f"**Exception**: {type(e).__name__}\n**Message**: " + str(e))
+            return
+        try:
+            t_obj = await Term.execute(parsed_cmd)  # type: Term
+        except Exception as t_e:  # pylint: disable=broad-except
+            await message.err(str(t_e))
             return
 
-    out_data = f"{output}<pre>{t_obj.output}</pre>\n{prefix}"
-    await message.edit_or_send_as_file(
-        out_data, as_raw=as_raw, parse_mode='html', filename="term.txt", caption=cmd)
+        cur_user = getuser()
+        try:
+            uid = geteuid()
+        except ImportError:
+            uid = 1
+        prefix = f"<b>{cur_user}:~#</b>" if uid == 0 else f"<b>{cur_user}:~$</b>"
+        output = f"{prefix} <pre>{cmd}</pre>\n"
+
+        with message.cancel_callback(t_obj.cancel):
+            await t_obj.init()
+            while not t_obj.finished:
+                await message.edit(f"{output}<pre>{t_obj.line}</pre>", parse_mode='html')
+                await t_obj.wait(config.Dynamic.EDIT_SLEEP_TIMEOUT)
+            if t_obj.cancelled:
+                await message.canceled(reply=True)
+                return
+
+        out_data = f"{output}<pre>{t_obj.output}</pre>\n{prefix}"
+        await message.edit_or_send_as_file(
+            out_data, as_raw=as_raw, parse_mode='html', filename="term.txt", caption=cmd)
 
 
 def parse_py_template(cmd: str, msg: Message):
