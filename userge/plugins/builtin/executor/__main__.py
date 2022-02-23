@@ -10,6 +10,7 @@
 
 import asyncio
 import io
+import os
 import keyword
 import re
 import shlex
@@ -19,7 +20,6 @@ import traceback
 from contextlib import contextmanager
 from enum import Enum
 from getpass import getuser
-from os import name
 from typing import Awaitable, Any, Callable, Dict, Optional, Tuple, Iterable
 
 from pyrogram.types.messages_and_media.message import Str
@@ -206,7 +206,7 @@ async def eval_(message: Message):
             _EVAL_TASKS.pop(future, None)
 
 
-if name != "nt":
+if os.name != "nt":
 
     @userge.on_cmd("term", about={
         'header': "run commands in shell (terminal)",

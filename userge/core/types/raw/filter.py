@@ -105,7 +105,7 @@ class Filter:
     def update(self, func: Callable[[Any], Any], template: Callable[[Any], Any]) -> None:
         """ update filter """
         self.doc = (func.__doc__ or "undefined").strip()
-        self.plugin, file_name = func.__module__.split('.')[-2:]
+        self.plugin, _ = func.__module__.split('.')[-2:]
 
         if not self.name:
             self.name = '.'.join((self.plugin, func.__name__))

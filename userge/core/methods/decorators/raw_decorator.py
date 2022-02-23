@@ -225,7 +225,7 @@ class RawDecorator(RawClient):
         self.manager.get_plugin(getattr(callback, '__module__')).set_on_exit_callback(callback)
 
     def on_filters(self, filters: RawFilter, group: int = 0,
-                   **kwargs: Union[bool]) -> 'RawDecorator._PYRORETTYPE':
+                   **kwargs: Union[str, bool]) -> 'RawDecorator._PYRORETTYPE':
         """ abstract on filter method """
 
     def _build_decorator(self,
@@ -332,7 +332,7 @@ class RawDecorator(RawClient):
                 finally:
                     if flt.propagate:
                         raise ContinuePropagation
-                    elif flt.propagate is not None:
+                    if flt.propagate is not None:
                         raise StopPropagation
 
             module = getattr(func, '__module__')

@@ -183,7 +183,7 @@ class Manager:
             if ret:
                 loaded.update({plg_name: ret})
 
-        to_save = list(_ for _ in loaded.values() for _ in _)
+        to_save = [_ for _ in loaded.values() for _ in _]
         if to_save:
             await _load(to_save)
 
@@ -198,7 +198,7 @@ class Manager:
             if ret:
                 unloaded.update({plg_name: ret})
 
-        to_save = list(_ for _ in unloaded.values() for _ in _)
+        to_save = [_ for _ in unloaded.values() for _ in _]
         if to_save:
             await _unload(to_save)
 
@@ -250,7 +250,7 @@ _FLAG = False
 
 
 async def _init_unloaded() -> None:
-    global _FLAG
+    global _FLAG  # pylint: disable=global-statement
 
     if not _FLAG:
         async for flt in _UNLOADED_FILTERS.find():
