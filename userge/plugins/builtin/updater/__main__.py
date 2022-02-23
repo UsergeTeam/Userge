@@ -6,8 +6,6 @@
 #
 # All rights reserved.
 
-import asyncio
-
 from userge import userge, Message
 
 LOG = userge.getLogger(__name__)
@@ -40,6 +38,8 @@ async def check_update(message: Message):
             await message.err('Can\'t update to unstable [alpha] branch. '
                               'Please use other branches instead !')
             return
+    if pull_from_repo:
+        pass
     # repo = Repo()
     # if branch not in repo.branches:
     #     await message.err(f'invalid branch name : {branch}')
@@ -75,7 +75,7 @@ async def check_update(message: Message):
     #     await message.edit(f'**Userge is up-to-date with [{branch}]**', del_in=5)
 
 
-def _get_updates(branch: str) -> str:
-    return ''.join(
-        "🔨 **#{i.count()}** : [{i.summary}]({upst}/commit/{i}) 👷 __{i.author}__\n\n"
-    )
+# def _get_updates(branch: str) -> str:
+#     return ''.join(
+#         "🔨 **#{i.count()}** : [{i.summary}]({upst}/commit/{i}) 👷 __{i.author}__\n\n"
+#     )
