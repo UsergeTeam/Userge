@@ -14,6 +14,7 @@ import os
 import re
 import shlex
 from os.path import basename, join, exists
+from pathlib import Path
 from typing import Tuple, List, Optional, Iterator, Union
 
 from emoji import get_emoji_regexp
@@ -21,6 +22,7 @@ from html_telegraph_poster import TelegraphPoster
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 import userge
+from userge.plugins.misc.download import tg_download, url_download
 
 _LOG = userge.logging.getLogger(__name__)
 _BTN_URL_REGEX = re.compile(r"(\[([^\[]+?)]\[buttonurl:/{0,2}(.+?)(:same)?])")
@@ -261,3 +263,42 @@ def extract_entities(message: Message, typeofentity: List[str]) -> List[str]:
         if url and cet in typeofentity:
             tero.append(url)
     return tero
+
+
+async def get_media_path_and_name(
+    message: "userge.Message", input_str=""
+) -> Union[Tuple[str, str], bool]:
+    if not input_str:
+        input_str = message.filtered_input_str
+    dl_loc, file_name = "", ""
+    replied = message.reply_to_message
+    if hasattr(replied, "media"):
+        dl_loc, _ = await tg_download(message, replied)
+        if hasattr(replied.audio, "file_name"):
+            file_name = replied.audio.file_name
+        elif hasattr(replied.video, "file_name"):
+            file_name = replied.video.file_name
+        elif hasattr(replied.document, "file_name"):
+            file_name = replied.document.file_name
+        else:
+            file_name = Path(dl_loc).name
+    elif input_str:
+        if is_url(input_str):
+            try:
+                dl_loc, _ = await url_download(message, input_str)
+                file_name = Path(dl_loc).name
+            except Exception as err:
+                await message.err(str(err))
+                return False
+    else:
+        await message.err("nothing provided to process")
+        return False
+    if dl_loc:
+        file_path = dl_loc
+    else:
+        file_path = input_str.strip()
+        file_name = Path(file_path).name
+    if not Path(file_path).exists():
+        await message.err("Seems that an invalid file path provided?")
+        return False
+    return file_path, file_name
