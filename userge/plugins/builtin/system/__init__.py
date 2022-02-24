@@ -1,6 +1,9 @@
 from os import environ, getpid, kill
-from signal import SIGTERM
 from typing import Set, Optional
+try:
+    from signal import CTRL_C_EVENT as SIGTERM
+except ImportError:
+    from signal import SIGTERM
 
 from loader.userge import api
 from userge import config

@@ -176,7 +176,7 @@ def parse_buttons(markdown_note: str) -> Tuple[str, Optional[InlineKeyboardMarku
 
 
 def is_command(cmd: str) -> bool:
-    commands = userge.userge.manager.enabled_commands
+    commands = userge.userge.manager.loaded_commands
     key = userge.config.CMD_TRIGGER + cmd
     _key = userge.config.SUDO_TRIGGER + cmd
 

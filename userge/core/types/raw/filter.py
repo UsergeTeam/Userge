@@ -61,7 +61,7 @@ class Filter:
         self.check_pin_perm = check_pin_perm
         self.doc: Optional[str] = None
         self.plugin: Optional[str] = None
-        self.loaded = False
+        self._loaded = False
         self._client = client
         self._group = group if group > -5 else -4
         self._func: Optional[Callable[[Any], Any]] = None
@@ -102,6 +102,10 @@ class Filter:
     def __repr__(self) -> str:
         return f"<filter {self.name}>"
 
+    @property
+    def loaded(self) -> bool:
+        return self._loaded
+
     def update(self, func: Callable[[Any], Any], template: Callable[[Any], Any]) -> None:
         """ update filter """
         self.doc = (func.__doc__ or "undefined").strip()
@@ -115,7 +119,7 @@ class Filter:
 
     def load(self) -> str:
         """ load the filter """
-        if self.loaded or (self._client.is_bot and not self.allow_via_bot):
+        if self._loaded or (self._client.is_bot and not self.allow_via_bot):
             return ''
 
         self._client.add_handler(self._handler, self._group)
@@ -123,12 +127,12 @@ class Filter:
         if self.allow_via_bot and self._client._bot is not None:
             self._client._bot.add_handler(self._handler, self._group)
 
-        self.loaded = True
+        self._loaded = True
         return self.name
 
     def unload(self) -> str:
         """ unload the filter """
-        if not self.loaded:
+        if not self._loaded:
             return ''
 
         self._client.remove_handler(self._handler, self._group)
@@ -136,5 +140,5 @@ class Filter:
         if self.allow_via_bot and self._client._bot is not None:
             self._client._bot.remove_handler(self._handler, self._group)
 
-        self.loaded = False
+        self._loaded = False
         return self.name

@@ -19,9 +19,16 @@ import traceback
 from contextlib import contextmanager
 from enum import Enum
 from getpass import getuser
-from os import geteuid, setsid, getpgid, killpg
-from signal import SIGKILL
 from typing import Awaitable, Any, Callable, Dict, Optional, Tuple, Iterable
+try:
+    from os import geteuid, setsid, getpgid, killpg
+    from signal import SIGKILL
+except ImportError:
+    from os import kill as killpg
+    from signal import CTRL_C_EVENT as SIGKILL
+    geteuid = lambda: 1
+    setsid = None
+    getpgid = lambda _: _
 
 from pyrogram.types.messages_and_media.message import Str
 
@@ -226,10 +233,8 @@ async def term_(message: Message):
         return
 
     cur_user = getuser()
-    try:
-        uid = geteuid()
-    except ImportError:
-        uid = 1
+    uid = geteuid()
+
     prefix = f"<b>{cur_user}:~#</b>" if uid == 0 else f"<b>{cur_user}:~$</b>"
     output = f"{prefix} <pre>{cmd}</pre>\n"
 
@@ -402,8 +407,10 @@ class Term:
 
     @classmethod
     async def execute(cls, cmd: str) -> 'Term':
-        process = await asyncio.create_subprocess_shell(
-            cmd, stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE, preexec_fn=setsid)
+        kwargs = dict(stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+        if setsid:
+            kwargs['preexec_fn'] = setsid
+        process = await asyncio.create_subprocess_shell(cmd, **kwargs)
         t_obj = cls(process)
         t_obj._start()
         return t_obj
