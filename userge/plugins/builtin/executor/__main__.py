@@ -27,10 +27,13 @@ except ImportError:
     # pylint: disable=ungrouped-imports
     from os import kill as killpg
     from signal import CTRL_C_EVENT as SIGKILL
+
     def geteuid() -> int:
         return 1
+
     def getpgid(arg: Any) -> Any:
         return arg
+
     setsid = None
 
 from pyrogram.types.messages_and_media.message import Str
