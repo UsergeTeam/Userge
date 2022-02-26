@@ -19,7 +19,7 @@ _LOG = logging.getLogger(__name__)
 
 class Restart(RawClient):  # pylint: disable=missing-class-docstring
     @staticmethod
-    async def restart(hard: bool = False) -> None:  # pylint disable=arguments-differ
-        """ Restart the AbstractUserge """
+    async def restart(hard: bool = False, **_) -> None:
+        """ Restart the Userge """
         _LOG.info(f"Restarting Userge [{'HARD' if hard else 'SOFT'}]")
         restart(hard)

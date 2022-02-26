@@ -212,16 +212,20 @@ class RawDecorator(RawClient):
         super().__init__(**kwargs)
 
     def add_task(self, task: Callable[[], Awaitable[Any]]) -> Callable[[], Awaitable[Any]]:
+        """ add a background task which is attached to this plugin. """
         self.manager.get_plugin(task.__module__).add_task(task)
         return task
 
     def on_start(self, callback: Callable[[], Awaitable[Any]]) -> None:
+        """ set a callback to calls when the plugin is loaded """
         self.manager.get_plugin(callback.__module__).set_on_start_callback(callback)
 
     def on_stop(self, callback: Callable[[], Awaitable[Any]]) -> None:
+        """ set a callback to calls when the plugin is unloaded """
         self.manager.get_plugin(callback.__module__).set_on_stop_callback(callback)
 
     def on_exit(self, callback: Callable[[], Awaitable[Any]]) -> None:
+        """ set a callback to calls when the userge is exiting """
         self.manager.get_plugin(callback.__module__).set_on_exit_callback(callback)
 
     def on_filters(self, filters: RawFilter, group: int = 0,
