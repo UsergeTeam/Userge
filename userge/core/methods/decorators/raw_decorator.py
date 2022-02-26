@@ -212,20 +212,20 @@ class RawDecorator(RawClient):
         super().__init__(**kwargs)
 
     def add_task(self, task: Callable[[], Awaitable[Any]]) -> Callable[[], Awaitable[Any]]:
-        self.manager.get_plugin(getattr(task, '__module__')).add_task(task)
+        self.manager.get_plugin(task.__module__).add_task(task)
         return task
 
     def on_start(self, callback: Callable[[], Awaitable[Any]]) -> None:
-        self.manager.get_plugin(getattr(callback, '__module__')).set_on_start_callback(callback)
+        self.manager.get_plugin(callback.__module__).set_on_start_callback(callback)
 
     def on_stop(self, callback: Callable[[], Awaitable[Any]]) -> None:
-        self.manager.get_plugin(getattr(callback, '__module__')).set_on_stop_callback(callback)
+        self.manager.get_plugin(callback.__module__).set_on_stop_callback(callback)
 
     def on_exit(self, callback: Callable[[], Awaitable[Any]]) -> None:
-        self.manager.get_plugin(getattr(callback, '__module__')).set_on_exit_callback(callback)
+        self.manager.get_plugin(callback.__module__).set_on_exit_callback(callback)
 
     def on_filters(self, filters: RawFilter, group: int = 0,
-                   **kwargs: Union[bool]) -> 'RawDecorator._PYRORETTYPE':
+                   **kwargs: Union[str, bool]) -> 'RawDecorator._PYRORETTYPE':
         """ abstract on filter method """
 
     def _build_decorator(self,
@@ -332,10 +332,10 @@ class RawDecorator(RawClient):
                 finally:
                     if flt.propagate:
                         raise ContinuePropagation
-                    elif flt.propagate is not None:
+                    if flt.propagate is not None:
                         raise StopPropagation
 
-            module = getattr(func, '__module__')
+            module = func.__module__
 
             flt.update(func, template)
             self.manager.get_plugin(module).add(flt)
