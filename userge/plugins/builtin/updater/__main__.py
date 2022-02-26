@@ -29,7 +29,8 @@ async def check_update(message: Message):
     await message.edit("`Checking for updates, please wait....`")
     flags = list(message.flags)
     pull_from_repo = False
-    branch = "master"
+    core = await api.get_core()
+    branch = core.branch
     if "pull" in flags:
         pull_from_repo = True
         flags.remove("pull")
@@ -40,7 +41,6 @@ async def check_update(message: Message):
             await message.err('Can\'t update to unstable [alpha] branch. '
                               'Please use other branches instead !')
             return
-    core = await api.get_core()
     another_branch = core.branch != branch
     if branch not in core.branches:
         return await message.err(f'invalid branch name : {branch}')
@@ -57,7 +57,7 @@ async def check_update(message: Message):
         await userge.restart(True)
         return
 
-    out, version = _get_updates()
+    out, version = await _get_updates()
     if pull_from_repo:
         if out:
             await message.edit(f'`New update found for [{branch}], Now pulling...`')
