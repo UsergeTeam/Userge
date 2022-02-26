@@ -24,6 +24,7 @@ try:
     from os import geteuid, setsid, getpgid, killpg
     from signal import SIGKILL
 except ImportError:
+    # pylint: disable=ungrouped-imports
     from os import kill as killpg
     from signal import CTRL_C_EVENT as SIGKILL
     geteuid = lambda: 1
