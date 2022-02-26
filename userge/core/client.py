@@ -36,19 +36,29 @@ _LOG = logging.getLogger(__name__)
 
 
 def _import_module(path: str) -> Optional[ModuleType]:
+    imported: Optional[ModuleType] = None
     try:
-        return importlib.import_module(path)
+        imported = importlib.import_module(path)
     except Exception as i_e:
         _LOG.error(f"[{path}] - {i_e}")
+    if imported:
+        return imported
+    return None
 
 
 def _reload_module(module: Optional[ModuleType]) -> Optional[ModuleType]:
     if module:
+        reloaded: Optional[ModuleType] = None
+        errored: bool = False
         try:
-            return importlib.reload(module)
+            reloaded = importlib.reload(module)
         except Exception as i_e:
             _LOG.error(i_e)
+            errored = True
+        if errored:
             return module
+        return reloaded
+    return None
 
 
 class _Module:

@@ -6,11 +6,11 @@
 #
 # All rights reserved.
 
-import asyncio
+from typing import Tuple
 
 from userge import userge, Message
+from loader.userge import api
 
-LOG = userge.getLogger(__name__)
 CHANNEL = userge.getCLogger(__name__)
 
 
@@ -40,42 +40,47 @@ async def check_update(message: Message):
             await message.err('Can\'t update to unstable [alpha] branch. '
                               'Please use other branches instead !')
             return
-    # repo = Repo()
-    # if branch not in repo.branches:
-    #     await message.err(f'invalid branch name : {branch}')
-    #     return
-    # try:
-    #     out = _get_updates(repo, branch)
-    # except GitCommandError as g_e:
-    #     await message.err(g_e, del_in=5)
-    #     return
-    # if pull_from_repo:
-    #     if out:
-    #         await message.edit(f'`New update found for [{branch}], Now pulling...`')
-    #         await _pull_from_repo(repo, branch)
-    #         await CHANNEL.log(f"**PULLED update from [{branch}]:\n\n📄 CHANGELOG 📄**\n\n{out}")
-    #         await message.edit('**Userge Successfully Updated!**\n'
-    #                            '`Now restarting... Wait for a while!`', del_in=3)
-    #         asyncio.get_event_loop().create_task(userge.restart(True))
-    #     else:
-    #         active = repo.active_branch.name
-    #         if active == branch:
-    #             await message.err(f"already in [{branch}]!")
-    #             return
-    #         await message.edit(
-    #             f'`Moving HEAD from [{active}] >>> [{branch}] ...`', parse_mode='md')
-    #         await _pull_from_repo(repo, branch)
-    #         await CHANNEL.log(f"`Moved HEAD from [{active}] >>> [{branch}] !`")
-    #         await message.edit('`Now restarting... Wait for a while!`', del_in=3)
-    #         asyncio.get_event_loop().create_task(userge.restart())
-    # elif out:
-    #     change_log = f'**New UPDATE available for [{branch}]:\n\n📄 CHANGELOG 📄**\n\n'
-    #     await message.edit_or_send_as_file(change_log + out, disable_web_page_preview=True)
-    # else:
-    #     await message.edit(f'**Userge is up-to-date with [{branch}]**', del_in=5)
+    core = await api.get_core()
+    another_branch = core.branch != branch
+    if branch not in core.branches:
+        return await message.err(f'invalid branch name : {branch}')
+    if another_branch and not pull_from_repo:
+        return await message.err(
+            f'you have to change branch from **{core.branch}** to {branch} to see updates.'
+        )
+    if another_branch and pull_from_repo:
+        await message.edit(
+            f'`Moving HEAD from [{core.branch}] >>> [{branch}] ...`', parse_mode='md')
+        await CHANNEL.log(f"`Moved HEAD from [{core.branch}] >>> [{branch}] !`")
+        await api.set_core_branch(branch)
+        await message.edit('`Now restarting... Wait for a while!`', del_in=3)
+        await userge.restart(True)
+        return
+
+    out, version = _get_updates()
+    if pull_from_repo:
+        if out:
+            await message.edit(f'`New update found for [{branch}], Now pulling...`')
+            await CHANNEL.log(f"**PULLED update from [{branch}]:\n\n📄 CHANGELOG 📄**\n\n{out}")
+            await api.set_core_version(version)
+            await message.edit('**Userge Successfully Updated!**\n'
+                               '`Now restarting... Wait for a while!`', del_in=3)
+            await userge.restart(True)
+        else:
+            await message.err(f'**Userge is up-to-date with [{branch}]**')
+    elif out:
+        change_log = f'**New UPDATE available for [{branch}]:\n\n📄 CHANGELOG 📄**\n\n'
+        await message.edit_or_send_as_file(change_log + out, disable_web_page_preview=True)
+    else:
+        await message.edit(f'**Userge is up-to-date with [{branch}]**', del_in=5)
 
 
-def _get_updates(branch: str) -> str:
-    return ''.join(
-        "🔨 **#{i.count()}** : [{i.summary}]({upst}/commit/{i}) 👷 __{i.author}__\n\n"
-    )
+async def _get_updates() -> Tuple[str, str]:
+    new_commits = await api.get_core_new_commits()
+    if new_commits:
+        out = ''.join(
+            f"🔨 **#{i.count()}** : [{i.summary}]({i.url}) 👷 __{i.author}__\n\n"
+            for i in new_commits
+        )
+        return out, new_commits[-1].version
+    return '', ''

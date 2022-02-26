@@ -81,7 +81,7 @@ class Filter:
                **kwargs: Union[RawFilter, '_client.Userge', int, bool]
                ) -> Dict[str, Union[RawFilter, '_client.Userge', int, bool]]:
         kwargs['check_client'] = kwargs['allow_via_bot'] and kwargs['check_client']
-        kwargs['scope']: List[str] = []
+        kwargs['scope'] = []
 
         if allow_bots:
             kwargs['scope'].append('bot')
@@ -109,7 +109,7 @@ class Filter:
     def update(self, func: Callable[[Any], Any], template: Callable[[Any], Any]) -> None:
         """ update filter """
         self.doc = (func.__doc__ or "undefined").strip()
-        self.plugin, file_name = func.__module__.split('.')[-2:]
+        self.plugin, _ = func.__module__.split('.')[-2:]
 
         if not self.name:
             self.name = '.'.join((self.plugin, func.__name__))
