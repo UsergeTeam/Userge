@@ -43,6 +43,7 @@ def _import_module(path: str) -> Optional[ModuleType]:
         _LOG.error(f"[{path}] - {i_e}")
     if imported:
         return imported
+    return None
 
 
 def _reload_module(module: Optional[ModuleType]) -> Optional[ModuleType]:
@@ -57,6 +58,7 @@ def _reload_module(module: Optional[ModuleType]) -> Optional[ModuleType]:
         if errored:
             return module
         return reloaded
+    return None
 
 
 class _Module:
