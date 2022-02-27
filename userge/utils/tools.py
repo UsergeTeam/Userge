@@ -9,6 +9,7 @@
 # All rights reserved.
 
 import asyncio
+import importlib
 import re
 import shlex
 from os.path import basename, join, exists
@@ -229,3 +230,12 @@ def extract_entities(message: Message, typeofentity: List[str]) -> List[str]:
         if url and cet in typeofentity:
             tero.append(url)
     return tero
+
+
+def get_custom_import_re(req_module):
+    """ import custom modules dynamically """
+    try:
+        return importlib.import_module(req_module)
+    except ModuleNotFoundError:
+        _LOG.warning(f"please fix your requirements.txt file [{req_module}]")
+        raise
