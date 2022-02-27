@@ -50,23 +50,25 @@ async def core(message: Message):
         updates = await api.get_core_new_commits()
 
         if not updates:
-            await message.edit("```no new commits available for core repo!```", del_in=3)
+            await message.edit("no new commits available for core repo", del_in=3)
             return
 
         out = _updates_to_str(updates)
         await message.edit_or_send_as_file(
-            f"```{len(updates)} new commits available for core repo!```\n\n{out}", del_in=0)
+            f"**{len(updates)}** new commits available for core repo\n\n{out}",
+            del_in=0, disable_web_page_preview=True)
 
     elif get_old:
         updates = await api.get_core_old_commits(old_limit)
 
         if not updates:
-            await message.edit("```no old commits available for core repo!```", del_in=3)
+            await message.edit("no old commits available for core repo", del_in=3)
             return
 
         out = _updates_to_str(updates)
         await message.edit_or_send_as_file(
-            f"```{len(updates)} old commits for core repo!```\n\n{out}", del_in=0)
+            f"**{len(updates)}** old commits for core repo\n\n{out}",
+            del_in=0, disable_web_page_preview=True)
 
     elif set_branch or set_version:
         if not branch and not version:
@@ -77,7 +79,7 @@ async def core(message: Message):
 
         if version:
             if version == core_repo.count:
-                await message.edit(f"already on this version: ```{version}```", del_in=3)
+                await message.edit(f"already on this version: `{version}`", del_in=3)
                 return
 
             if version > core_repo.max_count:
@@ -91,9 +93,9 @@ async def core(message: Message):
                 return
 
         if await api.edit_core(branch, version or None):
-            await message.edit("done, do `.restart -h` to apply changes!", del_in=3)
+            await message.edit("done, do `.restart -h` to apply changes", del_in=3)
         else:
-            await message.edit("didn't change anything!", del_in=3)
+            await message.edit("didn't change anything", del_in=3)
 
     elif fetch:
         await message.edit("```fetched core repo```", del_in=3)
@@ -103,15 +105,15 @@ async def core(message: Message):
 
         out = f"""**Core Details**
 
-        **name** : [{core_repo.name}]({core_repo.url})
-        **version** : ```{get_version()}```
-        **version code** : ```{core_repo.count}```
-        **branch** : ```{core_repo.branch}```
-        **branches** : ```{', '.join(core_repo.branches)}```
-        **is latest** : ```{core_repo.count == core_repo.max_count}```
-        **head** : [link]({core_repo.head_url})"""
+**name** : [{core_repo.name}]({core_repo.url})
+**version** : `{get_version()}`
+**version code** : `{core_repo.count}`
+**branch** : `{core_repo.branch}`
+**branches** : `{', '.join(core_repo.branches)}`
+**is latest** : `{core_repo.count == core_repo.max_count}`
+**head** : [link]({core_repo.head_url})"""
 
-        await message.edit(out, del_in=0)
+        await message.edit(out, del_in=0, disable_web_page_preview=True)
 
 
 @userge.on_cmd("repos", about={
@@ -157,26 +159,26 @@ async def repos(message: Message):
         elif invalidate:
             await api.invalidate_repos_cache()
             await message.edit(
-                "plugins cache invalidated, do `.restart -h` to apply changes!", del_in=3)
+                "plugins cache invalidated, do `.restart -h` to apply changes", del_in=3)
 
         else:
             plg_repos = await api.get_repos()
 
             if not plg_repos:
-                await message.edit("```no repos found!```", del_in=3)
+                await message.edit("```no repos found```", del_in=3)
                 return
 
             out = "**Repos Details**\n\n"
 
             for plg_repo in plg_repos:
                 out += f"**name** : [{plg_repo.name}]({plg_repo.url})\n"
-                out += f"**version code** : ```{plg_repo.count}```\n"
-                out += f"**branch** : ```{plg_repo.branch}```\n"
-                out += f"**branches** : ```{', '.join(plg_repo.branches)}```\n"
-                out += f"**is latest** : ```{plg_repo.count == plg_repo.max_count}```"
+                out += f"**version code** : `{plg_repo.count}`\n"
+                out += f"**branch** : `{plg_repo.branch}`\n"
+                out += f"**branches** : `{', '.join(plg_repo.branches)}`\n"
+                out += f"**is latest** : `{plg_repo.count == plg_repo.max_count}`\n"
                 out += f"**head** : [link]({plg_repo.head_url})\n\n"
 
-            await message.edit_or_send_as_file(out, del_in=0)
+            await message.edit_or_send_as_file(out, del_in=0, disable_web_page_preview=True)
 
     else:
         repo_details = await api.get_repo(repo_id)
@@ -189,23 +191,25 @@ async def repos(message: Message):
             updates = await api.get_repo_new_commits(repo_id)
 
             if not updates:
-                await message.edit(f"```no new commits available for repo: {repo_id}!```", del_in=3)
+                await message.edit(f"no new commits available for repo: {repo_id}", del_in=3)
                 return
 
             out = _updates_to_str(updates)
             await message.edit_or_send_as_file(
-                f"```{len(updates)} new commits available for repo: {repo_id}!```\n\n{out}", del_in=0)
+                f"{len(updates)} new commits available for repo: {repo_id}\n\n{out}",
+                del_in=0, disable_web_page_preview=True)
 
         elif get_old:
             updates = await api.get_repo_old_commits(repo_id, old_limit)
 
             if not updates:
-                await message.edit(f"```no old commits available for repo: {repo_id}!```", del_in=3)
+                await message.edit(f"no old commits available for repo: {repo_id}", del_in=3)
                 return
 
             out = _updates_to_str(updates)
             await message.edit_or_send_as_file(
-                f"```{len(updates)} old commits for repo: {repo_id}!```\n\n{out}", del_in=0)
+                f"{len(updates)} old commits for repo: {repo_id}\n\n{out}",
+                del_in=0, disable_web_page_preview=True)
 
         elif set_branch or set_version or set_priority:
             if not branch and not version and not priority:
@@ -214,7 +218,7 @@ async def repos(message: Message):
 
             if version:
                 if version == repo_details.count:
-                    await message.edit(f"already on this version: ```{version}```", del_in=3)
+                    await message.edit(f"already on this version: `{version}`", del_in=3)
                     return
 
                 if version > repo_details.max_count:
@@ -225,7 +229,7 @@ async def repos(message: Message):
 
             if priority:
                 if priority == repo_details.priority:
-                    await message.edit(f"already on this priority: ```{priority}```", del_in=3)
+                    await message.edit(f"already on this priority: `{priority}`", del_in=3)
                     return
 
                 priority = int(priority)
@@ -236,9 +240,9 @@ async def repos(message: Message):
                     return
 
             if await api.edit_repo(repo_id, branch, version or None, priority):
-                await message.edit("done, do `.restart -h` to apply changes!", del_in=3)
+                await message.edit("done, do `.restart -h` to apply changes", del_in=3)
             else:
-                await message.edit("didn't change anything!", del_in=3)
+                await message.edit("didn't change anything", del_in=3)
 
         elif fetch:
             await message.edit("```fetched plugins repos```", del_in=3)
@@ -272,7 +276,7 @@ async def add_repo(message: Message):
 
     await message.edit("```processing ...```")
     await api.add_repo(priority, branch, url)
-    await message.edit("added repo, do `.restart -h` to apply changes!", del_in=3)
+    await message.edit("added repo, do `.restart -h` to apply changes", del_in=3)
 
 
 @userge.on_cmd("rmrepo", about={
@@ -290,7 +294,7 @@ async def rm_repo(message: Message):
 
     await message.edit("```processing ...```")
     await api.remove_repo(int(repo_id))
-    await message.edit("removed repo, do `.restart -h` to apply changes!", del_in=3)
+    await message.edit("removed repo, do `.restart -h` to apply changes", del_in=3)
 
 
 @userge.on_cmd("consts", about={
@@ -301,7 +305,7 @@ async def consts(message: Message):
     data_ = await api.get_constraints()
 
     if not data_:
-        await message.edit("```no constraints found!```", del_in=3)
+        await message.edit("```no constraints found```", del_in=3)
         return
 
     out = ""
@@ -340,7 +344,7 @@ async def add_consts(message: Message):
 
     await message.edit("```processing ...```")
     await api.add_constraints(c_type, data.split())
-    await message.edit("added constraints, do `.restart -h` to apply changes!", del_in=3)
+    await message.edit("added constraints, do `.restart -h` to apply changes", del_in=3)
 
 
 @userge.on_cmd("rmconsts", about={
@@ -370,7 +374,7 @@ async def rm_consts(message: Message):
 
     await message.edit("```processing ...```")
     await api.remove_constraints(c_type, data.split())
-    await message.edit("removed constraints, do `.restart -h` to apply changes!", del_in=3)
+    await message.edit("removed constraints, do `.restart -h` to apply changes", del_in=3)
 
 
 @userge.on_cmd("clrconsts", about={
@@ -392,7 +396,7 @@ async def clr_consts(message: Message):
 
     await message.edit("```processing ...```")
     await api.clear_constraints(c_type)
-    await message.edit("cleared constraints, do `.restart -h` to apply changes!", del_in=3)
+    await message.edit("cleared constraints, do `.restart -h` to apply changes", del_in=3)
 
 
 @userge.on_cmd("update", about={
@@ -471,11 +475,11 @@ async def update(message: Message):
     if updates:
         if pull_in_flags:
             await CHANNEL.log(f"**PULLED updates:\n\n📄 CHANGELOG 📄**\n\n{updates}")
-            await message.edit("updated to latest, do `.restart -h` to apply changes!", del_in=3)
+            await message.edit("updated to latest, do `.restart -h` to apply changes", del_in=3)
         else:
-            await message.edit_or_send_as_file(updates, del_in=0)
+            await message.edit_or_send_as_file(updates, del_in=0, disable_web_page_preview=True)
     else:
-        await message.edit("```no updates found!```", del_in=3)
+        await message.edit("```no updates found```", del_in=3)
 
 
 def _updates_to_str(updates: List[Update]) -> str:
