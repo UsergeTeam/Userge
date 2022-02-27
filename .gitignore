@@ -140,7 +140,7 @@ config.env
 *.session
 unknown_errors.txt
 logs/
-loader/
+./loader/
 userge/plugins/dev/
 .rcache
 test.py

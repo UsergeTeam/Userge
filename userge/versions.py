@@ -13,8 +13,8 @@ from sys import version_info
 from pyrogram import __version__ as __pyro_version__  # noqa
 from loader.userge import api
 
-__major__ = 0
-__minor__ = 8
+__major__ = 1
+__minor__ = 0
 __micro__ = 0
 
 __python_version__ = f"{version_info[0]}.{version_info[1]}.{version_info[2]}"
@@ -22,9 +22,12 @@ __license__ = "[GNU GPL v3.0](https://github.com/UsergeTeam/Userge/blob/master/L
 __copyright__ = "[UsergeTeam](https://github.com/UsergeTeam)"
 
 
-async def get_version() -> str:
-    ver = ver = f"{__major__}.{__minor__}.{__micro__}"
+def get_version() -> str:
+    return f"{__major__}.{__minor__}.{__micro__}"
+
+
+async def get_full_version() -> str:
     core = await api.get_core()
-    if core.count > 0:
-        ver += f"-patch.{core.count}"
+    ver = f"{get_version()}-build{core.count}"
+
     return ver + '@' + core.branch
