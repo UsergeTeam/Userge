@@ -215,8 +215,10 @@ class _AbstractUserge(Methods, RawClient):
 
         if self.is_bot:
             RawClient.BOT_ID = self._me.id
+            _LOG.info(f"started userge bot: {self._me.username}")
         else:
             RawClient.USER_ID = self._me.id
+            _LOG.info(f"started userge: {self._me.first_name}")
 
     def __eq__(self, o: object) -> bool:
         return isinstance(o, _AbstractUserge) and self.id == o.id
