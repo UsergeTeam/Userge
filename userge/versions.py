@@ -11,6 +11,8 @@
 from sys import version_info
 
 from pyrogram import __version__ as __pyro_version__  # noqa
+
+from loader import __version__ as __loader_version__  # noqa
 from loader.userge import api
 
 __major__ = 1
