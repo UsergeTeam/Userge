@@ -238,6 +238,8 @@ class RawDecorator(RawClient):
         def decorator(func: _PYROFUNC) -> _PYROFUNC:
             async def template(r_c: Union['_client.Userge', '_client.UsergeBot'],
                                r_m: RawMessage) -> None:
+                await self.manager.wait()
+
                 if system.Dynamic.DISABLED_ALL and r_m.chat.id != config.LOG_CHANNEL_ID:
                     raise StopPropagation
                 if r_m.chat and r_m.chat.id in system.DISABLED_CHATS:

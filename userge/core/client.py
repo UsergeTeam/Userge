@@ -215,10 +215,10 @@ class _AbstractUserge(Methods, RawClient):
 
         if self.is_bot:
             RawClient.BOT_ID = self._me.id
-            _LOG.info(f"started userge bot: {self._me.username}")
+            _LOG.info(f"started bot: {self._me.username}")
         else:
             RawClient.USER_ID = self._me.id
-            _LOG.info(f"started userge: {self._me.first_name}")
+            _LOG.info(f"started user: {self._me.first_name}")
 
     def __eq__(self, o: object) -> bool:
         return isinstance(o, _AbstractUserge) and self.id == o.id
@@ -279,9 +279,6 @@ class Userge(_AbstractUserge):
         await _wait_for_instance()
         await _set_running(True)
 
-        await self._load_plugins()
-        await self.manager.start()
-
         _LOG.info("Starting ...")
 
         await super().start()
@@ -289,11 +286,14 @@ class Userge(_AbstractUserge):
         if self._bot is not None:
             await self._bot.start()
 
-    async def stop(self) -> None:  # pylint: disable=arguments-differ
-        """ stop client and bot """
-        await self.manager.stop()
+        await self._load_plugins()
+        await self.manager.start()
 
+    async def stop(self, **_) -> None:
+        """ stop client and bot """
         _LOG.info("Stopping ...")
+
+        await self.manager.stop()
 
         if self._bot is not None:
             await self._bot.stop()
@@ -328,10 +328,9 @@ class Userge(_AbstractUserge):
                 _LOG.info(f"Idling Userge - {mode}")
                 self.loop.run_until_complete(idle_event.wait())
 
-        if self.is_initialized:
-            with suppress(RuntimeError):
-                self.loop.run_until_complete(self.stop())
-                self.loop.run_until_complete(self.manager.exit())
+        with suppress(RuntimeError):
+            self.loop.run_until_complete(self.stop())
+            self.loop.run_until_complete(self.manager.exit())
 
         to_cancel = asyncio.all_tasks(self.loop)
         for t in to_cancel:

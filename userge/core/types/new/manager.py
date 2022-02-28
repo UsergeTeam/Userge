@@ -10,6 +10,7 @@
 
 __all__ = ['Manager']
 
+import asyncio
 from typing import Union, List, Dict, Optional
 
 from userge import config
@@ -23,6 +24,7 @@ class Manager:
     """ manager for userge """
     def __init__(self, client: '_client.Userge') -> None:
         self._client = client
+        self._event = asyncio.Event()
         self.plugins: Dict[str, Plugin] = {}
 
     @property
@@ -209,6 +211,7 @@ class Manager:
             await plg.update()
 
     async def init(self) -> None:
+        self._event.clear()
         await _init_unloaded()
 
         for plg in self.plugins.values():
@@ -218,13 +221,24 @@ class Manager:
 
                 flt.load()
 
+    async def wait(self) -> None:
+        await self._event.wait()
+
     async def start(self) -> None:
+        self._event.clear()
+
         for plg in self.plugins.values():
             await plg.start()
 
+        self._event.set()
+
     async def stop(self) -> None:
+        self._event.clear()
+
         for plg in self.plugins.values():
             await plg.stop()
+
+        self._event.set()
 
     def clear(self) -> None:
         for plg in self.plugins.values():
