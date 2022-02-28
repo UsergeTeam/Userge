@@ -11,7 +11,7 @@
 __all__ = ['Restart']
 
 from loader.userge.api import restart
-from userge import logging
+from userge import logging, config
 from ...ext import RawClient
 
 _LOG = logging.getLogger(__name__)
@@ -22,4 +22,7 @@ class Restart(RawClient):  # pylint: disable=missing-class-docstring
     async def restart(hard: bool = False, **_) -> None:
         """ Restart the Userge """
         _LOG.info(f"Restarting Userge [{'HARD' if hard else 'SOFT'}]")
+        if config.HEROKU_APP and hard:
+            config.HEROKU_APP.restart()
+            return
         restart(hard)
