@@ -494,5 +494,5 @@ async def update(message: Message):
 
 
 def _updates_to_str(updates: List[Update]) -> str:
-    return ''.join(
-        f"🔨 **#{i.count}** : [{i.summary}]({i.url}) 👷 __{i.author}__\n" for i in updates)
+    return '\n'.join(
+        f"🔨 **#{i.count}** : [{i.summary}]({i.url}) 👷 __{i.author}__" for i in updates)

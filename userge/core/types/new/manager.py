@@ -221,6 +221,10 @@ class Manager:
 
                 flt.load()
 
+    @property
+    def should_wait(self) -> bool:
+        return not self._event.is_set()
+
     async def wait(self) -> None:
         await self._event.wait()
 
