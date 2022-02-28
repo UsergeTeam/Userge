@@ -138,7 +138,7 @@ async def search(message: Message):
         await message.err("Enter any keyword to search in commands")
         return
 
-    found = [i for i in sorted(list(userge.manager.enabled_commands)) if cmd in i]
+    found = [i for i in sorted(list(userge.manager.loaded_commands)) if cmd in i]
     out_str = '    '.join(found)
 
     if found:
