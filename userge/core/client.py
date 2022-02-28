@@ -306,7 +306,7 @@ class Userge(_AbstractUserge):
         """ start userge """
         try:
             self.loop.run_until_complete(self.start())
-        except RuntimeError:
+        except (RuntimeError, KeyboardInterrupt):
             return
 
         idle_event = asyncio.Event()
