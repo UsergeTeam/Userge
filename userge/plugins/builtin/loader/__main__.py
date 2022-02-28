@@ -10,7 +10,7 @@ from typing import List
 
 from loader.types import Update
 from loader.userge import api
-from userge import userge, Message
+from userge import userge, Message, config
 from userge.versions import get_version
 
 CHANNEL = userge.getCLogger(__name__)
@@ -93,7 +93,8 @@ async def core(message: Message):
                 return
 
         if await api.edit_core(branch, version or None):
-            await message.edit("done, do `.restart -h` to apply changes", del_in=3)
+            await message.edit(
+                f"done, do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
         else:
             await message.edit("didn't change anything", del_in=3)
 
@@ -140,7 +141,7 @@ async def repos(message: Message):
     flags = message.flags
 
     fetch, invalidate = 'f' in flags, 'invalidate' in flags
-    repo_id = int(flags.get('id', -1))
+    repo_id = int(flags.get('id', 0))
     get_new = 'n' in flags
     get_old, old_limit = 'o' in flags, int(flags.get('o', 20))
     set_branch, branch = 'b' in flags, flags.get('b')
@@ -152,14 +153,15 @@ async def repos(message: Message):
     if fetch:
         await api.fetch_repos()
 
-    if repo_id < 0:
+    if repo_id <= 0:
         if fetch:
             await message.edit("```fetched plugins repos```", del_in=3)
 
         elif invalidate:
             await api.invalidate_repos_cache()
             await message.edit(
-                "plugins cache invalidated, do `.restart -h` to apply changes", del_in=3)
+                "plugins cache invalidated, "
+                f"do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
 
         else:
             plg_repos = await api.get_repos()
@@ -172,6 +174,8 @@ async def repos(message: Message):
 
             for plg_repo in plg_repos:
                 out += f"**name** : [{plg_repo.name}]({plg_repo.url})\n"
+                out += f"**id** : `{plg_repo.id}`\n"
+                out += f"**priority** : `{plg_repo.priority}`\n"
                 out += f"**version code** : `{plg_repo.count}`\n"
                 out += f"**branch** : `{plg_repo.branch}`\n"
                 out += f"**branches** : `{', '.join(plg_repo.branches)}`\n"
@@ -240,7 +244,8 @@ async def repos(message: Message):
                     return
 
             if await api.edit_repo(repo_id, branch, version or None, priority):
-                await message.edit("done, do `.restart -h` to apply changes", del_in=3)
+                await message.edit(
+                    f"done, do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
             else:
                 await message.edit("didn't change anything", del_in=3)
 
@@ -276,7 +281,8 @@ async def add_repo(message: Message):
 
     await message.edit("```processing ...```")
     await api.add_repo(priority, branch, url)
-    await message.edit("added repo, do `.restart -h` to apply changes", del_in=3)
+    await message.edit("added repo, "
+                       f"do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
 
 
 @userge.on_cmd("rmrepo", about={
@@ -294,7 +300,8 @@ async def rm_repo(message: Message):
 
     await message.edit("```processing ...```")
     await api.remove_repo(int(repo_id))
-    await message.edit("removed repo, do `.restart -h` to apply changes", del_in=3)
+    await message.edit("removed repo, "
+                       f"do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
 
 
 @userge.on_cmd("consts", about={
@@ -344,7 +351,8 @@ async def add_consts(message: Message):
 
     await message.edit("```processing ...```")
     await api.add_constraints(c_type, data.split())
-    await message.edit("added constraints, do `.restart -h` to apply changes", del_in=3)
+    await message.edit("added constraints, "
+                       f"do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
 
 
 @userge.on_cmd("rmconsts", about={
@@ -374,7 +382,8 @@ async def rm_consts(message: Message):
 
     await message.edit("```processing ...```")
     await api.remove_constraints(c_type, data.split())
-    await message.edit("removed constraints, do `.restart -h` to apply changes", del_in=3)
+    await message.edit("removed constraints, "
+                       f"do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
 
 
 @userge.on_cmd("clrconsts", about={
@@ -396,23 +405,24 @@ async def clr_consts(message: Message):
 
     await message.edit("```processing ...```")
     await api.clear_constraints(c_type)
-    await message.edit("cleared constraints, do `.restart -h` to apply changes", del_in=3)
+    await message.edit("cleared constraints, "
+                       f"do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
 
 
 @userge.on_cmd("update", about={
     'header': "Check Updates or Update Userge",
     'flags': {
-        '-core': "view updates for core repo",
-        '-repos': "view updates for all plugins repos",
+        '-c': "view updates for core repo",
+        '-r': "view updates for all plugins repos",
         '-pull': "pull updates"},
-    'usage': "{tr}update [-core|-repos] [-pull]",
+    'usage': "{tr}update [-c|-r] [-pull]",
     'examples': [
         "{tr}update : check updates for the whole project",
-        "{tr}update -core : check updates for core repo",
-        "{tr}update -repos : check updates for all plugins repos",
+        "{tr}update -c : check updates for core repo",
+        "{tr}update -r : check updates for all plugins repos",
         "{tr}update -pull : apply latest updates to the whole project",
-        "{tr}update -core -pull : apply latest updates to the core repo",
-        "{tr}update -repos -pull : apply latest updates to the plugins repos"]
+        "{tr}update -c -pull : apply latest updates to the core repo",
+        "{tr}update -r -pull : apply latest updates to the plugins repos"]
 }, del_pre=True, allow_channels=False)
 async def update(message: Message):
     """ check or do updates """
@@ -426,13 +436,13 @@ async def update(message: Message):
         pull_in_flags = True
         flags.remove('pull')
 
-    if 'core' in flags:
+    if 'c' in flags:
         core_in_flags = True
-        flags.remove('core')
+        flags.remove('c')
 
-    if 'repos' in flags:
+    if 'r' in flags:
         repos_in_flags = True
-        flags.remove('repos')
+        flags.remove('r')
 
     if flags:
         await message.err("invalid flags")
@@ -475,7 +485,8 @@ async def update(message: Message):
     if updates:
         if pull_in_flags:
             await CHANNEL.log(f"**PULLED updates:\n\n📄 CHANGELOG 📄**\n\n{updates}")
-            await message.edit("updated to latest, do `.restart -h` to apply changes", del_in=3)
+            await message.edit("updated to latest, "
+                               f"do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
         else:
             await message.edit_or_send_as_file(updates, del_in=0, disable_web_page_preview=True)
     else:
