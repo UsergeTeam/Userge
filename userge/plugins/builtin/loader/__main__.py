@@ -37,9 +37,9 @@ async def core(message: Message):
 
     fetch = 'f' in flags
     get_new = 'n' in flags
-    get_old, old_limit = 'o' in flags, int(flags.get('o', 20))
+    get_old, old_limit = 'o' in flags, int(flags.get('o') or 20)
     set_branch, branch = 'b' in flags, flags.get('b')
-    set_version, version = 'v' in flags, int(flags.get('v', 0))
+    set_version, version = 'v' in flags, int(flags.get('v') or 0)
 
     await message.edit("```processing ...```")
 
@@ -141,11 +141,11 @@ async def repos(message: Message):
     flags = message.flags
 
     fetch, invalidate = 'f' in flags, 'invalidate' in flags
-    repo_id = int(flags.get('id', 0))
+    repo_id = int(flags.get('id') or 0)
     get_new = 'n' in flags
-    get_old, old_limit = 'o' in flags, int(flags.get('o', 20))
+    get_old, old_limit = 'o' in flags, int(flags.get('o') or 20)
     set_branch, branch = 'b' in flags, flags.get('b')
-    set_version, version = 'v' in flags, int(flags.get('v', 0))
+    set_version, version = 'v' in flags, int(flags.get('v') or 0)
     set_priority, priority = 'p' in flags, flags.get('p')
 
     await message.edit("```processing ...```")
@@ -272,7 +272,7 @@ async def add_repo(message: Message):
     flags = message.flags
 
     branch = flags.get('b', "master")
-    priority = int(flags.get('p', 1))
+    priority = int(flags.get('p') or 1)
     url = message.filtered_input_str
 
     if not url:
