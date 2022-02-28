@@ -38,7 +38,7 @@ async def core(message: Message):
     fetch = 'f' in flags
     get_new = 'n' in flags
     get_old, old_limit = 'o' in flags, int(flags.get('o') or 20)
-    set_branch, branch = 'b' in flags, flags.get('b')
+    set_branch, branch = 'b' in flags, flags.get('b') or None
     set_version, version = 'v' in flags, int(flags.get('v') or 0)
 
     await message.edit("```processing ...```")
@@ -72,7 +72,7 @@ async def core(message: Message):
 
     elif set_branch or set_version:
         if not branch and not version:
-            await message.err("invalid flags")
+            await message.err("input not found!")
             return
 
         core_repo = await api.get_core()
@@ -143,7 +143,7 @@ async def repos(message: Message):
     repo_id = int(flags.get('id') or 0)
     get_new = 'n' in flags
     get_old, old_limit = 'o' in flags, int(flags.get('o') or 20)
-    set_branch, branch = 'b' in flags, flags.get('b')
+    set_branch, branch = 'b' in flags, flags.get('b') or None
     set_version, version = 'v' in flags, int(flags.get('v') or 0)
     set_priority, priority = 'p' in flags, flags.get('p')
 
@@ -216,7 +216,7 @@ async def repos(message: Message):
 
         elif set_branch or set_version or set_priority:
             if not branch and not version and not priority:
-                await message.err("invalid flags")
+                await message.err("input not found!")
                 return
 
             if version:
@@ -464,7 +464,7 @@ async def update(message: Message):
             updates += "\n\n"
 
             if pull_in_flags:
-                await api.set_core_version(core_updates[0].version)
+                await api.edit_core(None, core_updates[0].version)
 
     if repos_in_flags:
         await api.fetch_repos()
@@ -478,7 +478,7 @@ async def update(message: Message):
                 updates += "\n\n"
 
                 if pull_in_flags:
-                    await api.set_repo_version(repo_data.id, repo_updates[0].version)
+                    await api.edit_repo(repo_data.id, None, repo_updates[0].version)
 
     if updates:
         if pull_in_flags:
