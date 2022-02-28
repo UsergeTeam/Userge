@@ -87,10 +87,9 @@ async def core(message: Message):
                     f"invalid version: {version} max: {core_repo.max_count}", show_help=False)
                 return
 
-        if branch:
-            if branch not in core_repo.branches:
-                await message.err(f"invalid branch: {branch}", show_help=False)
-                return
+        if branch and branch not in core_repo.branches:
+            await message.err(f"invalid branch: {branch}", show_help=False)
+            return
 
         if await api.edit_core(branch, version or None):
             await message.edit(
@@ -238,10 +237,9 @@ async def repos(message: Message):
 
                 priority = int(priority)
 
-            if branch:
-                if branch not in repo_details.branches:
-                    await message.err(f"invalid branch: {branch}", show_help=False)
-                    return
+            if branch and branch not in repo_details.branches:
+                await message.err(f"invalid branch: {branch}", show_help=False)
+                return
 
             if await api.edit_repo(repo_id, branch, version or None, priority):
                 await message.edit(
