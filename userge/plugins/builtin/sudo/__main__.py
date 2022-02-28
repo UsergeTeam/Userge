@@ -126,7 +126,7 @@ async def add_sudo_cmd(message: Message):
         sudo.COMMANDS.clear()
         tmp_ = []
         restricted = ('addsudo', 'addscmd', 'exec', 'eval', 'term', 'load')
-        for c_d in list(userge.manager.enabled_commands):
+        for c_d in list(userge.manager.loaded_commands):
             t_c = c_d.lstrip(config.CMD_TRIGGER)
             if t_c in restricted:
                 continue
@@ -145,7 +145,7 @@ async def add_sudo_cmd(message: Message):
     if cmd in sudo.COMMANDS:
         await message.edit(f"cmd : `{cmd}` already in **SUDO**!", del_in=5)
     elif cmd not in (c_d.lstrip(config.CMD_TRIGGER)
-                     for c_d in list(userge.manager.enabled_commands)):
+                     for c_d in list(userge.manager.loaded_commands)):
         await message.edit(f"cmd : `{cmd}` 🤔, is that a command ?", del_in=5)
     else:
         sudo.COMMANDS.add(cmd)
