@@ -412,19 +412,22 @@ async def clr_consts(message: Message):
     'flags': {
         '-c': "view updates for core repo",
         '-r': "view updates for all plugins repos",
-        '-pull': "pull updates"},
-    'usage': "{tr}update [-c|-r] [-pull]",
+        '-pull': "pull updates",
+        '-restart': "restart after pulled"},
+    'usage': "{tr}update [-c|-r|-a] [-pull]",
     'examples': [
         "{tr}update : check updates for the whole project",
         "{tr}update -c : check updates for core repo",
         "{tr}update -r : check updates for all plugins repos",
-        "{tr}update -pull : apply latest updates to the whole project",
-        "{tr}update -c -pull : apply latest updates to the core repo",
-        "{tr}update -r -pull : apply latest updates to the plugins repos"]
+        "{tr}update -pull : pull latest updates to the whole project",
+        "{tr}update -pull -restart : auto restart after pulled",
+        "{tr}update -c -pull : pull latest updates to the core repo",
+        "{tr}update -r -pull : pull latest updates to the plugins repos"]
 }, del_pre=True, allow_channels=False)
 async def update(message: Message):
     """ check or do updates """
     pull_in_flags = False
+    restart_in_flags = False
     core_in_flags = False
     repos_in_flags = False
 
@@ -433,6 +436,10 @@ async def update(message: Message):
     if 'pull' in flags:
         pull_in_flags = True
         flags.remove('pull')
+
+        if 'restart' in flags:
+            restart_in_flags = True
+            flags.remove('restart')
 
     if 'c' in flags:
         core_in_flags = True
@@ -483,8 +490,15 @@ async def update(message: Message):
     if updates:
         if pull_in_flags:
             await CHANNEL.log(f"**PULLED updates:\n\n📄 CHANGELOG 📄**\n\n{updates}")
-            await message.edit("updated to latest, "
-                               f"do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
+
+            if restart_in_flags:
+                await message.edit("`Restarting [HARD] ...`", del_in=1)
+                await userge.restart(hard=True)
+
+            else:
+                await message.edit(
+                    "updated to latest, "
+                    f"do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
         else:
             await message.edit_or_send_as_file(updates, del_in=0, disable_web_page_preview=True)
     else:

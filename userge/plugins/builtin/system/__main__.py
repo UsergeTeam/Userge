@@ -54,7 +54,8 @@ async def _init() -> None:
     'header': "Restarts the bot and reload all plugins",
     'flags': {
         '-h': "restart hard",
-        '-d': "clean working folder"},
+        '-d': "clean working folder",
+        '-hu': "restart heroku"},
     'usage': "{tr}restart [flag | flags]",
     'examples': "{tr}restart -t -d"}, del_pre=True, allow_channels=False)
 async def restart_(message: Message):
@@ -64,7 +65,15 @@ async def restart_(message: Message):
     if 'd' in message.flags:
         shutil.rmtree(config.Dynamic.DOWN_PATH, ignore_errors=True)
 
-    if 'h' in message.flags:
+    if 'hu' in message.flags:
+        if config.HEROKU_APP:
+            await message.edit("`Restarting [HEROKU] ...`", del_in=1)
+            config.HEROKU_APP.restart()
+            time.sleep(30)
+        else:
+            await message.edit("`Heroku app not found !`", del_in=1)
+
+    elif 'h' in message.flags:
         await message.edit("`Restarting [HARD] ...`", del_in=1)
         await userge.restart(hard=True)
 

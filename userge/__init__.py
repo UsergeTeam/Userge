@@ -9,6 +9,7 @@
 # All rights reserved.
 
 from userge.logger import logging  # noqa
+from userge import config  # noqa
 from userge.core import (  # noqa
     Userge, filters, Message, get_collection, pool)
 
