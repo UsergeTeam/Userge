@@ -109,7 +109,7 @@ async def core(message: Message):
 **version** : `{get_version()}`
 **version code** : `{core_repo.count}`
 **branch** : `{core_repo.branch}`
-**branches** : `{', '.join(core_repo.branches)}`
+**branches** : `{'`, `'.join(core_repo.branches)}`
 **is latest** : `{core_repo.count == core_repo.max_count}`
 **head** : [link]({core_repo.head_url})"""
 
@@ -177,7 +177,7 @@ async def repos(message: Message):
                 out += f"**priority** : `{plg_repo.priority}`\n"
                 out += f"**version code** : `{plg_repo.count}`\n"
                 out += f"**branch** : `{plg_repo.branch}`\n"
-                out += f"**branches** : `{', '.join(plg_repo.branches)}`\n"
+                out += f"**branches** : `{'`, `'.join(plg_repo.branches)}`\n"
                 out += f"**is latest** : `{plg_repo.count == plg_repo.max_count}`\n"
                 out += f"**head** : [link]({plg_repo.head_url})\n\n"
 
