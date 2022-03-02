@@ -50,10 +50,10 @@ async def helpme(message: Message) -> None:  # pylint: disable=missing-function-
         bot = (await userge.bot.get_me()).username
         menu = await userge.get_inline_bot_results(bot)
         await userge.send_inline_bot_result(
-                chat_id=message.chat.id,
-                query_id=menu.query_id,
-                result_id=menu.results[1].id,
-                hide_via=True)
+            chat_id=message.chat.id,
+            query_id=menu.query_id,
+            result_id=menu.results[1].id,
+            hide_via=True)
         return await message.delete()
 
     if not message.input_str:
