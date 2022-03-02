@@ -46,6 +46,16 @@ async def _init() -> None:
 async def helpme(message: Message) -> None:  # pylint: disable=missing-function-docstring
     plugins = userge.manager.loaded_plugins
 
+    if userge.has_bot and '-i' in message.flags:
+        bot = (await userge.bot.get_me()).username
+        menu = await userge.get_inline_bot_results(bot)
+        await userge.send_inline_bot_result(
+                chat_id=message.chat.id,
+                query_id=menu.query_id,
+                result_id=menu.results[1].id,
+                hide_via=True)
+        return await message.delete()
+
     if not message.input_str:
         out_str = f"""⚒ <b><u>(<code>{len(plugins)}</code>) Plugin(s) Available</u></b>\n\n"""
         cat_plugins = userge.manager.get_plugins()
