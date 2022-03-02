@@ -42,9 +42,26 @@ async def _init() -> None:
         config.Dynamic.USE_USER_FOR_CLIENT_CHECKS = bool(data['is_user'])
 
 
-@userge.on_cmd("help", about={'header': "Guide to use USERGE commands"}, allow_channels=False)
+@userge.on_cmd("help", about={
+    'header': "Guide to use USERGE commands",
+    'flags': {'-i': "open help menu in inline"},
+    'usage': "{tr}help [flag | name]",
+    'examples': [
+        "{tr}help",
+        "{tr}help -i",
+        "{tr}help core"]}, allow_channels=False)
 async def helpme(message: Message) -> None:  # pylint: disable=missing-function-docstring
     plugins = userge.manager.loaded_plugins
+
+    if userge.has_bot and '-i' in message.flags:
+        bot = (await userge.bot.get_me()).username
+        menu = await userge.get_inline_bot_results(bot)
+        await userge.send_inline_bot_result(
+            chat_id=message.chat.id,
+            query_id=menu.query_id,
+            result_id=menu.results[1].id,
+            hide_via=True)
+        return await message.delete()
 
     if not message.input_str:
         out_str = f"""⚒ <b><u>(<code>{len(plugins)}</code>) Plugin(s) Available</u></b>\n\n"""
