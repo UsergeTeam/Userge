@@ -237,8 +237,4 @@ def extract_entities(message: Message, typeofentity: List[str]) -> List[str]:
 
 def get_custom_import_re(req_module):
     """ import custom modules dynamically """
-    try:
-        return importlib.import_module(req_module)
-    except ModuleNotFoundError:
-        _LOG.warning(f"please fix your requirements.txt file [{req_module}]")
-        raise
+    return importlib.import_module(req_module)
