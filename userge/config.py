@@ -75,7 +75,7 @@ class Config:
     AUTOPIC_TIMEOUT = 300
     ALLOWED_CHATS = filters.chat([])
     ALLOW_ALL_PMS = True
-    USE_USER_FOR_CLIENT_CHECKS = True
+    USE_USER_FOR_CLIENT_CHECKS = False
     SUDO_ENABLED = True
     SUDO_USERS: Set[int] = set()
     DISABLED_ALL = False
