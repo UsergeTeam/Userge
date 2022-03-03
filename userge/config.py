@@ -81,7 +81,7 @@ class Config:
     DISABLED_ALL = False
     DISABLED_CHATS: Set[int] = set()
     ALLOWED_COMMANDS: Set[str] = set()
-    IGNORE_VERIFIED_CHATS = True
+    IGNORE_VERIFIED_CHATS = False
     ANTISPAM_SENTRY = True
     FBAN_CHAT_ID = int(os.environ.get("FBAN_CHAT_ID") or 0)
     RUN_DYNO_SAVER = True
