@@ -101,7 +101,7 @@ def get_file_id_of_media(message: 'userge.Message') -> Optional[str]:
 def humanbytes(size: float) -> str:
     """ humanize size """
     if not size:
-        return ""
+        return "0 B"
     power = 1024
     t_n = 0
     power_dict = {0: ' ', 1: 'Ki', 2: 'Mi', 3: 'Gi', 4: 'Ti'}
