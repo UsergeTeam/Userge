@@ -95,7 +95,7 @@ async def core(message: Message):
             await message.edit(
                 f"done, do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
         else:
-            await message.edit("didn't change anything", del_in=3)
+            await message.edit("```didn't change anything```", del_in=3)
 
     elif fetch:
         await message.edit("```fetched core repo```", del_in=3)
@@ -245,7 +245,7 @@ async def repos(message: Message):
                 await message.edit(
                     f"done, do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
             else:
-                await message.edit("didn't change anything", del_in=3)
+                await message.edit("```didn't change anything```", del_in=3)
 
         elif fetch:
             await message.edit("```fetched plugins repos```", del_in=3)
@@ -278,9 +278,13 @@ async def add_repo(message: Message):
         return
 
     await message.edit("```processing ...```")
-    await api.add_repo(priority, branch, url)
-    await message.edit("added repo, "
-                       f"do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
+
+    if await api.add_repo(priority, branch, url):
+        await message.edit("added repo, "
+                           f"do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
+
+    else:
+        await message.edit("```repo was already added```", del_in=3)
 
 
 @userge.on_cmd("rmrepo", about={
@@ -297,9 +301,13 @@ async def rm_repo(message: Message):
         return
 
     await message.edit("```processing ...```")
-    await api.remove_repo(int(repo_id))
-    await message.edit("removed repo, "
-                       f"do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
+
+    if await api.remove_repo(int(repo_id)):
+        await message.edit("removed repo, "
+                           f"do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
+
+    else:
+        await message.edit("```couldn't find that repo```", del_in=3)
 
 
 @userge.on_cmd("consts", about={
@@ -348,9 +356,13 @@ async def add_consts(message: Message):
         return
 
     await message.edit("```processing ...```")
-    await api.add_constraints(c_type, data.split())
-    await message.edit("added constraints, "
-                       f"do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
+
+    if await api.add_constraints(c_type, data.split()):
+        await message.edit("added constraints, "
+                           f"do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
+
+    else:
+        await message.edit("```didn't add anything```", del_in=3)
 
 
 @userge.on_cmd("rmconsts", about={
@@ -379,9 +391,13 @@ async def rm_consts(message: Message):
         return
 
     await message.edit("```processing ...```")
-    await api.remove_constraints(c_type, data.split())
-    await message.edit("removed constraints, "
-                       f"do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
+
+    if await api.remove_constraints(c_type, data.split()):
+        await message.edit("removed constraints, "
+                           f"do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
+
+    else:
+        await message.edit("```didn't remove anything```", del_in=3)
 
 
 @userge.on_cmd("clrconsts", about={
@@ -402,9 +418,13 @@ async def clr_consts(message: Message):
         return
 
     await message.edit("```processing ...```")
-    await api.clear_constraints(c_type)
-    await message.edit("cleared constraints, "
-                       f"do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
+
+    if await api.clear_constraints(c_type):
+        await message.edit("cleared constraints, "
+                           f"do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
+
+    else:
+        await message.edit("```nothing found to clear```", del_in=3)
 
 
 @userge.on_cmd("update", about={
