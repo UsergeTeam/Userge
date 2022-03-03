@@ -28,8 +28,7 @@ _CATEGORY = {
     'builtin': '⚙️',
     'tools': '🧰',
     'utils': '🗂',
-    'misc': '👨',
-    'plugins': '💎'
+    'misc': '💎'
 }
 SAVED_SETTINGS = get_collection("CONFIGS")
 PRVT_MSGS = {}
@@ -85,6 +84,7 @@ async def helpme(message: Message) -> None:  # pylint: disable=missing-function-
 
             out_str = f"""⚔ <b><u>(<code>{len(commands)}</code>) Command(s) Available</u></b>
 
+🎭 <b>Category:</b> <code>{plugins[key].cat}</code>
 🔧 <b>Plugin:</b>  <code>{key}</code>
 📘 <b>Doc:</b>  <code>{plugins[key].doc}</code>\n\n"""
 
