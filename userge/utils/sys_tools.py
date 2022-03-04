@@ -9,7 +9,7 @@
 # All rights reserved.
 
 from os import environ
-from typing import Dict
+from typing import Dict, Optional
 
 
 class SafeDict(Dict[str, str]):
@@ -21,8 +21,11 @@ class SafeDict(Dict[str, str]):
 _SECURE = {'API_ID', 'API_HASH', 'BOT_TOKEN', 'SESSION_STRING', 'DATABASE_URL', 'HEROKU_API_KEY'}
 
 
-def secure_env(key: str) -> None:
-    _SECURE.add(key)
+def secure_env(key: Optional[str]) -> Optional[str]:
+    if key:
+        _SECURE.add(key)
+
+    return key
 
 
 def secure_text(text: str) -> str:

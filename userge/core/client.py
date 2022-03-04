@@ -310,6 +310,15 @@ class Userge(_AbstractUserge):
 
         await _set_running(False)
 
+    def _get_log_client(self) -> _AbstractUserge:
+        return self.bot if self.has_bot else self
+
+    async def _log_success(self) -> None:
+        await self._get_log_client()._channel.log("```Userge started successfully```", "core")
+
+    async def _log_exit(self) -> None:
+        await self._get_log_client()._channel.log("```Exiting Userge ...```", "core")
+
     def begin(self, coro: Optional[Awaitable[Any]] = None) -> None:
         """ start userge """
         try:
@@ -318,6 +327,15 @@ class Userge(_AbstractUserge):
             return
 
         idle_event = asyncio.Event()
+        log_errored = False
+
+        try:
+            self.loop.run_until_complete(self._log_success())
+        except Exception as i_e:
+            _LOG.exception(i_e)
+
+            idle_event.set()
+            log_errored = True
 
         def _handle(num, _) -> None:
             _LOG.info(f"Received Stop Signal [{signal.Signals(num).name}], Exiting Userge ...")
@@ -335,6 +353,12 @@ class Userge(_AbstractUserge):
             else:
                 _LOG.info(f"Idling Userge - {mode}")
                 self.loop.run_until_complete(idle_event.wait())
+
+        if not log_errored:
+            try:
+                self.loop.run_until_complete(self._log_exit())
+            except Exception as i_e:
+                _LOG.exception(i_e)
 
         with suppress(RuntimeError):
             self.loop.run_until_complete(self.stop())
