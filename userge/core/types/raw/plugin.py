@@ -127,17 +127,25 @@ class Plugin:
                 await self._stop()
 
     def clear(self) -> None:
+        if self._state == _LOADED:
+            raise AssertionError
+
         self.commands.clear()
         self.filters.clear()
+        self._tasks_todo.clear()
+
+        self._on_start_callback = None
+        self._on_stop_callback = None
+        self._on_exit_callback = None
 
     async def exit(self) -> None:
         if self._state == _LOADED:
             raise AssertionError
 
-        self.clear()
-
         if self._on_exit_callback:
             await self._on_exit_callback()
+
+        self.clear()
 
     async def load(self) -> List[str]:
         """ load all commands in the plugin """

@@ -210,6 +210,13 @@ class Manager:
         for plg in self.plugins.values():
             await plg.update()
 
+    def remove(self, name) -> None:
+        try:
+            plg = self.plugins.pop(name)
+            plg.clear()
+        except KeyError:
+            pass
+
     async def init(self) -> None:
         self._event.clear()
         await _init_unloaded()
@@ -254,7 +261,7 @@ class Manager:
         for plg in self.plugins.values():
             await plg.exit()
 
-        self.clear()
+        self.plugins.clear()
 
     @staticmethod
     async def clear_unloaded() -> bool:

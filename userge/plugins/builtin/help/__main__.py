@@ -84,8 +84,8 @@ async def helpme(message: Message) -> None:  # pylint: disable=missing-function-
 
             out_str = f"""⚔ <b><u>(<code>{len(commands)}</code>) Command(s) Available</u></b>
 
-🎭 <b>Category:</b> <code>{plugins[key].cat}</code>
 🔧 <b>Plugin:</b>  <code>{key}</code>
+🎭 <b>Category:</b> <code>{plugins[key].cat}</code>
 📘 <b>Doc:</b>  <code>{plugins[key].doc}</code>\n\n"""
 
             for i, cmd in enumerate(commands, start=1):

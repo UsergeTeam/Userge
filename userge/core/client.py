@@ -72,16 +72,20 @@ class _Module:
 
         return self._init
 
-    def main(self) -> None:
+    def main(self) -> Optional[ModuleType]:
         self._main = _import_module(self._path + ".__main__")
+
+        return self._main
 
     def reload_init(self) -> Optional[ModuleType]:
         self._init = _reload_module(self._init)
 
         return self._init
 
-    def reload_main(self) -> None:
+    def reload_main(self) -> Optional[ModuleType]:
         self._main = _reload_module(self._main)
+
+        return self._main
 
 
 _MODULES: List[_Module] = []
@@ -170,8 +174,10 @@ class _AbstractUserge(Methods, RawClient):
                     _MODULES.append(mdl)
                     self.manager.update_plugin(mt.__name__, mt.__doc__)
 
-        for mdl in _MODULES:
-            mdl.main()
+        for mdl in tuple(_MODULES):
+            if not mdl.main():
+                self.manager.remove(mdl.name)
+                _MODULES.remove(mdl)
 
         await self.manager.init()
         _LOG.info(f"Imported ({len(_MODULES)}) Plugins => "
@@ -192,8 +198,10 @@ class _AbstractUserge(Methods, RawClient):
                 reloaded.append(mdl)
                 self.manager.update_plugin(mt.__name__, mt.__doc__)
 
-        for mdl in reloaded:
-            mdl.reload_main()
+        for mdl in tuple(reloaded):
+            if not mdl.reload_main():
+                self.manager.remove(mdl.name)
+                reloaded.remove(mdl)
 
         await self.manager.init()
         await self.manager.start()
