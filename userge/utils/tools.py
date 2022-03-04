@@ -242,3 +242,5 @@ def get_custom_import_re(req_module, re_raise=True) -> Any:
     except (ModuleNotFoundError, ImportError):
         if re_raise:
             raise
+
+        return None
