@@ -13,7 +13,7 @@ import importlib
 import re
 import shlex
 from os.path import basename, join, exists
-from typing import Tuple, List, Optional, Iterator, Union
+from typing import Tuple, List, Optional, Iterator, Union, Any
 
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
@@ -235,6 +235,10 @@ def extract_entities(message: Message, typeofentity: List[str]) -> List[str]:
     return tero
 
 
-def get_custom_import_re(req_module):
+def get_custom_import_re(req_module, re_raise=True) -> Any:
     """ import custom modules dynamically """
-    return importlib.import_module(req_module)
+    try:
+        return importlib.import_module(req_module)
+    except (ModuleNotFoundError, ImportError):
+        if re_raise:
+            raise
