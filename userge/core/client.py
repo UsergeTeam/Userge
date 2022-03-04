@@ -314,10 +314,12 @@ class Userge(_AbstractUserge):
         return self.bot if self.has_bot else self
 
     async def _log_success(self) -> None:
-        await self._get_log_client()._channel.log("```Userge started successfully```", "core")
+        # pylint: disable=protected-access
+        await self._get_log_client()._channel.log("```Userge started successfully```")
 
     async def _log_exit(self) -> None:
-        await self._get_log_client()._channel.log("```Exiting Userge ...```", "core")
+        # pylint: disable=protected-access
+        await self._get_log_client()._channel.log("```Exiting Userge ...```")
 
     def begin(self, coro: Optional[Awaitable[Any]] = None) -> None:
         """ start userge """
