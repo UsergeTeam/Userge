@@ -104,7 +104,7 @@ def humanbytes(size: float) -> str:
         return "0 B"
     power = 1024
     t_n = 0
-    power_dict = {0: ' ', 1: 'Ki', 2: 'Mi', 3: 'Gi', 4: 'Ti'}
+    power_dict = {0: '', 1: 'Ki', 2: 'Mi', 3: 'Gi', 4: 'Ti', 5: 'Pi', 6: 'Ei', 7: 'Zi', 8: 'Yi'}
     while size > power:
         size /= power
         t_n += 1
