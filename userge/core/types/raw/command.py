@@ -88,7 +88,7 @@ def _build_filter(logic: Callable[[Message, str, str], bool],
         lambda _, __, m:
         m.via_bot is None and not m.scheduled
         and not (m.forward_from or m.forward_sender_name)
-        and m.text and logic(m, trigger, name)
+        and m.text and not m.edit_date and logic(m, trigger, name)
     )
 
 
@@ -103,8 +103,7 @@ def _outgoing_logic(m: Message, trigger: str, _) -> bool:
 
 def _incoming_logic(m: Message, trigger: str, name: str) -> bool:
     return (
-        not m.outgoing and trigger
-        and m.from_user and not m.edit_date
+        not m.outgoing and trigger and m.from_user
         and (
             m.from_user.id in config.OWNER_ID or (
                 sudo.Dynamic.ENABLED and m.from_user.id in sudo.USERS
@@ -117,15 +116,13 @@ def _incoming_logic(m: Message, trigger: str, name: str) -> bool:
 
 def _public_logic(m: Message, trigger: str, _) -> bool:
     return (
-        not m.edit_date
-        and (
-            True if not trigger
-            else m.text.startswith(config.CMD_TRIGGER)
-            if m.from_user and m.from_user.id in config.OWNER_ID
-            else m.text.startswith(config.SUDO_TRIGGER)
-            if sudo.Dynamic.ENABLED and m.from_user and m.from_user.id in sudo.USERS
-            else m.text.startswith(trigger)
-        )
+        True
+        if not trigger
+        else m.text.startswith(config.CMD_TRIGGER)
+        if m.from_user and m.from_user.id in config.OWNER_ID
+        else m.text.startswith(config.SUDO_TRIGGER)
+        if sudo.Dynamic.ENABLED and m.from_user and m.from_user.id in sudo.USERS
+        else m.text.startswith(trigger)
     )
 
 
