@@ -340,7 +340,9 @@ class Userge(_AbstractUserge):
             log_errored = True
 
         def _handle(num, _) -> None:
-            _LOG.info(f"Received Stop Signal [{signal.Signals(num).name}], Exiting Userge ...")
+            with suppress(RuntimeError):
+                _LOG.info(f"Received Stop Signal [{signal.Signals(num).name}], Exiting Userge ...")
+
             idle_event.set()
 
         for sig in (signal.SIGABRT, signal.SIGTERM, signal.SIGINT):

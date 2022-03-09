@@ -13,14 +13,17 @@ from os import environ
 import heroku3
 
 from userge import logging
+from .sys_tools import secured_env, secured_str
 
 _LOG = logging.getLogger(__name__)
 
-API_ID = int(environ.get("API_ID"))
-API_HASH = environ.get("API_HASH")
-BOT_TOKEN = environ.get("BOT_TOKEN")
-SESSION_STRING = environ.get("SESSION_STRING")
-DB_URI = environ.get("DATABASE_URL")
+TEST = secured_str("nice! report @UsergeSpam")
+
+API_ID = environ.get("API_ID")
+API_HASH = secured_env("API_HASH")
+BOT_TOKEN = secured_env("BOT_TOKEN")
+SESSION_STRING = secured_env("SESSION_STRING")
+DB_URI = secured_env("DATABASE_URL")
 
 OWNER_ID = tuple(filter(lambda x: x, map(int, environ.get("OWNER_ID", "0").split())))
 LOG_CHANNEL_ID = int(environ.get("LOG_CHANNEL_ID"))
@@ -36,7 +39,7 @@ MAX_MESSAGE_LENGTH = 4096
 FINISHED_PROGRESS_STR = environ.get("FINISHED_PROGRESS_STR")
 UNFINISHED_PROGRESS_STR = environ.get("UNFINISHED_PROGRESS_STR")
 
-HEROKU_API_KEY = environ.get("HEROKU_API_KEY")
+HEROKU_API_KEY = secured_env("HEROKU_API_KEY")
 HEROKU_APP_NAME = environ.get("HEROKU_APP_NAME")
 HEROKU_APP = heroku3.from_key(HEROKU_API_KEY).apps()[HEROKU_APP_NAME] \
     if HEROKU_API_KEY and HEROKU_APP_NAME else None

@@ -17,7 +17,6 @@ from typing import Union, Optional
 from pyrogram.parser import Parser
 
 from userge import logging, config
-from userge.utils import secure_text
 from ... import types
 from ...ext import RawClient
 
@@ -70,8 +69,6 @@ class SendAsFile(RawClient):  # pylint: disable=missing-class-docstring
         Returns:
             On success, the sent Message is returned.
         """
-        if text and chat_id not in config.AUTH_CHATS:
-            text = secure_text(str(text))
         if not as_raw:
             text = (await Parser(self).parse(text)).get("message")
         doc = io.BytesIO(text.encode())
