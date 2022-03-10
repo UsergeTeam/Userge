@@ -20,8 +20,7 @@ class SafeDict(Dict[str, str]):
 
 
 class _SafeMeta(type):
-    # noqa
-    # skipcq
+    # skipcq # noqa
     def __new__(mcs, *__):
         _ = '__setattr__', '__delattr__'
         for _ in filter(lambda _: (
@@ -33,8 +32,7 @@ class _SafeMeta(type):
 
 
 class _SafeStr(str, metaclass=_SafeMeta):
-    # noqa
-    # skipcq
+    # skipcq # noqa
     def __self__(self):
         return self
 
@@ -46,14 +44,14 @@ class _SafeStr(str, metaclass=_SafeMeta):
         while _:
             _f, _n = _.f_code.co_filename, _.f_code.co_name
             if _f.__contains__("exec") or _f.__eq__("<string>") and _n.__ne__("<module>"):
-                return lambda *_, **__: "[SECURED!]" if ___.__eq__("__self__") else 1
+                return lambda *_, **__: _spt(___, *_)
             if _f.__contains__("asyncio") and _n.__eq__("_run"):
                 __ = getattr(getattr(_.f_locals['self'], '_callback').__self__, '_coro').cr_frame
                 _f, _n = __.f_code.co_filename, __.f_code.co_name
                 if (___.__eq__("__handle__") and _f.__contains__("dispatcher")
                         and _n.__eq__("handler_worker") or _f.__contains__("client")):
                     break
-                return lambda *_, **__: "[SECURED!]" if ___.__eq__("__self__") else 1
+                return lambda *_, **__: _spt(___, *_)
             _ = _.f_back
         return super().__getattribute__(___)
 
@@ -62,6 +60,23 @@ class _SafeStr(str, metaclass=_SafeMeta):
 
     def __str__(self):
         return self.__self__()
+
+
+def _spt(_, *__, ___="[SECURED!]"):
+    # skipcq # noqa
+    if _.__eq__("__self__") or not __:
+        return ___
+    _ = __[0]
+    if ('__contains__', '__eq__', '__ge__', '__gt__',
+            '__le__', '__lt__', '__ne__').__contains__(_):
+        return True
+    if _.__eq__('__len__'):
+        return 1
+    if _.__eq__('__iter__'):
+        return iter(___)
+    if _.__eq__('__getnewargs__'):
+        return ___,
+    return ___
 
 
 def secured_env(key: str, default: Optional[str] = None) -> Optional[str]:
