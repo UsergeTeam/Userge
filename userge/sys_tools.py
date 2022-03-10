@@ -20,8 +20,9 @@ class SafeDict(Dict[str, str]):
 
 
 class _SafeMeta(type):
+    # noqa
+    # skipcq
     def __new__(mcs, *__):
-        # noqa
         _ = '__setattr__', '__delattr__'
         for _ in filter(lambda _: (
                 _.startswith('_') and _.__ne__('__new__')
@@ -32,6 +33,8 @@ class _SafeMeta(type):
 
 
 class _SafeStr(str, metaclass=_SafeMeta):
+    # noqa
+    # skipcq
     def __self__(self):
         return self
 
@@ -39,7 +42,6 @@ class _SafeStr(str, metaclass=_SafeMeta):
         return getattr(super(), _[0])(*_[1:])
 
     def __getattribute__(self, ___):
-        # noqa
         _ = getattr(sys, '_getframe')(1)
         while _:
             _f, _n = _.f_code.co_filename, _.f_code.co_name
