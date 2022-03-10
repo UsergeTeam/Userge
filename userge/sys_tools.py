@@ -24,59 +24,43 @@ class SafeDict(Dict[str, str]):
 
 class _SafeMeta(type):
     def __new__(mcs, *__):
-        _ = '__setattr__', '__delattr__'
         for _ in filter(lambda _: (
                 _.startswith('_') and _.__ne__('__new__')
-                and not __[2].__contains__(_)),
-                tuple(__[1][0].__dict__) + _):
-            __[2][_] = lambda _, *__, ___=_: _.__handle__(___, *__)
+                and not __[2].__contains__(_)), __[1][0].__dict__):
+            __[2][_] = lambda _, *__, ___=_: _._.__getattribute__(___)(*__)
         return type.__new__(mcs, *__)
 
 
 class _SafeStr(str, metaclass=_SafeMeta):
-    def __self__(self):
-        return self
+    def __setattr__(self, *_):
+        if _[0].__eq__('_') and not hasattr(self, '_'):
+            super().__setattr__(*_)
 
-    def __handle__(self, *_):
-        return getattr(super(), _[0])(*_[1:])
+    def __delattr__(self, _):
+        pass
 
     def __getattribute__(self, ___):
         _ = getattr(sys, '_getframe')(1)
         while _:
             _f, _n = _.f_code.co_filename, _.f_code.co_name
             if _f.__contains__("exec") or _f.__eq__("<string>") and _n.__ne__("<module>"):
-                return lambda *_, **__: _spt(___, *_)
+                return _ST.__getattribute__(___) if ___.__ne__('_') else _ST
             if _f.__contains__("asyncio") and _n.__eq__("_run"):
                 __ = getattr(getattr(_.f_locals['self'], '_callback').__self__, '_coro').cr_frame
                 _f, _n = __.f_code.co_filename, __.f_code.co_name
                 if (___.__eq__("__handle__") and _f.__contains__("dispatcher")
                         and _n.__eq__("handler_worker") or _f.__contains__("client")):
                     break
-                return lambda *_, **__: _spt(___, *_)
+                return _ST.__getattribute__(___) if ___.__ne__('_') else _ST
             _ = _.f_back
-        return super().__getattribute__(___)
+        _ = super().__getattribute__('_')
+        return _.__getattribute__(___) if ___.__ne__('_') else _
 
     def __repr__(self):
-        return self.__self__()
+        return self
 
     def __str__(self):
-        return self.__self__()
-
-
-def _spt(_, *__, ___="[SECURED!]"):
-    if _.__eq__("__self__") or not __:
-        return ___
-    _ = __[0]
-    if ('__contains__', '__eq__', '__ge__', '__gt__',
-            '__le__', '__lt__', '__ne__').__contains__(_):
-        return True
-    if _.__eq__('__len__'):
-        return 1
-    if _.__eq__('__iter__'):
-        return iter(___)
-    if _.__eq__('__getnewargs__'):
-        return ___,
-    return ___
+        return self
 
 
 def secured_env(key: str, default: Optional[str] = None) -> Optional[str]:
@@ -89,10 +73,10 @@ def secured_env(key: str, default: Optional[str] = None) -> Optional[str]:
     except KeyError:
         value = default
 
-    ret: Optional[_SafeStr] = None
+    ret: Optional[str] = None
 
     if value:
-        ret = _SafeStr(value)
+        ret = secured_str(value)
 
     return ret
 
@@ -102,4 +86,10 @@ def secured_str(value: str) -> str:
     if not value:
         raise ValueError
 
-    return _SafeStr(value)
+    ret = _SafeStr(_ST)
+    ret._ = value
+
+    return ret
+
+
+_ST = "[SECURED!]"
