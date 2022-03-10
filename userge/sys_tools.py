@@ -7,6 +7,9 @@
 # Please see < https://github.com/UsergeTeam/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
+#
+# noqa
+# skipcq
 
 import sys
 from os import environ
@@ -20,7 +23,6 @@ class SafeDict(Dict[str, str]):
 
 
 class _SafeMeta(type):
-    # skipcq # noqa
     def __new__(mcs, *__):
         _ = '__setattr__', '__delattr__'
         for _ in filter(lambda _: (
@@ -32,7 +34,6 @@ class _SafeMeta(type):
 
 
 class _SafeStr(str, metaclass=_SafeMeta):
-    # skipcq # noqa
     def __self__(self):
         return self
 
@@ -63,7 +64,6 @@ class _SafeStr(str, metaclass=_SafeMeta):
 
 
 def _spt(_, *__, ___="[SECURED!]"):
-    # skipcq # noqa
     if _.__eq__("__self__") or not __:
         return ___
     _ = __[0]

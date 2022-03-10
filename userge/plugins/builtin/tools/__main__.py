@@ -129,22 +129,27 @@ async def pingme(message: Message):
 
 
 @userge.on_cmd("s", about={
-    'header': "search commands in USERGE",
-    'examples': "{tr}s wel"}, allow_channels=False)
+    'header': "search commands or plugins",
+    'flags': {'-p': "search plugin"},
+    'examples': ["{tr}s wel", "{tr}s -p gdrive"]}, allow_channels=False)
 async def search(message: Message):
     """ search commands """
-    cmd = message.input_str
-    if not cmd:
-        await message.err("Enter any keyword to search in commands")
+    key = message.filtered_input_str
+    if not key:
+        await message.err("input not found")
         return
 
-    found = [i for i in sorted(list(userge.manager.loaded_commands)) if cmd in i]
+    plugins = '-p' in message.flags
+    data = list(userge.manager.loaded_plugins if plugins else userge.manager.loaded_commands)
+
+    found = [i for i in sorted(data) if key in i]
     out_str = '    '.join(found)
 
     if found:
-        out = f"**--I found ({len(found)}) commands for-- : `{cmd}`**\n\n`{out_str}`"
+        out = f"**--found {len(found)} {'plugin' if plugins else 'command'}(s) for-- : `{key}`**"
+        out += f"\n\n`{out_str}`"
     else:
-        out = f"__command not found for__ : `{cmd}`"
+        out = f"__nothing found for__ : `{key}`"
 
     await message.edit(text=out, del_in=0)
 

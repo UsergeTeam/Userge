@@ -107,7 +107,7 @@ async def helpme(message: Message) -> None:  # pylint: disable=missing-function-
                     name = name.lstrip(_)
 
                 if key == name:
-                    out_str = f"<code>{cmd.name}</code>\n\n{cmd.about}"
+                    out_str = f"<code>{cmd.name}</code> [<code>{cmd.plugin}</code>]\n\n{cmd.about}"
                     break
 
     await message.edit(out_str, del_in=0, parse_mode='html', disable_web_page_preview=True)
@@ -388,8 +388,8 @@ if userge.has_bot:
 
         text = f"""🗃 **--Plugin Status--** 🗃
 
-🎭 **Category** : `{pos_list[1]}`
 🔖 **Name** : `{plg.name}`
+🎭 **Category** : `{pos_list[1]}`
 📝 **Doc** : `{plg.doc}`
 ⚔ **Commands** : `{len(plg.commands)}`
 ⚖ **Filters** : `{len(plg.filters)}`
