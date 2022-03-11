@@ -17,6 +17,7 @@ from .sys_tools import secured_env, secured_str
 
 _LOG = logging.getLogger(__name__)
 
+# try to get this value using eval :)
 TEST = secured_str("nice! report @UsergeSpam")
 
 API_ID = environ.get("API_ID")

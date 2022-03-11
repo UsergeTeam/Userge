@@ -114,6 +114,7 @@ async def helpme(message: Message) -> None:  # pylint: disable=missing-function-
 
 
 if userge.has_bot:
+
     def check_owner(func):
         async def wrapper(_, c_q: CallbackQuery):
             if c_q.from_user and c_q.from_user.id in config.OWNER_ID:
@@ -131,7 +132,6 @@ if userge.has_bot:
                     show_alert=True)
 
         return wrapper
-
 
     @userge.bot.on_message(
         filters.private & filters.user(list(config.OWNER_ID)) & filters.command("start"), group=-1
@@ -157,7 +157,6 @@ if userge.has_bot:
 
         await msg.reply(out_str, parse_mode='html', disable_web_page_preview=True)
 
-
     @userge.bot.on_callback_query(filters=filters.regex(pattern=r"\((.+)\)(next|prev)\((\d+)\)"))
     @check_owner
     async def callback_next_prev(callback_query: CallbackQuery):
@@ -182,7 +181,6 @@ if userge.has_bot:
         await callback_query.edit_message_reply_markup(
             reply_markup=InlineKeyboardMarkup(buttons))
 
-
     @userge.bot.on_callback_query(filters=filters.regex(pattern=r"back\((.+)\)"))
     @check_owner
     async def callback_back(callback_query: CallbackQuery):
@@ -204,7 +202,6 @@ if userge.has_bot:
         await callback_query.edit_message_text(
             text, reply_markup=InlineKeyboardMarkup(buttons))
 
-
     @userge.bot.on_callback_query(filters=filters.regex(pattern=r"enter\((.+)\)"))
     @check_owner
     async def callback_enter(callback_query: CallbackQuery):
@@ -220,7 +217,6 @@ if userge.has_bot:
 
         await callback_query.edit_message_text(
             text, reply_markup=InlineKeyboardMarkup(buttons))
-
 
     @userge.bot.on_callback_query(
         filters=filters.regex(pattern=r"((?:un)?load)\((.+)\)"))
@@ -247,13 +243,11 @@ if userge.has_bot:
         await callback_query.edit_message_text(
             text, reply_markup=InlineKeyboardMarkup(buttons))
 
-
     @userge.bot.on_callback_query(filters=filters.regex(pattern=r"^mm$"))
     @check_owner
     async def callback_mm(callback_query: CallbackQuery):
         await callback_query.edit_message_text(
             "🖥 **Userge Main Menu** 🖥", reply_markup=InlineKeyboardMarkup(main_menu_buttons()))
-
 
     @userge.bot.on_callback_query(filters=filters.regex(pattern=r"^chgclnt$"))
     @check_owner
@@ -272,7 +266,6 @@ if userge.has_bot:
         await callback_query.edit_message_reply_markup(
             reply_markup=InlineKeyboardMarkup(main_menu_buttons()))
 
-
     @userge.bot.on_callback_query(filters=filters.regex(pattern=r"refresh\((.+)\)"))
     @check_owner
     async def callback_exit(callback_query: CallbackQuery):
@@ -285,7 +278,6 @@ if userge.has_bot:
             text, buttons = plugin_data(cur_pos)
         await callback_query.edit_message_text(
             text, reply_markup=InlineKeyboardMarkup(buttons))
-
 
     @userge.bot.on_callback_query(filters=filters.regex(pattern=r"prvtmsg\((.+)\)"))
     async def prvt_msg(_, c_q: CallbackQuery):
@@ -303,12 +295,10 @@ if userge.has_bot:
             await c_q.answer(
                 f"Only {flname} can see this Private Msg... 😔", show_alert=True)
 
-
     def is_filter(name: str) -> bool:
         split_ = name.split('.')
 
         return bool(split_[0] and len(split_) == 2)
-
 
     def parse_buttons(page_num: int,
                       cur_pos: str,
@@ -339,12 +329,10 @@ if userge.has_bot:
 
         return pairs
 
-
     def main_menu_buttons():
         return parse_buttons(0, "mm",
                              lambda x: f"{_CATEGORY.get(x, '📁')} {x}",
                              userge.manager.get_all_plugins())
-
 
     def default_buttons(cur_pos: str):
         tmp_btns = []
@@ -366,7 +354,6 @@ if userge.has_bot:
 
         return [tmp_btns]
 
-
     def category_data(cur_pos: str):
         pos_list = cur_pos.split('|')
         plugins = userge.manager.get_all_plugins()[pos_list[1]]
@@ -379,7 +366,6 @@ if userge.has_bot:
                                 plugins)
 
         return text, buttons
-
 
     def plugin_data(cur_pos: str, p_num: int = 0):
 
@@ -411,7 +397,6 @@ if userge.has_bot:
         buttons = buttons[:-1] + [tmp_btns] + [buttons[-1]]
 
         return text, buttons
-
 
     def filter_data(cur_pos: str):
         pos_list = cur_pos.split('|')
@@ -448,7 +433,6 @@ if userge.has_bot:
         buttons = [tmp_btns] + buttons
 
         return text, buttons
-
 
     @userge.bot.on_inline_query(group=1)
     async def inline_answer(_, inline_query: InlineQuery):

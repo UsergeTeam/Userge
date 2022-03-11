@@ -16,6 +16,35 @@ from os import environ
 from typing import Dict, Optional
 
 
+def secured_env(key: str, default: Optional[str] = None) -> Optional[str]:
+    """ get secured env """
+    if not key:
+        raise ValueError
+
+    try:
+        value = environ.pop(key)
+    except KeyError:
+        value = default
+
+    ret: Optional[str] = None
+
+    if value:
+        ret = secured_str(value)
+
+    return ret
+
+
+def secured_str(value: str) -> str:
+    """ get secured string """
+    if not value:
+        raise ValueError
+
+    ret = _SafeStr(_ST)
+    ret._ = value
+
+    return ret
+
+
 class SafeDict(Dict[str, str]):
     """ modded dict """
     def __missing__(self, key: str) -> str:
@@ -61,35 +90,6 @@ class _SafeStr(str, metaclass=_SafeMeta):
 
     def __str__(self):
         return self
-
-
-def secured_env(key: str, default: Optional[str] = None) -> Optional[str]:
-    """ get secured env """
-    if not key:
-        raise ValueError
-
-    try:
-        value = environ.pop(key)
-    except KeyError:
-        value = default
-
-    ret: Optional[str] = None
-
-    if value:
-        ret = secured_str(value)
-
-    return ret
-
-
-def secured_str(value: str) -> str:
-    """ get secured string """
-    if not value:
-        raise ValueError
-
-    ret = _SafeStr(_ST)
-    ret._ = value
-
-    return ret
 
 
 _ST = "[SECURED!]"

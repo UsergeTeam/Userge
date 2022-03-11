@@ -11,12 +11,15 @@
 __all__ = ['Manager']
 
 import asyncio
+import logging
+from itertools import islice, chain
 from typing import Union, List, Dict, Optional
 
 from userge import config
 from ..raw import Filter, Command, Plugin
 from ... import client as _client, get_collection  # pylint: disable=unused-import
 
+_LOG = logging.getLogger(__name__)
 _FLT = Union[Filter, Command]
 
 
@@ -235,31 +238,50 @@ class Manager:
     async def wait(self) -> None:
         await self._event.wait()
 
+    async def _do_plugins(self, meth: str) -> None:
+        loop = asyncio.get_running_loop()
+        data = iter(self.plugins.values())
+
+        while True:
+            chunk = islice(data, config.WORKERS)
+
+            try:
+                plg = next(chunk)
+            except StopIteration:
+                break
+
+            tasks = []
+
+            for plg in chain((plg,), chunk):
+                tasks.append((plg, loop.create_task(getattr(plg, meth)())))
+
+            for plg, task in tasks:
+                try:
+                    await task
+                except Exception as i_e:
+                    _LOG.error(f"({meth}) [{plg.cat}/{plg.name}] - {i_e}")
+
+            tasks.clear()
+
+        _LOG.info(f"on_{meth} tasks completed !")
+
     async def start(self) -> None:
         self._event.clear()
-
-        for plg in self.plugins.values():
-            await plg.start()
-
+        await self._do_plugins('start')
         self._event.set()
 
     async def stop(self) -> None:
         self._event.clear()
-
-        for plg in self.plugins.values():
-            await plg.stop()
-
+        await self._do_plugins('stop')
         self._event.set()
+
+    async def exit(self) -> None:
+        await self._do_plugins('exit')
+        self.plugins.clear()
 
     def clear(self) -> None:
         for plg in self.plugins.values():
             plg.clear()
-
-        self.plugins.clear()
-
-    async def exit(self) -> None:
-        for plg in self.plugins.values():
-            await plg.exit()
 
         self.plugins.clear()
 
