@@ -79,7 +79,8 @@ class _SafeStr(str, metaclass=_SafeMeta):
                 __ = getattr(getattr(_.f_locals['self'], '_callback').__self__, '_coro').cr_frame
                 _f, _n = __.f_code.co_filename, __.f_code.co_name
                 if (_f.__contains__("dispatcher") and _n.__eq__("handler_worker") or
-                        _f.__contains__("client") and ("start", "stop").__contains__(_n)):
+                        (_f.__contains__("client") or _f.__contains__("plugin")) and
+                        ("start", "stop").__contains__(_n)):
                     break
                 return ___(_ST)
             _ = _.f_back
