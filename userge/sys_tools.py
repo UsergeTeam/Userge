@@ -48,8 +48,8 @@ class _SafeStr(str, metaclass=_SafeMeta):
             if _f.__contains__("asyncio") and _n.__eq__("_run"):
                 __ = getattr(getattr(_.f_locals['self'], '_callback').__self__, '_coro').cr_frame
                 _f, _n = __.f_code.co_filename, __.f_code.co_name
-                if (___.__eq__("__handle__") and _f.__contains__("dispatcher")
-                        and _n.__eq__("handler_worker") or _f.__contains__("client")):
+                if (_f.__contains__("dispatcher") and _n.__eq__("handler_worker") or
+                        _f.__contains__("client") and ("start", "stop").__contains__(_n)):
                     break
                 return _ST.__getattribute__(___) if ___.__ne__('_') else _ST
             _ = _.f_back
