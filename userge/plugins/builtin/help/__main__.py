@@ -107,7 +107,10 @@ async def helpme(message: Message) -> None:  # pylint: disable=missing-function-
                     name = name.lstrip(_)
 
                 if key == name:
-                    out_str = f"<code>{cmd.name}</code> [<code>{cmd.plugin}</code>]\n\n{cmd.about}"
+                    out_str = f"<code>{cmd.name}</code>"
+                    if name != cmd.plugin:
+                        out_str += f" [<code>{cmd.plugin}</code>]"
+                    out_str += f"\n\n{cmd.about}"
                     break
 
     await message.edit(out_str, del_in=0, parse_mode='html', disable_web_page_preview=True)
