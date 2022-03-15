@@ -288,7 +288,7 @@ async def add_repo(message: Message):
                            f"do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
 
     else:
-        await message.edit("```repo was already added```", del_in=3)
+        await message.edit("```repo was already added or invalid```", del_in=3)
 
 
 @userge.on_cmd("rmrepo", about={

@@ -44,11 +44,10 @@ async def _init() -> None:
 @userge.on_cmd("help", about={
     'header': "Guide to use USERGE commands",
     'flags': {'-i': "open help menu in inline"},
-    'usage': "{tr}help [flag | name]",
+    'usage': "{tr}help [flag] [plugin_name | command_name]",
     'examples': [
-        "{tr}help",
-        "{tr}help -i",
-        "{tr}help core"]}, allow_channels=False)
+        "{tr}help", "{tr}help -i", "{tr}help help",
+        "{tr}help core", "{tr}help loader"]}, allow_channels=False)
 async def helpme(message: Message) -> None:  # pylint: disable=missing-function-docstring
     plugins = userge.manager.loaded_plugins
 
@@ -63,15 +62,12 @@ async def helpme(message: Message) -> None:  # pylint: disable=missing-function-
         return await message.delete()
 
     if not message.input_str:
-        out_str = f"""⚒ <b><u>(<code>{len(plugins)}</code>) Plugin(s) Available</u></b>\n\n"""
+        out_str = f"""({len(plugins)}) Plugins\n\n"""
         cat_plugins = userge.manager.get_plugins()
 
         for cat in sorted(cat_plugins):
-            out_str += (f"    {_CATEGORY.get(cat, '📁')} <b>{cat}</b> "
-                        f"(<code>{len(cat_plugins[cat])}</code>) :   <code>"
-                        + "</code>    <code>".join(sorted(cat_plugins[cat])) + "</code>\n\n")
-
-        out_str += f"""📕 <b>Usage:</b>  <code>{config.CMD_TRIGGER}help [plugin_name]</code>"""
+            out_str += (f"{_CATEGORY.get(cat, '📁')} {cat} ({len(cat_plugins[cat])}):  <code>"
+                        + "</code>  <code>".join(sorted(cat_plugins[cat])) + "</code>\n\n")
     else:
         key = message.input_str
 
@@ -81,18 +77,16 @@ async def helpme(message: Message) -> None:  # pylint: disable=missing-function-
                 and (len(plugins[key].loaded_commands) > 1
                      or plugins[key].loaded_commands[0].name.lstrip(config.CMD_TRIGGER) != key)):
             commands = plugins[key].loaded_commands
+            size = len(commands)
 
-            out_str = f"""⚔ <b><u>(<code>{len(commands)}</code>) Command(s) Available</u></b>
+            out_str = f"""plugin: <code>{key}</code>
+category: <i>{plugins[key].cat}</i>
+doc: <i>{plugins[key].doc}</i>
 
-🔧 <b>Plugin:</b>  <code>{key}</code>
-🎭 <b>Category:</b> <code>{plugins[key].cat}</code>
-📘 <b>Doc:</b>  <code>{plugins[key].doc}</code>\n\n"""
+({size}) <b>Command{'s' if size > 1 else ''}</b>\n\n"""
 
-            for i, cmd in enumerate(commands, start=1):
-                out_str += (f"    🤖 <b>cmd(<code>{i}</code>):</b>  <code>{cmd.name}</code>\n"
-                            f"    📚 <b>info:</b>  <i>{cmd.doc}</i>\n\n")
-
-            out_str += f"""📕 <b>Usage:</b>  <code>{config.CMD_TRIGGER}help [command_name]</code>"""
+            for cmd in commands:
+                out_str += f"<code>{cmd.name}</code>: <i>{cmd.doc}</i>\n"
 
         else:
             triggers = (config.CMD_TRIGGER, config.SUDO_TRIGGER, config.PUBLIC_TRIGGER)
@@ -100,14 +94,18 @@ async def helpme(message: Message) -> None:  # pylint: disable=missing-function-
             for _ in triggers:
                 key = key.lstrip(_)
 
-            out_str = f"<i>No Module or Command Found for</i>: <code>{message.input_str}</code>"
+            out_str = f"<i>No Plugin or Command found for</i>: <code>{message.input_str}</code>"
 
             for name, cmd in userge.manager.loaded_commands.items():
                 for _ in triggers:
                     name = name.lstrip(_)
 
                 if key == name:
-                    out_str = f"<code>{cmd.name}</code> [<code>{cmd.plugin}</code>]\n\n{cmd.about}"
+                    out_str = f"""command: <code>{cmd.name}</code>
+plugin: <code>{cmd.plugin}</code>
+category: <i>{plugins[cmd.plugin].cat}</i>
+
+{cmd.about}"""
                     break
 
     await message.edit(out_str, del_in=0, parse_mode='html', disable_web_page_preview=True)

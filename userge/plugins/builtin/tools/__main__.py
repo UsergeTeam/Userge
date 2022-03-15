@@ -157,14 +157,17 @@ async def search(message: Message):
 @userge.on_cmd("logs", about={
     'header': "check userge logs",
     'flags': {
-        '-h': "get heroku logs",
-        '-l': "heroku logs lines limit : default 100"}}, allow_channels=False)
+        '-h': "get heroku logs (default limit 100)",
+        '-l': "get loader logs"},
+    'examples': [
+        "{tr}logs", "{tr}logs -h", "{tr}logs -h200", "{tr}logs -l"]
+}, allow_channels=False)
 async def check_logs(message: Message):
     """ check logs """
     await message.edit("`checking logs ...`")
 
     if '-h' in message.flags and config.HEROKU_APP:
-        limit = int(message.flags.get('-l', 100))
+        limit = int(message.flags.get('-h') or 100)
         logs = await pool.run_in_thread(config.HEROKU_APP.get_log)(lines=limit)
 
         await message.client.send_as_file(chat_id=message.chat.id,
@@ -172,9 +175,10 @@ async def check_logs(message: Message):
                                           filename='userge-heroku.log',
                                           caption=f'userge-heroku.log [ {limit} lines ]')
     else:
+        filename = f"{'loader' if '-l' in message.flags else 'userge'}.log"
         await message.client.send_document(chat_id=message.chat.id,
-                                           document="logs/userge.log",
-                                           caption='userge.log')
+                                           document=f"logs/{filename}",
+                                           caption=filename)
     await message.delete()
 
 
