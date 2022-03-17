@@ -31,7 +31,6 @@ _CATEGORY = {
     'misc': '💎'
 }
 SAVED_SETTINGS = get_collection("CONFIGS")
-PRVT_MSGS = {}
 
 
 @userge.on_start
@@ -79,9 +78,9 @@ async def helpme(message: Message) -> None:  # pylint: disable=missing-function-
             commands = plugins[key].loaded_commands
             size = len(commands)
 
-            out_str = f"""plugin: <code>{key}</code>
-category: <i>{plugins[key].cat}</i>
-doc: <i>{plugins[key].doc}</i>
+            out_str = f"""<b>plugin</b>: <code>{key}</code>
+<b>category</b>: <i>{plugins[key].cat}</i>
+<b>doc</b>: <i>{plugins[key].doc}</i>
 
 ({size}) <b>Command{'s' if size > 1 else ''}</b>\n\n"""
 
@@ -101,9 +100,9 @@ doc: <i>{plugins[key].doc}</i>
                     name = name.lstrip(_)
 
                 if key == name:
-                    out_str = f"""command: <code>{cmd.name}</code>
-plugin: <code>{cmd.plugin}</code>
-category: <i>{plugins[cmd.plugin].cat}</i>
+                    out_str = f"""<b>command</b>: <code>{cmd.name}</code>
+<b>plugin</b>: <code>{cmd.plugin}</code>
+<b>category</b>: <i>{plugins[cmd.plugin].cat}</i>
 
 {cmd.about}"""
                     break
@@ -277,22 +276,6 @@ if userge.has_bot:
         await callback_query.edit_message_text(
             text, reply_markup=InlineKeyboardMarkup(buttons))
 
-    @userge.bot.on_callback_query(filters=filters.regex(pattern=r"prvtmsg\((.+)\)"))
-    async def prvt_msg(_, c_q: CallbackQuery):
-        msg_id = str(c_q.matches[0].group(1))
-
-        if msg_id not in PRVT_MSGS:
-            await c_q.answer("message now outdated !", show_alert=True)
-            return
-
-        user_id, flname, msg = PRVT_MSGS[msg_id]
-
-        if c_q.from_user.id == user_id or c_q.from_user.id in config.OWNER_ID:
-            await c_q.answer(msg, show_alert=True)
-        else:
-            await c_q.answer(
-                f"Only {flname} can see this Private Msg... 😔", show_alert=True)
-
     def is_filter(name: str) -> bool:
         split_ = name.split('.')
 
@@ -412,6 +395,7 @@ if userge.has_bot:
         if hasattr(flt, 'about'):
             text = f"""⚔ **--Command Status--**
 {flt_data}
+
 {flt.about}
 """
         else:
@@ -474,38 +458,7 @@ if userge.has_bot:
                 )
             )
 
-            if '-' in inline_query.query:
-                _id, msg = inline_query.query.split('-', maxsplit=1)
-                if not msg:
-                    return
-
-                if not msg.strip().endswith(':'):
-                    return
-
-                try:
-                    user = await userge.get_users(_id.strip())
-                except Exception:  # pylint: disable=broad-except
-                    return
-
-                PRVT_MSGS[inline_query.id] = (user.id, user.first_name, msg.strip(': '))
-
-                prvte_msg = [[InlineKeyboardButton(
-                    "Show Message 🔐", callback_data=f"prvtmsg({inline_query.id})")]]
-
-                msg_c = f"🔒 A **private message** to {'@' + user.username}, "
-                msg_c += "Only he/she can open it."
-
-                results.append(
-                    InlineQueryResultArticle(
-                        id=uuid4(),
-                        title=f"A Private Msg to {user.first_name}",
-                        input_message_content=InputTextMessageContent(msg_c),
-                        description="Only he/she can open it",
-                        thumb_url="https://imgur.com/download/Inyeb1S",
-                        reply_markup=InlineKeyboardMarkup(prvte_msg)
-                    )
-                )
-            elif "msg.err" in inline_query.query:
+            if "msg.err" in inline_query.query:
                 if ' ' not in inline_query.query:
                     return
 
