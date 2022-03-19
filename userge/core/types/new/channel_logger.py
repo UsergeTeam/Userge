@@ -71,7 +71,8 @@ class ChannelLogger:
             string = _gen_string(name)
         try:
             msg = await self._client.send_message(chat_id=self._id,
-                                                  text=string.format(text.strip()))
+                                                  text=string.format(text.strip()),
+                                                  disable_web_page_preview=True)
         except MessageTooLong:
             msg = await self._client.send_as_file(chat_id=self._id,
                                                   text=string.format(text.strip()),
