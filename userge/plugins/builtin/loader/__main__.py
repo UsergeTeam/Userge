@@ -69,7 +69,7 @@ async def core(message: Message):
 
         out = _updates_to_str(updates)
         await message.edit_or_send_as_file(
-            f"**{len(updates)}** old commits for core repo\n\n{out}",
+            f"**{len(updates)}** old commits of core repo\n\n{out}",
             del_in=0, disable_web_page_preview=True)
 
     elif set_branch or set_version:
@@ -205,7 +205,7 @@ async def repos(message: Message):
 
             out = _updates_to_str(updates)
             await message.edit_or_send_as_file(
-                f"{len(updates)} new commits available for repo: {repo_id}\n\n{out}",
+                f"**{len(updates)}** new commits available for repo: `{repo_id}`\n\n{out}",
                 del_in=0, disable_web_page_preview=True)
 
         elif get_old:
@@ -217,7 +217,7 @@ async def repos(message: Message):
 
             out = _updates_to_str(updates)
             await message.edit_or_send_as_file(
-                f"{len(updates)} old commits for repo: {repo_id}\n\n{out}",
+                f"**{len(updates)}** old commits of repo: `{repo_id}`\n\n{out}",
                 del_in=0, disable_web_page_preview=True)
 
         elif set_branch or set_version or set_priority:
