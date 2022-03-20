@@ -315,6 +315,8 @@ class Message(RawMessage):
                     disable_web_page_preview: Optional[bool] = None,
                     disable_notification: Optional[bool] = None,
                     reply_to_message_id: Optional[int] = None,
+                    schedule_date: Optional[int] = None,
+                    protect_content: Optional[bool] = None,
                     reply_markup: InlineKeyboardMarkup = None) -> Union['Message', bool]:
         """\nExample:
                 message.reply("hello")
@@ -358,6 +360,12 @@ class Message(RawMessage):
             reply_to_message_id (``int``, *optional*):
                 If the message is a reply, ID of the original message.
 
+            schedule_date (``int``, *optional*):
+                Date when the message will be automatically sent. Unix time.
+
+            protect_content (``bool``, *optional*):
+                Protects the contents of the sent message from forwarding and saving.
+
             reply_markup (:obj:`InlineKeyboardMarkup`
             | :obj:`ReplyKeyboardMarkup` | :obj:`ReplyKeyboardRemove`
             | :obj:`ForceReply`, *optional*):
@@ -386,6 +394,8 @@ class Message(RawMessage):
                                                disable_web_page_preview=disable_web_page_preview,
                                                disable_notification=disable_notification,
                                                reply_to_message_id=reply_to_message_id,
+                                               schedule_date=schedule_date,
+                                               protect_content=protect_content,
                                                reply_markup=reply_markup)
 
     reply_text = reply

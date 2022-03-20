@@ -35,7 +35,7 @@ class SendMessage(RawClient):  # pylint: disable=missing-class-docstring
                            disable_notification: Optional[bool] = None,
                            reply_to_message_id: Optional[int] = None,
                            schedule_date: Optional[int] = None,
-                           protect_content: bool = None,
+                           protect_content: Optional[bool] = None,
                            reply_markup: Union[InlineKeyboardMarkup,
                                                ReplyKeyboardMarkup,
                                                ReplyKeyboardRemove,
