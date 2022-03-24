@@ -1,4 +1,4 @@
-# pylint: disable=missing-module-docstring,E501
+# pylint: disable=missing-module-docstring
 #
 # Copyright (C) 2020-2022 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
@@ -7,6 +7,9 @@
 # Please see < https://github.com/UsergeTeam/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
+#
+# noqa
+# skipcq
 
 __all__ = ['Send']
 
