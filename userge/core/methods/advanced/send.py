@@ -1,4 +1,4 @@
-# pylint: disable=missing-module-docstring, line-too-long
+# pylint: disable=missing-module-docstring,E501
 #
 # Copyright (C) 2020-2022 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
