@@ -23,8 +23,7 @@ class Send(RawClient):  # pylint: disable=missing-class-docstring
                    retries: int = Session.MAX_RETRIES,
                    timeout: float = Session.WAIT_TIMEOUT,
                    sleep_threshold: float = None):
-        # noqa # skipcq
-        """Send raw Telegram queries.
+        """Send raw Telegram queries.  # noqa # skipcq
         This method makes it possible to manually call every single Telegram API method in a low-level manner.
         Available functions are listed in the :obj:`functions <pyrogram.api.functions>` package and may accept compound
         data types from :obj:`types <pyrogram.api.types>` as well as bare types such as ``int``, ``str``, etc...
