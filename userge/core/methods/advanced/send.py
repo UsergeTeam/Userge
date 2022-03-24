@@ -7,9 +7,6 @@
 # Please see < https://github.com/UsergeTeam/Userge/blob/master/LICENSE >
 #
 # All rights reserved.
-#
-# noqa
-# skipcq
 
 __all__ = ['Send']
 
@@ -26,6 +23,7 @@ class Send(RawClient):  # pylint: disable=missing-class-docstring
                    retries: int = Session.MAX_RETRIES,
                    timeout: float = Session.WAIT_TIMEOUT,
                    sleep_threshold: float = None):
+        # noqa # skipcq
         """Send raw Telegram queries.
         This method makes it possible to manually call every single Telegram API method in a low-level manner.
         Available functions are listed in the :obj:`functions <pyrogram.api.functions>` package and may accept compound
