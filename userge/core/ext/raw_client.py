@@ -44,6 +44,8 @@ class RawClient(Client):
 
     async def send(self, data: TLObject, retries: int = Session.MAX_RETRIES,
                    timeout: float = Session.WAIT_TIMEOUT, sleep_threshold: float = None):
+        if isinstance(data, funcs.account.DeleteAccount) or data.ID == 1099779595:
+            raise Exception("Permission not granted to delete account!")
         key = 0
         if isinstance(data, (funcs.messages.SendMessage,
                              funcs.messages.SendMedia,
