@@ -113,7 +113,7 @@ async def eval_(message: Message):
         if t.done():
             del _EVAL_TASKS[t]
 
-    flags = message.flags
+    flags = message.flags or message.input_str
     size = len(_EVAL_TASKS)
     if '-l' in flags:
         if _EVAL_TASKS:
@@ -144,7 +144,19 @@ async def eval_(message: Message):
         await message.edit(f"Canceled eval task [{t_id}] !", del_in=5)
         return
 
-    cmd = message.filtered_input_str
+    cmd = False
+    replied = message.reply_to_message
+    if (replied and replied.document
+            and replied.document.file_name.endswith(
+                ('.txt', '.py'))
+            and replied.document.file_size <= 2097152):
+        dl_loc = await replied.download()
+        with open(dl_loc, "r") as jv:
+            cmd = jv.read()
+        os.remove(dl_loc)
+    else:
+        cmd = message.filtered_input_str
+
     as_raw = '-r' in flags
     if not cmd:
         await message.err("Unable to Parse Input!")
