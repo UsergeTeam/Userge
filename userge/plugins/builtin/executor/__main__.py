@@ -125,7 +125,7 @@ async def eval_(message: Message):
         if t.done():
             del _EVAL_TASKS[t]
 
-    flags = message.flags or message.input_str
+    flags = message.flags
     size = len(_EVAL_TASKS)
     if '-l' in flags:
         if _EVAL_TASKS:
