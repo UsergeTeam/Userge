@@ -47,7 +47,18 @@ CHANNEL = userge.getCLogger()
 
 def input_checker(func: Callable[[Message], Awaitable[Any]]):
     async def wrapper(message: Message) -> None:
-        cmd = message.input_str
+        cmd = False
+        replied = message.reply_to_message
+        if (replied and replied.document
+                and replied.document.file_name.endswith(
+                    ('.txt', '.py'))
+                and replied.document.file_size <= 2097152):
+            dl_loc = await replied.download()
+            with open(dl_loc, "r") as jv:
+                cmd = jv.read()
+            os.remove(dl_loc)
+        else:
+            cmd = message.input_str
         if not cmd:
             await message.err("No Command Found!")
             return
