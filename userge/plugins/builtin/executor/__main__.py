@@ -49,7 +49,7 @@ def input_checker(func: Callable[[Message], Awaitable[Any]]):
     async def wrapper(message: Message) -> None:
         cmd = False
         replied = message.reply_to_message
-        if (func.__name__ == "_eval"
+        if (func.__name__ == "eval_"
                 and replied and replied.document
                 and replied.document.file_name.endswith(
                     ('.txt', '.py'))
