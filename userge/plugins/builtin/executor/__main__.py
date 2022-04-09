@@ -49,7 +49,8 @@ def input_checker(func: Callable[[Message], Awaitable[Any]]):
     async def wrapper(message: Message) -> None:
         cmd = False
         replied = message.reply_to_message
-        if (replied and replied.document
+        if (func.__name__ == "_eval"
+                and replied and replied.document
                 and replied.document.file_name.endswith(
                     ('.txt', '.py'))
                 and replied.document.file_size <= 2097152):
@@ -165,6 +166,10 @@ async def eval_(message: Message):
         os.remove(dl_loc)
     else:
         cmd = message.filtered_input_str
+
+    if "config.env" in cmd:
+        await message.edit("`That's a dangerous operation! Not Permitted!`")
+        return
 
     as_raw = '-r' in flags
     if not cmd:
