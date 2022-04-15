@@ -15,7 +15,7 @@ import shlex
 from os.path import basename, join, exists
 from typing import Tuple, List, Optional, Iterator, Union, Any
 
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, User
 
 import userge
 
@@ -194,7 +194,7 @@ def is_command(cmd: str) -> bool:
     return is_cmd
 
 
-def extract_entities(message: Message, typeofentity: List[str]) -> List[str]:
+def extract_entities(message: Message, typeofentity: List[str]) -> List[Union[str, User]]:
     """ gets a message and returns a list of entity_type in the message
     """
     tero = []
