@@ -633,7 +633,7 @@ class Message(RawMessage):
                 await self.delete()
                 msg_obj = await self._client.send_inline_bot_result(
                     self.chat.id, query_id=k.query_id,
-                    result_id=k.results[2].id, hide_via=True
+                    result_id=k.results[2].id
                 )
             except (IndexError, BotInlineDisabled):
                 del_in = del_in if del_in > 0 else _ERROR_MSG_DELETE_TIMEOUT
@@ -746,7 +746,7 @@ class Message(RawMessage):
                     await self.delete()
                     msg_obj = await self._client.send_inline_bot_result(
                         self.chat.id, query_id=k.query_id,
-                        result_id=k.results[2].id, hide_via=True
+                        result_id=k.results[2].id
                     )
                 except (IndexError, BotInlineDisabled):
                     del_in = del_in if del_in > 0 else _ERROR_MSG_DELETE_TIMEOUT
