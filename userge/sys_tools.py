@@ -16,6 +16,9 @@ from os import environ
 from typing import Dict, Optional
 
 
+_CACHE: Dict[str, str] = {}
+
+
 def secured_env(key: str, default: Optional[str] = None) -> Optional[str]:
     """ get secured env """
     if not key:
@@ -24,12 +27,14 @@ def secured_env(key: str, default: Optional[str] = None) -> Optional[str]:
     try:
         value = environ.pop(key)
     except KeyError:
+        if key in _CACHE:
+            return _CACHE[key]
         value = default
 
     ret: Optional[str] = None
 
     if value:
-        ret = secured_str(value)
+        ret = _CACHE[key] = secured_str(value)
 
     return ret
 
@@ -38,6 +43,9 @@ def secured_str(value: str) -> str:
     """ get secured string """
     if not value:
         raise ValueError
+
+    if isinstance(value, _SafeStr):
+        return value
 
     ret = _SafeStr(_ST)
     ret._ = value
