@@ -11,6 +11,7 @@
 import asyncio
 import io
 import keyword
+import os
 import re
 import shlex
 import sys
@@ -20,6 +21,9 @@ from contextlib import contextmanager
 from enum import Enum
 from getpass import getuser
 from typing import Awaitable, Any, Callable, Dict, Optional, Tuple, Iterable
+
+import aiofiles
+
 try:
     from os import geteuid, setsid, getpgid, killpg
     from signal import SIGKILL
@@ -46,6 +50,17 @@ CHANNEL = userge.getCLogger()
 
 def input_checker(func: Callable[[Message], Awaitable[Any]]):
     async def wrapper(message: Message) -> None:
+        replied = message.reply_to_message
+        if (func.__name__ == "eval_"
+                and replied and replied.document
+                and replied.document.file_name.endswith(('.txt', '.py'))
+                and replied.document.file_size <= 2097152):
+
+            dl_loc = await replied.download()
+            async with aiofiles.open(dl_loc) as jv:
+                message.text += " " + await jv.read()
+            os.remove(dl_loc)
+
         cmd = message.input_str
         if not cmd:
             await message.err("No Command Found!")
@@ -114,42 +129,58 @@ async def eval_(message: Message):
             del _EVAL_TASKS[t]
 
     flags = message.flags
-    size = len(_EVAL_TASKS)
-    if '-l' in flags:
-        if _EVAL_TASKS:
-            out = "**Eval Tasks**\n\n"
-            i = 0
-            for c in _EVAL_TASKS.values():
-                out += f"**{i}** - `{c}`\n"
-                i += 1
-            out += f"\nuse `{config.CMD_TRIGGER}eval -c[id]` to Cancel"
-            await message.edit(out)
-        else:
-            await message.edit("No running eval tasks !", del_in=5)
-        return
-    if ('-c' in flags or '-ca' in flags) and size == 0:
-        await message.edit("No running eval tasks !", del_in=5)
-        return
-    if '-ca' in flags:
-        for t in _EVAL_TASKS:
-            t.cancel()
-        await message.edit(f"Canceled all running eval tasks [{size}] !", del_in=5)
-        return
-    if '-c' in flags:
-        t_id = int(flags.get('-c', -1))
-        if t_id < 0 or t_id >= size:
-            await message.edit(f"Invalid eval task id [{t_id}] !", del_in=5)
+
+    if flags:
+        if '-l' in flags:
+            if _EVAL_TASKS:
+                out = "**Eval Tasks**\n\n"
+                i = 0
+                for c in _EVAL_TASKS.values():
+                    out += f"**{i}** - `{c}`\n"
+                    i += 1
+                out += f"\nuse `{config.CMD_TRIGGER}eval -c[id]` to Cancel"
+                await message.edit(out)
+            else:
+                await message.edit("No running eval tasks !", del_in=5)
             return
-        list(_EVAL_TASKS)[t_id].cancel()
-        await message.edit(f"Canceled eval task [{t_id}] !", del_in=5)
-        return
+
+        size = len(_EVAL_TASKS)
+
+        if ('-c' in flags or '-ca' in flags) and size == 0:
+            await message.edit("No running eval tasks !", del_in=5)
+            return
+
+        if '-ca' in flags:
+            for t in _EVAL_TASKS:
+                t.cancel()
+            await message.edit(f"Canceled all running eval tasks [{size}] !", del_in=5)
+            return
+
+        if '-c' in flags:
+            t_id = int(flags.get('-c', -1))
+            if t_id < 0 or t_id >= size:
+                await message.edit(f"Invalid eval task id [{t_id}] !", del_in=5)
+                return
+            tuple(_EVAL_TASKS)[t_id].cancel()
+            await message.edit(f"Canceled eval task [{t_id}] !", del_in=5)
+            return
 
     cmd = message.filtered_input_str
-    as_raw = '-r' in flags
     if not cmd:
         await message.err("Unable to Parse Input!")
         return
 
+    msg = message
+    replied = message.reply_to_message
+    if (replied and replied.from_user
+            and replied.from_user.is_self and isinstance(replied.text, Str)
+            and str(replied.text.html).startswith("<b>></b> <pre>")):
+        msg = replied
+
+    await msg.edit("`Executing eval ...`", parse_mode='md')
+
+    is_file = replied and replied.document
+    as_raw = '-r' in flags
     silent_mode = '-s' in flags
     if '-n' in flags:
         context_type = _ContextType.NEW
@@ -161,7 +192,7 @@ async def eval_(message: Message):
     async def _callback(output: Optional[str], errored: bool):
         final = ""
         if not silent_mode:
-            final += f"**>** ```{cmd}```\n\n"
+            final += f"**>** {replied.link if is_file else f'```{cmd}```'}\n\n"
         if isinstance(output, str):
             output = output.strip()
             if output == '':
@@ -179,15 +210,6 @@ async def eval_(message: Message):
                                            caption=cmd)
         else:
             await msg.delete()
-
-    msg = message
-    replied = message.reply_to_message
-    if (replied and replied.from_user
-            and replied.from_user.is_self and isinstance(replied.text, Str)
-            and str(replied.text.html).startswith("<b>></b> <pre>")):
-        msg = replied
-
-    await msg.edit("`Executing eval ...`", parse_mode='md')
 
     _g, _l = _context(
         context_type, userge=userge, message=message, replied=message.reply_to_message)
