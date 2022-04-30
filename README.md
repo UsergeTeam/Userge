@@ -49,9 +49,9 @@
 
 > Special Thanks to all of you !!!.
 
-## [Documentation](http://theuserge.tech) 📘
+## [Documentation](https://theuserge.github.io) 📘
 
-## [Deployment](http://theuserge.tech/deployment) 👷
+## [Deployment](https://theuserge.github.io/deployment) 👷
 
 ## [Plugins](https://github.com/UsergeTeam/Userge-Plugins) 🔌
 
