@@ -206,6 +206,7 @@ async def eval_(message: Message):
             await msg.edit_or_send_as_file(text=final,
                                            as_raw=as_raw,
                                            parse_mode='md',
+                                           disable_web_page_preview=True,
                                            filename="eval.txt",
                                            caption=cmd)
         else:
