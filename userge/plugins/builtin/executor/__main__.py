@@ -58,7 +58,7 @@ def input_checker(func: Callable[[Message], Awaitable[Any]]):
 
             dl_loc = await replied.download()
             async with aiofiles.open(dl_loc) as jv:
-                message.text += await jv.read()
+                message.text += " " + await jv.read()
             os.remove(dl_loc)
 
         cmd = message.input_str
@@ -170,6 +170,16 @@ async def eval_(message: Message):
         await message.err("Unable to Parse Input!")
         return
 
+    msg = message
+    replied = message.reply_to_message
+    if (replied and replied.from_user
+            and replied.from_user.is_self and isinstance(replied.text, Str)
+            and str(replied.text.html).startswith("<b>></b> <pre>")):
+        msg = replied
+
+    await msg.edit("`Executing eval ...`", parse_mode='md')
+
+    is_file = replied and replied.document
     as_raw = '-r' in flags
     silent_mode = '-s' in flags
     if '-n' in flags:
@@ -182,7 +192,7 @@ async def eval_(message: Message):
     async def _callback(output: Optional[str], errored: bool):
         final = ""
         if not silent_mode:
-            final += f"**>** ```{cmd}```\n\n"
+            final += f"**>** {replied.link if is_file else f'```{cmd}```'}\n\n"
         if isinstance(output, str):
             output = output.strip()
             if output == '':
@@ -200,15 +210,6 @@ async def eval_(message: Message):
                                            caption=cmd)
         else:
             await msg.delete()
-
-    msg = message
-    replied = message.reply_to_message
-    if (replied and replied.from_user
-            and replied.from_user.is_self and isinstance(replied.text, Str)
-            and str(replied.text.html).startswith("<b>></b> <pre>")):
-        msg = replied
-
-    await msg.edit("`Executing eval ...`", parse_mode='md')
 
     _g, _l = _context(
         context_type, userge=userge, message=message, replied=message.reply_to_message)
