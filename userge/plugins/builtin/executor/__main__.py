@@ -115,7 +115,7 @@ _EVAL_TASKS: Dict[asyncio.Future, str] = {}
         '-c': "cancel specific running eval task",
         '-ca': "cancel all running eval tasks"
     },
-    'usage': "{tr}eval [flag] [code lines]",
+    'usage': "{tr}eval [flag] [code lines OR reply to .txt | .py file]",
     'examples': [
         "{tr}eval print('Userge')", "{tr}eval -s print('Userge')",
         "{tr}eval 5 + 6", "{tr}eval -s 5 + 6",
