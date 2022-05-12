@@ -170,7 +170,7 @@ async def delvar_(message: Message) -> None:
     var_name = message.input_str.strip()
     var_data = system.get_env(var_name)
 
-    if var_data:
+    if not var_data:
         await message.err(f"`var {var_name} not found!`")
         return
 
