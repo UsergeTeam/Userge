@@ -1,5 +1,5 @@
 dnspython
-heroku3
+gitpython
 motor
 pyrogram==1.4.16
-tgcrypto
+python-dotenv

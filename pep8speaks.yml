@@ -1,0 +1,15 @@
+# File : .pep8speaks.yml
+
+scanner:
+    linter: flake8
+
+flake8:
+    max-line-length: 100
+    ignore:
+        - W503  # line break before binary operator
+
+message:
+    opened:
+        header: "@{name}, Thanks for opening this PR."
+    updated:
+        header: "@{name}, Thanks for updating this PR."
