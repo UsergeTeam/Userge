@@ -1,6 +1,5 @@
 version: "3.9"
 services:
-  worker:
     build: .
     environment:
       REDIS_URI: $REDIS_URI
