@@ -1,35 +1,70 @@
-# Loader
+<p align="center">
+    <a href="https://github.com/UsergeTeam/Userge">
+        <img src="https://telegra.ph/file/f3aed2f6f2d4a1ad7831d.png" alt="Userge">
+    </a>
+    <br>
+    <b>Pluggable Telegram UserBot</b>
+    <br>
+    <a href="https://github.com/UsergeTeam/Userge#inspiration-">Inspiration</a>
+    &nbsp•&nbsp
+    <a href="https://github.com/UsergeTeam/Userge#documentation-">Documentation</a>
+    &nbsp•&nbsp
+    <a href="https://github.com/UsergeTeam/Userge#deployment-">Deployment</a>
+    &nbsp•&nbsp
+    <a href="https://github.com/UsergeTeam/Userge#project-credits-">Project Credits</a>
+    &nbsp•&nbsp
+    <a href="https://github.com/UsergeTeam/Userge#copyright--license-">Copyright & License</a>
+</p>
 
-This project helps to manage unlimited plugins repos with one [core repo](https://github.com/UsergeTeam/Userge).
+# Userge 🔥
 
-## Main Features
+[![Build Status](https://travis-ci.com/UsergeTeam/Userge.svg?branch=alpha)](https://travis-ci.com/UsergeTeam/Userge)
+![Python Version](https://img.shields.io/badge/python-3.8/3.9-lightgrey)
+![Release](https://img.shields.io/github/v/release/UsergeTeam/Userge)
+![Stars](https://img.shields.io/github/stars/UsergeTeam/Userge)
+![Forks](https://img.shields.io/github/forks/UsergeTeam/Userge)
+![Issues Open](https://img.shields.io/github/issues/UsergeTeam/Userge)
+![Issues Closed](https://img.shields.io/github/issues-closed/UsergeTeam/Userge)
+![PRs Open](https://img.shields.io/github/issues-pr/UsergeTeam/Userge)
+![PRs Closed](https://img.shields.io/github/issues-pr-closed/UsergeTeam/Userge)
+![Contributors](https://img.shields.io/github/contributors/UsergeTeam/Userge)
+![Repo Size](https://img.shields.io/github/repo-size/UsergeTeam/Userge)
+![License](https://img.shields.io/github/license/UsergeTeam/Userge)
+![Commit Activity](https://img.shields.io/github/commit-activity/m/UsergeTeam/Userge)
+[![Plugins Repo!](https://img.shields.io/badge/Plugins%20Repo-!-orange)](https://github.com/UsergeTeam/Userge-Plugins)
+[![Join Channel!](https://img.shields.io/badge/Join%20Channel-!-red)](https://t.me/theUserge)
+[![DeepSource](https://static.deepsource.io/deepsource-badge-light-mini.svg)](https://deepsource.io/gh/UsergeTeam/Userge/?ref=repository-badge)
+[![Gitpod ready-to-code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/UsergeTeam/Userge)
 
-* optimized plugins structure
-* unlimited public and private plugins repos support
-* custom core repo support
-* priority handling
-* version controlling
-* branch switching
-* better control via config file
-* only installs required requirements
-* plugins conflict handling
-* auto requirements conflict resolver
-* constraints support (include/exclude/in)
-* recovery menu to reset crashed state
-* both windows and linux support
-* optimized boot time
+> **Userge** is a Powerful , _Pluggable_ Telegram UserBot written in _Python_ using [Pyrogram](https://github.com/pyrogram/pyrogram).
 
-## Plugins Repo Template
+## Inspiration 😇
 
-you can fork and edit or refer our [official plugins repo](https://github.com/UsergeTeam/Userge-Plugins)
-to get familiar with the new structure.
-Also, you can check [custom plugins repo](https://github.com/UsergeTeam/Custom-Plugins) to get a better idea.
+> This project is inspired by the following projects :)
 
-## Custom Core Repo
+* [tg_userbot](https://github.com/watzon/tg_userbot) ( heavily ) 🤗
+* [PyroGramBot](https://github.com/SpEcHiDe/PyroGramBot)
+* [Telegram-Paperplane](https://github.com/RaphielGang/Telegram-Paperplane)
+* [UniBorg](https://github.com/SpEcHiDe/UniBorg)
 
-set these env vars
+> Special Thanks to all of you !!!.
 
-* `CORE_REPO` - repo url (default | https://github.com/UsergeTeam/Userge)
-* `CORE_BRANCH` - branch name (default | master)
+## [Documentation](https://theuserge.github.io) 📘
 
-## [Docker Guide](https://github.com/UsergeTeam/Loader/blob/master/Docker.md)
+## [Deployment](https://theuserge.github.io/deployment) 👷
+
+## [Plugins](https://github.com/UsergeTeam/Userge-Plugins) 🔌
+
+### Support & Discussions 👥
+
+> Head over to the [Discussion Group](https://t.me/usergeot) and [Update Channel](https://t.me/theUserge)
+
+### Project Credits 💆‍♂️
+
+* [Specially to these projects](https://github.com/UsergeTeam/Userge#inspiration-) 🥰
+* [Contributors](https://github.com/UsergeTeam/Userge/graphs/contributors) 👥
+
+### Copyright & License 👮
+
+* Copyright (C) 2020 - 2022 by [UsergeTeam](https://github.com/UsergeTeam) ❤️️
+* Licensed under the terms of the [GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007](https://github.com/UsergeTeam/Userge/blob/master/LICENSE)
