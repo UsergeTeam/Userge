@@ -1,10 +1,8 @@
-version: "3.9"
+version: '3.4'
+
 services:
-  worker:
-    build: .
-    environment:
-      SESSION_STRING: $SESSION_STRING
-      API_ID: $API_ID  # defaults to None
-      API_HASH: $API_HASH  # defaults to None
-      MONGO_URI: $MONGO_URI  # defaults to None
-      DATABASE_URL: $DATABASE_URL  # defaults to None
+  UDameserge:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    restart: always
