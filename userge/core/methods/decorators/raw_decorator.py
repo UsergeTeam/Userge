@@ -182,31 +182,31 @@ async def _both_have_perm(flt: Union['types.raw.Command', 'types.raw.Filter'],
         return False
     
     if flt.check_change_info_perm and not ((
-            user.privileges and bot.privileges) or (
+            user.privileges and bot.privileges) and (
                 user.privileges.can_change_info and bot.privileges.can_change_info)):
         return False
     if flt.check_edit_perm and not ((
-            user.privileges and bot.privileges) or (
+            user.privileges and bot.privileges) and (
                 user.privileges.can_edit_messages and bot.privileges.can_edit_messages)):
         return False
     if flt.check_delete_perm and not ((
-            user.privileges and bot.privileges) or (
+            user.privileges and bot.privileges) and (
                 user.privileges.can_delete_messages and bot.privileges.can_delete_messages)):
         return False
     if flt.check_restrict_perm and not ((
-            user.privileges and bot.privileges) or (
+            user.privileges and bot.privileges) and (
                 user.privileges.can_restrict_members and bot.privileges.can_restrict_members)):
         return False
     if flt.check_promote_perm and not ((
-            user.privileges and bot.privileges) or (
+            user.privileges and bot.privileges) and (
                 user.privileges.can_promote_members and bot.privileges.can_promote_members)):
         return False
     if flt.check_invite_perm and not ((
-            user.privileges and bot.privileges) or (
+            user.privileges and bot.privileges) and (
                 user.privileges.can_invite_users and bot.privileges.can_invite_users)):
         return False
     if flt.check_pin_perm and not ((
-            user.privileges and bot.privileges) or (
+            user.privileges and bot.privileges) and (
                 user.privileges.can_pin_messages and bot.privileges.can_pin_messages)):
         return False
     return True
