@@ -71,7 +71,7 @@ class Filter:
     def parse(cls, filters: RawFilter, **kwargs: Union['_client.Userge', int, bool]) -> 'Filter':
         """ parse filter """
         # pylint: disable=protected-access
-        return cls(**Filter._parse(filters=filters & ~rawfilters.edited, **kwargs))
+        return cls(**Filter._parse(filters=filters, **kwargs))
 
     @staticmethod
     def _parse(allow_private: bool,

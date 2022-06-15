@@ -180,26 +180,34 @@ async def _both_have_perm(flt: Union['types.raw.Command', 'types.raw.Filter'],
         return False
     if user is None or bot is None:
         return False
-    if flt.check_change_info_perm and not (
-            user.privileges.can_change_info and bot.privileges.can_change_info):
+    
+    if flt.check_change_info_perm and not ((
+            user.privileges and bot.privileges) or (
+                user.privileges.can_change_info and bot.privileges.can_change_info)):
         return False
-    if flt.check_edit_perm and not (
-            user.privileges.can_edit_messages and bot.privileges.can_edit_messages):
+    if flt.check_edit_perm and not ((
+            user.privileges and bot.privileges) or (
+                user.privileges.can_edit_messages and bot.privileges.can_edit_messages)):
         return False
-    if flt.check_delete_perm and not (
-            user.privileges.can_delete_messages and bot.privileges.can_delete_messages):
+    if flt.check_delete_perm and not ((
+            user.privileges and bot.privileges) or (
+                user.privileges.can_delete_messages and bot.privileges.can_delete_messages)):
         return False
-    if flt.check_restrict_perm and not (
-            user.privileges.can_restrict_members and bot.privileges.can_restrict_members):
+    if flt.check_restrict_perm and not ((
+            user.privileges and bot.privileges) or (
+                user.privileges.can_restrict_members and bot.privileges.can_restrict_members)):
         return False
-    if flt.check_promote_perm and not (
-            user.privileges.can_promote_members and bot.privileges.can_promote_members):
+    if flt.check_promote_perm and not ((
+            user.privileges and bot.privileges) or (
+                user.privileges.can_promote_members and bot.privileges.can_promote_members)):
         return False
-    if flt.check_invite_perm and not (
-            user.privileges.can_invite_users and bot.privileges.can_invite_users):
+    if flt.check_invite_perm and not ((
+            user.privileges and bot.privileges) or (
+                user.privileges.can_invite_users and bot.privileges.can_invite_users)):
         return False
-    if flt.check_pin_perm and not (
-            user.privileges.can_pin_messages and bot.privileges.can_pin_messages):
+    if flt.check_pin_perm and not ((
+            user.privileges and bot.privileges) or (
+                user.privileges.can_pin_messages and bot.privileges.can_pin_messages)):
         return False
     return True
 
@@ -267,37 +275,37 @@ class RawDecorator(RawClient):
                             await _raise(f"`invalid chat type [{r_m.chat.type.name}]`")
                         return
                     if c_m.status != enums.ChatMemberStatus.OWNER:
-                        if flt.check_change_info_perm and not c_m.privileges.can_change_info:
+                        if flt.check_change_info_perm and not (c_m.privileges and c_m.privileges.can_change_info):
                             if isinstance(flt, types.raw.Command):
                                 await _raise("`required permission [change_info]`")
                             return
-                        if flt.check_edit_perm and not c_m.privileges.can_edit_messages:
+                        if flt.check_edit_perm and not (c_m.privileges and c_m.privileges.can_edit_messages):
                             if isinstance(flt, types.raw.Command):
                                 await _raise("`required permission [edit_messages]`")
                             return
-                        if flt.check_delete_perm and not c_m.privileges.can_delete_messages:
+                        if flt.check_delete_perm and not (c_m.privileges and c_m.privileges.can_delete_messages):
                             if isinstance(flt, types.raw.Command):
                                 await _raise("`required permission [delete_messages]`")
                             return
-                        if flt.check_restrict_perm and not c_m.privileges.can_restrict_members:
+                        if flt.check_restrict_perm and not (c_m.privileges and c_m.privileges.can_restrict_members):
                             if isinstance(flt, types.raw.Command):
                                 if is_admin:
                                     await _raise("`required permission [restrict_members]`")
                                 else:
                                     await _raise("`chat admin required`")
                             return
-                        if flt.check_promote_perm and not c_m.privileges.can_promote_members:
+                        if flt.check_promote_perm and not (c_m.privileges and c_m.privileges.can_promote_members):
                             if isinstance(flt, types.raw.Command):
                                 if is_admin:
                                     await _raise("`required permission [promote_members]`")
                                 else:
                                     await _raise("`chat admin required`")
                             return
-                        if flt.check_invite_perm and not c_m.privileges.can_invite_users:
+                        if flt.check_invite_perm and not (c_m.privileges and c_m.privileges.can_invite_users):
                             if isinstance(flt, types.raw.Command):
                                 await _raise("`required permission [invite_users]`")
                             return
-                        if flt.check_pin_perm and not c_m.privileges.can_pin_messages:
+                        if flt.check_pin_perm and not (c_m.privileges and c_m.privileges.can_pin_messages):
                             if isinstance(flt, types.raw.Command):
                                 await _raise("`required permission [pin_messages]`")
                             return
