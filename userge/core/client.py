@@ -22,7 +22,7 @@ from contextlib import suppress
 from types import ModuleType
 from typing import List, Awaitable, Any, Optional, Union
 
-from pyrogram import types
+from pyrogram import types, enums
 from pyrogram.methods import Methods as RawMethods
 
 from userge import logging, config
@@ -238,7 +238,7 @@ class _AbstractUserge(Methods, RawClient):
 class UsergeBot(_AbstractUserge):
     """ UsergeBot, the bot """
     def __init__(self, **kwargs) -> None:
-        super().__init__(session_name=":memory:", **kwargs)
+        super().__init__(name="usergeBot", **kwargs)
 
     @property
     def ubot(self) -> 'Userge':
@@ -264,8 +264,9 @@ class Userge(_AbstractUserge):
         if config.SESSION_STRING and config.BOT_TOKEN:
             RawClient.DUAL_MODE = True
             kwargs['bot'] = UsergeBot(bot=self, **kwargs)
-
-        kwargs['session_name'] = config.SESSION_STRING or ":memory:"
+        
+        kwargs['name'] = 'userge'
+        kwargs['session_string'] = config.SESSION_STRING or None
         super().__init__(**kwargs)
 
         if config.SESSION_STRING:

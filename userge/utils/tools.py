@@ -16,6 +16,7 @@ from os.path import basename, join, exists
 from typing import Tuple, List, Optional, Iterator, Union, Any
 
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, User
+from pyrogram import enums
 
 import userge
 
@@ -194,7 +195,7 @@ def is_command(cmd: str) -> bool:
     return is_cmd
 
 
-def extract_entities(message: Message, typeofentity: List[str]) -> List[Union[str, User]]:
+def extract_entities(message: Message, typeofentity: List[enums.MessageEntityType]) -> List[Union[str, User]]:
     """ gets a message and returns a list of entity_type in the message
     """
     tero = []
@@ -204,30 +205,30 @@ def extract_entities(message: Message, typeofentity: List[str]) -> List[Union[st
         url = None
         cet = entity.type
         if entity.type in [
-            "url",
-            "mention",
-            "hashtag",
-            "cashtag",
-            "bot_command",
-            "url",
-            "email",
-            "phone_number",
-            "bold",
-            "italic",
-            "underline",
-            "strikethrough",
-            "spoiler",
-            "code",
-            "pre",
+            enums.MessageEntityType.URL,
+            enums.MessageEntityType.MENTION,
+            enums.MessageEntityType.HASHTAG,
+            enums.MessageEntityType.CASHTAG,
+            enums.MessageEntityType.BOT_COMMAND,
+            enums.MessageEntityType.URL,
+            enums.MessageEntityType.EMAIL,
+            enums.MessageEntityType.PHONE_NUMBER,
+            enums.MessageEntityType.BOLD,
+            enums.MessageEntityType.ITALIC,
+            enums.MessageEntityType.UNDERLINE,
+            enums.MessageEntityType.STRIKETHROUGH,
+            enums.MessageEntityType.SPOILER,
+            enums.MessageEntityType.CODE,
+            enums.MessageEntityType.PRE,
         ]:
             offset = entity.offset
             length = entity.length
             url = text[offset:offset + length]
 
-        elif entity.type == "text_link":
+        elif entity.type == enums.MessageEntityType.TEXT_LINK:
             url = entity.url
 
-        elif entity.type == "text_mention":
+        elif entity.type == enums.MessageEntityType.TEXT_MENTION:
             url = entity.user
 
         if url and cet in typeofentity:

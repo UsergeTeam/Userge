@@ -12,7 +12,7 @@ from math import ceil
 from typing import List, Callable, Dict, Union, Any
 from uuid import uuid4
 
-from pyrogram import filters
+from pyrogram import filters, enums
 from pyrogram.errors.exceptions.bad_request_400 import MessageNotModified, MessageIdInvalid
 from pyrogram.types import (
     InlineQueryResultArticle, InputTextMessageContent,
@@ -106,7 +106,7 @@ async def helpme(message: Message) -> None:  # pylint: disable=missing-function-
 {cmd.about}"""
                     break
 
-    await message.edit(out_str, del_in=0, parse_mode='html', disable_web_page_preview=True)
+    await message.edit(out_str, del_in=0, parse_mode=enums.ParseMode.HTML, disable_web_page_preview=True)
 
 
 if userge.has_bot:
@@ -151,7 +151,7 @@ if userge.has_bot:
         else:
             out_str = f"<i>No Command Found for</i>: <code>{cmd}</code>"
 
-        await msg.reply(out_str, parse_mode='html', disable_web_page_preview=True)
+        await msg.reply(out_str, parse_mode=enums.ParseMode.HTML, disable_web_page_preview=True)
 
     @userge.bot.on_callback_query(filters=filters.regex(pattern=r"\((.+)\)(next|prev)\((\d+)\)"))
     @check_owner

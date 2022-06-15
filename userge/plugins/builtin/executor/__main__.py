@@ -41,6 +41,7 @@ except ImportError:
     setsid = None
 
 from pyrogram.types.messages_and_media.message import Str
+from pyrogram import enums
 
 from userge import userge, Message, config, pool
 from userge.utils import runcmd
@@ -99,7 +100,7 @@ __Command:__\n`{cmd}`\n__PID:__\n`{pid}`\n__RETURN:__\n`{ret}`\n\n\
 **stderr:**\n`{err or 'no error'}`\n\n**stdout:**\n``{out or 'no output'}`` "
     await message.edit_or_send_as_file(text=output,
                                        as_raw=as_raw,
-                                       parse_mode='md',
+                                       parse_mode=enums.ParseMode.MARKDOWN,
                                        filename="exec.txt",
                                        caption=cmd)
 
@@ -181,7 +182,7 @@ async def eval_(message: Message):
             and str(replied.text.html).startswith("<b>></b> <pre>")):
         msg = replied
 
-    await msg.edit("`Executing eval ...`", parse_mode='md')
+    await msg.edit("`Executing eval ...`", parse_mode=enums.ParseMode.MARKDOWN)
 
     is_file = replied and replied.document and flags.get("file")
     as_raw = '-r' in flags
@@ -203,13 +204,13 @@ async def eval_(message: Message):
                 output = None
         if output is not None:
             final += f"**>>** ```{output}```"
-        if errored and message.chat.type in ("group", "supergroup", "channel"):
+        if errored and message.chat.type in (enums.ChatType.GROUP, enums.ChatType.SUPERGROUP, enums.ChatType.CHANNEL):
             msg_id = await CHANNEL.log(final)
             await msg.edit(f"**Logs**: {CHANNEL.get_link(msg_id)}")
         elif final:
             await msg.edit_or_send_as_file(text=final,
                                            as_raw=as_raw,
-                                           parse_mode='md',
+                                           parse_mode=enums.ParseMode.MARKDOWN,
                                            disable_web_page_preview=True,
                                            filename="eval.txt",
                                            caption=cmd)
@@ -274,7 +275,7 @@ async def term_(message: Message):
     with message.cancel_callback(t_obj.cancel):
         await t_obj.init()
         while not t_obj.finished:
-            await message.edit(f"{output}<pre>{t_obj.line}</pre>", parse_mode='html')
+            await message.edit(f"{output}<pre>{t_obj.line}</pre>", parse_mode=enums.ParseMode.HTML)
             await t_obj.wait(config.Dynamic.EDIT_SLEEP_TIMEOUT)
         if t_obj.cancelled:
             await message.canceled(reply=True)
@@ -282,7 +283,7 @@ async def term_(message: Message):
 
     out_data = f"{output}<pre>{t_obj.output}</pre>\n{prefix}"
     await message.edit_or_send_as_file(
-        out_data, as_raw=as_raw, parse_mode='html', filename="term.txt", caption=cmd)
+        out_data, as_raw=as_raw, parse_mode=enums.ParseMode.HTML, filename="term.txt", caption=cmd)
 
 
 def parse_py_template(cmd: str, msg: Message):

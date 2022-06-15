@@ -12,7 +12,7 @@ __all__ = ['Filter']
 
 from typing import List, Dict, Callable, Any, Optional, Union
 
-from pyrogram import filters as rawfilters
+from pyrogram import filters as rawfilters, enums
 from pyrogram.filters import Filter as RawFilter
 from pyrogram.handlers import MessageHandler
 from pyrogram.handlers.handler import Handler
@@ -28,7 +28,7 @@ class Filter:
                  filters: RawFilter,
                  client: '_client.Userge',
                  group: int,
-                 scope: List[str],
+                 scope: List[enums.ChatType],
                  only_admins: bool,
                  allow_via_bot: bool,
                  check_client: bool,
@@ -84,13 +84,13 @@ class Filter:
         kwargs['scope'] = []
 
         if allow_bots:
-            kwargs['scope'].append('bot')
+            kwargs['scope'].append(enums.ChatType.BOT)
         if allow_private:
-            kwargs['scope'].append('private')
+            kwargs['scope'].append(enums.ChatType.PRIVATE)
         if allow_channels:
-            kwargs['scope'].append('channel')
+            kwargs['scope'].append(enums.ChatType.CHANNEL)
         if allow_groups:
-            kwargs['scope'] += ['group', 'supergroup']
+            kwargs['scope'] += [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]
 
         kwargs['check_perm'] = kwargs['check_change_info_perm'] \
             or kwargs['check_edit_perm'] or kwargs['check_delete_perm'] \

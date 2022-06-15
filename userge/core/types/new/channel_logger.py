@@ -78,7 +78,7 @@ class ChannelLogger:
                                                   text=string.format(text.strip()),
                                                   filename="logs.log",
                                                   caption=string)
-        return msg.message_id
+        return msg.id
 
     async def fwd_msg(self,
                       message: Union['_message.Message', 'RawMessage'],
@@ -143,7 +143,7 @@ class ChannelLogger:
             msg = await message.client.send_cached_media(chat_id=self._id,
                                                          file_id=file_id,
                                                          caption=caption)
-            message_id = msg.message_id
+            message_id = msg.id
         else:
             message_id = await self.log(caption)
         return message_id
