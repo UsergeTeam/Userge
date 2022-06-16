@@ -12,7 +12,7 @@ __all__ = ['Filter']
 
 from typing import List, Dict, Callable, Any, Optional, Union
 
-from pyrogram import filters as rawfilters, enums
+from pyrogram import enums
 from pyrogram.filters import Filter as RawFilter
 from pyrogram.handlers import MessageHandler
 from pyrogram.handlers.handler import Handler

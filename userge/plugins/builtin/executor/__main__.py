@@ -204,7 +204,10 @@ async def eval_(message: Message):
                 output = None
         if output is not None:
             final += f"**>>** ```{output}```"
-        if errored and message.chat.type in (enums.ChatType.GROUP, enums.ChatType.SUPERGROUP, enums.ChatType.CHANNEL):
+        if errored and message.chat.type in (
+                enums.ChatType.GROUP,
+                enums.ChatType.SUPERGROUP,
+                enums.ChatType.CHANNEL):
             msg_id = await CHANNEL.log(final)
             await msg.edit(f"**Logs**: {CHANNEL.get_link(msg_id)}")
         elif final:
@@ -217,18 +220,24 @@ async def eval_(message: Message):
         else:
             await msg.delete()
 
-    _g, _l = _context(
-        context_type, userge=userge, message=message, replied=message.reply_to_message)
+    _g, _l = _context(context_type, userge=userge,
+                      message=message, replied=message.reply_to_message)
     l_d = {}
     try:
-        exec(_wrap_code(cmd, _l.keys()), _g, l_d)  # nosec pylint: disable=W0122
+        # nosec pylint: disable=W0122
+        exec(_wrap_code(cmd, _l.keys()), _g, l_d)
     except Exception:  # pylint: disable=broad-except
         _g[_KEY] = _l
         await _callback(traceback.format_exc(), True)
         return
 
     future = asyncio.get_running_loop().create_future()
-    pool.submit_thread(_run_coro, future, l_d['__aexec'](*_l.values()), _callback)
+    pool.submit_thread(
+        _run_coro,
+        future,
+        l_d['__aexec'](
+            *_l.values()),
+        _callback)
     hint = cmd.split('\n')[0]
     _EVAL_TASKS[future] = hint[:25] + "..." if len(hint) > 25 else hint
 
@@ -287,10 +296,12 @@ async def term_(message: Message):
 
 
 def parse_py_template(cmd: str, msg: Message):
-    glo, loc = _context(_ContextType.PRIVATE, message=msg, replied=msg.reply_to_message)
+    glo, loc = _context(_ContextType.PRIVATE, message=msg,
+                        replied=msg.reply_to_message)
 
     def replacer(mobj):
-        return shlex.quote(str(eval(mobj.expand(r"\1"), glo, loc)))  # nosec pylint: disable=W0123
+        # nosec pylint: disable=W0123
+        return shlex.quote(str(eval(mobj.expand(r"\1"), glo, loc)))
     return re.sub(r"{{(.+?)}}", replacer, cmd)
 
 
@@ -300,7 +311,8 @@ class _ContextType(Enum):
     NEW = 2
 
 
-def _context(context_type: _ContextType, **kwargs) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+def _context(context_type: _ContextType, **
+             kwargs) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     if context_type == _ContextType.NEW:
         try:
             del globals()[_KEY]
@@ -334,9 +346,10 @@ def _run_coro(future: asyncio.Future, coro: Awaitable[Any],
               callback: Callable[[str, bool], Awaitable[Any]]) -> None:
     loop = asyncio.new_event_loop()
     task = loop.create_task(coro)
-    userge.loop.call_soon_threadsafe(future.add_done_callback,
-                                     lambda _: (loop.is_running() and future.cancelled()
-                                                and loop.call_soon_threadsafe(task.cancel)))
+    userge.loop.call_soon_threadsafe(
+        future.add_done_callback, lambda _: (
+            loop.is_running() and future.cancelled() and loop.call_soon_threadsafe(
+                task.cancel)))
     try:
         ret, exc = None, None
         with redirect() as out:
@@ -353,7 +366,8 @@ def _run_coro(future: asyncio.Future, coro: Awaitable[Any],
     finally:
         loop.run_until_complete(loop.shutdown_asyncgens())
         loop.close()
-        userge.loop.call_soon_threadsafe(lambda: future.done() or future.set_result(None))
+        userge.loop.call_soon_threadsafe(
+            lambda: future.done() or future.set_result(None))
 
 
 _PROXIES = {}
@@ -364,7 +378,11 @@ class _Wrapper:
         self._original = original
 
     def __getattr__(self, name: str):
-        return getattr(_PROXIES.get(threading.current_thread().ident, self._original), name)
+        return getattr(
+            _PROXIES.get(
+                threading.current_thread().ident,
+                self._original),
+            name)
 
 
 sys.stdout = _Wrapper(sys.stdout)
@@ -441,7 +459,9 @@ class Term:
 
     @classmethod
     async def execute(cls, cmd: str) -> 'Term':
-        kwargs = dict(stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
+        kwargs = dict(
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE)
         if setsid:
             kwargs['preexec_fn'] = setsid
         process = await asyncio.create_subprocess_shell(cmd, **kwargs)

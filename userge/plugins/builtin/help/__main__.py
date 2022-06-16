@@ -64,8 +64,12 @@ async def helpme(message: Message) -> None:  # pylint: disable=missing-function-
         cat_plugins = userge.manager.get_plugins()
 
         for cat in sorted(cat_plugins):
-            out_str += (f"{_CATEGORY.get(cat, '📁')} {cat} ({len(cat_plugins[cat])}):  <code>"
-                        + "</code>  <code>".join(sorted(cat_plugins[cat])) + "</code>\n\n")
+            out_str += (
+                f"{_CATEGORY.get(cat, '📁')} {cat} ({len(cat_plugins[cat])}):  <code>" +
+                "</code>  <code>".join(
+                    sorted(
+                        cat_plugins[cat])) +
+                "</code>\n\n")
     else:
         key = message.input_str
 
@@ -87,7 +91,10 @@ async def helpme(message: Message) -> None:  # pylint: disable=missing-function-
                 out_str += f"<code>{cmd.name}</code>: <i>{cmd.doc}</i>\n"
 
         else:
-            triggers = (config.CMD_TRIGGER, config.SUDO_TRIGGER, config.PUBLIC_TRIGGER)
+            triggers = (
+                config.CMD_TRIGGER,
+                config.SUDO_TRIGGER,
+                config.PUBLIC_TRIGGER)
 
             for _ in triggers:
                 key = key.lstrip(_)
@@ -106,7 +113,10 @@ async def helpme(message: Message) -> None:  # pylint: disable=missing-function-
 {cmd.about}"""
                     break
 
-    await message.edit(out_str, del_in=0, parse_mode=enums.ParseMode.HTML, disable_web_page_preview=True)
+    await message.edit(out_str,
+                       del_in=0,
+                       parse_mode=enums.ParseMode.HTML,
+                       disable_web_page_preview=True)
 
 
 if userge.has_bot:
@@ -129,9 +139,8 @@ if userge.has_bot:
 
         return wrapper
 
-    @userge.bot.on_message(
-        filters.private & filters.user(list(config.OWNER_ID)) & filters.command("start"), group=-1
-    )
+    @userge.bot.on_message(filters.private & filters.user(
+        list(config.OWNER_ID)) & filters.command("start"), group=-1)
     async def pm_help_handler(_, msg: Message):
         cmd = msg.command[1] if len(msg.command) > 1 else ''
 
@@ -153,7 +162,9 @@ if userge.has_bot:
 
         await msg.reply(out_str, parse_mode=enums.ParseMode.HTML, disable_web_page_preview=True)
 
-    @userge.bot.on_callback_query(filters=filters.regex(pattern=r"\((.+)\)(next|prev)\((\d+)\)"))
+    @userge.bot.on_callback_query(
+        filters=filters.regex(
+            pattern=r"\((.+)\)(next|prev)\((\d+)\)"))
     @check_owner
     async def callback_next_prev(callback_query: CallbackQuery):
         cur_pos = str(callback_query.matches[0].group(1))
@@ -177,7 +188,9 @@ if userge.has_bot:
         await callback_query.edit_message_reply_markup(
             reply_markup=InlineKeyboardMarkup(buttons))
 
-    @userge.bot.on_callback_query(filters=filters.regex(pattern=r"back\((.+)\)"))
+    @userge.bot.on_callback_query(
+        filters=filters.regex(
+            pattern=r"back\((.+)\)"))
     @check_owner
     async def callback_back(callback_query: CallbackQuery):
         cur_pos = str(callback_query.matches[0].group(1))
@@ -198,7 +211,9 @@ if userge.has_bot:
         await callback_query.edit_message_text(
             text, reply_markup=InlineKeyboardMarkup(buttons))
 
-    @userge.bot.on_callback_query(filters=filters.regex(pattern=r"enter\((.+)\)"))
+    @userge.bot.on_callback_query(
+        filters=filters.regex(
+            pattern=r"enter\((.+)\)"))
     @check_owner
     async def callback_enter(callback_query: CallbackQuery):
         cur_pos = str(callback_query.matches[0].group(1))
@@ -262,7 +277,9 @@ if userge.has_bot:
         await callback_query.edit_message_reply_markup(
             reply_markup=InlineKeyboardMarkup(main_menu_buttons()))
 
-    @userge.bot.on_callback_query(filters=filters.regex(pattern=r"refresh\((.+)\)"))
+    @userge.bot.on_callback_query(
+        filters=filters.regex(
+            pattern=r"refresh\((.+)\)"))
     @check_owner
     async def callback_exit(callback_query: CallbackQuery):
         cur_pos = str(callback_query.matches[0].group(1))
@@ -285,8 +302,10 @@ if userge.has_bot:
                       func: Callable[[str], str],
                       data: Union[List[str], Dict[str, Any]],
                       rows: int = 3):
-        buttons = [InlineKeyboardButton(
-            func(x), callback_data=f"enter({cur_pos}|{x})".encode()) for x in sorted(data)]
+        buttons = [
+            InlineKeyboardButton(
+                func(x),
+                callback_data=f"enter({cur_pos}|{x})".encode()) for x in sorted(data)]
 
         pairs = list(map(list, zip(buttons[::2], buttons[1::2])))
 
@@ -329,8 +348,10 @@ if userge.has_bot:
 
         elif userge.dual_mode:
             cur_clnt = "👲 USER" if config.Dynamic.USER_IS_PREFERRED else "🤖 BOT"
-            tmp_btns.append(InlineKeyboardButton(
-                f"🔩 Preferred Client : {cur_clnt}", callback_data="chgclnt".encode()))
+            tmp_btns.append(
+                InlineKeyboardButton(
+                    f"🔩 Preferred Client : {cur_clnt}",
+                    callback_data="chgclnt".encode()))
 
         return [tmp_btns]
 
@@ -338,8 +359,9 @@ if userge.has_bot:
         pos_list = cur_pos.split('|')
         plugins = userge.manager.get_all_plugins()[pos_list[1]]
 
-        text = (f"**(`{len(plugins)}`) Plugin(s) Under : "
-                f"`{_CATEGORY.get(pos_list[1], '📁')} {pos_list[1]}` 🎭 Category**")
+        text = (
+            f"**(`{len(plugins)}`) Plugin(s) Under : "
+            f"`{_CATEGORY.get(pos_list[1], '📁')} {pos_list[1]}` 🎭 Category**")
 
         buttons = parse_buttons(0, '|'.join(pos_list[:2]),
                                 lambda x: f"🗃 {x}",
@@ -364,13 +386,18 @@ if userge.has_bot:
         tmp_btns = []
 
         if plg.loaded:
-            tmp_btns.append(InlineKeyboardButton(
-                "❎ Unload", callback_data=f"unload({'|'.join(pos_list[:3])})".encode()))
+            tmp_btns.append(
+                InlineKeyboardButton(
+                    "❎ Unload",
+                    callback_data=f"unload({'|'.join(pos_list[:3])})".encode()))
         else:
-            tmp_btns.append(InlineKeyboardButton(
-                "✅ Load", callback_data=f"load({'|'.join(pos_list[:3])})".encode()))
+            tmp_btns.append(
+                InlineKeyboardButton(
+                    "✅ Load",
+                    callback_data=f"load({'|'.join(pos_list[:3])})".encode()))
 
-        buttons = parse_buttons(p_num, '|'.join(pos_list[:3]),
+        buttons = parse_buttons(p_num,
+                                '|'.join(pos_list[:3]),
                                 lambda x: f"⚖ {x}" if is_filter(x) else f"⚔ {x}",
                                 (flt.name for flt in plg.commands + plg.filters))
 
@@ -486,8 +513,6 @@ if userge.has_bot:
                             input_message_content=InputTextMessageContent(err_text),
                             description="Inline Error text with help support button.",
                             thumb_url="https://imgur.com/download/Inyeb1S",
-                            reply_markup=InlineKeyboardMarkup(button)
-                        )
-                    )
+                            reply_markup=InlineKeyboardMarkup(button)))
 
         await inline_query.answer(results=results, cache_time=3)

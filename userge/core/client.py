@@ -22,7 +22,7 @@ from contextlib import suppress
 from types import ModuleType
 from typing import List, Awaitable, Any, Optional, Union
 
-from pyrogram import types, enums
+from pyrogram import types
 from pyrogram.methods import Methods as RawMethods
 
 from userge import logging, config
@@ -237,6 +237,7 @@ class _AbstractUserge(Methods, RawClient):
 
 class UsergeBot(_AbstractUserge):
     """ UsergeBot, the bot """
+
     def __init__(self, **kwargs) -> None:
         super().__init__(name="usergeBot", **kwargs)
 
@@ -264,7 +265,7 @@ class Userge(_AbstractUserge):
         if config.SESSION_STRING and config.BOT_TOKEN:
             RawClient.DUAL_MODE = True
             kwargs['bot'] = UsergeBot(bot=self, **kwargs)
-        
+
         kwargs['name'] = 'userge'
         kwargs['session_string'] = config.SESSION_STRING or None
         super().__init__(**kwargs)
@@ -344,7 +345,8 @@ class Userge(_AbstractUserge):
             log_errored = True
 
         def _handle(num, _) -> None:
-            _LOG.info(f"Received Stop Signal [{signal.Signals(num).name}], Exiting Userge ...")
+            _LOG.info(
+                f"Received Stop Signal [{signal.Signals(num).name}], Exiting Userge ...")
 
             idle_event.set()
 
@@ -376,7 +378,10 @@ class Userge(_AbstractUserge):
             t.cancel()
 
         with suppress(RuntimeError):
-            self.loop.run_until_complete(asyncio.gather(*to_cancel, return_exceptions=True))
+            self.loop.run_until_complete(
+                asyncio.gather(
+                    *to_cancel,
+                    return_exceptions=True))
             self.loop.run_until_complete(self.loop.shutdown_asyncgens())
 
         self.loop.stop()
