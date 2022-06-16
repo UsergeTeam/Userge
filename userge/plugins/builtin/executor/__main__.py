@@ -311,8 +311,7 @@ class _ContextType(Enum):
     NEW = 2
 
 
-def _context(context_type: _ContextType, **
-             kwargs) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+def _context(context_type: _ContextType, **kwargs) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     if context_type == _ContextType.NEW:
         try:
             del globals()[_KEY]

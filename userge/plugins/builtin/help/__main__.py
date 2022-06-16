@@ -64,12 +64,8 @@ async def helpme(message: Message) -> None:  # pylint: disable=missing-function-
         cat_plugins = userge.manager.get_plugins()
 
         for cat in sorted(cat_plugins):
-            out_str += (
-                f"{_CATEGORY.get(cat, '📁')} {cat} ({len(cat_plugins[cat])}):  <code>" +
-                "</code>  <code>".join(
-                    sorted(
-                        cat_plugins[cat])) +
-                "</code>\n\n")
+            out_str += (f"{_CATEGORY.get(cat, '📁')} {cat} ({len(cat_plugins[cat])}):  <code>"
+                        + "</code>  <code>".join(sorted(cat_plugins[cat])) + "</code>\n\n")
     else:
         key = message.input_str
 
