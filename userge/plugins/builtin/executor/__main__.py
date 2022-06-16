@@ -51,20 +51,24 @@ CHANNEL = userge.getCLogger()
 def input_checker(func: Callable[[Message], Awaitable[Any]]):
     async def wrapper(message: Message) -> None:
         replied = message.reply_to_message
-        if (func.__name__ == "eval_"
-                and replied and replied.document
-                and replied.document.file_name.endswith(('.txt', '.py'))
-                and replied.document.file_size <= 2097152):
 
-            dl_loc = await replied.download()
-            async with aiofiles.open(dl_loc) as jv:
-                message.text += " " + await jv.read()
-            os.remove(dl_loc)
+        if not message.input_str:
+            if (func.__name__ == "eval_"
+                    and replied and replied.document
+                    and replied.document.file_name.endswith(('.txt', '.py'))
+                    and replied.document.file_size <= 2097152):
+
+                dl_loc = await replied.download()
+                async with aiofiles.open(dl_loc) as jv:
+                    message.text += " " + await jv.read()
+                os.remove(dl_loc)
+                message.flags.update({'file': True})
+            else:
+                await message.err("No Command Found!")
+                return
 
         cmd = message.input_str
-        if not cmd:
-            await message.err("No Command Found!")
-            return
+
         if "config.env" in cmd:
             await message.edit("`That's a dangerous operation! Not Permitted!`")
             return
@@ -179,7 +183,7 @@ async def eval_(message: Message):
 
     await msg.edit("`Executing eval ...`", parse_mode='md')
 
-    is_file = replied and replied.document
+    is_file = replied and replied.document and flags.get("file")
     as_raw = '-r' in flags
     silent_mode = '-s' in flags
     if '-n' in flags:
