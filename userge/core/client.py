@@ -126,7 +126,7 @@ async def _wait_for_instance() -> None:
             break
 
 
-class _AbstractUserge(Methods, RawClient):
+class _AbstractUserge(Methods):
     def __init__(self, **kwargs) -> None:
         self._me: Optional[types.User] = None
         super().__init__(**kwargs)
@@ -271,7 +271,7 @@ class Userge(_AbstractUserge):
         super().__init__(**kwargs)
 
         if config.SESSION_STRING:
-            self.storage.name = config.SESSION_STRING
+            self.storage.session_string = config.SESSION_STRING
 
     @property
     def dual_mode(self) -> bool:
