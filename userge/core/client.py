@@ -239,7 +239,7 @@ class UsergeBot(_AbstractUserge):
     """ UsergeBot, the bot """
 
     def __init__(self, **kwargs) -> None:
-        super().__init__(name="usergeBot", **kwargs)
+        super().__init__(name="usergeBot", in_memory=True, **kwargs)
 
     @property
     def ubot(self) -> 'Userge':
