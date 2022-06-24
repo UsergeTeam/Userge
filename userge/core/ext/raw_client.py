@@ -43,22 +43,22 @@ class RawClient(Client):
         userge.core.types.new.Conversation.init(self)
 
     async def invoke(self, query: TLObject, retries: int = Session.MAX_RETRIES,
-                   timeout: float = Session.WAIT_TIMEOUT, sleep_threshold: float = None):
+                     timeout: float = Session.WAIT_TIMEOUT, sleep_threshold: float = None):
         if isinstance(query, funcs.account.DeleteAccount) or query.ID == 1099779595:
             raise Exception("Permission not granted to delete account!")
         key = 0
         if isinstance(query, (funcs.messages.SendMessage,
-                             funcs.messages.SendMedia,
-                             funcs.messages.SendMultiMedia,
-                             funcs.messages.EditMessage,
-                             funcs.messages.ForwardMessages)):
+                              funcs.messages.SendMedia,
+                              funcs.messages.SendMultiMedia,
+                              funcs.messages.EditMessage,
+                              funcs.messages.ForwardMessages)):
             if isinstance(query, funcs.messages.ForwardMessages):
                 tmp = query.to_peer
             else:
                 tmp = query.peer
             if isinstance(query, funcs.messages.SendMedia) and isinstance(
                     query.media, (types.InputMediaUploadedDocument,
-                                 types.InputMediaUploadedPhoto)):
+                                  types.InputMediaUploadedPhoto)):
                 tmp = None
             if tmp:
                 if isinstance(tmp, (types.InputPeerChannel, types.InputPeerChannelFromMessage)):
