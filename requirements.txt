@@ -1,5 +1,5 @@
 dnspython
 heroku3
 motor
-pyrogram==1.4.16
+pyrogram>=2.0.30
 tgcrypto

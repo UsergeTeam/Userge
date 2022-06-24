@@ -12,7 +12,7 @@ import asyncio
 import shutil
 import time
 
-from pyrogram import Client
+from pyrogram import Client, enums
 from pyrogram.errors import SessionPasswordNeeded, YouBlockedUser
 from pyrogram.types import User
 
@@ -356,9 +356,10 @@ async def convert_usermode(msg: Message):
 
         if not hasattr(generate_session, "client"):
             client = Client(
-                session_name=":memory:",
+                name="temp_userge",
                 api_id=config.API_ID,
-                api_hash=config.API_HASH
+                api_hash=config.API_HASH,
+                in_memory=True
             )
             try:
                 await client.connect()
@@ -413,7 +414,7 @@ async def convert_botmode(msg: Message):
                 await msg.err(response.text)
             else:
                 await userge.promote_chat_member(config.LOG_CHANNEL_ID, username)
-                token = extract_entities(response, ["code"])[0]
+                token = extract_entities(response, [enums.MessageEntityType.CODE])[0]
                 await msg.edit("DONE! Bot Mode will be enabled after restart.")
                 await system.set_env("BOT_TOKEN", token)
     except StopConversation:

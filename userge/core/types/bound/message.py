@@ -13,6 +13,7 @@ __all__ = ['Message']
 import re
 import asyncio
 from contextlib import contextmanager
+from datetime import datetime
 from typing import List, Dict, Tuple, Union, Optional, Sequence, Callable, Any
 
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message as RawMessage
@@ -20,6 +21,7 @@ from pyrogram.errors import (
     MessageAuthorRequired, MessageTooLong, MessageNotModified,
     MessageIdInvalid, MessageDeleteForbidden, BotInlineDisabled
 )
+from pyrogram import enums
 
 from userge import config
 from userge.utils import is_command
@@ -141,7 +143,7 @@ class Message(RawMessage):
                 # Extracting text mention entity and skipping if it's @ mention.
                 for mention in self.entities:
                     # Catch first text mention
-                    if mention.type == "text_mention":
+                    if mention.type == enums.MessageEntityType.TEXT_MENTION:
                         user_e = mention.user.id
                         break
             # User @ Mention.
@@ -197,7 +199,7 @@ class Message(RawMessage):
 
     @property
     def _key(self) -> str:
-        return f"{self.chat.id}.{self.message_id}"
+        return f"{self.chat.id}.{self.id}"
 
     def _call_cancel_callbacks(self) -> bool:
         callbacks = _CANCEL_CALLBACKS.pop(self._key, None)
@@ -292,8 +294,8 @@ class Message(RawMessage):
         Returns:
             On success, the sent Message is returned.
         """
-        reply_to_id = self.reply_to_message.message_id if self.reply_to_message \
-            else self.message_id
+        reply_to_id = self.reply_to_message.id if self.reply_to_message \
+            else self.id
         if delete_message:
             asyncio.get_event_loop().create_task(self.delete())
         if log and isinstance(log, bool):
@@ -311,11 +313,11 @@ class Message(RawMessage):
                     del_in: int = -1,
                     log: Union[bool, str] = False,
                     quote: Optional[bool] = None,
-                    parse_mode: Union[str, object] = object,
+                    parse_mode: Optional[enums.ParseMode] = None,
                     disable_web_page_preview: Optional[bool] = None,
                     disable_notification: Optional[bool] = None,
                     reply_to_message_id: Optional[int] = None,
-                    schedule_date: Optional[int] = None,
+                    schedule_date: Optional[datetime] = None,
                     protect_content: Optional[bool] = None,
                     reply_markup: InlineKeyboardMarkup = None) -> Union['Message', bool]:
         """\nExample:
@@ -341,7 +343,7 @@ class Message(RawMessage):
                 Defaults to ``True`` in group chats
                 and ``False`` in private chats.
 
-            parse_mode (``str``, *optional*):
+            parse_mode (:obj:`enums.ParseMode`, *optional*):
                 By default, texts are parsed using both
                 Markdown and HTML styles.
                 You can combine both syntaxes together.
@@ -360,7 +362,7 @@ class Message(RawMessage):
             reply_to_message_id (``int``, *optional*):
                 If the message is a reply, ID of the original message.
 
-            schedule_date (``int``, *optional*):
+            schedule_date (:py:obj:`~datetime.datetime`, *optional*):
                 Date when the message will be automatically sent. Unix time.
 
             protect_content (``bool``, *optional*):
@@ -381,9 +383,9 @@ class Message(RawMessage):
             RPCError: In case of a Telegram RPC error.
         """
         if quote is None:
-            quote = self.chat.type != "private"
+            quote = self.chat.type != enums.ChatType.PRIVATE
         if reply_to_message_id is None and quote:
-            reply_to_message_id = self.message_id
+            reply_to_message_id = self.id
         if log and isinstance(log, bool):
             log = self._module
         return await self._client.send_message(chat_id=self.chat.id,
@@ -405,7 +407,7 @@ class Message(RawMessage):
                    del_in: int = -1,
                    log: Union[bool, str] = False,
                    sudo: bool = True,
-                   parse_mode: Union[str, object] = object,
+                   parse_mode: Optional[enums.ParseMode] = None,
                    disable_web_page_preview: Optional[bool] = None,
                    reply_markup: InlineKeyboardMarkup = None) -> Union['Message', bool]:
         """\nExample:
@@ -426,7 +428,7 @@ class Message(RawMessage):
             sudo (``bool``, *optional*):
                 If ``True``, sudo users supported.
 
-            parse_mode (``str``, *optional*):
+            parse_mode (:obj:`enums.ParseMode`, *optional*):
                 By default, texts are parsed using
                 both Markdown and HTML styles.
                 You can combine both syntaxes together.
@@ -453,7 +455,7 @@ class Message(RawMessage):
         try:
             return await self._client.edit_message_text(
                 chat_id=self.chat.id,
-                message_id=self.message_id,
+                message_id=self.id,
                 text=text,
                 del_in=del_in,
                 log=log,
@@ -471,7 +473,7 @@ class Message(RawMessage):
                                        disable_web_page_preview=disable_web_page_preview,
                                        reply_markup=reply_markup)
                 if isinstance(msg, Message):
-                    self.message_id = msg.message_id  # pylint: disable=W0201
+                    self.id = msg.id  # pylint: disable=W0201
                 return msg
             raise m_er
 
@@ -481,7 +483,7 @@ class Message(RawMessage):
                          text: str,
                          del_in: int = -1,
                          log: Union[bool, str] = False,
-                         parse_mode: Union[str, object] = object,
+                         parse_mode: Optional[enums.ParseMode] = None,
                          disable_web_page_preview: Optional[bool] = None,
                          reply_markup: InlineKeyboardMarkup = None,
                          **kwargs) -> Union['Message', bool]:
@@ -504,7 +506,7 @@ class Message(RawMessage):
                 to the log channel.
                 If ``str``, the logger name will be updated.
 
-            parse_mode (``str``, *optional*):
+            parse_mode (:obj:`enums.ParseMode`, *optional*):
                 By default, texts are parsed using both
                 Markdown and HTML styles.
                 You can combine both syntaxes together.
@@ -548,7 +550,7 @@ class Message(RawMessage):
                   show_help: bool = True,
                   log: Union[bool, str] = False,
                   sudo: bool = True,
-                  parse_mode: Union[str, object] = object,
+                  parse_mode: Optional[enums.ParseMode] = None,
                   disable_web_page_preview: Optional[bool] = None,
                   reply_markup: InlineKeyboardMarkup = None) -> Union['Message', bool]:
         """\nYou can send error messages with command info button using this method
@@ -573,7 +575,7 @@ class Message(RawMessage):
             sudo (``bool``, *optional*):
                 If ``True``, sudo users supported.
 
-            parse_mode (``str``, *optional*):
+            parse_mode (:obj:`enums.ParseMode`, *optional*):
                 By default, texts are parsed using
                 both Markdown and HTML styles.
                 You can combine both syntaxes together.
@@ -651,7 +653,7 @@ class Message(RawMessage):
                         del_in: int = -1,
                         show_help: bool = True,
                         log: Union[bool, str] = False,
-                        parse_mode: Union[str, object] = object,
+                        parse_mode: Optional[enums.ParseMode] = None,
                         disable_web_page_preview: Optional[bool] = None,
                         reply_markup: InlineKeyboardMarkup = None,
                         **kwargs) -> Union['Message', bool]:
@@ -677,7 +679,7 @@ class Message(RawMessage):
                 to the log channel.
                 If ``str``, the logger name will be updated.
 
-            parse_mode (``str``, *optional*):
+            parse_mode (:obj:`enums.ParseMode`, *optional*):
                 By default, texts are parsed using
                 both Markdown and HTML styles.
                 You can combine both syntaxes together.
@@ -764,7 +766,7 @@ class Message(RawMessage):
                                    log: Union[bool, str] = False,
                                    sudo: bool = True,
                                    as_raw: bool = False,
-                                   parse_mode: Union[str, object] = object,
+                                   parse_mode: Optional[enums.ParseMode] = None,
                                    disable_web_page_preview: Optional[bool] = None,
                                    reply_markup: InlineKeyboardMarkup = None,
                                    **kwargs) -> Union['Message', bool]:
@@ -794,7 +796,7 @@ class Message(RawMessage):
                 If ``False``, the message will be escaped with current parse mode.
                 default to ``False``.
 
-            parse_mode (``str``, *optional*):
+            parse_mode (:obj:`enums.ParseMode`, *optional*):
                 By default, texts are parsed using both
                 Markdown and HTML styles.
                 You can combine both syntaxes together.
@@ -835,7 +837,7 @@ class Message(RawMessage):
                                     log: Union[bool, str] = False,
                                     quote: Optional[bool] = None,
                                     as_raw: bool = False,
-                                    parse_mode: Union[str, object] = object,
+                                    parse_mode: Optional[enums.ParseMode] = None,
                                     disable_web_page_preview: Optional[bool] = None,
                                     disable_notification: Optional[bool] = None,
                                     reply_to_message_id: Optional[int] = None,
@@ -872,7 +874,7 @@ class Message(RawMessage):
                 If ``False``, the message will be escaped with current parse mode.
                 default to ``False``.
 
-            parse_mode (``str``, *optional*):
+            parse_mode (:obj:`enums.ParseMode`, *optional*):
                 By default, texts are parsed using
                 both Markdown and HTML styles.
                 You can combine both syntaxes together.
@@ -926,7 +928,7 @@ class Message(RawMessage):
                                          del_in: int = -1,
                                          log: Union[bool, str] = False,
                                          as_raw: bool = False,
-                                         parse_mode: Union[str, object] = object,
+                                         parse_mode: Optional[enums.ParseMode] = None,
                                          disable_web_page_preview: Optional[bool] = None,
                                          reply_markup: InlineKeyboardMarkup = None,
                                          **kwargs) -> Union['Message', bool]:
@@ -953,7 +955,7 @@ class Message(RawMessage):
                 If ``False``, the message will be escaped with current parse mode.
                 default to ``False``.
 
-            parse_mode (``str``, *optional*):
+            parse_mode (:obj:`enums.ParseMode`, *optional*):
                 By default, texts are parsed using
                 both Markdown and HTML styles.
                 You can combine both syntaxes together.

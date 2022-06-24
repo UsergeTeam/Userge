@@ -16,6 +16,7 @@ from os.path import basename, join, exists
 from typing import Tuple, List, Optional, Iterator, Union, Any
 
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, User
+from pyrogram import enums
 
 import userge
 
@@ -104,7 +105,16 @@ def humanbytes(size: float) -> str:
         return "0 B"
     power = 1024
     t_n = 0
-    power_dict = {0: '', 1: 'Ki', 2: 'Mi', 3: 'Gi', 4: 'Ti', 5: 'Pi', 6: 'Ei', 7: 'Zi', 8: 'Yi'}
+    power_dict = {
+        0: '',
+        1: 'Ki',
+        2: 'Mi',
+        3: 'Gi',
+        4: 'Ti',
+        5: 'Pi',
+        6: 'Ei',
+        7: 'Zi',
+        8: 'Yi'}
     while size > power:
         size /= power
         t_n += 1
@@ -138,10 +148,15 @@ async def runcmd(cmd: str) -> Tuple[str, str, int, int]:
 
 async def take_screen_shot(video_file: str, duration: int, path: str = '') -> Optional[str]:
     """ take a screenshot """
-    _LOG.info('Extracting a frame from %s ||| Video duration => %s', video_file, duration)
+    _LOG.info(
+        'Extracting a frame from %s ||| Video duration => %s',
+        video_file,
+        duration)
 
     ttl = duration // 2
-    thumb_image_path = path or join(userge.config.Dynamic.DOWN_PATH, f"{basename(video_file)}.jpg")
+    thumb_image_path = path or join(
+        userge.config.Dynamic.DOWN_PATH,
+        f"{basename(video_file)}.jpg")
     command = f'''ffmpeg -ss {ttl} -i "{video_file}" -vframes 1 "{thumb_image_path}"'''
 
     err = (await runcmd(command))[1]
@@ -151,7 +166,8 @@ async def take_screen_shot(video_file: str, duration: int, path: str = '') -> Op
     return thumb_image_path if exists(thumb_image_path) else None
 
 
-def parse_buttons(markdown_note: str) -> Tuple[str, Optional[InlineKeyboardMarkup]]:
+def parse_buttons(
+        markdown_note: str) -> Tuple[str, Optional[InlineKeyboardMarkup]]:
     """ markdown_note to string and buttons """
     prev = 0
     note_data = ""
@@ -163,7 +179,11 @@ def parse_buttons(markdown_note: str) -> Tuple[str, Optional[InlineKeyboardMarku
             n_escapes += 1
             to_check -= 1
         if n_escapes % 2 == 0:
-            buttons.append((match.group(2), match.group(3), bool(match.group(4))))
+            buttons.append(
+                (match.group(2),
+                 match.group(3),
+                 bool(
+                    match.group(4))))
             note_data += markdown_note[prev:match.start(1)]
             prev = match.end(1)
         else:
@@ -194,7 +214,8 @@ def is_command(cmd: str) -> bool:
     return is_cmd
 
 
-def extract_entities(message: Message, typeofentity: List[str]) -> List[Union[str, User]]:
+def extract_entities(
+        message: Message, typeofentity: List[enums.MessageEntityType]) -> List[Union[str, User]]:
     """ gets a message and returns a list of entity_type in the message
     """
     tero = []
@@ -204,30 +225,30 @@ def extract_entities(message: Message, typeofentity: List[str]) -> List[Union[st
         url = None
         cet = entity.type
         if entity.type in [
-            "url",
-            "mention",
-            "hashtag",
-            "cashtag",
-            "bot_command",
-            "url",
-            "email",
-            "phone_number",
-            "bold",
-            "italic",
-            "underline",
-            "strikethrough",
-            "spoiler",
-            "code",
-            "pre",
+            enums.MessageEntityType.URL,
+            enums.MessageEntityType.MENTION,
+            enums.MessageEntityType.HASHTAG,
+            enums.MessageEntityType.CASHTAG,
+            enums.MessageEntityType.BOT_COMMAND,
+            enums.MessageEntityType.URL,
+            enums.MessageEntityType.EMAIL,
+            enums.MessageEntityType.PHONE_NUMBER,
+            enums.MessageEntityType.BOLD,
+            enums.MessageEntityType.ITALIC,
+            enums.MessageEntityType.UNDERLINE,
+            enums.MessageEntityType.STRIKETHROUGH,
+            enums.MessageEntityType.SPOILER,
+            enums.MessageEntityType.CODE,
+            enums.MessageEntityType.PRE,
         ]:
             offset = entity.offset
             length = entity.length
             url = text[offset:offset + length]
 
-        elif entity.type == "text_link":
+        elif entity.type == enums.MessageEntityType.TEXT_LINK:
             url = entity.url
 
-        elif entity.type == "text_mention":
+        elif entity.type == enums.MessageEntityType.TEXT_MENTION:
             url = entity.user
 
         if url and cet in typeofentity:

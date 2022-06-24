@@ -121,7 +121,7 @@ async def jsonify(message: Message):
 async def pingme(message: Message):
     """ ping tg servers """
     start = datetime.now()
-    await message.client.send(Ping(ping_id=0))
+    await message.client.invoke(Ping(ping_id=0))
     end = datetime.now()
 
     m_s = (end - start).microseconds / 1000

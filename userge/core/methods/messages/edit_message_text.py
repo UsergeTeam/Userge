@@ -14,6 +14,7 @@ import inspect
 import asyncio
 from typing import Optional, Union, List
 
+from pyrogram import enums
 from pyrogram.types import InlineKeyboardMarkup, MessageEntity
 
 from userge import config
@@ -28,7 +29,7 @@ class EditMessageText(RawClient):  # pylint: disable=missing-class-docstring
                                 text: str,
                                 del_in: int = -1,
                                 log: Union[bool, str] = False,
-                                parse_mode: Union[str, object] = object,
+                                parse_mode: Optional[enums.ParseMode] = None,
                                 entities: List[MessageEntity] = None,
                                 disable_web_page_preview: Optional[bool] = None,
                                 reply_markup: InlineKeyboardMarkup = None
@@ -58,7 +59,7 @@ class EditMessageText(RawClient):  # pylint: disable=missing-class-docstring
                 to the log channel.
                 If ``str``, the logger name will be updated.
 
-            parse_mode (``str``, *optional*):
+            parse_mode (:obj:`enums.ParseMode`, *optional*):
                 By default, texts are parsed using
                 both Markdown and HTML styles.
                 You can combine both syntaxes together.

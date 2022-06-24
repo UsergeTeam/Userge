@@ -30,7 +30,7 @@ async def progress(current: int,
     """ progress function """
     if message.process_is_canceled:
         await message.client.stop_transmission()
-    task_id = f"{message.chat.id}.{message.message_id}"
+    task_id = f"{message.chat.id}.{message.id}"
     if current == total:
         if task_id not in _TASKS:
             return
@@ -38,7 +38,7 @@ async def progress(current: int,
         try:
             await message.edit("`finalizing process ...`")
         except FloodWait as f_e:
-            time.sleep(f_e.x)
+            time.sleep(f_e.value)
         return
     now = time.time()
     if task_id not in _TASKS:
@@ -73,4 +73,4 @@ async def progress(current: int,
         try:
             await message.edit(progress_str)
         except FloodWait as f_e:
-            time.sleep(f_e.x)
+            time.sleep(f_e.value)

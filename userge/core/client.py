@@ -126,7 +126,7 @@ async def _wait_for_instance() -> None:
             break
 
 
-class _AbstractUserge(Methods, RawClient):
+class _AbstractUserge(Methods):
     def __init__(self, **kwargs) -> None:
         self._me: Optional[types.User] = None
         super().__init__(**kwargs)
@@ -237,8 +237,9 @@ class _AbstractUserge(Methods, RawClient):
 
 class UsergeBot(_AbstractUserge):
     """ UsergeBot, the bot """
+
     def __init__(self, **kwargs) -> None:
-        super().__init__(session_name=":memory:", **kwargs)
+        super().__init__(name="usergeBot", **kwargs)
 
     @property
     def ubot(self) -> 'Userge':
@@ -265,11 +266,12 @@ class Userge(_AbstractUserge):
             RawClient.DUAL_MODE = True
             kwargs['bot'] = UsergeBot(bot=self, **kwargs)
 
-        kwargs['session_name'] = config.SESSION_STRING or ":memory:"
+        kwargs['name'] = 'userge'
+        kwargs['session_string'] = config.SESSION_STRING or None
         super().__init__(**kwargs)
 
         if config.SESSION_STRING:
-            self.storage.name = config.SESSION_STRING
+            self.storage.session_string = config.SESSION_STRING
 
     @property
     def dual_mode(self) -> bool:
@@ -343,7 +345,8 @@ class Userge(_AbstractUserge):
             log_errored = True
 
         def _handle(num, _) -> None:
-            _LOG.info(f"Received Stop Signal [{signal.Signals(num).name}], Exiting Userge ...")
+            _LOG.info(
+                f"Received Stop Signal [{signal.Signals(num).name}], Exiting Userge ...")
 
             idle_event.set()
 
@@ -375,7 +378,10 @@ class Userge(_AbstractUserge):
             t.cancel()
 
         with suppress(RuntimeError):
-            self.loop.run_until_complete(asyncio.gather(*to_cancel, return_exceptions=True))
+            self.loop.run_until_complete(
+                asyncio.gather(
+                    *to_cancel,
+                    return_exceptions=True))
             self.loop.run_until_complete(self.loop.shutdown_asyncgens())
 
         self.loop.stop()
