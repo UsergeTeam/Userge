@@ -66,5 +66,5 @@ class SendReadAcknowledge(RawClient):  # pylint: disable=missing-class-docstring
             if max_id is None:
                 return True
         if max_id is not None:
-            return bool(await self.read_history(chat_id=chat_id, max_id=max_id))
+            return bool(await self.read_chat_history(chat_id=chat_id, max_id=max_id))
         return False

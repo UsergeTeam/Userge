@@ -81,16 +81,17 @@ class Filter:
                **kwargs: Union[RawFilter, '_client.Userge', int, bool]
                ) -> Dict[str, Union[RawFilter, '_client.Userge', int, bool]]:
         kwargs['check_client'] = kwargs['allow_via_bot'] and kwargs['check_client']
-        kwargs['scope'] = []
 
+        scope = []
         if allow_bots:
-            kwargs['scope'].append(enums.ChatType.BOT)
+            scope.append(enums.ChatType.BOT)
         if allow_private:
-            kwargs['scope'].append(enums.ChatType.PRIVATE)
+            scope.append(enums.ChatType.PRIVATE)
         if allow_channels:
-            kwargs['scope'].append(enums.ChatType.CHANNEL)
+            scope.append(enums.ChatType.CHANNEL)
         if allow_groups:
-            kwargs['scope'] += [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]
+            scope += [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]
+        kwargs['scope'] = scope
 
         kwargs['check_perm'] = kwargs['check_change_info_perm'] \
             or kwargs['check_edit_perm'] or kwargs['check_delete_perm'] \

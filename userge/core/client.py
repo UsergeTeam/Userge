@@ -252,7 +252,7 @@ class Userge(_AbstractUserge):
 
     has_bot = bool(config.BOT_TOKEN)
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self) -> None:
         kwargs = {
             'api_id': config.API_ID,
             'api_hash': config.API_HASH,

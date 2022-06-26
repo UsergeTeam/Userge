@@ -16,7 +16,7 @@ from typing import Union, Optional
 
 from pyrogram.parser import Parser
 
-from userge import logging, config
+from userge import logging
 from ... import types
 from ...ext import RawClient
 

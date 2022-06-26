@@ -655,8 +655,7 @@ class Message(RawMessage):
                         log: Union[bool, str] = False,
                         parse_mode: Optional[enums.ParseMode] = None,
                         disable_web_page_preview: Optional[bool] = None,
-                        reply_markup: InlineKeyboardMarkup = None,
-                        **kwargs) -> Union['Message', bool]:
+                        reply_markup: InlineKeyboardMarkup = None) -> Union['Message', bool]:
         """\nThis will first try to message.err.
         If it raise MessageAuthorRequired or
         MessageIdInvalid error, run message.reply.
@@ -693,8 +692,6 @@ class Message(RawMessage):
 
             reply_markup (:obj:`InlineKeyboardMarkup`, *optional*):
                 An InlineKeyboardMarkup object.
-
-            **kwargs (for message.reply)
 
         Returns:
             On success,
