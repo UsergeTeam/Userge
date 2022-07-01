@@ -34,29 +34,26 @@ _ERROR_MSG_DELETE_TIMEOUT = 5
 
 class Message(RawMessage):
     """ Modded Message Class For Userge """
-    def __init__(self,
-                 client: Union['_client.Userge', '_client.UsergeBot'],
-                 mvars: Dict[str, object], module: str, **kwargs: Union[str, bool]) -> None:
+    def __init__(self, mvars: Dict[str, object], module: str, **kwargs: Union[str, bool]) -> None:
         self._filtered = False
         self._filtered_input_str = ''
         self._flags: Dict[str, str] = {}
         self._process_canceled = False
         self._module = module
         self._kwargs = kwargs
-        super().__init__(client=client, **mvars)
+        super().__init__(**mvars)
 
     @classmethod
     def parse(cls, client: Union['_client.Userge', '_client.UsergeBot'],
-              message: RawMessage, **kwargs: Union[str, bool]) -> 'Message':
+              message: Union[RawMessage, 'Message'], **kwargs: Union[str, bool]) -> 'Message':
         """ parse message """
+        if isinstance(message, Message):
+            return message
         mvars = vars(message)
-        for key_ in ['_client', '_filtered', '_filtered_input_str',
-                     '_flags', '_process_canceled', '_module', '_kwargs']:
-            if key_ in mvars:
-                del mvars[key_]
         if mvars['reply_to_message']:
             mvars['reply_to_message'] = cls.parse(client, mvars['reply_to_message'], **kwargs)
-        return cls(client, mvars, **kwargs)
+        mvars["client"] = mvars.pop("_client", None) or client
+        return cls(mvars, **kwargs)
 
     @property
     def client(self) -> Union['_client.Userge', '_client.UsergeBot']:

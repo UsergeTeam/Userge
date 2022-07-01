@@ -118,5 +118,6 @@ class SendMessage(RawClient):  # pylint: disable=missing-class-docstring
         del_in = del_in or config.Dynamic.MSG_DELETE_TIMEOUT
         if del_in > 0:
             await asyncio.sleep(del_in)
+            setattr(msg, "_client", self)
             return bool(await msg.delete())
         return types.bound.Message.parse(self, msg, module=module)
