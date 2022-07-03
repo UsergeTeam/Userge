@@ -50,8 +50,9 @@ class Message(RawMessage):
         if isinstance(message, Message):
             return message
         mvars = vars(message)
-        if mvars['reply_to_message']:
-            mvars['reply_to_message'] = cls.parse(client, mvars['reply_to_message'], **kwargs)
+        if mvars['reply_to_message'] and not kwargs.pop("stop", False):
+            mvars['reply_to_message'] = cls.parse(client, mvars['reply_to_message'],
+                                                  stop=True, **kwargs)
         mvars["client"] = mvars.pop("_client", None) or client
         return cls(mvars, **kwargs)
 
