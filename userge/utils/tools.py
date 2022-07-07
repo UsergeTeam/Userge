@@ -230,7 +230,6 @@ def extract_entities(
             enums.MessageEntityType.HASHTAG,
             enums.MessageEntityType.CASHTAG,
             enums.MessageEntityType.BOT_COMMAND,
-            enums.MessageEntityType.URL,
             enums.MessageEntityType.EMAIL,
             enums.MessageEntityType.PHONE_NUMBER,
             enums.MessageEntityType.BOLD,
