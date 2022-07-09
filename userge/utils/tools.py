@@ -118,7 +118,7 @@ def humanbytes(size: float) -> str:
     while size > power:
         size /= power
         t_n += 1
-    return "{:.2f} {}B".format(size, power_dict[t_n]) #pylint: disable=consider-using-f-string
+    return "{:.2f} {}B".format(size, power_dict[t_n])  #pylint: disable=consider-using-f-string
 
 
 def time_formatter(seconds: float) -> str:
