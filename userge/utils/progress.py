@@ -12,6 +12,7 @@ import time
 from math import floor
 from typing import Dict, Tuple
 
+from pyrogram.enums import ParseMode
 from pyrogram.errors.exceptions import FloodWait
 
 import userge
@@ -51,13 +52,13 @@ async def progress(current: int,
         speed = current / elapsed_time
         time_to_completion = time_formatter(int((total - current) / speed))
         progress_str = \
-            "__{}__ : `{}`\n" + \
-            "```[{}{}]```\n" + \
-            "**Progress** : `{}%`\n" + \
-            "**Completed** : `{}`\n" + \
-            "**Total** : `{}`\n" + \
-            "**Speed** : `{}/s`\n" + \
-            "**ETA** : `{}`"
+            "<u>{}</u> : <code>{}</code>\n" + \
+            "<pre>[{}{}]</pre>\n" + \
+            "<b>Progress</b> : <code>{}%</code>\n" + \
+            "<b>Completed</b> : <code>{}</code>\n" + \
+            "<b>Total</b> : <code>{}</code>\n" + \
+            "<b>Speed</b> : <code>{}/s</code>\n" + \
+            "<b>ETA</b> : <code>{}</code>"
         progress_str = progress_str.format(
             ud_type,
             file_name,
@@ -71,6 +72,6 @@ async def progress(current: int,
             humanbytes(speed),
             time_to_completion if time_to_completion else "0 s")
         try:
-            await message.edit(progress_str)
+            await message.edit(progress_str, parse_mode=ParseMode.HTML)
         except FloodWait as f_e:
             time.sleep(f_e.value)
