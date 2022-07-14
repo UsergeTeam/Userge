@@ -113,8 +113,8 @@ async def cancel_(message: Message):
 async def jsonify(message: Message):
     """ msg to json """
     msg = str(message.reply_to_message) if message.reply_to_message else str(message)
-    await message.edit_or_send_as_file(text=msg, 
-                                       filename=f"json-{message.id}.txt", 
+    await message.edit_or_send_as_file(text=msg,
+                                       filename=f"json-{message.id}.txt",
                                        caption="Too Large")
 
 
