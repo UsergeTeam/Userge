@@ -74,7 +74,7 @@ class Conversation:
                 filter specific response.
 
         Returns:
-            On success, the recieved Message is returned.
+            On success, the received Message is returned.
         """
         if self._count >= self._limit:
             raise _MsgLimitReached
