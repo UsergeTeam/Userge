@@ -183,14 +183,14 @@ async def del_sudo_cmd(message: Message):
                 SUDO_CMDS_COLLECTION.delete_one({'_id': ncmd}))
     if IS_REMOVED:
         await message.edit(
-            f"cmds : `{' '.join(x for x in IS_REMOVED}` removed from **SUDO**!",
+            f"cmds : `{' '.join(x for x in IS_REMOVED)}` removed from **SUDO**!",
             del_in=5, log=__name__)
     if NOT_IN_SUDO and not IS_REMOVED:
         await message.edit(
-            f"cmds : `{' '.join(x for x in NOT_IN_SUDO}` not in **SUDO**!", del_in=5)
+            f"cmds : `{' '.join(x for x in NOT_IN_SUDO)}` not in **SUDO**!", del_in=5)
     elif NOT_IN_SUDO:
         await message.reply_text(
-            f"cmds : `{' '.join(x for x in NOT_IN_SUDO}` not in **SUDO**!", del_in=5)
+            f"cmds : `{' '.join(x for x in NOT_IN_SUDO)}` not in **SUDO**!", del_in=5)
 
 
 @userge.on_cmd("vscmd", about={'header': "view sudo cmds"}, allow_channels=False)
