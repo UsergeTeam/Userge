@@ -157,7 +157,8 @@ async def add_sudo_cmd(message: Message):
 @userge.on_cmd("delscmd", about={
     'header': "delete sudo commands",
     'flags': {'-all': "remove all sudo commands"},
-    'usage': "{tr}delscmd [command names separated by space]\n{tr}delscmd -all"}, allow_channels=False)
+    'usage': "{tr}delscmd [command names separated by space]\n{tr}delscmd -all"},
+    allow_channels=False)
 async def del_sudo_cmd(message: Message):
     """ delete sudo cmd """
     if '-all' in message.flags:
@@ -182,7 +183,8 @@ async def del_sudo_cmd(message: Message):
                 SUDO_CMDS_COLLECTION.delete_one({'_id': ncmd}))
     if IS_REMOVED:
         await message.edit(
-            f"cmds : `{' '.join(x for x in IS_REMOVED}` removed from **SUDO**!", del_in=5, log=__name__)
+            f"cmds : `{' '.join(x for x in IS_REMOVED}` removed from **SUDO**!",
+            del_in=5, log=__name__)
     if NOT_IN_SUDO and not IS_REMOVED:
         await message.edit(
             f"cmds : `{' '.join(x for x in NOT_IN_SUDO}` not in **SUDO**!", del_in=5)
