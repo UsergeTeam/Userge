@@ -157,7 +157,8 @@ async def add_sudo_cmd(message: Message):
 @userge.on_cmd("delscmd", about={
     'header': "delete sudo commands",
     'flags': {'-all': "remove all sudo commands"},
-    'usage': "{tr}delscmd [command name]\n{tr}delscmd -all"}, allow_channels=False)
+    'usage': "{tr}delscmd [command names separated by space]\n{tr}delscmd -all"},
+    allow_channels=False)
 async def del_sudo_cmd(message: Message):
     """ delete sudo cmd """
     if '-all' in message.flags:
@@ -170,13 +171,25 @@ async def del_sudo_cmd(message: Message):
     if not cmd:
         await message.err('input not found!')
         return
-    if cmd not in sudo.COMMANDS:
-        await message.edit(f"cmd : `{cmd}` not in **SUDO**!", del_in=5)
-    else:
-        sudo.COMMANDS.remove(cmd)
-        await asyncio.gather(
-            SUDO_CMDS_COLLECTION.delete_one({'_id': cmd}),
-            message.edit(f"cmd : `{cmd}` removed from **SUDO**!", del_in=5, log=__name__))
+    NOT_IN_SUDO = []
+    IS_REMOVED = []
+    for ncmd in cmd.split(" "):
+        if ncmd not in sudo.COMMANDS:
+            NOT_IN_SUDO.append(ncmd)
+        else:
+            sudo.COMMANDS.remove(ncmd)
+            IS_REMOVED.append(ncmd)
+    if IS_REMOVED:
+        await SUDO_CMDS_COLLECTION.delete_many({'filter': {'$in': IS_REMOVED}})
+        await message.edit(
+            f"cmds : `{' '.join(IS_REMOVED)}` removed from **SUDO**!",
+            del_in=5, log=__name__)
+    if NOT_IN_SUDO and not IS_REMOVED:
+        await message.edit(
+            f"cmds : `{' '.join(NOT_IN_SUDO)}` not in **SUDO**!", del_in=5)
+    elif NOT_IN_SUDO:
+        await message.reply_text(
+            f"cmds : `{' '.join(NOT_IN_SUDO)}` not in **SUDO**!", del_in=5)
 
 
 @userge.on_cmd("vscmd", about={'header': "view sudo cmds"}, allow_channels=False)
