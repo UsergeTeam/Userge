@@ -174,7 +174,7 @@ async def del_sudo_cmd(message: Message):
     NOT_IN_SUDO = []
     IS_REMOVED = []
     for ncmd in cmd.split(" "):
-        if cmd not in sudo.COMMANDS:
+        if ncmd not in sudo.COMMANDS:
             NOT_IN_SUDO.append(ncmd)
         else:
             sudo.COMMANDS.remove(ncmd)
