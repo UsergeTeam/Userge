@@ -181,7 +181,7 @@ async def del_sudo_cmd(message: Message):
             IS_REMOVED.append(ncmd)
     if IS_REMOVED:
         await asyncio.gather(
-            SUDO_CMDS_COLLECTION.delete_many({'filter': {'$in': IS_REMOVED}})
+            SUDO_CMDS_COLLECTION.delete_many({'filter': {'$in': IS_REMOVED}}))
         await message.edit(
             f"cmds : `{' '.join(x for x in IS_REMOVED)}` removed from **SUDO**!",
             del_in=5, log=__name__)
