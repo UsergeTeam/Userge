@@ -180,7 +180,7 @@ async def del_sudo_cmd(message: Message):
             sudo.COMMANDS.remove(ncmd)
             IS_REMOVED.append(ncmd)
     if IS_REMOVED:
-        await SUDO_CMDS_COLLECTION.delete_many({'filter': {'$in': IS_REMOVED}})
+        await SUDO_CMDS_COLLECTION.delete_many({'_id': {'$in': IS_REMOVED}})
         await message.edit(
             f"cmds : `{' '.join(IS_REMOVED)}` removed from **SUDO**!",
             del_in=5, log=__name__)
