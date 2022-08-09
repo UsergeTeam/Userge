@@ -50,7 +50,7 @@ class ChannelLogger:
         Returns:
             str
         """
-        return "<b><a href='https://t.me/c/{}/{}'>Preview</a></b>".format(
+        return "<b><a href='https://t.me/c/{}/{}'>Preview</a></b>".format(  # pylint: disable=consider-using-f-string
             str(config.LOG_CHANNEL_ID)[4:], message_id)
 
     async def log(self, text: str, name: str = '') -> int:
