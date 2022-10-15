@@ -197,7 +197,7 @@ async def eval_(message: Message):
     async def _callback(output: Optional[str], errored: bool):
         final = ""
         if not silent_mode:
-            final += f"**>**" + (replied.link if is_file else f"```python\n{cmd}```") + "\n\n"
+            final += "**>**" + (replied.link if is_file else f"```python\n{cmd}```") + "\n\n"
         if isinstance(output, str):
             output = output.strip()
             if output == '':
