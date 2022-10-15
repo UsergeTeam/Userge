@@ -347,7 +347,7 @@ class RawDecorator(RawClient):
                     await self._channel.log(f"**PLUGIN** : `{module}`\n"
                                             f"**FUNCTION** : `{func.__name__}`\n"
                                             f"**ERROR** : `{f_e or None}`\n"
-                                            f"\n```{format_exc().strip()}```",
+                                            f"```python\n{format_exc().strip()}```",
                                             "TRACEBACK")
                 finally:
                     if flt.propagate:
