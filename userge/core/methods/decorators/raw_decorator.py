@@ -107,6 +107,7 @@ async def _raise_func(r_c: Union['_client.Userge', '_client.UsergeBot'],
     if r_m.chat.type in (enums.ChatType.PRIVATE, enums.ChatType.BOT):
         await r_m.reply(f"< **ERROR**: {text} ! >")
     else:
+        # skipcq: PYL-W0212
         await r_c._channel.log(f"{text}\nCaused By: [link]({r_m.link})", "ERROR")
 
 
