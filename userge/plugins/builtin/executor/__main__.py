@@ -30,6 +30,7 @@ try:
 except ImportError:
     # pylint: disable=ungrouped-imports
     from os import kill as killpg
+    # pylint: disable=ungrouped-imports
     from signal import CTRL_C_EVENT as SIGKILL
 
     def geteuid() -> int:
