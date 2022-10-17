@@ -43,7 +43,7 @@ async def core(message: Message):
     set_branch, branch = 'b' in flags, flags.get('b')
     set_version, version = 'v' in flags, int(flags.get('v') or 0)
 
-    await message.edit("```processing ...```")
+    await message.edit("<pre>processing ...</pre>")
 
     if fetch:
         await api.fetch_core()
@@ -97,10 +97,10 @@ async def core(message: Message):
             await message.edit(
                 f"done, do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
         else:
-            await message.edit("```didn't change anything```", del_in=3)
+            await message.edit("<pre>didn't change anything</pre>", del_in=3)
 
     elif fetch:
-        await message.edit("```fetched core repo```", del_in=3)
+        await message.edit("<pre>fetched core repo</pre>", del_in=3)
 
     else:
         core_repo = await api.get_core()
@@ -152,12 +152,12 @@ async def repos(message: Message):
     set_version, version = 'v' in flags, int(flags.get('v') or 0)
     set_priority, priority = 'p' in flags, flags.get('p')
 
-    await message.edit("```processing ...```")
+    await message.edit("<pre>processing ...</pre>")
 
     if repo_id <= 0:
         if fetch:
             await api.fetch_repos()
-            await message.edit("```fetched plugins repos```", del_in=3)
+            await message.edit("<pre>fetched plugins repos</pre>", del_in=3)
 
         elif invalidate:
             await api.invalidate_repos_cache()
@@ -169,7 +169,7 @@ async def repos(message: Message):
             plg_repos = await api.get_repos()
 
             if not plg_repos:
-                await message.edit("```no repos found```", del_in=3)
+                await message.edit("<pre>no repos found</pre>", del_in=3)
                 return
 
             out = "**Repos Details**\n\n"
@@ -251,10 +251,10 @@ async def repos(message: Message):
                 await message.edit(
                     f"done, do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
             else:
-                await message.edit("```didn't change anything```", del_in=3)
+                await message.edit("<pre>didn't change anything</pre>", del_in=3)
 
         elif fetch:
-            await message.edit(f"```fetched plugins repo: {repo_id}```", del_in=3)
+            await message.edit(f"<pre>fetched plugins repo: {repo_id}</pre>", del_in=3)
 
         else:
             await message.err("invalid flags")
@@ -284,14 +284,14 @@ async def add_repo(message: Message):
         await message.err("no input url")
         return
 
-    await message.edit("```processing ...```")
+    await message.edit("<pre>processing ...</pre>")
 
     if await api.add_repo(priority, branch, url):
         await message.edit("added repo, "
                            f"do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
 
     else:
-        await message.edit("```repo was already added or invalid```", del_in=3)
+        await message.edit("<pre>repo was already added or invalid</pre>", del_in=3)
 
 
 @userge.on_cmd("rmrepo", about={
@@ -307,14 +307,14 @@ async def rm_repo(message: Message):
         await message.err("empty or invalid repo id")
         return
 
-    await message.edit("```processing ...```")
+    await message.edit("<pre>processing ...</pre>")
 
     if await api.remove_repo(int(repo_id)):
         await message.edit("removed repo, "
                            f"do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
 
     else:
-        await message.edit("```couldn't find that repo```", del_in=3)
+        await message.edit("<pre>couldn't find that repo</pre>", del_in=3)
 
 
 @userge.on_cmd("consts", about={
@@ -325,7 +325,7 @@ async def consts(message: Message):
     data_ = await api.get_constraints()
 
     if not data_:
-        await message.edit("```no constraints found```", del_in=3)
+        await message.edit("<pre>no constraints found</pre>", del_in=3)
         return
 
     out = ""
@@ -363,14 +363,14 @@ async def add_consts(message: Message):
         await message.err("no data provided")
         return
 
-    await message.edit("```processing ...```")
+    await message.edit("<pre>processing ...</pre>")
 
     if await api.add_constraints(c_type, data.split()):
         await message.edit("added constraints, "
                            f"do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
 
     else:
-        await message.edit("```didn't add anything```", del_in=3)
+        await message.edit("<pre>didn't add anything</pre>", del_in=3)
 
 
 @userge.on_cmd("rmconsts", about={
@@ -400,14 +400,14 @@ async def rm_consts(message: Message):
         await message.err("no data provided")
         return
 
-    await message.edit("```processing ...```")
+    await message.edit("<pre>processing ...</pre>")
 
     if await api.remove_constraints(c_type, data.split()):
         await message.edit("removed constraints, "
                            f"do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
 
     else:
-        await message.edit("```didn't remove anything```", del_in=3)
+        await message.edit("<pre>didn't remove anything</pre>", del_in=3)
 
 
 @userge.on_cmd("clrconsts", about={
@@ -429,14 +429,14 @@ async def clr_consts(message: Message):
         await message.err("invalid type")
         return
 
-    await message.edit("```processing ...```")
+    await message.edit("<pre>processing ...</pre>")
 
     if await api.clear_constraints(c_type):
         await message.edit("cleared constraints, "
                            f"do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
 
     else:
-        await message.edit("```nothing found to clear```", del_in=3)
+        await message.edit("<pre>nothing found to clear</pre>", del_in=3)
 
 
 @userge.on_cmd("update", about={
@@ -536,7 +536,7 @@ async def update(message: Message):
         else:
             await message.edit_or_send_as_file(updates, del_in=0, disable_web_page_preview=True)
     else:
-        await message.edit("```no updates found```", del_in=3)
+        await message.edit("<pre>no updates found</pre>", del_in=3)
 
 
 def _updates_to_str(updates: List[Update]) -> str:

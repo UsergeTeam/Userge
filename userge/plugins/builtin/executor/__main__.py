@@ -197,13 +197,13 @@ async def eval_(message: Message):
     async def _callback(output: Optional[str], errored: bool):
         final = ""
         if not silent_mode:
-            final += f"**>** {replied.link if is_file else f'```{cmd}```'}\n\n"
+            final += "**>**" + (replied.link if is_file else f"```python\n{cmd}```") + "\n\n"
         if isinstance(output, str):
             output = output.strip()
             if output == '':
                 output = None
         if output is not None:
-            final += f"**>>** ```{output}```"
+            final += f"**>>** ```python\n{output}```"
         if errored and message.chat.type in (
                 enums.ChatType.GROUP,
                 enums.ChatType.SUPERGROUP,
@@ -246,7 +246,7 @@ async def eval_(message: Message):
             await future
         except asyncio.CancelledError:
             await asyncio.gather(msg.canceled(),
-                                 CHANNEL.log(f"**EVAL Process Canceled!**\n\n```{cmd}```"))
+                                 CHANNEL.log(f"**EVAL Process Canceled!**\n\n```python\n{cmd}```"))
         finally:
             _EVAL_TASKS.pop(future, None)
 
