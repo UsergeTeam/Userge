@@ -50,7 +50,8 @@ class ChannelLogger:
         Returns:
             str
         """
-        return f"<b><a href='https://t.me/c/{str(config.LOG_CHANNEL_ID)[4:]}/{message_id}'>Preview</a></b>"
+        link = f"https://t.me/c/{str(config.LOG_CHANNEL_ID)[4:]}/{message_id}"
+        return f"<b><a href='{link}'>Preview</a></b>"
 
     async def log(self, text: str, name: str = '') -> int:
         """\nsend text message to log channel.
