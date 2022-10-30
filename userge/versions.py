@@ -17,7 +17,7 @@ from loader.userge import api
 
 __major__ = 1
 __minor__ = 0
-__micro__ = 1
+__micro__ = 2
 
 __python_version__ = f"{version_info[0]}.{version_info[1]}.{version_info[2]}"
 __license__ = "[GNU GPL v3.0](https://github.com/UsergeTeam/Userge/blob/master/LICENSE)"
