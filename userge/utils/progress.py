@@ -10,7 +10,7 @@
 
 import time
 from math import floor
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Optional
 
 from pyrogram.errors.exceptions import FloodWait
 
@@ -26,10 +26,11 @@ async def progress(current: int,
                    message: 'userge.Message',
                    ud_type: str,
                    file_name: str = '',
-                   delay: int = config.Dynamic.EDIT_SLEEP_TIMEOUT) -> None:
+                   delay: Optional[int] = None) -> None:
     """ progress function """
     if message.process_is_canceled:
         await message.client.stop_transmission()
+    delay = delay or config.Dynamic.EDIT_SLEEP_TIMEOUT
     task_id = f"{message.chat.id}.{message.id}"
     if current == total:
         if task_id not in _TASKS:
