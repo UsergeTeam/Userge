@@ -465,7 +465,7 @@ class Term:
             stderr=asyncio.subprocess.PIPE)
         if setsid:
             kwargs['preexec_fn'] = setsid
-        if sh = which(os.environ.get("USERGE_SHELL", "bash")):
+        if sh := which(os.environ.get("USERGE_SHELL", "bash")):
             kwargs['executable'] = sh
         process = await asyncio.create_subprocess_shell(cmd, **kwargs)
         t_obj = cls(process)
