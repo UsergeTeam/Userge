@@ -1,4 +1,4 @@
-dnspython
+dnspython==2.3.0
 heroku3
 motor
 pyrogram==2.0.58
