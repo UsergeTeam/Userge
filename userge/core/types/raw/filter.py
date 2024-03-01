@@ -1,6 +1,6 @@
 # pylint: disable=missing-module-docstring
 #
-# Copyright (C) 2020-2022 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
+# Copyright (C) 2020-2023 by UsergeTeam@Github, < https://github.com/UsergeTeam >.
 #
 # This file is part of < https://github.com/UsergeTeam/Userge > project,
 # and is released under the "GNU v3.0 License Agreement".
@@ -124,6 +124,7 @@ class Filter:
             return ''
 
         self._client.add_handler(self._handler, self._group)
+        # skipcq: PYL-W0212
         # pylint: disable=protected-access
         if self.allow_via_bot and self._client._bot is not None:
             self._client._bot.add_handler(self._handler, self._group)
@@ -137,6 +138,7 @@ class Filter:
             return ''
 
         self._client.remove_handler(self._handler, self._group)
+        # skipcq: PYL-W0212
         # pylint: disable=protected-access
         if self.allow_via_bot and self._client._bot is not None:
             self._client._bot.remove_handler(self._handler, self._group)
