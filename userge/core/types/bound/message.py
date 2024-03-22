@@ -19,7 +19,7 @@ from typing import List, Dict, Tuple, Union, Optional, Sequence, Callable, Any
 from pyrogram.types import (
     InlineKeyboardMarkup, InlineKeyboardButton,
     Message as RawMessage,
-    LinkPreviewOptions, ReplyParameters
+    LinkPreviewOptions
 )
 from pyrogram.errors import (
     MessageAuthorRequired, MessageTooLong, MessageNotModified,
@@ -309,9 +309,7 @@ class Message(RawMessage):
             filename=filename,
             caption=caption,
             log=log,
-            reply_parameters=ReplyParameters(
-                message_id=reply_to_id
-            )
+            reply_to_message_id=reply_to_message_id
         )
 
     async def reply(self,
@@ -402,9 +400,7 @@ class Message(RawMessage):
             parse_mode=parse_mode,
             link_preview_options=link_preview_options,
             disable_notification=disable_notification,
-            reply_parameters=ReplyParameters(
-                message_id=reply_to_message_id
-            ),
+            reply_to_message_id=reply_to_message_id,
             schedule_date=schedule_date,
             protect_content=protect_content,
             reply_markup=reply_markup
@@ -925,9 +921,7 @@ class Message(RawMessage):
                                     parse_mode=parse_mode,
                                     link_preview_options=link_preview_options,
                                     disable_notification=disable_notification,
-                                    reply_parameters=ReplyParameters(
-                                        message_id=reply_to_message_id
-                                    ),
+                                    reply_to_message_id=reply_to_message_id,
                                     reply_markup=reply_markup)
         except MessageTooLong:
             return await self.reply_as_file(text=text, as_raw=as_raw, log=log, **kwargs)
