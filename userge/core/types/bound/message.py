@@ -309,7 +309,7 @@ class Message(RawMessage):
             filename=filename,
             caption=caption,
             log=log,
-            reply_to_message_id=reply_to_message_id
+            reply_to_message_id=reply_to_id
         )
 
     async def reply(self,
