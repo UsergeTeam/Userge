@@ -302,15 +302,16 @@ class Message(RawMessage):
             asyncio.get_event_loop().create_task(self.delete())
         if log and isinstance(log, bool):
             log = self._module
-        return await self._client.send_as_file(chat_id=self.chat.id,
-                                               text=text,
-                                               as_raw=as_raw,
-                                               filename=filename,
-                                               caption=caption,
-                                               log=log,
-                                               reply_parameters=ReplyParameters(
-                                                message_id=reply_to_id
-                                               )
+        return await self._client.send_as_file(
+            chat_id=self.chat.id,
+            text=text,
+            as_raw=as_raw,
+            filename=filename,
+            caption=caption,
+            log=log,
+            reply_parameters=ReplyParameters(
+                message_id=reply_to_id
+            )
         )
 
     async def reply(self,

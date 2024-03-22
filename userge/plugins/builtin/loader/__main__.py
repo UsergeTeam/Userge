@@ -196,9 +196,13 @@ async def repos(message: Message):
                 out += f"**is latest** : `{plg_repo.count == plg_repo.max_count}`\n"
                 out += f"**head** : [link]({plg_repo.head_url})\n\n"
 
-            await message.edit_or_send_as_file(out, del_in=0, link_preview_options=LinkPreviewOptions(
-                is_disabled=True
-            ))
+            await message.edit_or_send_as_file(
+                out,
+                del_in=0,
+                link_preview_options=LinkPreviewOptions(
+                    is_disabled=True
+                )
+            )
 
     else:
         if fetch:
@@ -556,7 +560,9 @@ async def update(message: Message):
                     "updated to latest, "
                     f"do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
         else:
-            await message.edit_or_send_as_file(updates, del_in=0,
+            await message.edit_or_send_as_file(
+                updates,
+                del_in=0,
                 link_preview_options=LinkPreviewOptions(
                     is_disabled=True
                 )
