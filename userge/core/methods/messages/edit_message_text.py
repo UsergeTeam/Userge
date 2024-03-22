@@ -15,7 +15,10 @@ import asyncio
 from typing import Optional, Union, List
 
 from pyrogram import enums
-from pyrogram.types import InlineKeyboardMarkup, MessageEntity
+from pyrogram.types import (
+    InlineKeyboardMarkup, MessageEntity,
+    LinkPreviewOptions
+)
 
 from userge import config
 from ...ext import RawClient
@@ -31,7 +34,7 @@ class EditMessageText(RawClient):  # pylint: disable=missing-class-docstring
                                 log: Union[bool, str] = False,
                                 parse_mode: Optional[enums.ParseMode] = None,
                                 entities: List[MessageEntity] = None,
-                                disable_web_page_preview: Optional[bool] = None,
+                                link_preview_options: Optional[LinkPreviewOptions] = None,
                                 reply_markup: InlineKeyboardMarkup = None
                                 ) -> Union['types.bound.Message', bool]:
         """\nExample:
@@ -72,7 +75,7 @@ class EditMessageText(RawClient):  # pylint: disable=missing-class-docstring
                 List of special entities that appear in message text,
                 which can be specified instead of *parse_mode*.
 
-            disable_web_page_preview (``bool``, *optional*):
+            link_preview_options (:obj:`pyrogram.types.LinkPreviewOptions`, *optional*):
                 Disables link previews for links in this message.
 
             reply_markup (:obj:`InlineKeyboardMarkup`, *optional*):
@@ -90,7 +93,7 @@ class EditMessageText(RawClient):  # pylint: disable=missing-class-docstring
                                               text=text,
                                               parse_mode=parse_mode,
                                               entities=entities,
-                                              disable_web_page_preview=disable_web_page_preview,
+                                              link_preview_options=link_preview_options,
                                               reply_markup=reply_markup)
         module = inspect.currentframe().f_back.f_globals['__name__']
         if log:

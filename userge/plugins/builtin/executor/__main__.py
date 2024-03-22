@@ -43,6 +43,7 @@ except ImportError:
     setsid = None
 
 from pyrogram.types.messages_and_media.message import Str
+from pyrogram.types import LinkPreviewOptions
 from pyrogram import enums
 
 from userge import userge, Message, config, pool
@@ -216,7 +217,9 @@ async def eval_(message: Message):
             await msg.edit_or_send_as_file(text=final,
                                            as_raw=as_raw,
                                            parse_mode=enums.ParseMode.MARKDOWN,
-                                           disable_web_page_preview=True,
+                                           link_preview_options=LinkPreviewOptions(
+                                                is_disabled=True
+                                            ),
                                            filename="eval.txt",
                                            caption=cmd)
         else:

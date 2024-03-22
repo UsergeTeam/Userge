@@ -1,5 +1,5 @@
-dnspython
-heroku3
-motor
-pyrogram==2.0.58
-tgcrypto
+dnspython==2.2.0
+heroku3==4.2.1
+motor==3.3.2 # 2.5.1
+https://github.com/TelegramPlayGround/pyrogram/archive/ffbce0c.zip
+TgCrypto==1.2.5

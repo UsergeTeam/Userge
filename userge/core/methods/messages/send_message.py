@@ -17,7 +17,9 @@ from typing import Optional, Union, List
 
 from pyrogram.types import (
     InlineKeyboardMarkup, ReplyKeyboardMarkup,
-    ReplyKeyboardRemove, ForceReply, MessageEntity)
+    ReplyKeyboardRemove, ForceReply, MessageEntity,
+    LinkPreviewOptions, ReplyParameters
+)
 from pyrogram import enums
 
 from userge import config
@@ -33,7 +35,7 @@ class SendMessage(RawClient):  # pylint: disable=missing-class-docstring
                            log: Union[bool, str] = False,
                            parse_mode: Optional[enums.ParseMode] = None,
                            entities: List[MessageEntity] = None,
-                           disable_web_page_preview: Optional[bool] = None,
+                           link_preview_options: Optional[LinkPreviewOptions] = None,
                            disable_notification: Optional[bool] = None,
                            reply_to_message_id: Optional[int] = None,
                            schedule_date: Optional[datetime] = None,
@@ -77,7 +79,7 @@ class SendMessage(RawClient):  # pylint: disable=missing-class-docstring
                 List of special entities that appear in message text,
                 which can be specified instead of *parse_mode*.
 
-            disable_web_page_preview (``bool``, *optional*):
+            link_preview_options (:obj:`pyrogram.types.LinkPreviewOptions`, *optional*):
                 Disables link previews for links in this message.
 
             disable_notification (``bool``, *optional*):
@@ -106,9 +108,11 @@ class SendMessage(RawClient):  # pylint: disable=missing-class-docstring
                                          text=text,
                                          parse_mode=parse_mode,
                                          entities=entities,
-                                         disable_web_page_preview=disable_web_page_preview,
+                                         link_preview_options=link_preview_options,
                                          disable_notification=disable_notification,
-                                         reply_to_message_id=reply_to_message_id,
+                                         reply_parameters=ReplyParameters(
+                                            message_id=reply_to_message_id
+                                         ),
                                          schedule_date=schedule_date,
                                          protect_content=protect_content,
                                          reply_markup=reply_markup)
