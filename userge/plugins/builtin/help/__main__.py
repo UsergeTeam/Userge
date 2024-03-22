@@ -160,9 +160,13 @@ if userge.has_bot:
         else:
             out_str = f"<i>No Command Found for</i>: <code>{cmd}</code>"
 
-        await msg.reply(out_str, parse_mode=enums.ParseMode.HTML, link_preview_options=LinkPreviewOptions(
-            is_disabled=True
-        ))
+        await msg.reply(
+            out_str,
+            parse_mode=enums.ParseMode.HTML,
+            link_preview_options=LinkPreviewOptions(
+                is_disabled=True
+            )
+        )
 
     @userge.bot.on_callback_query(
         filters=filters.regex(

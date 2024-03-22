@@ -121,7 +121,9 @@ async def core(message: Message):
 **is latest** : `{core_repo.count == core_repo.max_count}`
 **head** : [link]({core_repo.head_url})"""
 
-        await message.edit(out, del_in=0,                   
+        await message.edit(
+            out,
+            del_in=0,
             link_preview_options=LinkPreviewOptions(
                 is_disabled=True
             )

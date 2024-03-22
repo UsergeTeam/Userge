@@ -214,14 +214,16 @@ async def eval_(message: Message):
             msg_id = await CHANNEL.log(final)
             await msg.edit(f"**Logs**: {CHANNEL.get_link(msg_id)}")
         elif final:
-            await msg.edit_or_send_as_file(text=final,
-                                           as_raw=as_raw,
-                                           parse_mode=enums.ParseMode.MARKDOWN,
-                                           link_preview_options=LinkPreviewOptions(
-                                                is_disabled=True
-                                            ),
-                                           filename="eval.txt",
-                                           caption=cmd)
+            await msg.edit_or_send_as_file(
+                text=final,
+                as_raw=as_raw,
+                parse_mode=enums.ParseMode.MARKDOWN,
+                link_preview_options=LinkPreviewOptions(
+                    is_disabled=True
+                ),
+                filename="eval.txt",
+                caption=cmd
+            )
         else:
             await msg.delete()
 

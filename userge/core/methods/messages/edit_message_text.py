@@ -88,13 +88,15 @@ class EditMessageText(RawClient):  # pylint: disable=missing-class-docstring
         Raises:
             RPCError: In case of a Telegram RPC error.
         """
-        msg = await super().edit_message_text(chat_id=chat_id,
-                                              message_id=message_id,
-                                              text=text,
-                                              parse_mode=parse_mode,
-                                              entities=entities,
-                                              link_preview_options=link_preview_options,
-                                              reply_markup=reply_markup)
+        msg = await super().edit_message_text(
+            chat_id=chat_id,
+            message_id=message_id,
+            text=text,
+            parse_mode=parse_mode,
+            entities=entities,
+            link_preview_options=link_preview_options,
+            reply_markup=reply_markup
+        )
         module = inspect.currentframe().f_back.f_globals['__name__']
         if log:
             await self._channel.fwd_msg(msg, module if isinstance(log, bool) else log)

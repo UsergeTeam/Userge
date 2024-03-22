@@ -75,13 +75,15 @@ class SendAsFile(RawClient):  # pylint: disable=missing-class-docstring
         doc = io.BytesIO(text.encode())
         doc.name = filename
 
-        msg = await self.send_document(chat_id=chat_id,
-                                       document=doc,
-                                       caption=caption[:1024],
-                                       disable_notification=True,
-                                       reply_parameters=ReplyParameters(
-                                           message_id=reply_to_message_id
-                                       ))
+        msg = await self.send_document(
+            chat_id=chat_id,
+            document=doc,
+            caption=caption[:1024],
+            disable_notification=True,
+            reply_parameters=ReplyParameters(
+                message_id=reply_to_message_id
+            )
+        )
         module = inspect.currentframe().f_back.f_globals['__name__']
         if log:
             await self._channel.fwd_msg(msg, module if isinstance(log, bool) else log)

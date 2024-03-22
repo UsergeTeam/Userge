@@ -104,18 +104,20 @@ class SendMessage(RawClient):  # pylint: disable=missing-class-docstring
         Returns:
             :obj:`Message`: On success, the sent text message or True is returned.
         """
-        msg = await super().send_message(chat_id=chat_id,
-                                         text=text,
-                                         parse_mode=parse_mode,
-                                         entities=entities,
-                                         link_preview_options=link_preview_options,
-                                         disable_notification=disable_notification,
-                                         reply_parameters=ReplyParameters(
-                                            message_id=reply_to_message_id
-                                         ),
-                                         schedule_date=schedule_date,
-                                         protect_content=protect_content,
-                                         reply_markup=reply_markup)
+        msg = await super().send_message(
+            chat_id=chat_id,
+            text=text,
+            parse_mode=parse_mode,
+            entities=entities,
+            link_preview_options=link_preview_options,
+            disable_notification=disable_notification,
+            reply_parameters=ReplyParameters(
+                message_id=reply_to_message_id
+            ),
+            schedule_date=schedule_date,
+            protect_content=protect_content,
+            reply_markup=reply_markup
+        )
         module = inspect.currentframe().f_back.f_globals['__name__']
         if log:
             await self._channel.fwd_msg(msg, module if isinstance(log, bool) else log)
