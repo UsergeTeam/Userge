@@ -16,7 +16,11 @@ from contextlib import contextmanager
 from datetime import datetime
 from typing import List, Dict, Tuple, Union, Optional, Sequence, Callable, Any
 
-from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message as RawMessage
+from pyrogram.types import (
+    InlineKeyboardMarkup, InlineKeyboardButton,
+    Message as RawMessage,
+    LinkPreviewOptions
+)
 from pyrogram.errors import (
     MessageAuthorRequired, MessageTooLong, MessageNotModified,
     MessageIdInvalid, MessageDeleteForbidden, BotInlineDisabled
@@ -298,13 +302,15 @@ class Message(RawMessage):
             asyncio.get_event_loop().create_task(self.delete())
         if log and isinstance(log, bool):
             log = self._module
-        return await self._client.send_as_file(chat_id=self.chat.id,
-                                               text=text,
-                                               as_raw=as_raw,
-                                               filename=filename,
-                                               caption=caption,
-                                               log=log,
-                                               reply_to_message_id=reply_to_id)
+        return await self._client.send_as_file(
+            chat_id=self.chat.id,
+            text=text,
+            as_raw=as_raw,
+            filename=filename,
+            caption=caption,
+            log=log,
+            reply_to_message_id=reply_to_id
+        )
 
     async def reply(self,
                     text: str,
@@ -312,7 +318,7 @@ class Message(RawMessage):
                     log: Union[bool, str] = False,
                     quote: Optional[bool] = None,
                     parse_mode: Optional[enums.ParseMode] = None,
-                    disable_web_page_preview: Optional[bool] = None,
+                    link_preview_options: Optional[LinkPreviewOptions] = None,
                     disable_notification: Optional[bool] = None,
                     reply_to_message_id: Optional[int] = None,
                     schedule_date: Optional[datetime] = None,
@@ -350,7 +356,7 @@ class Message(RawMessage):
                 Pass "html" to enable HTML-style parsing only.
                 Pass None to completely disable style parsing.
 
-            disable_web_page_preview (``bool``, *optional*):
+            link_preview_options (:obj:`pyrogram.types.LinkPreviewOptions`, *optional*):
                 Disables link previews for links in this message.
 
             disable_notification (``bool``, *optional*):
@@ -386,17 +392,19 @@ class Message(RawMessage):
             reply_to_message_id = self.id
         if log and isinstance(log, bool):
             log = self._module
-        return await self._client.send_message(chat_id=self.chat.id,
-                                               text=text,
-                                               del_in=del_in,
-                                               log=log,
-                                               parse_mode=parse_mode,
-                                               disable_web_page_preview=disable_web_page_preview,
-                                               disable_notification=disable_notification,
-                                               reply_to_message_id=reply_to_message_id,
-                                               schedule_date=schedule_date,
-                                               protect_content=protect_content,
-                                               reply_markup=reply_markup)
+        return await self._client.send_message(
+            chat_id=self.chat.id,
+            text=text,
+            del_in=del_in,
+            log=log,
+            parse_mode=parse_mode,
+            link_preview_options=link_preview_options,
+            disable_notification=disable_notification,
+            reply_to_message_id=reply_to_message_id,
+            schedule_date=schedule_date,
+            protect_content=protect_content,
+            reply_markup=reply_markup
+        )
 
     reply_text = reply
 
@@ -406,7 +414,7 @@ class Message(RawMessage):
                    log: Union[bool, str] = False,
                    sudo: bool = True,
                    parse_mode: Optional[enums.ParseMode] = None,
-                   disable_web_page_preview: Optional[bool] = None,
+                   link_preview_options: Optional[LinkPreviewOptions] = None,
                    reply_markup: InlineKeyboardMarkup = None) -> Union['Message', bool]:
         """\nExample:
                 message.edit_text("hello")
@@ -435,7 +443,7 @@ class Message(RawMessage):
                 Pass "html" to enable HTML-style parsing only.
                 Pass None to completely disable style parsing.
 
-            disable_web_page_preview (``bool``, *optional*):
+            link_preview_options (:obj:`pyrogram.types.LinkPreviewOptions`, *optional*):
                 Disables link previews for links in this message.
 
             reply_markup (:obj:`InlineKeyboardMarkup`, *optional*):
@@ -458,7 +466,7 @@ class Message(RawMessage):
                 del_in=del_in,
                 log=log,
                 parse_mode=parse_mode,
-                disable_web_page_preview=disable_web_page_preview,
+                link_preview_options=link_preview_options,
                 reply_markup=reply_markup)
         except MessageNotModified:
             return self
@@ -468,7 +476,7 @@ class Message(RawMessage):
                                        del_in=del_in,
                                        log=log,
                                        parse_mode=parse_mode,
-                                       disable_web_page_preview=disable_web_page_preview,
+                                       link_preview_options=link_preview_options,
                                        reply_markup=reply_markup)
                 if isinstance(msg, Message):
                     self.id = msg.id  # pylint: disable=W0201
@@ -482,7 +490,7 @@ class Message(RawMessage):
                          del_in: int = -1,
                          log: Union[bool, str] = False,
                          parse_mode: Optional[enums.ParseMode] = None,
-                         disable_web_page_preview: Optional[bool] = None,
+                         link_preview_options: Optional[LinkPreviewOptions] = None,
                          reply_markup: InlineKeyboardMarkup = None,
                          **kwargs) -> Union['Message', bool]:
         """\nThis will first try to message.edit.
@@ -513,7 +521,7 @@ class Message(RawMessage):
                 Pass "html" to enable HTML-style parsing only.
                 Pass None to completely disable style parsing.
 
-            disable_web_page_preview (``bool``, *optional*):
+            link_preview_options (:obj:`pyrogram.types.LinkPreviewOptions`, *optional*):
                 Disables link previews for links in this message.
 
             reply_markup (:obj:`InlineKeyboardMarkup`, *optional*):
@@ -531,14 +539,14 @@ class Message(RawMessage):
                                    log=log,
                                    sudo=False,
                                    parse_mode=parse_mode,
-                                   disable_web_page_preview=disable_web_page_preview,
+                                   link_preview_options=link_preview_options,
                                    reply_markup=reply_markup)
         except (MessageAuthorRequired, MessageIdInvalid):
             return await self.reply(text=text,
                                     del_in=del_in,
                                     log=log,
                                     parse_mode=parse_mode,
-                                    disable_web_page_preview=disable_web_page_preview,
+                                    link_preview_options=link_preview_options,
                                     reply_markup=reply_markup,
                                     **kwargs)
 
@@ -549,7 +557,7 @@ class Message(RawMessage):
                   log: Union[bool, str] = False,
                   sudo: bool = True,
                   parse_mode: Optional[enums.ParseMode] = None,
-                  disable_web_page_preview: Optional[bool] = None,
+                  link_preview_options: Optional[LinkPreviewOptions] = None,
                   reply_markup: InlineKeyboardMarkup = None) -> Union['Message', bool]:
         """\nYou can send error messages with command info button using this method
 
@@ -582,7 +590,7 @@ class Message(RawMessage):
                 Pass "html" to enable HTML-style parsing only.
                 Pass None to completely disable style parsing.
 
-            disable_web_page_preview (``bool``, *optional*):
+            link_preview_options (:obj:`pyrogram.types.LinkPreviewOptions`, *optional*):
                 Disables link previews for links in this message.
 
             reply_markup (:obj:`InlineKeyboardMarkup`, *optional*):
@@ -608,7 +616,7 @@ class Message(RawMessage):
                                    log=log,
                                    sudo=sudo,
                                    parse_mode=parse_mode,
-                                   disable_web_page_preview=disable_web_page_preview,
+                                   link_preview_options=link_preview_options,
                                    reply_markup=reply_markup)
         bot_username = (await self._client.get_me()).username
         if self._client.is_bot:
@@ -622,7 +630,7 @@ class Message(RawMessage):
                                       log=log,
                                       sudo=sudo,
                                       parse_mode=parse_mode,
-                                      disable_web_page_preview=disable_web_page_preview,
+                                      link_preview_options=link_preview_options,
                                       reply_markup=reply_markup)
         else:
             bot_username = (await self._client.bot.get_me()).username
@@ -642,7 +650,7 @@ class Message(RawMessage):
                                           log=log,
                                           sudo=sudo,
                                           parse_mode=parse_mode,
-                                          disable_web_page_preview=disable_web_page_preview,
+                                          link_preview_options=link_preview_options,
                                           reply_markup=reply_markup)
         return msg_obj
 
@@ -652,7 +660,7 @@ class Message(RawMessage):
                         show_help: bool = True,
                         log: Union[bool, str] = False,
                         parse_mode: Optional[enums.ParseMode] = None,
-                        disable_web_page_preview: Optional[bool] = None,
+                        link_preview_options: Optional[LinkPreviewOptions] = None,
                         reply_markup: InlineKeyboardMarkup = None) -> Union['Message', bool]:
         """\nThis will first try to message.err.
         If it raise MessageAuthorRequired or
@@ -685,7 +693,7 @@ class Message(RawMessage):
                 Pass "html" to enable HTML-style parsing only.
                 Pass None to completely disable style parsing.
 
-            disable_web_page_preview (``bool``, *optional*):
+            link_preview_options (:obj:`pyrogram.types.LinkPreviewOptions`, *optional*):
                 Disables link previews for links in this message.
 
             reply_markup (:obj:`InlineKeyboardMarkup`, *optional*):
@@ -704,7 +712,7 @@ class Message(RawMessage):
                                      show_help=show_help,
                                      log=log,
                                      parse_mode=parse_mode,
-                                     disable_web_page_preview=disable_web_page_preview,
+                                     link_preview_options=link_preview_options,
                                      reply_markup=reply_markup)
         except (MessageAuthorRequired, MessageIdInvalid):
             if show_help:
@@ -719,7 +727,7 @@ class Message(RawMessage):
                                         del_in=del_in,
                                         log=log,
                                         parse_mode=parse_mode,
-                                        disable_web_page_preview=disable_web_page_preview,
+                                        link_preview_options=link_preview_options,
                                         reply_markup=reply_markup)
             bot_username = (await self._client.get_me()).username
             if self._client.is_bot:
@@ -732,7 +740,7 @@ class Message(RawMessage):
                                            del_in=del_in,
                                            log=log,
                                            parse_mode=parse_mode,
-                                           disable_web_page_preview=disable_web_page_preview,
+                                           link_preview_options=link_preview_options,
                                            reply_markup=reply_markup)
             else:
                 bot_username = (await self._client.bot.get_me()).username
@@ -751,7 +759,7 @@ class Message(RawMessage):
                                                del_in=del_in,
                                                log=log,
                                                parse_mode=parse_mode,
-                                               disable_web_page_preview=disable_web_page_preview,
+                                               link_preview_options=link_preview_options,
                                                reply_markup=reply_markup)
         return msg_obj
 
@@ -762,7 +770,7 @@ class Message(RawMessage):
                                    sudo: bool = True,
                                    as_raw: bool = False,
                                    parse_mode: Optional[enums.ParseMode] = None,
-                                   disable_web_page_preview: Optional[bool] = None,
+                                   link_preview_options: Optional[LinkPreviewOptions] = None,
                                    reply_markup: InlineKeyboardMarkup = None,
                                    **kwargs) -> Union['Message', bool]:
         """\nThis will first try to message.edit.
@@ -800,7 +808,7 @@ class Message(RawMessage):
                 Pass "html" to enable HTML-style parsing only.
                 Pass None to completely disable style parsing.
 
-            disable_web_page_preview (``bool``, *optional*):
+            link_preview_options (:obj:`pyrogram.types.LinkPreviewOptions`, *optional*):
                 Disables link previews for links in this message.
 
             reply_markup (:obj:`InlineKeyboardMarkup`, *optional*):
@@ -821,7 +829,7 @@ class Message(RawMessage):
                                    log=log,
                                    sudo=sudo,
                                    parse_mode=parse_mode,
-                                   disable_web_page_preview=disable_web_page_preview,
+                                   link_preview_options=link_preview_options,
                                    reply_markup=reply_markup)
         except (MessageTooLong, OSError):
             return await self.reply_as_file(text=text, as_raw=as_raw, log=log, **kwargs)
@@ -833,7 +841,7 @@ class Message(RawMessage):
                                     quote: Optional[bool] = None,
                                     as_raw: bool = False,
                                     parse_mode: Optional[enums.ParseMode] = None,
-                                    disable_web_page_preview: Optional[bool] = None,
+                                    link_preview_options: Optional[LinkPreviewOptions] = None,
                                     disable_notification: Optional[bool] = None,
                                     reply_to_message_id: Optional[int] = None,
                                     reply_markup: InlineKeyboardMarkup = None,
@@ -878,7 +886,7 @@ class Message(RawMessage):
                 Pass "html" to enable HTML-style parsing only.
                 Pass None to completely disable style parsing.
 
-            disable_web_page_preview (``bool``, *optional*):
+            link_preview_options (:obj:`pyrogram.types.LinkPreviewOptions`, *optional*):
                 Disables link previews for links in this message.
 
             disable_notification (``bool``, *optional*):
@@ -911,7 +919,7 @@ class Message(RawMessage):
                                     log=log,
                                     quote=quote,
                                     parse_mode=parse_mode,
-                                    disable_web_page_preview=disable_web_page_preview,
+                                    link_preview_options=link_preview_options,
                                     disable_notification=disable_notification,
                                     reply_to_message_id=reply_to_message_id,
                                     reply_markup=reply_markup)
@@ -924,7 +932,7 @@ class Message(RawMessage):
                                          log: Union[bool, str] = False,
                                          as_raw: bool = False,
                                          parse_mode: Optional[enums.ParseMode] = None,
-                                         disable_web_page_preview: Optional[bool] = None,
+                                         link_preview_options: Optional[LinkPreviewOptions] = None,
                                          reply_markup: InlineKeyboardMarkup = None,
                                          **kwargs) -> Union['Message', bool]:
         """\nThis will first try to message.edit_or_send_as_file.
@@ -959,7 +967,7 @@ class Message(RawMessage):
                 Pass "html" to enable HTML-style parsing only.
                 Pass None to completely disable style parsing.
 
-            disable_web_page_preview (``bool``, *optional*):
+            link_preview_options (:obj:`pyrogram.types.LinkPreviewOptions`, *optional*):
                 Disables link previews for links in this message.
 
             reply_markup (:obj:`InlineKeyboardMarkup`, *optional*):
@@ -979,7 +987,7 @@ class Message(RawMessage):
                 sudo=False,
                 as_raw=as_raw,
                 parse_mode=parse_mode,
-                disable_web_page_preview=disable_web_page_preview,
+                link_preview_options=link_preview_options,
                 reply_markup=reply_markup,
                 **kwargs)
         except (MessageAuthorRequired, MessageIdInvalid):
@@ -989,7 +997,7 @@ class Message(RawMessage):
                 log=log,
                 as_raw=as_raw,
                 parse_mode=parse_mode,
-                disable_web_page_preview=disable_web_page_preview,
+                link_preview_options=link_preview_options,
                 reply_markup=reply_markup,
                 **kwargs)
 

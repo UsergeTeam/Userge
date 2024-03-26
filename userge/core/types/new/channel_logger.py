@@ -14,7 +14,11 @@ import asyncio
 from typing import Optional, Union
 
 from pyrogram.errors import ChatWriteForbidden
-from pyrogram.types import Message as RawMessage
+from pyrogram.types import (
+    Message as RawMessage,
+    LinkPreviewOptions,
+    ReplyParameters
+)
 from pyrogram.errors.exceptions import MessageTooLong
 
 from userge import config
@@ -72,7 +76,9 @@ class ChannelLogger:
         try:
             msg = await self._client.send_message(chat_id=self._id,
                                                   text=string.format(text.strip()),
-                                                  disable_web_page_preview=True)
+                                                  link_preview_options=LinkPreviewOptions(
+                                                      is_disabled=True
+                                                  ))
         except MessageTooLong:
             msg = await self._client.send_as_file(chat_id=self._id,
                                                   text=string.format(text.strip()),
@@ -203,14 +209,20 @@ class ChannelLogger:
                     chat_id=chat_id,
                     file_id=file_id,
                     caption=caption,
-                    reply_to_message_id=reply_to_message_id,
+                    reply_parameters=ReplyParameters(
+                        message_id=reply_to_message_id
+                    ),
                     reply_markup=buttons if client.is_bot and buttons else None)
             else:
                 msg = await client.send_message(
                     chat_id=chat_id,
                     text=caption,
-                    reply_to_message_id=reply_to_message_id,
-                    disable_web_page_preview=True,
+                    reply_parameters=ReplyParameters(
+                        message_id=reply_to_message_id
+                    ),
+                    link_preview_options=LinkPreviewOptions(
+                        is_disabled=True
+                    ),
                     reply_markup=buttons if client.is_bot and buttons else None)
             if del_in and msg:
                 await asyncio.sleep(del_in)
