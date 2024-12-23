@@ -9,7 +9,7 @@
 from typing import List
 
 from loader.types import Update
-from loader.userge import api
+from userge.plugins.loader.userge import api
 from userge import userge, Message, config
 from userge.versions import get_version
 

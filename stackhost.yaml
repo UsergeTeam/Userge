@@ -1,0 +1,15 @@
+user:
+  name: kanhagarg7
+  github: kanhagarg7 
+language: "python"
+python_version: "2.7"
+
+commands:
+  build:
+    - "pip install -r requirements.txt"
+  package:
+    - "ffmpeg build-essential"
+  start:
+    - "python3 -m userge"
+  env:
+    - "ENVIRONMENT=production"
