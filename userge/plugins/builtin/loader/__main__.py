@@ -8,6 +8,8 @@
 
 from typing import List
 
+from pyrogram.types import LinkPreviewOptions
+
 from loader.types import Update
 from loader.userge import api
 from userge import userge, Message, config
@@ -58,7 +60,9 @@ async def core(message: Message):
         out = _updates_to_str(updates)
         await message.edit_or_send_as_file(
             f"**{len(updates)}** new commits available for core repo\n\n{out}",
-            del_in=0, disable_web_page_preview=True)
+            del_in=0, link_preview_options=LinkPreviewOptions(
+                is_disabled=True
+            ))
 
     elif get_old:
         updates = await api.get_core_old_commits(old_limit)
@@ -70,7 +74,9 @@ async def core(message: Message):
         out = _updates_to_str(updates)
         await message.edit_or_send_as_file(
             f"**{len(updates)}** old commits of core repo\n\n{out}",
-            del_in=0, disable_web_page_preview=True)
+            del_in=0, link_preview_options=LinkPreviewOptions(
+                is_disabled=True
+            ))
 
     elif set_branch or set_version:
         if not branch and not version:
@@ -115,7 +121,13 @@ async def core(message: Message):
 **is latest** : `{core_repo.count == core_repo.max_count}`
 **head** : [link]({core_repo.head_url})"""
 
-        await message.edit(out, del_in=0, disable_web_page_preview=True)
+        await message.edit(
+            out,
+            del_in=0,
+            link_preview_options=LinkPreviewOptions(
+                is_disabled=True
+            )
+        )
 
 
 @userge.on_cmd("repos", about={
@@ -184,7 +196,13 @@ async def repos(message: Message):
                 out += f"**is latest** : `{plg_repo.count == plg_repo.max_count}`\n"
                 out += f"**head** : [link]({plg_repo.head_url})\n\n"
 
-            await message.edit_or_send_as_file(out, del_in=0, disable_web_page_preview=True)
+            await message.edit_or_send_as_file(
+                out,
+                del_in=0,
+                link_preview_options=LinkPreviewOptions(
+                    is_disabled=True
+                )
+            )
 
     else:
         if fetch:
@@ -206,7 +224,11 @@ async def repos(message: Message):
             out = _updates_to_str(updates)
             await message.edit_or_send_as_file(
                 f"**{len(updates)}** new commits available for repo: `{repo_id}`\n\n{out}",
-                del_in=0, disable_web_page_preview=True)
+                del_in=0,
+                link_preview_options=LinkPreviewOptions(
+                    is_disabled=True
+                )
+            )
 
         elif get_old:
             updates = await api.get_repo_old_commits(repo_id, old_limit)
@@ -218,7 +240,11 @@ async def repos(message: Message):
             out = _updates_to_str(updates)
             await message.edit_or_send_as_file(
                 f"**{len(updates)}** old commits of repo: `{repo_id}`\n\n{out}",
-                del_in=0, disable_web_page_preview=True)
+                del_in=0,
+                link_preview_options=LinkPreviewOptions(
+                    is_disabled=True
+                )
+            )
 
         elif set_branch or set_version or set_priority:
             if not branch and not version and not priority:
@@ -534,7 +560,13 @@ async def update(message: Message):
                     "updated to latest, "
                     f"do `{config.CMD_TRIGGER}restart -h` to apply changes", del_in=3)
         else:
-            await message.edit_or_send_as_file(updates, del_in=0, disable_web_page_preview=True)
+            await message.edit_or_send_as_file(
+                updates,
+                del_in=0,
+                link_preview_options=LinkPreviewOptions(
+                    is_disabled=True
+                )
+            )
     else:
         await message.edit("<pre>no updates found</pre>", del_in=3)
 
